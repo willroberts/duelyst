@@ -1,0 +1,44 @@
+name: unit_tests
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+jobs:
+  unit_tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: check out code
+      uses: actions/checkout@v3
+
+    - name: install node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        #cache: yarn  # We're caching node_modules instead below.
+
+    # Caching node_modules saves 50s on builds which don't modify dependencies.
+    # Compared to yarn caching, it saves an additional 27 seconds.
+    - name: cache node_modules
+      uses: actions/cache@v3
+      with:
+        path: /home/runner/work/duelyst/duelyst/node_modules
+        key: node-modules-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          node-modules-
+
+    - name: redirect git ssh to https
+      run: |
+        git config --global url."https://github.com/".insteadOf git@github.com:
+        git config --global url."https://".insteadOf git://
+
+    - name: install dependencies
+      run: yarn install --dev
+
+    - name: configure dummy service account
+      run: echo '{}' > serviceAccountKey.json
+
+    - name: test code
+      run: yarn test:unit
