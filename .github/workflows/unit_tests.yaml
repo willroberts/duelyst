@@ -17,7 +17,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 16
-        #cache: yarn  # We're caching node_modules instead below.
 
     # Caching node_modules saves 50s on builds which don't modify dependencies.
     # Compared to yarn caching, it saves an additional 27 seconds.
@@ -36,9 +35,6 @@ jobs:
 
     - name: install dependencies
       run: yarn install --dev
-
-    - name: configure dummy service account
-      run: echo '{}' > serviceAccountKey.json
 
     - name: test code
       run: yarn test:unit
