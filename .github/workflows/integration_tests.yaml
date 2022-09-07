@@ -24,10 +24,6 @@ jobs:
     - name: check out code
       uses: actions/checkout@v3
 
-    # can't install libpng-dev when using node container?
-    #- name: install system dependencies
-    #  run: sudo apt-get install -y libpng-dev
-
     # Caching node_modules saves 50s on builds which don't modify dependencies.
     # Compared to yarn caching, it saves an additional 27 seconds.
     - name: cache node_modules
