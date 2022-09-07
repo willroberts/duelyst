@@ -1,25 +1,25 @@
+var path = require('path');
+require('app-module-path').addPath(path.join(__dirname, '../../'));
 require('coffee-script/register');
 
 var expect = require('chai').expect;
-var	api = require('../../server/express.coffee');
+var	api = require('server/express.coffee');
 var request = require('supertest')(api);
 var jwt = require('jsonwebtoken');
 
-var version = require("../../version.json").version;
+var version = require("version.json").version;
 
 // disable the logger for cleaner test output
-var UsersModule = require('../../server/lib/data_access/users.coffee')
-var SyncModule = require('../../server/lib/data_access/sync.coffee')
-var Errors = require('../../server/lib/custom_errors')
-var Logger = require('../../app/common/logger')
-var GameType = require('../../app/sdk/gameType')
+var UsersModule = require('server/lib/data_access/users.coffee')
+var SyncModule = require('server/lib/data_access/sync.coffee')
+var Errors = require('server/lib/custom_errors')
+var Logger = require('app/common/logger')
+var GameType = require('app/sdk/gameType')
 Logger.enabled = false;
 
 describe('matchmaking', function(){
-
 	var userId1;
 	var userId2;
-
 	var p1_token;
 	var p1_id;
 	var p2_token;
@@ -349,5 +349,4 @@ describe('matchmaking', function(){
 	});
 
 	// TODO: after() : probe redis again to see if game id ++
-
 });
