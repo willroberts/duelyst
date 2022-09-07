@@ -5,8 +5,8 @@ cors = require 'cors'
 morgan = require 'morgan'
 colors = require 'colors'
 compose = require('compose-middleware').compose
-Logger = require 'app/common/logger'
-config = require 'config/config'
+Logger = require '../../app/common/logger'
+config = require '../../config/config'
 getRealIp = require 'express-real-ip'
 
 # Request logger, gets request logstream from Morgan and sends to console

@@ -15,9 +15,9 @@ generatePushId = require '../../../app/common/generate_push_id'
 {Redis, Jobs, GameManager} = require '../../redis/'
 Promise.promisifyAll(mail)
 
-ShopData = require 'app/data/shop.json'
-CosmeticsFactory = require 'app/sdk/cosmetics/cosmeticsFactory'
-CosmeticsTypeLookup = require 'app/sdk/cosmetics/cosmeticsTypeLookup'
+ShopData = require '../../../app/data/shop.json'
+CosmeticsFactory = require '../../../app/sdk/cosmetics/cosmeticsFactory'
+CosmeticsTypeLookup = require '../../../app/sdk/cosmetics/cosmeticsTypeLookup'
 
 InventoryModule = require './inventory'
 UsersModule = require './users'

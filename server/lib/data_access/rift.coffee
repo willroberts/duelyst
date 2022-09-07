@@ -24,7 +24,7 @@ Promise.promisifyAll(mail)
 # SDK imports
 SDK = require '../../../app/sdk'
 UtilsGameSession = require '../../../app/common/utils/utils_game_session.coffee'
-RiftHelper = require 'app/sdk/rift/riftHelper'
+RiftHelper = require '../../../app/sdk/rift/riftHelper'
 
 class RiftModule
 

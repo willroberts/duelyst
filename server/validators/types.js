@@ -1,13 +1,11 @@
 const t = require('tcomb')
 const validator = require('validator')
-const RankDivisionLookup = require('app/sdk/rank/rankDivisionLookup')
-const ShopData = require('app/data/shop.json')
-const CosmeticsFactory = require('app/sdk/cosmetics/cosmeticsFactory')
+const RankDivisionLookup = require('../../app/sdk/rank/rankDivisionLookup')
+const ShopData = require('../../app/data/shop.json')
+const CosmeticsFactory = require('../../app/sdk/cosmetics/cosmeticsFactory')
 
 const Email = t.subtype(t.Str, s => validator.isEmail(s), 'Email')
-
 const Password = t.subtype(t.Str, s => s.length >= 6, 'Password')
-
 const NewPassword = t.subtype(t.Str, s => s.length >= 8, 'New Password')
 
 const UserId = t.subtype(t.Str, s => {

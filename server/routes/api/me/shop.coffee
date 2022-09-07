@@ -11,8 +11,8 @@ t = require 'tcomb-validation'
 validators = require '../../../validators'
 
 # TODO: replace this with info in database?
-PremiumShopData = require 'app/data/premium_shop.json'
-ShopData = require('app/data/shop.json')
+PremiumShopData = require '../../../../app/data/premium_shop.json'
+ShopData = require('../../../../app/data/shop.json')
 
 router = express.Router()
 

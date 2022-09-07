@@ -1,17 +1,18 @@
 _ = require 'underscore'
 express = require 'express'
 jwt = require 'jsonwebtoken'
-knex = require 'server/lib/data_access/knex'
-DataAccessHelpers = require 'server/lib/data_access/helpers'
-FirebasePromises = require 'server/lib/firebase_promises'
-DuelystFirebase = require 'server/lib/duelyst_firebase_module'
-Logger = require 'app/common/logger.coffee'
-Errors = require 'server/lib/custom_errors'
-config = require 'config/config'
 t = require 'tcomb-validation'
-types = require 'server/validators/types'
-Consul = require 'server/lib/consul'
 Promise = require 'bluebird'
+
+Logger = require '../../../../app/common/logger.coffee'
+config = require '../../../../config/config'
+knex = require '../../../lib/data_access/knex'
+DataAccessHelpers = require '../../../lib/data_access/helpers'
+FirebasePromises = require '../../../lib/firebase_promises'
+DuelystFirebase = require '../../../lib/duelyst_firebase_module'
+Errors = require '../../../lib/custom_errors'
+types = require '../../../validators/types'
+Consul = require '../../../lib/consul'
 
 router = express.Router()
 
