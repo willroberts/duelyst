@@ -1,11 +1,11 @@
-var path = require('path')
-require('app-module-path').addPath(path.join(__dirname, '../../../'))
-require('coffee-script/register')
-var expect = require('chai').expect
-var _ = require('underscore')
+var path = require('path');
+require('app-module-path').addPath(path.join(__dirname, '../../../'));
+require('coffee-script/register');
+var expect = require('chai').expect;
+var _ = require('underscore');
 
-var config = require('config/config.js')
-var DuelystFirebase = require('server/lib/duelyst_firebase_module.coffee')
+var config = require('config/config.js');
+var DuelystFirebase = require('server/lib/duelyst_firebase_module.coffee');
 
 describe('Firebase.ServerClient.IntegrationTests', function() {
   const firebaseUrl = config.get('firebase.url');
