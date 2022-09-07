@@ -9,16 +9,16 @@ on:
 jobs:
   integration_tests:
     runs-on: ubuntu-latest
-		container: node:16
+    container: node:16
     services:
       redis:
         image: redis:6
-			db:
-				image: postgres:14
-				env:
-					POSTGRES_USER: duelyst
-					POSTGRES_PASSWORD: duelyst
-					POSTGRES_DB: duelyst
+      db:
+        image: postgres:14
+        env:
+          POSTGRES_USER: duelyst
+          POSTGRES_PASSWORD: duelyst
+          POSTGRES_DB: duelyst
 
     steps:
     - name: check out code
