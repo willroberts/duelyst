@@ -1,8 +1,8 @@
 require("coffee-script/register")
 var _ = require('underscore')
 var moment = require('moment')
-var FirebasePromises = require('../lib/firebase_promises.coffee')
-var DuelystFirebase = require('../lib/duelyst_firebase_module.coffee')
+//var FirebasePromises = require('../lib/firebase_promises.coffee')
+//var DuelystFirebase = require('../lib/duelyst_firebase_module.coffee')
 var ProgressBar = require('progress')
 
 exports.up = function(knex, Promise) {
@@ -17,15 +17,17 @@ exports.up = function(knex, Promise) {
 		knex.schema.table('user_rewards', function (table) {
 			table.specificType('ribbons','varchar[]');
 		}),
+
 		new Promise(function(resolve,reject){
 			// add faction ribbons to existing users that have 100 wins with a faction or more
 			knex("user_faction_progression").select("user_id","faction_id","win_count","last_game_id").where("win_count",">",99)
 			.bind({})
 			.then(function(rows){
 				this.rows = rows
-				return DuelystFirebase.connect().getRootRef()
+				//return DuelystFirebase.connect().getRootRef()
 			})
-			.then(function(rootRef){
+			//.then(function(rootRef){
+			.then(function(){
 				var bar = new ProgressBar('migrating '+this.rows.length+' records [:bar] :percent :etas', {
 					complete: '=',
 					incomplete: ' ',
@@ -44,11 +46,18 @@ exports.up = function(knex, Promise) {
 							created_at: moment().utc().add(n,"milliseconds").toDate()
 						}))
 					})
-					allPromises.push(FirebasePromises.set(rootRef.child("user-ribbons").child(row["user_id"]).child(ribbonId),{
-						ribbon_id: ribbonId,
-						count: ribbonCount,
-						updated_at: moment().utc().valueOf()
-					}))
+					// This code copies user ribbons from Postgres to Firebase.
+					// TODO: Convert this into a script instead.
+					/*
+					allPromises.push(FirebasePromises.set(
+						rootRef.child("user-ribbons").child(row["user_id"]).child(ribbonId),
+						{
+							ribbon_id: ribbonId,
+							count: ribbonCount,
+							updated_at: moment().utc().valueOf()
+						}
+					))
+					*/
 					return Promise.all(allPromises).then(function(){
 						bar.tick()
 					})
