@@ -105,7 +105,6 @@ services:
     environment:
       NODE_ENV: development
       POSTGRES_CONNECTION: "pg://duelyst:duelyst@db/duelyst"
-      FIREBASE_URL: ${FIREBASE_URL}
     depends_on:
       - db
     working_dir: /app
