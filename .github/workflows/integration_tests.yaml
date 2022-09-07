@@ -52,3 +52,7 @@ jobs:
 
     - name: run integration tests
       run: yarn test:integration
+      env:
+        REDIS_IP: redis
+        POSTGRES_CONNECTION: "pg://duelyst:duelyst@db/duelyst"
+        FIREBASE_URL: ""  # Intentionally left blank.
