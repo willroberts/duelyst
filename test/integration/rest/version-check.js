@@ -1,9 +1,11 @@
+var path = require('path');
+require('app-module-path').addPath(path.join(__dirname, '../../../'));
 require('coffee-script/register');
 
 var fs = require('fs');
 var expect = require('chai').expect;
 var semver = require('semver');
-var version = require('../../version.json').version;
+var version = require('version.json').version;
 
 var env = process.env.NODE_ENV;
 var request;
@@ -16,7 +18,7 @@ if (env === 'production') {
 }
 
 // disable the logger for cleaner test output
-var Logger = require('../../app/common/logger');
+var Logger = require('app/common/logger');
 Logger.enabled = false;
 
 describe('version check', function() {

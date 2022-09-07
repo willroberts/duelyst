@@ -1,25 +1,25 @@
 var path = require('path');
-require('app-module-path').addPath(path.join(__dirname, '../../'));
+require('app-module-path').addPath(path.join(__dirname, '../../../'));
 require('coffee-script/register');
 
 var expect = require('chai').expect;
 var jwt = require('jsonwebtoken');
 var util = require('util');
 var _ = require('underscore');
-var fbUtil = require('../../app/common/utils/utils_firebase');
-var config = require('../../config/config');
-var DuelystFirebase = require('../../server/lib/duelyst_firebase_module');
-var UsersModule = require('../../server/lib/data_access/users');
-var SDK = require('../../app/sdk')
+var fbUtil = require('app/common/utils/utils_firebase');
+var config = require('config/config');
+var DuelystFirebase = require('server/lib/duelyst_firebase_module');
+var UsersModule = require('server/lib/data_access/users');
+var SDK = require('app/sdk')
 
 // configure where to run the tests against
-var	api = require('../../server/express');
+var	api = require('server/express');
 var request = require('supertest')(api);
 
-var version = require("../../version.json").version;
+var version = require("version.json").version;
 
 // disable the logger for cleaner test output
-var Logger = require('../../app/common/logger');
+var Logger = require('app/common/logger');
 Logger.enabled = false;
 
 // Some global vars to save state

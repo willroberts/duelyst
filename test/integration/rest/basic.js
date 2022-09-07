@@ -1,5 +1,5 @@
 var path = require('path');
-require('app-module-path').addPath(path.join(__dirname, '../../'));
+require('app-module-path').addPath(path.join(__dirname, '../../../'));
 require('coffee-script/register');
 
 var expect = require('chai').expect;
