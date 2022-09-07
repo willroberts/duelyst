@@ -1,12 +1,14 @@
+var path = require('path');
+require('app-module-path').addPath(path.join(__dirname, '../../'));
 require('coffee-script/register');
 
 var expect = require('chai').expect;
-var	api = require('../../server/express.coffee');
+var	api = require('server/express.coffee');
 var request = require('supertest')(api);
-var version = require("../../version.json").version;
+var version = require("version.json").version;
 
 // disable the logger for cleaner test output
-var Logger = require('../../app/common/logger');
+var Logger = require('app/common/logger');
 Logger.enabled = false;
 
 describe('basic route checks', function() {
