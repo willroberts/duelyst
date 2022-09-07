@@ -1,11 +1,12 @@
+var path = require('path');
+require('app-module-path').addPath(path.join(__dirname, '../../../'));
 require('coffee-script/register');
 
 var expect = require('chai').expect;
-var	api = require('../../server/express.coffee');
+var	api = require('server/express.coffee');
 var request = require('supertest')(api);
 
 describe('password reset', function() {
-
 	describe('POST /forgot', function() {
 		this.timeout(5000);
 		it('returns 200 and sends email if given user exists', function(done) {
@@ -37,12 +38,11 @@ describe('password reset', function() {
 				.post('/forgot')
 				.set('Accept', 'application/json')
 				.send({ email: "NOTAREALUSER@FOO.COM"})
-				.expect(400)
+				.expect(404)
 				.end(function(err,res){
 					expect(err).to.be.equal(null);
 					done();
 				});
 		});
 	});
-
 })
