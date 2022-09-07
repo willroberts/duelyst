@@ -13,6 +13,7 @@ mail = require './mailer'
 Promise.promisifyAll(mail)
 
 # Setup http server and express app
+Logger.module('API').log 'Starting Express HTTP server...'
 app = require "./express"
 server = require('http').createServer(app)
 
