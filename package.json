@@ -211,7 +211,6 @@
     "rsx:copy": "gulp rsx:copy",
     "test:data": "mocha -t 1000 --recursive test/unit/data_access",
     "test:firebase": "mocha -t 1000 test/unit/firebase test/integration/firebase",
-    "test:misc": "mocha -t 1000 --recursive test/unit/misc",
     "test:sdk": "mocha -t 1000 --recursive test/unit/sdk",
     "test:unit": "mocha -t 1000 --recursive test/unit",
     "test:integration": "mocha -t 1000 --recursive test/integration",
