@@ -86,7 +86,7 @@ function parseCFJPart(part) {
 writeFile('../fx.json', j2j.output(fxMap));
 
 // process cardFactory.coffee
-let cardFactoryCoffee = fs.readFileSync('cardFactory.coffee', 'utf8');
+let cardFactoryCoffee = fs.readFileSync('cardFactory', 'utf8');
 cardFactoryCoffee = cardFactoryCoffee.replace('\r', '\n');
 const cfcParts = cardFactoryCoffee.split(/if[\s]*\([\s]*identifier[\s]*==[\s]*/g);
 const numCFCParts = cfcParts.length;
@@ -97,7 +97,7 @@ for (let i = 1, il = numCFCParts; i < il; i++) {
 }
 
 // save final cardFactory.coffee
-writeFile('../sdk/cards/cardFactory.coffee', newCFC);
+writeFile('../sdk/cards/cardFactory', newCFC);
 
 function parseCFCPart(part) {
   const idEndIndex = part.indexOf(')');

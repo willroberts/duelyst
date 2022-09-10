@@ -176,7 +176,7 @@ var _processNextSetOfUsers = function (numProcessed) {
 };
 
 // Handle execution as a script
-if (process.argv[1].toString().indexOf('give_all_users_winter_2015_crate.coffee') !== -1) {
+if (process.argv[1].toString().indexOf('give_all_users_winter_2015_crate') !== -1) {
   // Check usage, either must have 2 args (coffee and script name) or third parameter must be commit
   if ((process.argv.length > 3) || ((process.argv[2] !== undefined) && (process.argv[2] !== 'commit'))) {
     console.log('Unexpected usage.');

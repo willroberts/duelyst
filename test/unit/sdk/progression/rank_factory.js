@@ -4,8 +4,8 @@ require('coffee-script/register');
 const { expect } = require('chai');
 const Promise = require('bluebird');
 const _ = require('underscore');
-const Logger = require('../../../../app/common/logger.coffee');
-const SDK = require('../../../../app/sdk.coffee');
+const Logger = require('../../../../app/common/logger');
+const SDK = require('../../../../app/sdk');
 
 // disable the logger for cleaner test output
 Logger.enabled = false;

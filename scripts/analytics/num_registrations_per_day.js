@@ -85,7 +85,7 @@ const num_registrations_per_day = function (numDaysToLookBack) {
 };
 
 // Handle execution as a script
-if (process.argv[1].toString().indexOf('num_registrations_per_day.coffee') !== -1) {
+if (process.argv[1].toString().indexOf('num_registrations_per_day') !== -1) {
   let numDaysToLookBack;
   if (process.argv[2]) {
     numDaysToLookBack = parseInt(process.argv[2]);

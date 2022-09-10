@@ -3,7 +3,7 @@ require('app-module-path').addPath(path.join(__dirname, '../../../'));
 require('coffee-script/register');
 const { expect } = require('chai');
 const util = require('util');
-const SDK = require('../../../app/sdk.coffee');
+const SDK = require('../../../app/sdk');
 
 describe('game serialization', () => {
   describe('action serialization', () => {

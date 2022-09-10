@@ -8,16 +8,16 @@ const Promise = require('bluebird');
 const sinon = require('sinon');
 const _ = require('underscore');
 const moment = require('moment');
-const DuelystFirebase = require('../../../server/lib/duelyst_firebase_module.coffee');
-const Errors = require('../../../server/lib/custom_errors.coffee');
-const UsersModule = require('../../../server/lib/data_access/users.coffee');
-const SyncModule = require('../../../server/lib/data_access/sync.coffee');
-const DecksModule = require('../../../server/lib/data_access/decks.coffee');
-const FirebasePromises = require('../../../server/lib/firebase_promises.coffee');
+const DuelystFirebase = require('../../../server/lib/duelyst_firebase_module');
+const Errors = require('../../../server/lib/custom_errors');
+const UsersModule = require('../../../server/lib/data_access/users');
+const SyncModule = require('../../../server/lib/data_access/sync');
+const DecksModule = require('../../../server/lib/data_access/decks');
+const FirebasePromises = require('../../../server/lib/firebase_promises');
 const config = require('../../../config/config');
-const Logger = require('../../../app/common/logger.coffee');
-const SDK = require('../../../app/sdk.coffee');
-const knex = require('../../../server/lib/data_access/knex.coffee');
+const Logger = require('../../../app/common/logger');
+const SDK = require('../../../app/sdk');
+const knex = require('../../../server/lib/data_access/knex');
 
 // disable the logger for cleaner test output
 Logger.enabled = Logger.enabled && true;

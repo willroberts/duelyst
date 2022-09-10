@@ -972,7 +972,7 @@ class UsersModule {
 
   /**
 	 * Get the user ID for the specified Steam ID.
-	 * Reference steam.coffee's authenticateUserTicket
+	 * Reference steam's authenticateUserTicket
 	 * @public
 	 * @param	{String}	steamId	User's Steam ID as returned from steam.coffee authenticateUserTicket
 	 * @return	{Promise}				Promise that will return the userId data on completion.

@@ -1,7 +1,7 @@
 const path = require('path');
 require('app-module-path').addPath(path.join(__dirname, '..'));
 require('coffee-script/register');
-const Logger = require('../app/common/logger.coffee');
+const Logger = require('../app/common/logger');
 
 Logger.enabled = false;
 

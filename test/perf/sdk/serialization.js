@@ -3,8 +3,8 @@ require('app-module-path').addPath(path.join(__dirname, '../../../'));
 require('coffee-script/register');
 const Promise = require('bluebird');
 const Benchmark = require('benchmark');
-const Logger = require('../../../app/common/logger.coffee');
-const SDK = require('../../../app/sdk.coffee');
+const Logger = require('../../../app/common/logger');
+const SDK = require('../../../app/sdk');
 const UtilsSDK = require('../../utils/utils_sdk');
 
 module.exports = new Promise((resolve, reject) => {

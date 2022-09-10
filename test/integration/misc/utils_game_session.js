@@ -6,8 +6,8 @@ const _ = require('underscore');
 const prettyjson = require('prettyjson');
 const { expect } = require('chai');
 
-const UtilsGameSession = require('../../../app/common/utils/utils_game_session.coffee');
-const SDK = require('../../../app/sdk.coffee');
+const UtilsGameSession = require('../../../app/common/utils/utils_game_session');
+const SDK = require('../../../app/sdk');
 const UtilsSDK = require('../../utils/utils_sdk');
 
 describe('UtilsGameSession', () => {

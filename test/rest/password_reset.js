@@ -2,7 +2,7 @@ require('coffee-script/register');
 
 const { expect } = require('chai');
 const supertest = require('supertest');
-const api = require('../../server/express.coffee');
+const api = require('../../server/express');
 
 const request = supertest(api);
 

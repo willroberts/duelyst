@@ -6,8 +6,8 @@ const _ = require('underscore');
 const UtilsSDK = require('../../../utils/utils_sdk');
 const StarterAI = require('../../../../server/ai/starter_ai');
 const ScoreForUnit = require('../../../../server/ai/scoring/base/unit');
-const SDK = require('../../../../app/sdk.coffee');
-const Logger = require('../../../../app/common/logger.coffee');
+const SDK = require('../../../../app/sdk');
+const Logger = require('../../../../app/common/logger');
 const CONFIG = require('../../../../app/common/config');
 
 // disable the logger for cleaner test output

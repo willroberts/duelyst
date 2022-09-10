@@ -4,7 +4,7 @@ require('coffee-script/register');
 const assert = require('power-assert');
 const jwtDecode = require('jwt-decode');
 
-const s = require('../../../app/common/session2.coffee');
+const s = require('../../../app/common/session2');
 
 // These states are currently stateful (because of db) and run against localhost
 describe('session', () => {
