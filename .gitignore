@@ -3,6 +3,9 @@
 .env_for_alpha
 serviceAccountKey.json
 
+# Decaffeinated CoffeeScript files
+*.original.coffee
+
 # Build artifacts
 /app/data/packages.js
 /app/localization/locales/en/index.json
