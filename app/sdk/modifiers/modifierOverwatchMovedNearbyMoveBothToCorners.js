@@ -1,28 +1,39 @@
-CONFIG = 		require 'app/common/config'
-ModifierOverwatchMovedNearby = require './modifierOverwatchMovedNearby'
-RandomTeleportAction = require '../actions/randomTeleportAction'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = 		require('app/common/config');
+const ModifierOverwatchMovedNearby = require('./modifierOverwatchMovedNearby');
+const RandomTeleportAction = require('../actions/randomTeleportAction');
+const _ = require('underscore');
 
-class ModifierOverwatchMovedNearbyMoveBothToCorners extends ModifierOverwatchMovedNearby
+class ModifierOverwatchMovedNearbyMoveBothToCorners extends ModifierOverwatchMovedNearby {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOverwatchMovedNearbyMoveBothToCorners";
+		this.type ="ModifierOverwatchMovedNearbyMoveBothToCorners";
+	}
 
-	type:"ModifierOverwatchMovedNearbyMoveBothToCorners"
-	@type:"ModifierOverwatchMovedNearbyMoveBothToCorners"
+	onOverwatch(action) {
+		// teleport enemy
+		let randomTeleportAction = new RandomTeleportAction(this.getGameSession());
+		randomTeleportAction.setOwnerId(this.getCard().getOwnerId());
+		randomTeleportAction.setSource(action.getSource());
+		randomTeleportAction.setTeleportPattern(CONFIG.PATTERN_CORNERS);
+		randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), this.getFXResource()));
+		this.getGameSession().executeAction(randomTeleportAction);
 
-	onOverwatch: (action) ->
-		# teleport enemy
-		randomTeleportAction = new RandomTeleportAction(@getGameSession())
-		randomTeleportAction.setOwnerId(@getCard().getOwnerId())
-		randomTeleportAction.setSource(action.getSource())
-		randomTeleportAction.setTeleportPattern(CONFIG.PATTERN_CORNERS)
-		randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), @getFXResource()))
-		@getGameSession().executeAction(randomTeleportAction)
+		// teleport self
+		randomTeleportAction = new RandomTeleportAction(this.getGameSession());
+		randomTeleportAction.setOwnerId(this.getCard().getOwnerId());
+		randomTeleportAction.setSource(this.getCard());
+		randomTeleportAction.setTeleportPattern(CONFIG.PATTERN_CORNERS);
+		randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), this.getFXResource()));
+		return this.getGameSession().executeAction(randomTeleportAction);
+	}
+}
+ModifierOverwatchMovedNearbyMoveBothToCorners.initClass();
 
-		# teleport self
-		randomTeleportAction = new RandomTeleportAction(@getGameSession())
-		randomTeleportAction.setOwnerId(@getCard().getOwnerId())
-		randomTeleportAction.setSource(@getCard())
-		randomTeleportAction.setTeleportPattern(CONFIG.PATTERN_CORNERS)
-		randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), @getFXResource()))
-		@getGameSession().executeAction(randomTeleportAction)
-
-module.exports = ModifierOverwatchMovedNearbyMoveBothToCorners
+module.exports = ModifierOverwatchMovedNearbyMoveBothToCorners;

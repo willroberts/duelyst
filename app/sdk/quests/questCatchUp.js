@@ -1,31 +1,47 @@
-Quest = require './quest'
-QuestType = require './questTypeLookup'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-GameType = require 'app/sdk/gameType'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Quest = require('./quest');
+const QuestType = require('./questTypeLookup');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const GameType = require('app/sdk/gameType');
+const i18next = require('i18next');
 
-class QuestCatchUp extends Quest
+class QuestCatchUp extends Quest {
+	static initClass() {
+	
+		this.Identifier = 20000; // ID to use for this quest
+	
+		this.prototype.isReplaceable =false; // whether a player can replace this quest
+		this.prototype.isCatchUp =true; // defines this as a catchup quest
+		this.prototype.goldReward = undefined;
+		 // This is a changing quantity updated to the database when users gain charges
+	}
 
-	@Identifier: 20000 # ID to use for this quest
+	constructor(){
+		super(QuestCatchUp.Identifier,i18next.t("quests.quest_welcome_back_title"),[QuestType.CatchUp]);
+		this.params["completionProgress"] = 3;
+	}
 
-	isReplaceable:false # whether a player can replace this quest
-	isCatchUp:true # defines this as a catchup quest
-	goldReward: undefined # This is a changing quantity updated to the database when users gain charges
+	_progressForGameDataForPlayerId(gameData,playerId){
+		// Gain progress for any games played
+		for (let player of Array.from(gameData.players)) {
+			const playerSetupData = UtilsGameSession.getPlayerSetupDataForPlayerId(gameData, player.playerId);
+			if ((player.playerId === playerId) && GameType.isCompetitiveGameType(gameData.gameType)) {
+				return 1;
+			}
+		}
+		return 0;
+	}
 
-	constructor:()->
-		super(QuestCatchUp.Identifier,i18next.t("quests.quest_welcome_back_title"),[QuestType.CatchUp])
-		@params["completionProgress"] = 3
+	getDescription(){
+		return i18next.t("quests.quest_welcome_back_desc",{count:this.params["completionProgress"]});
+	}
+}
+QuestCatchUp.initClass();
+		//return "Play #{@params["completionProgress"]} Games."
 
-	_progressForGameDataForPlayerId:(gameData,playerId)->
-		# Gain progress for any games played
-		for player in gameData.players
-			playerSetupData = UtilsGameSession.getPlayerSetupDataForPlayerId(gameData, player.playerId)
-			if player.playerId == playerId and GameType.isCompetitiveGameType(gameData.gameType)
-				return 1
-		return 0
-
-	getDescription:()->
-		return i18next.t("quests.quest_welcome_back_desc",{count:@params["completionProgress"]})
-		#return "Play #{@params["completionProgress"]} Games."
-
-module.exports = QuestCatchUp
+module.exports = QuestCatchUp;

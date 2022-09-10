@@ -1,27 +1,38 @@
-SpellFollowupTeleportMyGeneral =	require './spellFollowupTeleportMyGeneral'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellFollowupTeleportMyGeneral =	require('./spellFollowupTeleportMyGeneral');
 
-class SpellFollowupTeleportMyGeneralBehindEnemy extends SpellFollowupTeleportMyGeneral
+class SpellFollowupTeleportMyGeneralBehindEnemy extends SpellFollowupTeleportMyGeneral {
 
-	getFollowupSourcePattern: () ->
-		board = @getGameSession().getBoard()
-		behindPositions = []
-		# apply behind each enemy unit and General
-		playerOffset = 0
-		if @isOwnedByPlayer1() then playerOffset = 1 else playerOffset = -1
-		entity = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-		for unit in board.getUnits()
-			#look for units owned by the opponent of the player who cast the spell, and with an open space "behind" the enemy unit
-			behindPosition = {x:unit.getPosition().x+playerOffset, y:unit.getPosition().y}
-			if unit.getOwnerId() != @getOwnerId() and board.isOnBoard(behindPosition) and !board.getObstructionAtPositionForEntity(behindPosition, entity)
-				behindPositions.push(behindPosition)
+	getFollowupSourcePattern() {
+		const board = this.getGameSession().getBoard();
+		const behindPositions = [];
+		// apply behind each enemy unit and General
+		let playerOffset = 0;
+		if (this.isOwnedByPlayer1()) { playerOffset = 1; } else { playerOffset = -1; }
+		const entity = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+		for (let unit of Array.from(board.getUnits())) {
+			//look for units owned by the opponent of the player who cast the spell, and with an open space "behind" the enemy unit
+			const behindPosition = {x:unit.getPosition().x+playerOffset, y:unit.getPosition().y};
+			if ((unit.getOwnerId() !== this.getOwnerId()) && board.isOnBoard(behindPosition) && !board.getObstructionAtPositionForEntity(behindPosition, entity)) {
+				behindPositions.push(behindPosition);
+			}
+		}
 
-		patternBehindEnemies = []
-		for position in behindPositions
-			patternBehindEnemies.push({x: position.x - @getFollowupSourcePosition().x, y: position.y - @getFollowupSourcePosition().y})
+		const patternBehindEnemies = [];
+		for (let position of Array.from(behindPositions)) {
+			patternBehindEnemies.push({x: position.x - this.getFollowupSourcePosition().x, y: position.y - this.getFollowupSourcePosition().y});
+		}
 
-		return patternBehindEnemies
+		return patternBehindEnemies;
+	}
 
-	getTeleportSourcePosition: (applyEffectPosition) ->
-		return @getGameSession().getGeneralForPlayerId(@getOwnerId()).getPosition()
+	getTeleportSourcePosition(applyEffectPosition) {
+		return this.getGameSession().getGeneralForPlayerId(this.getOwnerId()).getPosition();
+	}
+}
 
-module.exports = SpellFollowupTeleportMyGeneralBehindEnemy
+module.exports = SpellFollowupTeleportMyGeneralBehindEnemy;

@@ -1,25 +1,38 @@
-ModifierStartTurnWatch = require './modifierStartTurnWatch'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 
-class ModifierStartTurnWatchPutCardInOpponentsHand extends ModifierStartTurnWatch
+class ModifierStartTurnWatchPutCardInOpponentsHand extends ModifierStartTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierStartTurnWatchPutCardInOpponentsHand";
+		this.type ="ModifierStartTurnWatchPutCardInOpponentsHand";
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+	
+		this.description = "Add a card to your opponent's hand at start of turn";
+	}
 
-	type:"ModifierStartTurnWatchPutCardInOpponentsHand"
-	@type:"ModifierStartTurnWatchPutCardInOpponentsHand"
+	static createContextObject(cardDataOrIndexToSpawn, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		return contextObject;
+	}
 
-	cardDataOrIndexToSpawn: null
+	onTurnWatch(action) {
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+			const general = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId()).getOwnerId();
+			const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), general, card);
+			return this.getGameSession().executeAction(putCardInHandAction);
+		}
+	}
+}
+ModifierStartTurnWatchPutCardInOpponentsHand.initClass();
 
-	@description: "Add a card to your opponent's hand at start of turn"
-
-	@createContextObject: (cardDataOrIndexToSpawn, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		return contextObject
-
-	onTurnWatch: (action) ->
-		if @getGameSession().getIsRunningAsAuthoritative()
-			card = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(@cardDataOrIndexToSpawn)
-			general = @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId()).getOwnerId()
-			putCardInHandAction = new PutCardInHandAction(@getGameSession(), general, card)
-			@getGameSession().executeAction(putCardInHandAction)
-
-module.exports = ModifierStartTurnWatchPutCardInOpponentsHand
+module.exports = ModifierStartTurnWatchPutCardInOpponentsHand;

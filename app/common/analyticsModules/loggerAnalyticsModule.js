@@ -1,31 +1,48 @@
-_ = require 'underscore'
-Logger = require 'app/common/logger'
-AnalyticsEventPriority = require './analyticsEventPriority'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const _ = require('underscore');
+const Logger = require('app/common/logger');
+const AnalyticsEventPriority = require('./analyticsEventPriority');
 
-class LoggerAnalyticsModule
+class LoggerAnalyticsModule {
+	static initClass() {
+	
+		this._deactivate = true;
+	}
 
-	@_deactivate: true
+	static isActive() {
+		if (!this._deactivate) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-	@isActive: () ->
-		if !@_deactivate
-			return true
-		else
-			return false
+	static identify(id,params) {
+		return Logger.module("Analytics").log(`identify() -> id: ${id}. params: ${JSON.stringify(params)}`);
+	}
 
-	@identify:(id,params) ->
-		Logger.module("Analytics").log("identify() -> id: #{id}. params: #{JSON.stringify(params)}")
+	static page(title,params) {
+		return Logger.module("Analytics").log(`page() -> title: ${title}. params: ${JSON.stringify(params)}`);
+	}
 
-	@page:(title,params) ->
-		Logger.module("Analytics").log("page() -> title: #{title}. params: #{JSON.stringify(params)}")
+	static screen(title,params) {
+		return Logger.module("Analytics").log(`screen() -> title: ${title}. params: ${JSON.stringify(params)}`);
+	}
 
-	@screen:(title,params) ->
-		Logger.module("Analytics").log("screen() -> title: #{title}. params: #{JSON.stringify(params)}")
+	static track(eventName,params) {
+		return Logger.module("Analytics").log(`track() -> eventName: ${eventName}. params: ${JSON.stringify(params)}`);
+	}
 
-	@track:(eventName,params) ->
-		Logger.module("Analytics").log("track() -> eventName: #{eventName}. params: #{JSON.stringify(params)}")
+	static reset() {
+		return Logger.module("Analytics").log("reset().");
+	}
+}
+LoggerAnalyticsModule.initClass();
 
-	@reset:() ->
-		Logger.module("Analytics").log("reset().")
 
-
-module.exports = LoggerAnalyticsModule
+module.exports = LoggerAnalyticsModule;

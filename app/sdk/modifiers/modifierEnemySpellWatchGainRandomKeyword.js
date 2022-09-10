@@ -1,27 +1,37 @@
-Modifier = require './modifier'
-ModifierEnemySpellWatch = require './modifierEnemySpellWatch'
-CardType = require 'app/sdk/cards/cardType'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierFrenzy = require './modifierFrenzy'
-ModifierFlying = require './modifierFlying'
-ModifierTranscendance = require './modifierTranscendance'
-ModifierProvoke = require './modifierProvoke'
-ModifierRanged = require './modifierRanged'
-ModifierForcefield = require './modifierForcefield'
-ModifierBlastAttack = require './modifierBlastAttack'
-ModifierGrow = require './modifierGrow'
-ModifierFirstBlood = require './modifierFirstBlood'
-ModifierBackstab = require './modifierBackstab'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierEnemySpellWatch = require('./modifierEnemySpellWatch');
+const CardType = require('app/sdk/cards/cardType');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierFrenzy = require('./modifierFrenzy');
+const ModifierFlying = require('./modifierFlying');
+const ModifierTranscendance = require('./modifierTranscendance');
+const ModifierProvoke = require('./modifierProvoke');
+const ModifierRanged = require('./modifierRanged');
+const ModifierForcefield = require('./modifierForcefield');
+const ModifierBlastAttack = require('./modifierBlastAttack');
+const ModifierGrow = require('./modifierGrow');
+const ModifierFirstBlood = require('./modifierFirstBlood');
+const ModifierBackstab = require('./modifierBackstab');
 
-class ModifierSpellWatchGainRandomKeyword extends ModifierEnemySpellWatch
+class ModifierSpellWatchGainRandomKeyword extends ModifierEnemySpellWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSpellWatchGainRandomKeyword";
+		this.type ="ModifierSpellWatchGainRandomKeyword";
+	
+		this.description = "Whenever you cast a spell, this gains a random keyword ability";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierSpellWatchGainRandomKeyword"
-	@type:"ModifierSpellWatchGainRandomKeyword"
-
-	@description: "Whenever you cast a spell, this gains a random keyword ability"
-
-	@createContextObject: () ->
-		contextObject = super()
+	static createContextObject() {
+		const contextObject = super.createContextObject();
 		contextObject.allModifierContextObjects = [
 			ModifierFrenzy.createContextObject(),
 			ModifierFlying.createContextObject(),
@@ -33,17 +43,20 @@ class ModifierSpellWatchGainRandomKeyword extends ModifierEnemySpellWatch
 			ModifierGrow.createContextObject(2),
 			ModifierFirstBlood.createContextObject(),
 			ModifierBackstab.createContextObject(2)
-		]
-		return contextObject
+		];
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierGenericBuff"]
+	onEnemySpellWatch(action) {
+		super.onEnemySpellWatch(action);
 
-	onEnemySpellWatch: (action) ->
-		super(action)
+		if (this.getGameSession().getIsRunningAsAuthoritative() && (this.allModifierContextObjects.length > 0)) {
+			// pick one modifier from the remaining list and splice it out of the set of choices
+			const modifierContextObject = this.allModifierContextObjects.splice(this.getGameSession().getRandomIntegerForExecution(this.allModifierContextObjects.length), 1)[0];
+			return this.getGameSession().applyModifierContextObject(modifierContextObject, this.getCard());
+		}
+	}
+}
+ModifierSpellWatchGainRandomKeyword.initClass();
 
-		if @getGameSession().getIsRunningAsAuthoritative() and @allModifierContextObjects.length > 0
-			# pick one modifier from the remaining list and splice it out of the set of choices
-			modifierContextObject = @allModifierContextObjects.splice(@getGameSession().getRandomIntegerForExecution(@allModifierContextObjects.length), 1)[0]
-			@getGameSession().applyModifierContextObject(modifierContextObject, @getCard())
-
-module.exports = ModifierSpellWatchGainRandomKeyword
+module.exports = ModifierSpellWatchGainRandomKeyword;

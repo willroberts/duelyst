@@ -1,36 +1,54 @@
-SpellDamage = require './spellDamage'
-CardType = require 'app/sdk/cards/cardType'
-AttackAction = require 'app/sdk/actions/attackAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellDamage = require('./spellDamage');
+const CardType = require('app/sdk/cards/cardType');
+const AttackAction = require('app/sdk/actions/attackAction');
 
-class SpellSpiralCounter extends SpellDamage
+class SpellSpiralCounter extends SpellDamage {
+	static initClass() {
+	
+		this.prototype.damageAmount = 8;
+	}
 
-	damageAmount: 8
+	// can only target enemy minions that attacked last turn
+	_filterPlayPositions(spellPositions) {
 
-	# can only target enemy minions that attacked last turn
-	_filterPlayPositions: (spellPositions) ->
+		const finalPositions = [];
 
-		finalPositions = []
+		const turns = this.getGameSession().getTurns();
+		if (turns.length > 1) {
+			const lastTurn = turns[turns.length-1];
+			let actions = [];
+			const possibleTargets = [];
 
-		turns = @getGameSession().getTurns()
-		if turns.length > 1
-			lastTurn = turns[turns.length-1]
-			actions = []
-			possibleTargets = []
+			for (let step of Array.from(lastTurn.getSteps())) {
+				actions = actions.concat(step.getAction().getFlattenedActionTree());
+			}
 
-			for step in lastTurn.getSteps()
-				actions = actions.concat(step.getAction().getFlattenedActionTree())
+			// find enemy minions that attacked last turn
+			for (let action of Array.from(actions)) {
+				if (action.type === AttackAction.type) {
+					const attacker = action.getSource();
+					if ((attacker.getType() === CardType.Unit) && !(attacker.getOwnerId() === this.getOwnerId()) && !attacker.getIsGeneral()) {
+						possibleTargets.push(attacker);
+					}
+				}
+			}
 
-			# find enemy minions that attacked last turn
-			for action in actions
-				if action.type is AttackAction.type
-					attacker = action.getSource()
-					if attacker.getType() is CardType.Unit and !(attacker.getOwnerId() is @getOwnerId()) and !attacker.getIsGeneral()
-						possibleTargets.push(attacker)
+			for (let target of Array.from(possibleTargets)) {
+				if (target.getIsLocatedOnBoard()) {
+					finalPositions.push(target.getPosition());
+				}
+			}
+		}
 
-			for target in possibleTargets
-				if target.getIsLocatedOnBoard()
-					finalPositions.push(target.getPosition())
+		return finalPositions;
+	}
+}
+SpellSpiralCounter.initClass();
 
-		return finalPositions
-
-module.exports = SpellSpiralCounter
+module.exports = SpellSpiralCounter;

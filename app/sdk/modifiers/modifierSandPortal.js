@@ -1,57 +1,87 @@
-ModifierSummonWatchFromActionBar = require './modifierSummonWatchFromActionBar'
-Cards = require 'app/sdk/cards/cardsLookup'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierSummonWatchFromActionBar = require('./modifierSummonWatchFromActionBar');
+const Cards = require('app/sdk/cards/cardsLookup');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierSandPortal extends ModifierSummonWatchFromActionBar
+class ModifierSandPortal extends ModifierSummonWatchFromActionBar {
+	static initClass() {
+	
+		this.prototype.type = "ModifierSandPortal";
+		this.type = "ModifierSandPortal";
+	
+		this.modifierName = i18next.t("modifiers.exhuming_sand_name");
+		this.keywordDefinition = i18next.t("modifiers.exhuming_sand_def");
+		this.description = i18next.t("modifiers.exhuming_sand_def");
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierShadowCreep"];
+	}
 
-	type: "ModifierSandPortal"
-	@type: "ModifierSandPortal"
+	static getDescription() {
+		return this.description;
+	}
 
-	@modifierName: i18next.t("modifiers.exhuming_sand_name")
-	@keywordDefinition: i18next.t("modifiers.exhuming_sand_def")
-	@description: i18next.t("modifiers.exhuming_sand_def")
+	static getCardsWithSandPortal(board, player) {
+		// get all cards with sand portal modifiers owned by a player
+		let allowUntargetable;
+		const cards = [];
+		for (let card of Array.from(board.getCards(null, (allowUntargetable=true)))) {
+			if (card.isOwnedBy(player) && card.hasModifierClass(ModifierSandPortal)) {
+				cards.push(card);
+			}
+		}
+		return cards;
+	}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	onSummonWatch(action) {
+		let playCardAction;
+		super.onSummonWatch(action);
+		const board = this.getGameSession().getBoard();
+		const entity = this.getGameSession().getCardCaches().getCardById(Cards.Faction3.IronDervish);
+		const position = this.getCard().getPosition();
 
-	fxResource: ["FX.Modifiers.ModifierShadowCreep"]
+		const appliedToBoardByAction = this.getCard().getAppliedToBoardByAction();
+		if (appliedToBoardByAction !== undefined) {
+			const rootAppliedByCard = __guardMethod__(action.getRootAction(), 'getCard', o => o.getCard().getRootCard());
+			const thisAppliedByCard = __guardMethod__(appliedToBoardByAction.getRootAction(), 'getCard', o1 => o1.getCard().getRootCard());
+			// spawn an Iron Dervish on this tile when you summon another minion UNLESS the minion being summoned also caused this tile to spawn
+			// (i.e. don't trigger on own creation by opening gambit)
+			if (!board.getObstructionAtPositionForEntity(position, entity) && (rootAppliedByCard !== thisAppliedByCard)) {
+				playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getOwnerId(), position.x, position.y, {id: Cards.Faction3.IronDervish});
+				playCardAction.setSource(this.getCard());
+				return this.getGameSession().executeAction(playCardAction);
+			}
 
-	@getDescription: () ->
-		return @description
+		} else {
+			if (!board.getObstructionAtPositionForEntity(position, entity)) {
+				playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getOwnerId(), position.x, position.y, {id: Cards.Faction3.IronDervish});
+				playCardAction.setSource(this.getCard());
+				return this.getGameSession().executeAction(playCardAction);
+			}
+		}
+	}
+}
+ModifierSandPortal.initClass();
 
-	@getCardsWithSandPortal: (board, player) ->
-		# get all cards with sand portal modifiers owned by a player
-		cards = []
-		for card in board.getCards(null, allowUntargetable=true)
-			if card.isOwnedBy(player) and card.hasModifierClass(ModifierSandPortal)
-				cards.push(card)
-		return cards
+module.exports = ModifierSandPortal;
 
-	onSummonWatch: (action) ->
-		super(action)
-		board = @getGameSession().getBoard()
-		entity = @getGameSession().getCardCaches().getCardById(Cards.Faction3.IronDervish)
-		position = @getCard().getPosition()
-
-		appliedToBoardByAction = @getCard().getAppliedToBoardByAction()
-		if appliedToBoardByAction != undefined
-			rootAppliedByCard = action.getRootAction().getCard?().getRootCard()
-			thisAppliedByCard = appliedToBoardByAction.getRootAction().getCard?().getRootCard()
-			# spawn an Iron Dervish on this tile when you summon another minion UNLESS the minion being summoned also caused this tile to spawn
-			# (i.e. don't trigger on own creation by opening gambit)
-			if !board.getObstructionAtPositionForEntity(position, entity) and rootAppliedByCard != thisAppliedByCard
-				playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getOwnerId(), position.x, position.y, {id: Cards.Faction3.IronDervish})
-				playCardAction.setSource(@getCard())
-				@getGameSession().executeAction(playCardAction)
-
-		else
-			if !board.getObstructionAtPositionForEntity(position, entity)
-				playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getOwnerId(), position.x, position.y, {id: Cards.Faction3.IronDervish})
-				playCardAction.setSource(@getCard())
-				@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierSandPortal
+function __guardMethod__(obj, methodName, transform) {
+  if (typeof obj !== 'undefined' && obj !== null && typeof obj[methodName] === 'function') {
+    return transform(obj, methodName);
+  } else {
+    return undefined;
+  }
+}

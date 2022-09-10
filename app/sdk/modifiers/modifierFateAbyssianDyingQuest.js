@@ -1,73 +1,108 @@
-ModifierFate = require './modifierFate'
-CardType = require 'app/sdk/cards/cardType'
-DieAction = require 'app/sdk/actions/dieAction'
-PlayCardFromHandAction = require 'app/sdk/actions/playCardFromHandAction'
-PlaySignatureCardAction = require 'app/sdk/actions/playSignatureCardAction'
-ModifierQuestStatusAbyssian = require './modifierQuestStatusAbyssian'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierFate = require('./modifierFate');
+const CardType = require('app/sdk/cards/cardType');
+const DieAction = require('app/sdk/actions/dieAction');
+const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
+const PlaySignatureCardAction = require('app/sdk/actions/playSignatureCardAction');
+const ModifierQuestStatusAbyssian = require('./modifierQuestStatusAbyssian');
+const _ = require('underscore');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierFateAbyssianDyingQuest extends ModifierFate
+class ModifierFateAbyssianDyingQuest extends ModifierFate {
+	static initClass() {
+	
+		this.prototype.type ="ModifierFateAbyssianDyingQuest";
+		this.type ="ModifierFateAbyssianDyingQuest";
+	
+		this.prototype.deathCountRequired = 1;
+	}
 
-	type:"ModifierFateAbyssianDyingQuest"
-	@type:"ModifierFateAbyssianDyingQuest"
+	static createContextObject(deathCountRequired, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.deathCountRequired = deathCountRequired;
+		return contextObject;
+	}
 
-	deathCountRequired: 1
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
+		p.deathSpellActionIndices = null;
+		return p;
+	}
 
-	@createContextObject: (deathCountRequired, options) ->
-		contextObject = super(options)
-		contextObject.deathCountRequired = deathCountRequired
-		return contextObject
+	getDeathSpellActionIndices() {
+		if ((this._private.deathSpellActionIndices == null)) {
+			this._private.deathSpellActionIndices = [];
+			this.checkFate(this.getGameSession().filterActions(this.getIsActionRelevant.bind(this)));
+		}
+		return this._private.deathSpellActionIndices;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
-		p.deathSpellActionIndices = null
-		return p
+	updateFateCondition(action) {
+		if (this.getIsActionRelevant(action)) {
+			if (!_.contains(this.getDeathSpellActionIndices(), action.getRootAction().getIndex())) {
+				this.getDeathSpellActionIndices().push(action.getRootAction().getIndex());
+			}
+			if (this.getDeathSpellActionIndices().length < this.deathCountRequired) {
+				this.removeQuestStatusModifier();
+				this.applyQuestStatusModifier(false);
+			}
+		}
 
-	getDeathSpellActionIndices: () ->
-		if !@_private.deathSpellActionIndices?
-			@_private.deathSpellActionIndices = []
-			@checkFate(@getGameSession().filterActions(@getIsActionRelevant.bind(@)))
-		return @_private.deathSpellActionIndices
+		if (this.getDeathSpellActionIndices().length >= this.deathCountRequired) {
+			this._private.fateFulfilled = true;
+			super.updateFateCondition(); // unlock the card
+			this.removeQuestStatusModifier();
+			return this.applyQuestStatusModifier(true);
+		}
+	}
 
-	updateFateCondition: (action) ->
-		if @getIsActionRelevant(action)
-			if ! _.contains(@getDeathSpellActionIndices(), action.getRootAction().getIndex())
-				@getDeathSpellActionIndices().push(action.getRootAction().getIndex())
-			if @getDeathSpellActionIndices().length < @deathCountRequired
-				@removeQuestStatusModifier()
-				@applyQuestStatusModifier(false)
+	getIsActionRelevant(action) {
+		if (action.getOwnerId() === this.getOwnerId()) {
+			const target = action.getTarget();
+			if ((target != null) && action instanceof DieAction && (target.getType() === CardType.Unit) && (target.getOwnerId() === this.getCard().getOwnerId())) {
+				if ((action.getRootAction() instanceof PlayCardFromHandAction || action.getRootAction() instanceof PlaySignatureCardAction) && (__guard__(action.getRootAction().getCard(), x => x.type) === CardType.Spell)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
-		if @getDeathSpellActionIndices().length >= @deathCountRequired
-			@_private.fateFulfilled = true
-			super() # unlock the card
-			@removeQuestStatusModifier()
-			@applyQuestStatusModifier(true)
+	onActivate() {
+		super.onActivate();
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		if (!general.hasActiveModifierClass(ModifierQuestStatusAbyssian)) {
+			return this.applyQuestStatusModifier(false);
+		}
+	}
 
-	getIsActionRelevant: (action) ->
-		if action.getOwnerId() == @getOwnerId()
-			target = action.getTarget()
-			if target? and action instanceof DieAction and target.getType() is CardType.Unit and target.getOwnerId() == @getCard().getOwnerId()
-				if (action.getRootAction() instanceof PlayCardFromHandAction or action.getRootAction() instanceof PlaySignatureCardAction) and action.getRootAction().getCard()?.type is CardType.Spell
-					return true
-		return false
+	removeQuestStatusModifier() {
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		if (general.hasActiveModifierClass(ModifierQuestStatusAbyssian)) {
+				return Array.from(general.getModifiersByClass(ModifierQuestStatusAbyssian)).map((mod) =>
+					this.getGameSession().removeModifier(mod));
+			}
+	}
 
-	onActivate: () ->
-		super()
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		if !general.hasActiveModifierClass(ModifierQuestStatusAbyssian)
-			@applyQuestStatusModifier(false)
+	applyQuestStatusModifier(questCompleted) {
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		const countModifier = ModifierQuestStatusAbyssian.createContextObject(questCompleted, this.getDeathSpellActionIndices().length);
+		return this.getGameSession().applyModifierContextObject(countModifier, general);
+	}
+}
+ModifierFateAbyssianDyingQuest.initClass();
 
-	removeQuestStatusModifier: () ->
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		if general.hasActiveModifierClass(ModifierQuestStatusAbyssian)
-				for mod in general.getModifiersByClass(ModifierQuestStatusAbyssian)
-					@getGameSession().removeModifier(mod)
+module.exports = ModifierFateAbyssianDyingQuest;
 
-	applyQuestStatusModifier: (questCompleted) ->
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		countModifier = ModifierQuestStatusAbyssian.createContextObject(questCompleted, @getDeathSpellActionIndices().length)
-		@getGameSession().applyModifierContextObject(countModifier, general)
-
-module.exports = ModifierFateAbyssianDyingQuest
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

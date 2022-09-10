@@ -1,36 +1,53 @@
-ModifierDyingWish = require './modifierDyingWish'
-Races = require 'app/sdk/cards/racesLookup'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-RemoveAction = require 'app/sdk/actions/removeAction'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierDyingWish = require('./modifierDyingWish');
+const Races = require('app/sdk/cards/racesLookup');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const RemoveAction = require('app/sdk/actions/removeAction');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
-class ModifierDyingWishGoldenGuide extends ModifierDyingWish
+class ModifierDyingWishGoldenGuide extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWishGoldenGuide";
+		this.type ="ModifierDyingWishGoldenGuide";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish"];
+	}
 
-	type:"ModifierDyingWishGoldenGuide"
-	@type:"ModifierDyingWishGoldenGuide"
+	onDyingWish(action) {
 
-	fxResource: ["FX.Modifiers.ModifierDyingWish"]
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
 
-	onDyingWish: (action) ->
+			const friendlyDervishes = [];
+			for (let unit of Array.from(this.getGameSession().getBoard().getUnits())) {
+				if ((unit != null) && unit.getIsSameTeamAs(this.getCard()) && !unit.getIsGeneral() && this.getGameSession().getCanCardBeScheduledForRemoval(unit) && unit.getBelongsToTribe(Races.Dervish)) {
+					friendlyDervishes.push(unit);
+				}
+			}
 
-		if @getGameSession().getIsRunningAsAuthoritative()
+			if (friendlyDervishes.length > 0) {
+				const unitToRemove = friendlyDervishes[this.getGameSession().getRandomIntegerForExecution(friendlyDervishes.length)];
+				const position = unitToRemove.getPosition();
 
-			friendlyDervishes = []
-			for unit in @getGameSession().getBoard().getUnits()
-				if unit? and unit.getIsSameTeamAs(@getCard()) and !unit.getIsGeneral() and @getGameSession().getCanCardBeScheduledForRemoval(unit) and unit.getBelongsToTribe(Races.Dervish)
-					friendlyDervishes.push(unit)
+				const removeAction = new RemoveAction(this.getGameSession());
+				removeAction.setOwnerId(this.getCard().getOwnerId());
+				removeAction.setTarget(unitToRemove);
+				this.getGameSession().executeAction(removeAction);
 
-			if friendlyDervishes.length > 0
-				unitToRemove = friendlyDervishes[@getGameSession().getRandomIntegerForExecution(friendlyDervishes.length)]
-				position = unitToRemove.getPosition()
+				const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, {id: Cards.Faction3.GoldenGuide});
+				spawnAction.setSource(this.getCard());
+				return this.getGameSession().executeAction(spawnAction);
+			}
+		}
+	}
+}
+ModifierDyingWishGoldenGuide.initClass();
 
-				removeAction = new RemoveAction(@getGameSession())
-				removeAction.setOwnerId(@getCard().getOwnerId())
-				removeAction.setTarget(unitToRemove)
-				@getGameSession().executeAction(removeAction)
-
-				spawnAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, {id: Cards.Faction3.GoldenGuide})
-				spawnAction.setSource(@getCard())
-				@getGameSession().executeAction(spawnAction)
-
-module.exports = ModifierDyingWishGoldenGuide
+module.exports = ModifierDyingWishGoldenGuide;

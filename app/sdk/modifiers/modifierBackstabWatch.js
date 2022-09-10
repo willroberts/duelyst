@@ -1,43 +1,61 @@
-Modifier = require './modifier'
-ModifierBackstab = require './modifierBackstab'
-ModifierAlwaysBackstabbed = require './modifierAlwaysBackstabbed'
-AttackAction = require 'app/sdk/actions/attackAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierBackstab = require('./modifierBackstab');
+const ModifierAlwaysBackstabbed = require('./modifierAlwaysBackstabbed');
+const AttackAction = require('app/sdk/actions/attackAction');
 
-class ModifierBackstabWatch extends Modifier
+class ModifierBackstabWatch extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierBackstabWatch";
+		this.type ="ModifierBackstabWatch";
+	
+		this.modifierName ="Backstab Watch: Self";
+		this.description ="Backstab Watch: Self";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	}
 
-	type:"ModifierBackstabWatch"
-	@type:"ModifierBackstabWatch"
+	static createContextObject(options) {
+		const contextObject = super.createContextObject(options);
+		return contextObject;
+	}
 
-	@modifierName:"Backstab Watch: Self"
-	@description:"Backstab Watch: Self"
+	getIsActionRelevant(a) {
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		const target = a.getTarget();
+		const card = this.getCard();
+		if ((card != null) && (target != null) && (a.getSource() === card)) {
+			return target.hasActiveModifierClass(ModifierAlwaysBackstabbed) ||
+				(card.hasModifierType(ModifierBackstab.type) &&
+				a instanceof AttackAction && 
+				this.getGameSession().getBoard().getIsPositionBehindEntity(target, card.getPosition(), 1, 0));
+		}
+		return false;
+	}
 
-	@createContextObject: (options) ->
-		contextObject = super(options)
-		return contextObject
+	onAction(event) {
+		super.onAction(event);
+		const {
+            action
+        } = event;
+		if (this.getIsActionRelevant(action)) {
+			return this.onBackstabWatch(action);
+		}
+	}
 
-	getIsActionRelevant: (a) ->
+	onBackstabWatch(action) {}
+}
+ModifierBackstabWatch.initClass();
+		// override me in sub classes to implement special behavior
 
-		target = a.getTarget()
-		card = @getCard()
-		if card? and target? and a.getSource() == card
-			return target.hasActiveModifierClass(ModifierAlwaysBackstabbed) or
-				(card.hasModifierType(ModifierBackstab.type) and
-				a instanceof AttackAction and 
-				@getGameSession().getBoard().getIsPositionBehindEntity(target, card.getPosition(), 1, 0))
-		return false
-
-	onAction: (event) ->
-		super(event)
-		action = event.action
-		if @getIsActionRelevant(action)
-			@onBackstabWatch(action)
-
-	onBackstabWatch: (action) ->
-		# override me in sub classes to implement special behavior
-
-module.exports = ModifierBackstabWatch
+module.exports = ModifierBackstabWatch;

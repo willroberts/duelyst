@@ -1,32 +1,46 @@
-Modifier = require './modifier'
-DrawCardAction = require 'app/sdk/actions/drawCardAction'
-BurnCardAction = require 'app/sdk/actions/burnCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const DrawCardAction = require('app/sdk/actions/drawCardAction');
+const BurnCardAction = require('app/sdk/actions/burnCardAction');
 
-class ModifierDrawCardWatch extends Modifier
+class ModifierDrawCardWatch extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDrawCardWatch";
+		this.type ="ModifierDrawCardWatch";
+	
+		this.modifierName ="DrawCardWatch";
+		this.description = "Whenever you draw a card ...";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDrawCardWatch"];
+	}
 
-	type:"ModifierDrawCardWatch"
-	@type:"ModifierDrawCardWatch"
+	onAction(e) {
+		super.onAction(e);
 
-	@modifierName:"DrawCardWatch"
-	@description: "Whenever you draw a card ..."
+		const {
+            action
+        } = e;
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		// watch for my player drawing a card
+		if (action instanceof DrawCardAction && !(action instanceof BurnCardAction) && (action.getOwnerId() === this.getCard().getOwnerId())) {
+			return this.onDrawCardWatch(action);
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierDrawCardWatch"]
+	onDrawCardWatch(action) {}
+}
+ModifierDrawCardWatch.initClass();
+		// override me in sub classes to implement special behavior
 
-	onAction: (e) ->
-		super(e)
-
-		action = e.action
-
-		# watch for my player drawing a card
-		if action instanceof DrawCardAction and !(action instanceof BurnCardAction) and action.getOwnerId() is @getCard().getOwnerId()
-			@onDrawCardWatch(action)
-
-	onDrawCardWatch: (action) ->
-		# override me in sub classes to implement special behavior
-
-module.exports = ModifierDrawCardWatch
+module.exports = ModifierDrawCardWatch;

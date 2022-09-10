@@ -1,26 +1,47 @@
-CONFIG = require 'app/common/config'
-ModifierOpeningGambit = require './modifierOpeningGambit'
-RandomTeleportAction = require 'app/sdk/actions/randomTeleportAction'
-CardType = require 'app/sdk/cards/cardType'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const RandomTeleportAction = require('app/sdk/actions/randomTeleportAction');
+const CardType = require('app/sdk/cards/cardType');
+const _ = require('underscore');
 
-class ModifierOpeningGambitTeleportMinionsToThis extends ModifierOpeningGambit
+class ModifierOpeningGambitTeleportMinionsToThis extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitTeleportMinionsToThis";
+		this.type = "ModifierOpeningGambitTeleportMinionsToThis";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type: "ModifierOpeningGambitTeleportMinionsToThis"
-	@type: "ModifierOpeningGambitTeleportMinionsToThis"
+	onOpeningGambit() {
+		const entities = this.getGameSession().getBoard().getUnits(true);
+		return (() => {
+			const result = [];
+			for (let entity of Array.from(entities)) {
+				if (!entity.getIsGeneral() && (entity !== this.getCard())) {
+					const randomTeleportAction = new RandomTeleportAction(this.getGameSession());
+					randomTeleportAction.setOwnerId(this.getCard().getOwnerId());
+					randomTeleportAction.setSource(entity);
+					randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), this.getFXResource()));
+					randomTeleportAction.setPatternSourcePosition(this.getCard().getPosition());
+					randomTeleportAction.setTeleportPattern(CONFIG.PATTERN_3x3);
+					result.push(this.getGameSession().executeAction(randomTeleportAction));
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
+ModifierOpeningGambitTeleportMinionsToThis.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
-
-	onOpeningGambit: () ->
-		entities = @getGameSession().getBoard().getUnits(true)
-		for entity in entities
-			if !entity.getIsGeneral() and entity != @getCard()
-				randomTeleportAction = new RandomTeleportAction(@getGameSession())
-				randomTeleportAction.setOwnerId(@getCard().getOwnerId())
-				randomTeleportAction.setSource(entity)
-				randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), @getFXResource()))
-				randomTeleportAction.setPatternSourcePosition(@getCard().getPosition())
-				randomTeleportAction.setTeleportPattern(CONFIG.PATTERN_3x3)
-				@getGameSession().executeAction(randomTeleportAction)
-
-module.exports = ModifierOpeningGambitTeleportMinionsToThis
+module.exports = ModifierOpeningGambitTeleportMinionsToThis;

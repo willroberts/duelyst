@@ -1,24 +1,37 @@
-CONFIG = 				require 'app/common/config'
-ModifierBanding = 	require './modifierBanding'
-ModifierBandedRanged = 		require './modifierBandedRanged'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = 				require('app/common/config');
+const ModifierBanding = 	require('./modifierBanding');
+const ModifierBandedRanged = 		require('./modifierBandedRanged');
 
-class ModifierBandingRanged extends ModifierBanding
+class ModifierBandingRanged extends ModifierBanding {
+	static initClass() {
+	
+		this.prototype.type ="ModifierBandingRanged";
+		this.type ="ModifierBandingRanged";
+	
+		//@modifierName:"Zeal"
+	
+		//maxStacks: 1
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierZeal", "FX.Modifiers.ModifierZealRanged"];
+	}
 
-	type:"ModifierBandingRanged"
-	@type:"ModifierBandingRanged"
+	static createContextObject(options) {
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = [ModifierBandedRanged.createContextObject()];
+		return contextObject;
+	}
 
-	#@modifierName:"Zeal"
+	static getDescription(modifierContextObject) {
+		return this.description;
+	}
+}
+ModifierBandingRanged.initClass();
 
-	#maxStacks: 1
-
-	fxResource: ["FX.Modifiers.ModifierZeal", "FX.Modifiers.ModifierZealRanged"]
-
-	@createContextObject: (options = undefined) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = [ModifierBandedRanged.createContextObject()]
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		return @description
-
-module.exports = ModifierBandingRanged
+module.exports = ModifierBandingRanged;

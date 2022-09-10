@@ -1,41 +1,55 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
-Modifier = require './modifier'
-CONFIG = require 'app/common/config'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
+const Modifier = require('./modifier');
+const CONFIG = require('app/common/config');
 
 
-class ModifierOpeningGambitDamageMyGeneral extends ModifierOpeningGambit
+class ModifierOpeningGambitDamageMyGeneral extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitDamageMyGeneral";
+		this.type = "ModifierOpeningGambitDamageMyGeneral";
+	
+		this.modifierName = "Opening Gambit";
+		this.description = "Deal %X damage to your General";
+	
+		this.prototype.damageAmount = 0;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericChainLightning"];
+	}
 
-	type: "ModifierOpeningGambitDamageMyGeneral"
-	@type: "ModifierOpeningGambitDamageMyGeneral"
+	static createContextObject(damageAmount, options) {
+		const contextObject = super.createContextObject();
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	@modifierName: "Opening Gambit"
-	@description: "Deal %X damage to your General"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.damageAmount);
+		} else {
+			return this.description;
+		}
+	}
 
-	damageAmount: 0
+	onOpeningGambit() {
+		const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericChainLightning"]
+		const damageAction = new DamageAction(this.getGameSession());
+		damageAction.setOwnerId(this.getCard().getOwnerId());
+		damageAction.setSource(this.getCard());
+		damageAction.setTarget(general);
+		damageAction.setDamageAmount(this.damageAmount);
+		return this.getGameSession().executeAction(damageAction);
+	}
+}
+ModifierOpeningGambitDamageMyGeneral.initClass();
 
-	@createContextObject: (damageAmount, options) ->
-		contextObject = super()
-		contextObject.damageAmount = damageAmount
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.damageAmount
-		else
-			return @description
-
-	onOpeningGambit: () ->
-		general = @getCard().getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-
-		damageAction = new DamageAction(this.getGameSession())
-		damageAction.setOwnerId(@getCard().getOwnerId())
-		damageAction.setSource(@getCard())
-		damageAction.setTarget(general)
-		damageAction.setDamageAmount(@damageAmount)
-		@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierOpeningGambitDamageMyGeneral
+module.exports = ModifierOpeningGambitDamageMyGeneral;

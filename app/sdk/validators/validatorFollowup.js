@@ -1,133 +1,177 @@
-Logger = require("app/common/logger")
-EVENTS = require("app/common/event_types")
-Validator = require("./validator")
-ResignAction = require("app/sdk/actions/resignAction")
-EndTurnAction = require("app/sdk/actions/endTurnAction")
-PlayCardAction = require("app/sdk/actions/playCardAction")
-StopBufferingEventsAction = require("app/sdk/actions/stopBufferingEventsAction")
-RollbackToSnapshotAction = require("app/sdk/actions/rollbackToSnapshotAction")
-UtilsGameSession = require("app/common/utils/utils_game_session")
-UtilsPosition = require 'app/common/utils/utils_position'
-_ = require 'underscore'
-i18next = require("i18next")
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require("app/common/logger");
+const EVENTS = require("app/common/event_types");
+const Validator = require("./validator");
+const ResignAction = require("app/sdk/actions/resignAction");
+const EndTurnAction = require("app/sdk/actions/endTurnAction");
+const PlayCardAction = require("app/sdk/actions/playCardAction");
+const StopBufferingEventsAction = require("app/sdk/actions/stopBufferingEventsAction");
+const RollbackToSnapshotAction = require("app/sdk/actions/rollbackToSnapshotAction");
+const UtilsGameSession = require("app/common/utils/utils_game_session");
+const UtilsPosition = require('app/common/utils/utils_position');
+const _ = require('underscore');
+const i18next = require("i18next");
 
-class ValidatorFollowup extends Validator
+class ValidatorFollowup extends Validator {
+	static initClass() {
+	
+		this.prototype.type ="ValidatorFollowup";
+		this.type ="ValidatorFollowup";
+	
+		this.prototype._cardStack = null;
+	}
 
-	type:"ValidatorFollowup"
-	@type:"ValidatorFollowup"
+	// region INITIALIZE
 
-	_cardStack: null
+	constructor(gameSession) {
+		super(gameSession);
+		this._cardStack = [];
+	}
 
-	# region INITIALIZE
+	// endregion INITIALIZE
 
-	constructor: (gameSession) ->
-		super(gameSession)
-		@_cardStack = []
+	// region EVENTS
 
-	# endregion INITIALIZE
+	onEvent(event) {
+		super.onEvent(event);
 
-	# region EVENTS
+		if (event.type === EVENTS.deserialize) {
+			return this.clearCardsWithFollowup(event);
+		} else if (event.type === EVENTS.modify_action_for_validation) {
+			return this.onModifyActionForValidation(event);
+		} else if (event.type === EVENTS.added_action_to_queue) {
+			return this.onAddedActionToQueue(event);
+		}
+	}
 
-	onEvent: (event) ->
-		super(event)
+	// endregion EVENTS
 
-		if event.type == EVENTS.deserialize
-			@clearCardsWithFollowup(event)
-		else if event.type == EVENTS.modify_action_for_validation
-			@onModifyActionForValidation(event)
-		else if event.type == EVENTS.added_action_to_queue
-			@onAddedActionToQueue(event)
+	// region GETTERS / SETTERS
 
-	# endregion EVENTS
+	getCardWaitingForFollowups() {
+		return this._cardStack[this._cardStack.length - 1];
+	}
 
-	# region GETTERS / SETTERS
+	getHasCardsWithFollowup() {
+		return this._cardStack.length > 0;
+	}
 
-	getCardWaitingForFollowups: () ->
-		return @_cardStack[@_cardStack.length - 1]
+	getActionClearsFollowups(action) {
+		return action instanceof StopBufferingEventsAction || action instanceof RollbackToSnapshotAction || action instanceof EndTurnAction || action instanceof ResignAction;
+	}
 
-	getHasCardsWithFollowup: () ->
-		return @_cardStack.length > 0
+	// endregion GETTERS / SETTERS
 
-	getActionClearsFollowups: (action) ->
-		return action instanceof StopBufferingEventsAction or action instanceof RollbackToSnapshotAction or action instanceof EndTurnAction or action instanceof ResignAction
+	// region CARDS
 
-	# endregion GETTERS / SETTERS
+	clearCardsWithFollowup() {
+		if (this._cardStack.length > 0) {
+			for (let card of Array.from(this._cardStack)) {
+				card.clearFollowups();
+			}
+			return this._cardStack = [];
+		}
+	}
 
-	# region CARDS
+	pushCardWithFollowup(card) {
+		if (card) {
+			return this._cardStack.push(card);
+		}
+	}
 
-	clearCardsWithFollowup: () ->
-		if @_cardStack.length > 0
-			for card in @_cardStack
-				card.clearFollowups()
-			@_cardStack = []
+	popCardWaitingForFollowups() {
+		if (this.getHasCardsWithFollowup()) {
+			const card = this._cardStack.pop();
+			return card;
+		}
+	}
 
-	pushCardWithFollowup: (card) ->
-		if card
-			@_cardStack.push(card)
+	// endregion CARDS
 
-	popCardWaitingForFollowups: () ->
-		if @getHasCardsWithFollowup()
-			card = @_cardStack.pop()
-			return card
+	// region EVENTS
 
-	# endregion CARDS
+	onModifyActionForValidation(event) {
+		const {
+            action
+        } = event;
+		if ((action != null) && action.getIsValid() && !action.getIsImplicit() && !this.getActionClearsFollowups(action)) {
+			// check against current card waiting for followups
+			const cardWaitingForFollowups = this.getCardWaitingForFollowups();
+			if ((cardWaitingForFollowups != null) && cardWaitingForFollowups.getIsActionForCurrentFollowup(action)) {
+				// action is the current followup this card is waiting for
+				// inject followup properties into card so that it is ready for validation and play
+				// this is done here instead of by the action creating the card
+				// because doing it this way is far better for anti cheat
+				return cardWaitingForFollowups.injectFollowupPropertiesIntoCard(action.getCard());
+			}
+		}
+	}
 
-	# region EVENTS
+	onValidateAction(event) {
+		super.onValidateAction(event);
+		const {
+            action
+        } = event;
+		if ((action != null) && action.getIsValid() && !action.getIsImplicit() && !this.getActionClearsFollowups(action)) {
+			// check against current card waiting for followups
+			const cardWaitingForFollowups = this.getCardWaitingForFollowups();
+			if (cardWaitingForFollowups != null) {
+				// always validate against current followup
+				const currentFollowupCard = cardWaitingForFollowups.getCurrentFollowupCard();
+				const currentFollowupSourcePosition = currentFollowupCard.getFollowupSourcePosition();
+				// a followup action is only valid if:
+				// - the played card's id matches the id of the current followup (already checked)
+				// - the played card's followup options must match the original followup options of the current followup
+				// - the played card's target position is a valid target position
+				if (!cardWaitingForFollowups.getIsActionForCurrentFollowup(action)) {
+					return this.invalidateAction(action, action.getTargetPosition(), i18next.t("validators.invalid_followup_message"));
+				} else if ((action.sourcePosition.x !== currentFollowupSourcePosition.x) || (action.sourcePosition.y !== currentFollowupSourcePosition.y)) {
+					return this.invalidateAction(action, action.getSourcePosition(), i18next.t("validators.invalid_followup_source_message"));
+				} else if (!UtilsPosition.getIsPositionInPositions(currentFollowupCard.getValidTargetPositions(), action.targetPosition)) {
+					return this.invalidateAction(action, action.getTargetPosition(), i18next.t("validators.invalid_followup_target_message"));
+				}
+			}
+		}
+	}
 
-	onModifyActionForValidation:(event) ->
-		action = event.action
-		if action? and action.getIsValid() and !action.getIsImplicit() and !@getActionClearsFollowups(action)
-			# check against current card waiting for followups
-			cardWaitingForFollowups = @getCardWaitingForFollowups()
-			if cardWaitingForFollowups? and cardWaitingForFollowups.getIsActionForCurrentFollowup(action)
-				# action is the current followup this card is waiting for
-				# inject followup properties into card so that it is ready for validation and play
-				# this is done here instead of by the action creating the card
-				# because doing it this way is far better for anti cheat
-				cardWaitingForFollowups.injectFollowupPropertiesIntoCard(action.getCard())
+	onAddedActionToQueue(event) {
+		const {
+            action
+        } = event;
+		if (this.getActionClearsFollowups(action)) {
+			return this.clearCardsWithFollowup();
+		} else if (action && !action.getIsImplicit()) {
+			// check against current card waiting for followups
+			const cardWaitingForFollowups = this.getCardWaitingForFollowups();
+			if (cardWaitingForFollowups != null) {
+				// remove current card's current followup as it has been added to queue
+				cardWaitingForFollowups.removeCurrentFollowup();
+				if (!cardWaitingForFollowups.getHasFollowups()) {
+					// pop current card off the stack if it has no more followups remaining
+					this.popCardWaitingForFollowups();
+				}
+			}
 
-	onValidateAction:(event) ->
-		super(event)
-		action = event.action
-		if action? and action.getIsValid() and !action.getIsImplicit() and !@getActionClearsFollowups(action)
-			# check against current card waiting for followups
-			cardWaitingForFollowups = @getCardWaitingForFollowups()
-			if cardWaitingForFollowups?
-				# always validate against current followup
-				currentFollowupCard = cardWaitingForFollowups.getCurrentFollowupCard()
-				currentFollowupSourcePosition = currentFollowupCard.getFollowupSourcePosition()
-				# a followup action is only valid if:
-				# - the played card's id matches the id of the current followup (already checked)
-				# - the played card's followup options must match the original followup options of the current followup
-				# - the played card's target position is a valid target position
-				if !cardWaitingForFollowups.getIsActionForCurrentFollowup(action)
-					@invalidateAction(action, action.getTargetPosition(), i18next.t("validators.invalid_followup_message"))
-				else if action.sourcePosition.x != currentFollowupSourcePosition.x or action.sourcePosition.y != currentFollowupSourcePosition.y
-					@invalidateAction(action, action.getSourcePosition(), i18next.t("validators.invalid_followup_source_message"))
-				else if !UtilsPosition.getIsPositionInPositions(currentFollowupCard.getValidTargetPositions(), action.targetPosition)
-					@invalidateAction(action, action.getTargetPosition(), i18next.t("validators.invalid_followup_target_message"))
+			if (action instanceof PlayCardAction) {
+				const card = action.getCard();
+				if (card && card.getHasFollowups()) {
+					// card has followups
+					// push it onto the stack
+					return this.pushCardWithFollowup(card);
+				}
+			}
+		}
+	}
+}
+ValidatorFollowup.initClass();
 
-	onAddedActionToQueue: (event) ->
-		action = event.action
-		if @getActionClearsFollowups(action)
-			@clearCardsWithFollowup()
-		else if action and !action.getIsImplicit()
-			# check against current card waiting for followups
-			cardWaitingForFollowups = @getCardWaitingForFollowups()
-			if cardWaitingForFollowups?
-				# remove current card's current followup as it has been added to queue
-				cardWaitingForFollowups.removeCurrentFollowup()
-				if !cardWaitingForFollowups.getHasFollowups()
-					# pop current card off the stack if it has no more followups remaining
-					@popCardWaitingForFollowups()
+	// endregion events
 
-			if action instanceof PlayCardAction
-				card = action.getCard()
-				if card and card.getHasFollowups()
-					# card has followups
-					# push it onto the stack
-					@pushCardWithFollowup(card)
-
-	# endregion events
-
-module.exports = ValidatorFollowup
+module.exports = ValidatorFollowup;

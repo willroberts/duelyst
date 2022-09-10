@@ -1,22 +1,44 @@
-CardType = require 'app/sdk/cards/cardType'
-ModifierSilence = 		require 'app/sdk/modifiers/modifierSilence'
-SpellSpawnEntityRandomlyAroundTarget = require './spellSpawnEntityRandomlyAroundTarget.coffee'
-_ = require 'underscore'
-Cards = require '../cards/cardsLookupComplete.coffee'
-UtilsGameSession = require '../../common/utils/utils_game_session.coffee'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CardType = require('app/sdk/cards/cardType');
+const ModifierSilence = 		require('app/sdk/modifiers/modifierSilence');
+const SpellSpawnEntityRandomlyAroundTarget = require('./spellSpawnEntityRandomlyAroundTarget.coffee');
+const _ = require('underscore');
+const Cards = require('../cards/cardsLookupComplete.coffee');
+const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
 
-class SpellSilenceAndSpawnEntityNearby extends SpellSpawnEntityRandomlyAroundTarget
+class SpellSilenceAndSpawnEntityNearby extends SpellSpawnEntityRandomlyAroundTarget {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Unit;
+	}
 
-	targetType: CardType.Unit
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		const applyEffectPositions = this.getApplyEffectPositions();
 
-		applyEffectPositions = @getApplyEffectPositions()
+		return (() => {
+			const result = [];
+			for (let position of Array.from(applyEffectPositions)) {
+				const unit = board.getUnitAtPosition(position);
+				if ((unit != null) && (unit.getOwnerId() !== this.getOwnerId())) {
+					result.push(this.getGameSession().applyModifierContextObject(ModifierSilence.createContextObject(), unit));
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
+SpellSilenceAndSpawnEntityNearby.initClass();
 
-		for position in applyEffectPositions
-			unit = board.getUnitAtPosition(position)
-			if unit? and unit.getOwnerId() != @getOwnerId()
-				@getGameSession().applyModifierContextObject(ModifierSilence.createContextObject(), unit)
-
-module.exports = SpellSilenceAndSpawnEntityNearby
+module.exports = SpellSilenceAndSpawnEntityNearby;

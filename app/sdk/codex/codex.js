@@ -1,71 +1,95 @@
-# do not add this file to any resource package
-# it is handled by special processing
-RSX = require('app/data/resources')
-CodexChapters = require './codexChapterLookup'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+// do not add this file to any resource package
+// it is handled by special processing
+const RSX = require('app/data/resources');
+const CodexChapters = require('./codexChapterLookup');
 
-class Codex
+class Codex {
+	static initClass() {
+	
+		this.chapters = {};
+	}
 
-	@chapters: {}
+	static chapterForIdentifier(identifier) {
+		const chapter = this.chapters[identifier];
+		if (chapter) {
+			return chapter;
+		} else {
+			return console.error(`Codex.chapterForIdentifier - Unknown lore identifier: ${identifier}`.red);
+		}
+	}
 
-	@chapterForIdentifier: (identifier) ->
-		chapter = @chapters[identifier]
-		if chapter
-			return chapter
-		else
-			console.error "Codex.chapterForIdentifier - Unknown lore identifier: #{identifier}".red
+	static getAllChapters() {
+		const chapters = [];
 
-	@getAllChapters: () ->
-		chapters = []
+		const chapterIdentifiers = Object.keys(Codex.chapters);
+		for (let chapterIdentifier of Array.from(chapterIdentifiers)) {
+			const chapter = this.chapterForIdentifier(chapterIdentifier);
+			if (chapter != null) { chapters.push(chapter); }
+		}
 
-		chapterIdentifiers = Object.keys(Codex.chapters)
-		for chapterIdentifier in chapterIdentifiers
-			chapter = @chapterForIdentifier(chapterIdentifier)
-			if chapter? then chapters.push(chapter)
+		return chapters;
+	}
 
-		return chapters
+	/**
+	* Returns the chapter ids that should be given for a player UPON reaching the provided game count
+	* @public
+  * @param	{ints}		gameCount 		Game count the player has reached
+	* @return	{Array(int)}		identifiers of chapters a player should be given (from CodexChapterLookup)
+	*/
+	static chapterIdsAwardedForGameCount(gameCount) {
+		const awardedChapterIds = [];
 
-	###*
-	# Returns the chapter ids that should be given for a player UPON reaching the provided game count
-	# @public
-  # @param	{ints}		gameCount 		Game count the player has reached
-	# @return	{Array(int)}		identifiers of chapters a player should be given (from CodexChapterLookup)
-	###
-	@chapterIdsAwardedForGameCount: (gameCount) ->
-		awardedChapterIds = []
+		if ((gameCount == null)) {
+			gameCount = 0;
+		}
 
-		if not gameCount?
-			gameCount = 0
+		const chapterIdentifiers = Object.keys(Codex.chapters);
+		for (let chapterIdentifier of Array.from(chapterIdentifiers)) {
+			const chapter = this.chapterForIdentifier(chapterIdentifier);
+			if ((chapter != null) && (chapter.gamesRequiredToUnlock === gameCount) && chapter.enabled) {
+				awardedChapterIds.push(chapterIdentifier);
+			}
+		}
 
-		chapterIdentifiers = Object.keys(Codex.chapters)
-		for chapterIdentifier in chapterIdentifiers
-			chapter = @chapterForIdentifier(chapterIdentifier)
-			if chapter? && chapter.gamesRequiredToUnlock == gameCount && chapter.enabled
-				awardedChapterIds.push(chapterIdentifier)
+		return awardedChapterIds;
+	}
 
-		return awardedChapterIds
+	/**
+	* Returns the chapter ids that should be owned by a player with the provided game count
+	* @public
+  * @param	{ints}		gameCount 		Game count the player has reached
+	* @return	{Array(int)}		identifiers of chapters a player should own (from CodexChapterLookup)
+	*/
+	static chapterIdsOwnedByGameCount(gameCount) {
+		const ownedChapterIds = [];
 
-	###*
-	# Returns the chapter ids that should be owned by a player with the provided game count
-	# @public
-  # @param	{ints}		gameCount 		Game count the player has reached
-	# @return	{Array(int)}		identifiers of chapters a player should own (from CodexChapterLookup)
-	###
-	@chapterIdsOwnedByGameCount: (gameCount) ->
-		ownedChapterIds = []
+		if ((gameCount == null)) {
+			gameCount = 0;
+		}
 
-		if not gameCount?
-			gameCount = 0
+		const chapterIdentifiers = Object.keys(Codex.chapters);
+		for (let chapterIdentifier of Array.from(chapterIdentifiers)) {
+			const chapter = this.chapterForIdentifier(chapterIdentifier);
+			if ((chapter != null) && (chapter.gamesRequiredToUnlock <= gameCount) && chapter.enabled) {
+				ownedChapterIds.push(chapterIdentifier);
+			}
+		}
 
-		chapterIdentifiers = Object.keys(Codex.chapters)
-		for chapterIdentifier in chapterIdentifiers
-			chapter = @chapterForIdentifier(chapterIdentifier)
-			if chapter? && chapter.gamesRequiredToUnlock <= gameCount && chapter.enabled
-				ownedChapterIds.push(chapterIdentifier)
+		return ownedChapterIds;
+	}
+}
+Codex.initClass();
 
-		return ownedChapterIds
-
-# setup chapters data
-c = Codex.chapters
+// setup chapters data
+const c = Codex.chapters;
 
 c[CodexChapters.Chapter1] = {
 	id: CodexChapters.Chapter1,
@@ -73,7 +97,7 @@ c[CodexChapters.Chapter1] = {
 	description: "0 AE",
 	img: RSX.chapter1_preview.img,
 	background: RSX.chapter1_background.img,
-	#audio: RSX.chapter1_audio.audio,
+	//audio: RSX.chapter1_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 0,
 	text: [
@@ -86,7 +110,7 @@ c[CodexChapters.Chapter1] = {
 		"Those few resilient creatures that survived found sanctuary underground or adapted to the unforgiving hellscapes of Mythron’s volcanic pits. But while the cataclysm wiped out countless species, it ushered in a new one as well. At the center of the impact crater, the star seed sent its cosmic roots into the very core of the planet, drawing on the magical energies it found there and transforming into the Great Tree of Eyos.",
 		"And that would bring changes of an even greater magnitude."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter2] = {
 	id: CodexChapters.Chapter2,
@@ -94,7 +118,7 @@ c[CodexChapters.Chapter2] = {
 	description: "10,000 AE",
 	img: RSX.chapter2_preview.img,
 	background: RSX.chapter2_background.img,
-	#audio: RSX.chapter2_audio.audio,
+	//audio: RSX.chapter2_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 0,
 	text: [
@@ -104,7 +128,7 @@ c[CodexChapters.Chapter2] = {
 		"In the Northern Whyte Mountains along Halcyar, they created ancient races like the elusive Snow Chasers and the fierce Draugar Giants. To the East, in Xenkai, they transformed the interconnected network of sentient bamboo into the Whistling Blades and the graceful orange cranes in the Ang’Mar Glades into the life-giving Zurael.",
 		"At the end of that first Great Blooming, the Great Tree of Eyos returned to a state of rest, to rebuild its magical energy, but not before thirteen perfect petals drifted to the volcanic region of Magaari. They landed on the exposed metallic chrysalises of the males of a rare species of sentient drake-like creatures protected by iridium exoskeletons. Deep within the volcanic mountain, untouched and untransformed, their Queen Mother would die alone, forever removed from the rest of her species. But on the surface, these thirteen males would become the immortal Magmar."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter3] = {
 	id: CodexChapters.Chapter3,
@@ -112,7 +136,7 @@ c[CodexChapters.Chapter3] = {
 	description: "10,000 - 20,000 AE",
 	img: RSX.chapter3_preview.img,
 	background: RSX.chapter3_background.img,
-	#audio: RSX.chapter3_audio.audio,
+	//audio: RSX.chapter3_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 0,
 	text: [
@@ -122,7 +146,7 @@ c[CodexChapters.Chapter3] = {
 		"Unlike other races, the Magmar learned to be still and commune with the Great Tree of Eyos, sometimes spending several kalpas — hundreds of years — to achieve dialogue with it. Thus they learned about the Great Blooming and began to worship and celebrate Eyos as the ultimate bringer of birth, growth, and rebirth.",
 		"When meditating together and bonding with the Great Tree, the Thirteen Aspects could see out in the world and even glimpse the ephemeral tapestry of time, but doing so cost them their individual identity, their sense of self. Ultimately, they were unable to achieve complete ascension or see more than a hint of the future. Thus, they were cursed to forever repeat their lives, never fully controlling their own destinies."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter4] = {
 	id: CodexChapters.Chapter4,
@@ -130,7 +154,7 @@ c[CodexChapters.Chapter4] = {
 	description: "20,000 - 22,000 AE",
 	img: RSX.chapter4_preview.img,
 	background: RSX.chapter4_background.img,
-	#audio: RSX.chapter4_audio.audio,
+	//audio: RSX.chapter4_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 0,
 	text: [
@@ -138,7 +162,7 @@ c[CodexChapters.Chapter4] = {
 		"The Aestari had a natural proclivity for wielding and channeling arcane energies, but it manifested differently in the males and the females. Aestari females were better able to focus and channel magic in a continuous sustained stream called The Binding. They could concentrate and move objects far longer than the males. Conversely, the males could amplify the intensity of magic, but only in shorter bursts, called The Surging. This gave them a natural ability to phase and summon objects rather than slowly move them. But The Surging consumed magical power rapidly, requiring them to either extract more energy from crystals or recover naturally by refraining from using magic until they had regained their strength.",
 		"For some Aestari males, however, The Surging fed an innate, insatiable desire for more — to reach higher highs, to achieve greater feats, to rise above the world. But the highest levels of arcane mastery were only attainable through the power of the crystals, which enabled them to achieve both great intensity and endurance. Most became dependent on the energy of the crystals, unable to accept their natural limitations and return to their mundane lives. The insatiable hunger for more magical power eventually consumed their everyday thoughts."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter5] = {
 	id: CodexChapters.Chapter5,
@@ -146,7 +170,7 @@ c[CodexChapters.Chapter5] = {
 	description: "20,000 - 22,000 AE",
 	img: RSX.chapter5_preview.img,
 	background: RSX.chapter5_background.img,
-	#audio: RSX.chapter5_audio.audio,
+	//audio: RSX.chapter5_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 0,
 	text: [
@@ -155,7 +179,7 @@ c[CodexChapters.Chapter5] = {
 		"The underworld was deadly and treacherous, and the creatures that adapted to it were equally so. But the Echoing Depths offered immense treasures as well — ancient crystals formed during the first bloom of the Great Tree of Eyos: smoky purple gems that formed alongside the plant-like Inkhorn, black Amethysts that accompanied Dark Creep Moss, and even the rare Ghost Azaleas and their potent, concentrated magical energies. The Inxikrah had learned that these crystals would imbue them with properties of their prey through a transformative ritual they called Krah’Zul.",
 		"During each shedding cycle, the Inxikrah created ever deadlier forms of themselves, incorporating the most lethal elements of their previously consumed prey. Over time, as the Inxikrah continued to absorb their prey, the species began to diverge. The males sought as quarry the most dangerous predators, and grew more and more vicious with each generation. The females hunted not for sport, but to feed themselves and their young. While they could be devastatingly violent in defense of their brood, they never developed the Krah’Zul- heightened malevolence of the males."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter6] = {
 	id: CodexChapters.Chapter6,
@@ -163,7 +187,7 @@ c[CodexChapters.Chapter6] = {
 	description: "22,000 - 22,300 AE",
 	img: RSX.chapter6_preview.img,
 	background: RSX.chapter6_background.img,
-	#audio: RSX.chapter6_audio.audio,
+	//audio: RSX.chapter6_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 1,
 	text: [
@@ -178,7 +202,7 @@ c[CodexChapters.Chapter6] = {
 		"- School of Order: The Arcanysts harnessed the power contained within magical components and scripts, discovering spells that enhanced one’s natural abilities, and inventing mixtures such as the highly sought after Sundrop Elixir and Aurora’s Tears.",
 		"During this Age of Wonder, the first Aestari Chroniclers explored the mountains beyond their central continent, recording all they discovered. This Age of Wonder also saw the Magmar grow into their rightful role as Mythron’s protectors, to meditate, interpret, and guide the Aestari leaders."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter7] = {
 	id: CodexChapters.Chapter7,
@@ -186,7 +210,7 @@ c[CodexChapters.Chapter7] = {
 	description: "22,000 - 22,300 AE",
 	img: RSX.chapter7_preview.img,
 	background: RSX.chapter7_background.img,
-	#audio: RSX.chapter7_audio.audio,
+	//audio: RSX.chapter7_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 2,
 	text: [
@@ -196,7 +220,7 @@ c[CodexChapters.Chapter7] = {
 		"The elation and the rush of killing and transformation became a ritual, taking on a sacred significance that made the Inxikrah even more rapacious. The male Inxikrah became increasingly defined by an ethos of cruelty. Lesser sentient creatures and captured enemies from raids became slaves or playthings, including the Inxikrah’s less-evolved cousins, the Serpenti, which the Inxikrah often transformed into tortured Darkspine Elementals and familiar-like Wraithlings.",
 		"Meanwhile, the female Inxykree grew more social and increasingly repulsed by the Inxikrah’s random brutality. Over generations, the differences grew so pronounced they were like two separate species, the male Inxikrah and the female Inxykree, whose only contact was to perpetuate their species."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter8] = {
 	id: CodexChapters.Chapter8,
@@ -204,7 +228,7 @@ c[CodexChapters.Chapter8] = {
 	description: "22,300 - 22,400 AE",
 	img: RSX.chapter8_preview.img,
 	background: RSX.chapter8_background.img,
-	#audio: RSX.chapter8_audio.audio,
+	//audio: RSX.chapter8_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 3,
 	text: [
@@ -213,7 +237,7 @@ c[CodexChapters.Chapter8] = {
 		"It would mean forsaking forever her harmonious meditation and near immortality. It would cost her ongoing ascension, her connection with the Great Tree, and even her ability to Horizon Walk. More importantly, she wondered if her actions to spare the world such suffering — to save nine centuries of unborn lives — could bring about something unimaginably worse. Kaon struggled with the paradox of the Prophecy.",
 		"In the end, she decided that the chance to prevent such suffering was the only path forward, even though the task it demanded was too horrific to speak of. The demand of the Prophecy was that the Heart of the Great Tree of Eyos must be removed — cut out — and placed as far away as possible, never to return to Aestari soil again."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter9] = {
 	id: CodexChapters.Chapter9,
@@ -221,7 +245,7 @@ c[CodexChapters.Chapter9] = {
 	description: "22,300 - 22,400 AE",
 	img: RSX.chapter9_preview.img,
 	background: RSX.chapter9_background.img,
-	#audio: RSX.chapter9_audio.audio,
+	//audio: RSX.chapter9_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 4,
 	text: [
@@ -234,7 +258,7 @@ c[CodexChapters.Chapter9] = {
 		"Kaon turned to the Vanar elites and said, “Whoever defeats this Magmar shall join the Senerai.”",
 		"The Magmar was monstrously massive, but when the warriors came at him, he maneuvered with blinding speed and subtle grace. He touched no one but let none touch him. After a full day, as the last Vanar finally collapsed in exhaustion, Kaon said, “Enough. Starhorn, most honored Magmar, you are indeed the Seed of Dreams, the Seventh Star.”"
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter10] = {
 	id: CodexChapters.Chapter10,
@@ -242,7 +266,7 @@ c[CodexChapters.Chapter10] = {
 	description: "22,402 AE",
 	img: RSX.chapter10_preview.img,
 	background: RSX.chapter10_background.img,
-	#audio: RSX.chapter10_audio.audio,
+	//audio: RSX.chapter10_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 5,
 	text: [
@@ -251,7 +275,7 @@ c[CodexChapters.Chapter10] = {
 		"They were the first Aestari invited to Magaari, the Magmar homeland, to behold the Golden Chrysalis containing the remains of the last Queen Mother. They travelled along the Yquem River, allying themselves with the Silverbeaks near Raithline Lake against a horde of Mirkblood Devourers. They witnessed Azurite Lions hunting across the Alluvial Plains. And after many years of encountering strange creatures, discovering countless locales, and witnessing mysterious cultures, the Senerai finally arrived at Halcyar: the Northern-most realm — far past the frost-carved Whyte Mountains, and more importantly, far beyond the prying reach of Aestaria.",
 		"They found a distant peak enveloped by the magical Northern Aurora, hidden and shielded on all sides by hundreds of identical mountains. They named it Deladriss Peake, in honor of Kaon, and there they planted the Heartwood. A sapling immediately sprouted from the ground, its young leaves drawing in the crisp starlight. They named the new tree Aperion. At that exact moment, Kaon dematerialized from the living world. All Aestaria was plunged into mourning. The once great tree, now withered and weak, released red droplets of crimson sap, the Tears of Eyos, and forever after was known as The Weeping Tree."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter11] = {
 	id: CodexChapters.Chapter11,
@@ -259,7 +283,7 @@ c[CodexChapters.Chapter11] = {
 	description: "22,402 AE",
 	img: RSX.chapter11_preview.img,
 	background: RSX.chapter11_background.img,
-	#audio: RSX.chapter11_audio.audio,
+	//audio: RSX.chapter11_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 6,
 	text: [
@@ -269,7 +293,7 @@ c[CodexChapters.Chapter11] = {
 		"Starhorn disagreed, and he wove the location of Deladriss Peake into the Magmar’s sacred song, the Dance of Dreams, so that anyone deemed worthy by The Thirteen Aspects could learn of Aperion’s whereabouts. Kaon Deladriss had also disagreed with Songweaver Eurielle’s decision and imbued the secret within Swordmaster Zwei’s dual-wielding blades, Solstice and Winterblade. Before mysteriously vanishing, she had secretly dispatched the female Vanar to help guard Aperion’s clandestine location.",
 		"At Deladriss Peake, young Aperion dropped its first potent petals, transforming the morning mist into the first of the mana-rich Crystal Wisps, which allowed the Seidir to access to the Voices of Winds, including the ability to morph into various animal aspects. Thus they protected the Great Tree of Aperion, fulfilling the Prophecy of Ages in solitude until the unexpected arrival of the Vanar reinforcements."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter12] = {
 	id: CodexChapters.Chapter12,
@@ -277,7 +301,7 @@ c[CodexChapters.Chapter12] = {
 	description: "22,402 - 22,610 AE",
 	img: RSX.chapter12_preview.img,
 	background: RSX.chapter12_background.img,
-	#audio: RSX.chapter12_audio.audio,
+	//audio: RSX.chapter12_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 7,
 	text: [
@@ -288,7 +312,7 @@ c[CodexChapters.Chapter12] = {
 		"The Aestari people were furious. Many felt they were being oppressed, that the mandates violated their rights and fundamental Aestari beliefs. Some had grown so dependent on the crystals that they became physically ill without them. Aestaris hoarded, smuggled, and stole crystals from neighboring towns.",
 		"Some scoured the surrounding Sundrop Mountains, desperately seeking more crystals to satiate their unceasing hunger. Other groups simply left Aestaria, crossing the treacherous mountains in pursuit of their own destinies, and new sources of crystals."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter13] = {
 	id: CodexChapters.Chapter13,
@@ -296,7 +320,7 @@ c[CodexChapters.Chapter13] = {
 	description: "22,610 - 22,640 AE",
 	img: RSX.chapter13_preview.img,
 	background: RSX.chapter13_background.img,
-	#audio: RSX.chapter13_audio.audio,
+	//audio: RSX.chapter13_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 8,
 	text: [
@@ -307,7 +331,7 @@ c[CodexChapters.Chapter13] = {
 		"Despite the scarcity of water, Akram’s plentiful metals attracted the best Aestari craftsmen. The metallurgic arts flourished, producing advances that soon outstripped Aestari technologies. From among this new breed of craftsmen emerged one particularly brilliant Aestari: Atar.",
 		"With unparalleled speed, he swiftly ascended the Ostracon’s ranks, earning the titles of Grand Loremaster, High Artificer, and Prime Arcanyst. He was also a tireless explorer who would one day learn that Akram had as-of-yet undiscovered resources more precious than anyone could have previously imagined."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter14] = {
 	id: CodexChapters.Chapter14,
@@ -315,7 +339,7 @@ c[CodexChapters.Chapter14] = {
 	description: "22,640 - 22,670 AE",
 	img: RSX.chapter14_preview.img,
 	background: RSX.chapter14_background.img,
-	#audio: RSX.chapter14_audio.audio,
+	//audio: RSX.chapter14_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 9,
 	text: [
@@ -327,7 +351,7 @@ c[CodexChapters.Chapter14] = {
 		"Years later they would join the star crystals with the sand silica to open portals to other micro-dimensions, forge the first Portal Obelysks, and summon the ephemeral Wind Dervishes, silica-based races of the Silhouette Tracers from the Sea of Dust, and the legendary Jax. Atar's final creations were the flying Wind Shrikes and Mirror Masters, which could organically replicate anything before them.",
 		"But his most important legacy was that the Vetruvians, rather than searching for power solely from the Great Tree, discovered that the true source of power came from the stars themselves."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter15] = {
 	id: CodexChapters.Chapter15,
@@ -335,7 +359,7 @@ c[CodexChapters.Chapter15] = {
 	description: "22,640 - 22,700 AE",
 	img: RSX.chapter15_preview.img,
 	background: RSX.chapter15_background.img,
-	#audio: RSX.chapter15_audio.audio,
+	//audio: RSX.chapter15_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 10,
 	text: [
@@ -347,7 +371,7 @@ c[CodexChapters.Chapter15] = {
 		"Although they could not transform into the animals themselves — like the Vanar — they could inherit the abilities and traits of their representative spirit animal. Some Songhai rulers later came to believe they were the physical descendants of their patron animal, including Kaleos the Ghost Tiger, Gen-Bo the Sable Tortoise, and Taegon the Citrine Dragon.",
 		"But these were not the only emigrants to Xenkai. Foreseeing the destruction of Aestaria and the birth of a future hero on the continent of Xenkai, the Chakri Avatars journeyed to the isolated Saberspine Mountains. Hidden on its steepest slopes, they built the Chakri Monastery, where they stayed, meditating in solitude, honing their skills, ready to return in Mythron's time of need."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter16] = {
 	id: CodexChapters.Chapter16,
@@ -355,7 +379,7 @@ c[CodexChapters.Chapter16] = {
 	description: "22,403 - 22,765 AE",
 	img: RSX.chapter16_preview.img,
 	background: RSX.chapter16_background.img,
-	#audio: RSX.chapter16_audio.audio,
+	//audio: RSX.chapter16_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 12,
 	text: [
@@ -366,7 +390,7 @@ c[CodexChapters.Chapter16] = {
 		"The continents continued to develop into intricate civilizations, further enriching Mythron’s already diverse cultural tapestry. As the settlements evolved into new nations with their own unique identities, they remained under Aestaria’s direct control. At first.",
 		"Over the centuries, however, the strength and power of the Aestari colonies approached that of Aestaria itself. The central government’s control lessened. Eventually, inevitably, these nations would establish their independence, giving rise to the Lyonar Kingdoms on Celandine, the Songhai Empire in Xenkai, and the Vetruvian Imperium on Akram. But not yet..."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter17] = {
 	id: CodexChapters.Chapter17,
@@ -374,7 +398,7 @@ c[CodexChapters.Chapter17] = {
 	description: "22,465 - 22,745 AE",
 	img: RSX.chapter17_preview.img,
 	background: RSX.chapter17_background.img,
-	#audio: RSX.chapter17_audio.audio,
+	//audio: RSX.chapter17_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 14,
 	text: [
@@ -388,7 +412,7 @@ c[CodexChapters.Chapter17] = {
 		"Seeking a way to reassert Aestari hegemony, he conceived of a plan to build a massive, towering structure that would not only symbolize Aestari primacy and dominance, it would ensure it for millennia to come.",
 		"He called it The Monolith."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter18] = {
 	id: CodexChapters.Chapter18,
@@ -396,7 +420,7 @@ c[CodexChapters.Chapter18] = {
 	description: "22,745 - 22,870 AE",
 	img: RSX.chapter18_preview.img,
 	background: RSX.chapter18_background.img,
-	#audio: RSX.chapter18_audio.audio,
+	//audio: RSX.chapter18_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 16,
 	text: [
@@ -408,7 +432,7 @@ c[CodexChapters.Chapter18] = {
 		"Rallying the common people behind him under the banner of progress and Aestari pride, Sargos publicly denounced The Thirteen Aspects for trying to maintain the status quo at the expense of the Aestari people. He allocated a large percentage of harvested crystals to building the Monolith, but at the same time rescinded the First and Second and Third Mandates, giving the people once more unfettered access to the crystals.",
 		"The popularity of Emperor Sargos and his Monolith soared as the Aestari people envisioned a limitless supply of magical power, and a glorious new world order."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter19] = {
 	id: CodexChapters.Chapter19,
@@ -416,7 +440,7 @@ c[CodexChapters.Chapter19] = {
 	description: "22,765 AE",
 	img: RSX.chapter19_preview.img,
 	background: RSX.chapter19_background.img,
-	#audio: RSX.chapter19_audio.audio,
+	//audio: RSX.chapter19_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 18,
 	text: [
@@ -428,7 +452,7 @@ c[CodexChapters.Chapter19] = {
 		"Vaath returned to Magaari, where he tamed the wild Makantor beasts near Mokvalar and used his magic to evolve creatures in the secluded Beastlands, metamorphosing them into the first Kolossi.",
 		"He used Star Crystals to create new types of Golems near the Stormmetal regions and built the Amberhorn Citadel, where he invited all the sentient creatures on Magaari to join him. Valknu remained in the Grand Trianon with Emperor Sargos, awaiting the encroaching darkness."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter20] = {
 	id: CodexChapters.Chapter20,
@@ -436,7 +460,7 @@ c[CodexChapters.Chapter20] = {
 	description: "22,745 - 22,870 AE",
 	img: RSX.chapter20_preview.img,
 	background: RSX.chapter20_background.img,
-	#audio: RSX.chapter20_audio.audio,
+	//audio: RSX.chapter20_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 20,
 	text: [
@@ -446,7 +470,7 @@ c[CodexChapters.Chapter20] = {
 		"As part of the Inner Council, Lord Marshall Rasha supported the Emperor’s view that construction of the Monolith should continue to completion. Rasha agreed it was critical that Aestaria not be dependent on external resources in the future. However, he also thought Aestaria was weakened by its reliance on foreign trade and the mercantile class.",
 		"He believed a simpler strategy to meet Aestaria’s needs was to take what it wanted using its unrivaled military. Out of the Fists of Akrane, he developed the Kurikan, or Swift Wind, a secret sect of elite assassin spies answerable only to him. Valknu warned Sargos of Rasha’s growing power, but Sargos no longer trusted the Magmar or their motives and quickly dismissed the warnings as just another one of their misleading ploys."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter21] = {
 	id: CodexChapters.Chapter21,
@@ -454,7 +478,7 @@ c[CodexChapters.Chapter21] = {
 	description: "22,885 - 22,905 AE",
 	img: RSX.chapter21_preview.img,
 	background: RSX.chapter21_background.img,
-	#audio: RSX.chapter21_audio.audio,
+	//audio: RSX.chapter21_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 22,
 	text: [
@@ -466,7 +490,7 @@ c[CodexChapters.Chapter21] = {
 		"Rasha proclaimed himself the High Emperor, the Lord Magnus. He renamed Aestaria, “The Eternal Empire,” believing himself the fulfillment of the Prophecy of Ages. As Rasha’s madness and addiction made him increasingly brutal, stories of his opponents’ imprisonment and slaughter spread, entire families murdered, their ancestral homes burned to the ground.",
 		"Some Aestari rebels hid in the mountains, but many more fled across the increasingly turbulent oceans. A small number even reached Kaero and the other continents, but many more drowned or were hunted down. As the unfinished Monolith lay all but forgotten, Rasha and his armies turned their attention outward."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter22] = {
 	id: CodexChapters.Chapter22,
@@ -474,7 +498,7 @@ c[CodexChapters.Chapter22] = {
 	description: "22,905 - 22,915 AE",
 	img: RSX.chapter22_preview.img,
 	background: RSX.chapter22_background.img,
-	#audio: RSX.chapter22_audio.audio,
+	//audio: RSX.chapter22_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 24,
 	text: [
@@ -484,7 +508,7 @@ c[CodexChapters.Chapter22] = {
 		"As his ships set sail, many of Rasha’s staunchest supporters were beginning to doubt his sanity. But he landed all of his capital warships on the beaches of Kaero, without a single loss. To the Vetruvians’ shock and horror, Rasha’s fifty thousand troops overtook the city in a matter of days. His success fanned the flames of his burning madness and bolstered his certainty that he was the embodiment of a great destiny.",
 		"High Emperor Rasha and his troops unleashed a wanton orgy of destruction, slaughtering men, women, and children, pillaging the ancient city of Kaero and razing the revered Ostracon. As Rasha’s army swept southward, taking Tyvia and Murani, pillaging everyone in their wake, even his gravest doubters came to believe in his invincibility."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter23] = {
 	id: CodexChapters.Chapter23,
@@ -492,7 +516,7 @@ c[CodexChapters.Chapter23] = {
 	description: "22,905 - 22,915 AE",
 	img: RSX.chapter23_preview.img,
 	background: RSX.chapter23_background.img,
-	#audio: RSX.chapter23_audio.audio,
+	//audio: RSX.chapter23_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 26,
 	text: [
@@ -503,7 +527,7 @@ c[CodexChapters.Chapter23] = {
 		"As the Aestaris assembled at the edge of the canyon and prepared for their next advance, Ziros received his replies from the Lyonar and the Songhai. They both said the fight was between Vetruvia and Aestari. Neither nation would come to their aid. Ziros vowed he would never forgive them, swearing an oath on the blood of his ancestors that he would not assist them in their time of need.",
 		"He then came up with another plan."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter24] = {
 	id: CodexChapters.Chapter24,
@@ -511,7 +535,7 @@ c[CodexChapters.Chapter24] = {
 	description: "22,916 AE",
 	img: RSX.chapter24_preview.img,
 	background: RSX.chapter24_background.img,
-	#audio: RSX.chapter24_audio.audio,
+	//audio: RSX.chapter24_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 28,
 	text: [
@@ -522,7 +546,7 @@ c[CodexChapters.Chapter24] = {
 		"At dawn, Rasha insisted it must be a trick of the desert sun. He ordered his men to march yet again. That day the blistering heat took thousands. By nightfall, the Crystal Fields were still just out of reach and Rasha’s men were even more desperate for rest than the previous night. Once more, Ziros’ men moved the fake crystals, and in the morning, Rasha ordered his men even deeper into the desert.",
 		"By noon, when Ziros and his Dunecasters finally attacked, half the Aestaris were already dead; the rest driven mad with thirst. But not as mad as their Emperor, who fought on until the lifeblood of his last man drenched the sands and gave mute testimony to the Vetruvian’s vengeance. Ziros, still consumed with revenge, had his men build a monument where he fell — Rasha's Tomb — and buried Rasha and his men inside it, cursing them to burn for eternity in the scorching desert heat."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter25] = {
 	id: CodexChapters.Chapter25,
@@ -530,7 +554,7 @@ c[CodexChapters.Chapter25] = {
 	description: "AE 22,916 - 23,055",
 	img: RSX.chapter25_preview.img,
 	background: RSX.chapter25_background.img,
-	#audio: RSX.chapter25_audio.audio,
+	//audio: RSX.chapter25_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 30,
 	text: [
@@ -539,7 +563,7 @@ c[CodexChapters.Chapter25] = {
 		"General Ziros sought to punish the Aestaris and limit their ability to wage future wars of aggression. He reinstituted the Aestari Mandates, but applied them this time only to the Aestaris. Further, he proclaimed that the center continent was completely banned from the crystal trade and the usage of crystals, and pledged Vetruvia’s military power to enforce the embargo. Having witnessed the utter defeat of the Aestaris, none would risk challenging the Vetruvian policies. The surrounding continents complied, completely cutting off all crystal trade with the center, starving them and their way of life. The Aestaris sent envoys to the other continents seeking aid, but none would defy Vetruvia.",
 		"Ziros’ hatred for the Aestaris consumed him, and he ruled over them with an iron fist. Ziros did not care that many Aestaris had disagreed with Rasha, that some had fought him, resisted him — even plotted against him. Ziros uniformly punished them all, turning potential allies into silent enemies. The Aestari economy was in ruins and their crystal supply exhausted, turning their lives into a daily struggle for even the bleakest survival. The more the Aestaris suffered and starved under the Vetruvian hegemony, the more Ziros unwittingly created the perfect breeding ground for extremism to flourish."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter26] = {
 	id: CodexChapters.Chapter26,
@@ -547,7 +571,7 @@ c[CodexChapters.Chapter26] = {
 	description: "AE 23,055 - 23,090",
 	img: RSX.chapter26_preview.img,
 	background: RSX.chapter26_background.img,
-	#audio: RSX.chapter26_audio.audio,
+	//audio: RSX.chapter26_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 32,
 	text: [
@@ -557,7 +581,7 @@ c[CodexChapters.Chapter26] = {
 		"Draug’s first move was to establish a secret alliance with the Lyonar’s High Council leaders from Baast, Caerme, Windcliffe, and Lyr, appealing to their resentment of Vetruvian primacy and appeasing them with promises of spoils from Vetruvia’s defeat. Only the leaders of Sunforge refused to attend. His northern flank largely secured, he then sent his warships on a surprise attack on the Songhai capital, Xaan, sinking the unsuspecting Songhai fleet stationed at port with little difficulty. At the Battle of Three Crossings, General Taegon from Kaido issued desperate pleas for help, but the Lyonar were complicit with Draug, and Ziros remained true to his oath never to aid the Songhai, who had left the Vetruvians to rot in their greatest hour of need. Draug moved past Xaan and conquered Kaido, consolidating his power over the entire continent of Xenkai. The world was shocked, but even as Draug turned his attention to Vetruvia once again, no one would come to the aid of his victims.",
 		"Or almost no one..."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter27] = {
 	id: CodexChapters.Chapter27,
@@ -565,7 +589,7 @@ c[CodexChapters.Chapter27] = {
 	description: "23,085 AE",
 	img: RSX.chapter27_preview.img,
 	background: RSX.chapter27_background.img,
-	#audio: RSX.chapter27_audio.audio,
+	//audio: RSX.chapter27_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 34,
 	text: [
@@ -573,7 +597,7 @@ c[CodexChapters.Chapter27] = {
 		"When Regent Visala was a young girl, her father, Lord Khaleem, took her to the Grand Trianon, where she saw the famous Lord Marshall Rasha. Fascinated, she followed him into the newly built enclosure of the Weeping Tree. He seemed angry, so she hid, watching as he plucked a twig from the Weeping Tree and tasted the bright red sap that oozed from the ancient bark. He seemed to enjoy it so much that when he left, she tried it herself – gaining a measure of the same great magical powers as the Lord Marshall himself. Terrified, she had never told anyone. But recently, Visala had seen that Cassyva was developing those same powers, and she suspected her sisters would too as they grew older. Such power can be a burden, Visala said, and it comes with an even greater responsibility.",
 		"After a tearful farewell, the sisters of Akram travelled to the continent of Xenkai. The people were devastated, and the Songhai government in ruins. The sisters helped where they could, but Cassyva grew increasingly frustrated. Helping people one at a time was not making a difference fast enough. They were powerful nobles with extraordinary abilities, and Cassyva impatiently decided they had to work on a broader scale, as part of an organized effort. So the sisters decided to seek answers to their questions by embarking on a journey into the Saberspine Mountains to find the only Old Empire institution still left standing, the Chakri Monastery."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter28] = {
 	id: CodexChapters.Chapter28,
@@ -581,7 +605,7 @@ c[CodexChapters.Chapter28] = {
 	description: "AE 23,090 - 23,092",
 	img: RSX.chapter28_preview.img,
 	background: RSX.chapter28_background.img,
-	#audio: RSX.chapter28_audio.audio,
+	//audio: RSX.chapter28_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 36,
 	text: [
@@ -589,7 +613,7 @@ c[CodexChapters.Chapter28] = {
 		"Soon after setting sail, Draug's ships were swept up in a sudden maelstrom of unprecedented violence. Miraculously, none of the vessels sank, but the fleet was swept wildly off course. When the maelstrom subsided, Draug found his ships off the coast of a primitive and unfamiliar land. At first, he thought they had arrived on the Magmar continent of Magaari, but his men found it populated by strange lizard-like creatures, sentient but underdeveloped, frightened and frail. Pressing farther inland, they found vast desolate plains littered with unharvested crystals. Draug had never seen anything like it. Gleefully, he praised his own good fortune, marveling at the abundance of untapped crystals. They would be his source of power and the perfect secret weapon against the upstart nations.",
 		"Draug tried to question the serpentine creatures with his Mindwarpers, but sensing his true nature, they refused to speak to him. Under torture, they eventually revealed that Draug was in the peninsula of Ixus, on the continent of Styxus, and that they were the surface-dwellers, the Serpenti. When Draug asked what lay below the surface, the Serpenti grew even more afraid and more reticent. Only after the most painful interrogation did the terrified creatures tell him of the darkness that lay underground. Slipping in and out of consciousness, the Serpenti described scenes almost beyond Draug’s imagination, with giant subterranean cities made entirely of crystals."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter29] = {
 	id: CodexChapters.Chapter29,
@@ -597,7 +621,7 @@ c[CodexChapters.Chapter29] = {
 	description: "AE 23,092 - 23,105",
 	img: RSX.chapter29_preview.img,
 	background: RSX.chapter29_background.img,
-	#audio: RSX.chapter29_audio.audio,
+	//audio: RSX.chapter29_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 38,
 	text: [
@@ -605,7 +629,7 @@ c[CodexChapters.Chapter29] = {
 		"Draug and his army were unstoppable, sweeping virtually unimpeded over Vetruvia. Ziros nobly sacrificed himself, remaining behind to delay Draug’s forces by activating a blockade of protective Obelysks while what was left of the Vetruvian army fled through the plains of El-Gamesh. Draug brought Ziros’ head and shattered Sand Shield back to Aestaria and proclaimed himself Conqueror Draug, ruler of the Eternal Empire, the Second Empire foretold by the Prophecy of Ages. While the other nations kept silent, in awe and in fear, the Lyonar Kingdoms finally took a stand against Draug’s aggression. Alone, they were no match for the Vermillion Army, and in a matter of days both Windcliffe and the longstanding Opaline Gates were toppled by Draug’s superior forces. The Lyonar fell back past the Forbidden Steppes through Agenor’s Pass, where General Trajan from Sunforge took their last stand — but Lyonar itself was no more.",
 		"Through military defeat or preemptory surrender, the other continents soon fell to Draug as well, all except Magaari. Vaath led an assembled host of powerful Leviathans, long-range Spirit Harvesters, fearless Phalanxars, and a devoted Veteran Silithar force as it landed in an epic clash that left tens of thousands dead. Known as the Battle of Serpent’s Coil, the battle lines pitched back and forth, at times approaching, but never reaching, the Amberhorn Citadel deep in the continent. Eventually, Vaath’s combined forces pushed the Vermillion Army back to the foothold where they Khahad first landed, a place henceforth known as Draug’s Landing. On a final day of battle as ferocious as the first, Vaath’s forces drove the Vermillion Army back onto their warships — and out of Magaari — for now."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter30] = {
 	id: CodexChapters.Chapter30,
@@ -613,7 +637,7 @@ c[CodexChapters.Chapter30] = {
 	description: "AE 23,092 - 23,105",
 	img: RSX.chapter30_preview.img,
 	background: RSX.chapter30_background.img,
-	#audio: RSX.chapter30_audio.audio,
+	//audio: RSX.chapter30_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 40,
 	text: [
@@ -622,23 +646,23 @@ c[CodexChapters.Chapter30] = {
 		"Cassyva and her sisters were honored, flattered and tempted, but they had already begun to consider a much different approach. While the Avatars had been contemplating, reports began to come in detailing Consular Draug’s newest conquests, and even greater atrocities committed in more and more lands. They learned of Draug’s discovery of a new source of crystals in a place called Ixus, how, empowered and emboldened by a vast supply of mana-rich crystals, he was planning on expanding his aggression even further. Led by Cassyva, the sisters had come to a much different conclusion about what they must do next. The most humanitarian thing to be done was to stop Draug — in whatever way they could. And the only way the sisters felt they could stop Draug would not be very compassionate at all. But, ultimately, they agreed. They incorporated many of the Chakri Avatars’ teachings and became something wholly new, the Keshrai Fanblades.",
 		"For the sake of the entire world, Consular Draug had to die."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter31] = {
 	id: CodexChapters.Chapter31,
 	name: "31: The Age of Decay",
 	description: "AE 23,105 - 23,205",
-	"“Consular Draug!” Cassyva called out as he was about to disappear into the ship. He paused at the sight of five distant beauties in resplendent gowns approaching the blocked walkway. There was no time for Cassyva to use the Star Crystals, to consult with her sisters, or even to think things through. There was only time to act. In a single motion she pulled five blades hidden in her sleeves and cast them with as much magical force as she could summon. They spiraled and sliced through the air with deadly accuracy toward Draug...but at the last moment ricocheted harmlessly off an invisible magical barrier surrounding him. As it was, he watched impassively as the magically siphoned blades instead skewered his elite Defenders as they crumpled into the water with unceremonious splashes. Draug smiled and said, “Kill them.” Then he was gone."
+	"“Consular Draug!” Cassyva called out as he was about to disappear into the ship. He paused at the sight of five distant beauties in resplendent gowns approaching the blocked walkway. There was no time for Cassyva to use the Star Crystals, to consult with her sisters, or even to think things through. There was only time to act. In a single motion she pulled five blades hidden in her sleeves and cast them with as much magical force as she could summon. They spiraled and sliced through the air with deadly accuracy toward Draug...but at the last moment ricocheted harmlessly off an invisible magical barrier surrounding him. As it was, he watched impassively as the magically siphoned blades instead skewered his elite Defenders as they crumpled into the water with unceremonious splashes. Draug smiled and said, “Kill them.” Then he was gone.": "“Consular Draug!” Cassyva called out as he was about to disappear into the ship. He paused at the sight of five distant beauties in resplendent gowns approaching the blocked walkway. There was no time for Cassyva to use the Star Crystals, to consult with her sisters, or even to think things through. There was only time to act. In a single motion she pulled five blades hidden in her sleeves and cast them with as much magical force as she could summon. They spiraled and sliced through the air with deadly accuracy toward Draug...but at the last moment ricocheted harmlessly off an invisible magical barrier surrounding him. As it was, he watched impassively as the magically siphoned blades instead skewered his elite Defenders as they crumpled into the water with unceremonious splashes. Draug smiled and said, “Kill them.” Then he was gone.",
 	img: RSX.chapter31_preview.img,
 	background: RSX.chapter31_background.img,
-	#audio: RSX.chapter31_audio.audio,
+	//audio: RSX.chapter31_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 42,
 	text: [
 		"The Aestari people enjoyed a brief moment of peace and plenty before Draug revealed his true colors. Enriched by the nations he had conquered, fortified by the crystals from Ixus, and secure in his dominion over almost the entire known world, Draug’s reign became increasingly brutal and autocratic. Over it all, representing the failures of two rulers, loomed a mockery of Aestari greatness — the unfinished Monolith. Draug knew the rest of the world saw it as symbolic of the limitations of Aestari power. For his singular greatness to be undeniable, and for Aestaria’s primacy to be unquestioned and secure, he would have to complete what his predecessors could not.",
 		"Construction of the Monolith resumed, and between it and Draug’s vast appetite for power, the once plentiful supply of crystals was again exhausted. Draug issued mandates of his own, reserving the dwindling supply of crystals for him and his inner circle — and for the construction of the Monolith. Magic became outlawed for commoners, and over time, ignorance and superstition spread, corrupting the truth and distorting centuries of arcane knowledge. The earthquakes and storms grew worse with each year, and the people intuitively knew it was a result of Draug’s wanton consumption of the once plentiful crystals. In their minds, magic became dark and mysterious, reviled as if it was the source of trouble, instead of its misuse."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter32] = {
 	id: CodexChapters.Chapter32,
@@ -646,7 +670,7 @@ c[CodexChapters.Chapter32] = {
 	description: "AE 23,105",
 	img: RSX.chapter32_preview.img,
 	background: RSX.chapter32_background.img,
-	#audio: RSX.chapter32_audio.audio,
+	//audio: RSX.chapter32_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 44,
 	text: [
@@ -655,7 +679,7 @@ c[CodexChapters.Chapter32] = {
 		"With deathstrike-imbued blades and mana-rich crystals hidden beneath elegant gowns, they hurried to the dock. They were among the most skilled fighters in Akram, but here they were vastly outnumbered. The sisters knew surprise was their greatest weapon, and their incongruous appearance would make their attack even more unexpected. From the moment they entered the camp, each man they passed turned to stare at them. They reached the dock just in time to see Draug and his cadre of Sworn Defenders at the top of the walkway. Hundreds of Draug’s soldiers were watching the sisters. Scores stood between them and their target.",
 		"“Consular Draug!” Cassyva called out as he was about to disappear into the ship. He paused at the sight of five distant beauties in resplendent gowns approaching the blocked walkway. There was no time for Cassyva to use the Star Crystals, to consult with her sisters, or even to think things through. There was only time to act. In a single motion she pulled five blades hidden in her sleeves and cast them with as much magical force as she could summon. They spiraled and sliced through the air with deadly accuracy toward Draug...but at the last moment ricocheted harmlessly off an invisible magical barrier surrounding him. As it was, he watched impassively as the magically siphoned blades instead skewered his elite Defenders as they crumpled into the water with unceremonious splashes. Draug smiled and said, “Kill them.” Then he was gone."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter33] = {
 	id: CodexChapters.Chapter33,
@@ -663,7 +687,7 @@ c[CodexChapters.Chapter33] = {
 	description: "AE 23,105",
 	img: RSX.chapter33_preview.img,
 	background: RSX.chapter33_background.img,
-	#audio: RSX.chapter33_audio.audio,
+	//audio: RSX.chapter33_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 46,
 	text: [
@@ -672,7 +696,7 @@ c[CodexChapters.Chapter33] = {
 		"Then the Inxykree and their young consumed them.",
 		"The Inxykree absorbed the powers, abilities, and knowledge of their prey. But they had never consumed creatures such as these: benevolent, intelligent, born of magical blood and infused with Star Crystal power. Outwardly, the Inxykree were drastically altered, manifesting the sisters’ beauty in a way that made them look almost human. Inwardly, the transformation was even more profound. “What happened? What have we done?” they asked, looking at their changed bodies, at the carnage on the floor. “What are we?” An Inxikrah male entered, glaring at them. “You are not Inxykree,” he said, baring his cruel fangs. “This is not your Abyss,” he shouted and attacked. The Inxykree had lost their talons and fangs, but had kept their speed and strength — and had gained the skills of the five sisters. They seized the bloody weapons from the floor and slayed the Inxikrah. “He’s right,” they said in one voice. “We are Inxykree no more. We must find an Abyss of our own.”"
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter34] = {
 	id: CodexChapters.Chapter34,
@@ -680,7 +704,7 @@ c[CodexChapters.Chapter34] = {
 	description: "AE 23,105 - 23,203",
 	img: RSX.chapter34_preview.img,
 	background: RSX.chapter34_background.img,
-	#audio: RSX.chapter34_audio.audio,
+	//audio: RSX.chapter34_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 48,
 	text: [
@@ -688,7 +712,7 @@ c[CodexChapters.Chapter34] = {
 		"They brought the texts back to the Chakri Monastery in the Saberspine Mountains, and there, Valknu and the Chakri Avatars remained, protecting the assembled knowledge of Mythron while they bided their time, waiting for the right moment to strike at the forces of evil. While Draug and the Ixikrah devastated the world with their bloody battles, the Chakri Avatars evolved into a secret cadre of resistance fighters. For one hundred years they waited, training and practicing under the guidance of Valknu, honing the self-discipline they would need to one day wield great power without abusing it.",
 		"As the prophecy foretold, darkness reigned in the form of a protracted war between the ascendant forces of Draug and the Inxikrah. With every indication that the conflict was headed to an inevitable cataclysmic battle, Valknu and the Chakri Avatars took the desperate journey to Deladriss Peake, the secret location of the Great Tree Aperion. Valknu conferred with the Seidir and the Vanar, ultimately convincing them that the Chakri Avatars were worthy and the situation so dire that they must all be empowered — reborn — through the Blood of Aperion. Only together with Aperion’s power — and only as the First Bloodbound — could they hope to conquer the forces of Draug and the Inxikrah, and pave the way for the true Second Empire."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter35] = {
 	id: CodexChapters.Chapter35,
@@ -696,7 +720,7 @@ c[CodexChapters.Chapter35] = {
 	description: "AE 23,203 - 23,205",
 	img: RSX.chapter35_preview.img,
 	background: RSX.chapter35_background.img,
-	#audio: RSX.chapter35_audio.audio,
+	//audio: RSX.chapter35_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 50,
 	text: [
@@ -704,7 +728,7 @@ c[CodexChapters.Chapter35] = {
 		"In Draug’s mind, this changed everything. Scholars of the natural record said The Great Tree of Eyos bloomed every ten thousand years. It had been barely four thousand since the last blooming, but no one knew how that would be affected by the removal of the tree’s Heartwood, centuries earlier. Although weakened by age and injury, the Weeping Tree was still unimaginably powerful. A blooming would release petals containing immense magical energy, perhaps equaling a third or even a half of all the crystals that had ever existed on Mythron. Draug was determined that his enemies, especially the Inxikrah, would be denied this power. And he was equally determined that he would possess it — all of it.",
 		"Facing a deadline that could represent his ultimate downfall or his supreme triumph, Draug redoubled his efforts to complete the Monolith, to fully enclose the Weeping Tree and the crystal power it would soon release. He told no one of the mana-imbued buds he had seen, and protected his secret by declaring the interior of the Monolith off-limits to anyone but himself. As construction accelerated, so did the imbalance of magical energy, causing increasingly erratic weather, wildly turbulent seas, and tectonic instability. Sensing Draug’s weakness, the Inxikrah pressed their advantage, accelerating their attacks on Aestaria. But Draug knew that he only needed to hold them off until the Monolith was complete and the Great Blooming took place. Then Aestari primacy, and his own, would be secured for millennia."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter36] = {
 	id: CodexChapters.Chapter36,
@@ -712,7 +736,7 @@ c[CodexChapters.Chapter36] = {
 	description: "AE 23,205",
 	img: RSX.chapter36_preview.img,
 	background: RSX.chapter36_background.img,
-	#audio: RSX.chapter36_audio.audio,
+	//audio: RSX.chapter36_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 52,
 	text: [
@@ -721,7 +745,7 @@ c[CodexChapters.Chapter36] = {
 		"Finally, concentrating all the power of his remaining crystals in a single blast of magical energy unparalleled in Mythron’s history, Draug raised the entire Monolith and secured it permanently in the sky. The waves of magical disturbance this released caused a Great Disjunction that rocked the planet to its core, destabilizing the continents and setting them in motion. Weakened and spent, Draug was nonetheless awestruck by what he had achieved. All he had left to do was wait for the tree to bloom once more — and he would be infinitely more powerful than ever before.",
 		"Unfortunately for Draug, that was when Aq’Toth, leader of the Inxikrah host, ordered the attack on Aestaria."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter37] = {
 	id: CodexChapters.Chapter37,
@@ -729,7 +753,7 @@ c[CodexChapters.Chapter37] = {
 	description: "AE 23,205",
 	img: RSX.chapter37_preview.img,
 	background: RSX.chapter37_background.img,
-	#audio: RSX.chapter37_audio.audio,
+	//audio: RSX.chapter37_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 54,
 	text: [
@@ -738,7 +762,7 @@ c[CodexChapters.Chapter37] = {
 		"It was sunset by the time the Bloodbound arrived at God’s Heel to head off the Inxikrah. The rest of the Magmar were already there. As they prepared for war, The Monolith hanging in the sky above them began to pulsate with color. The Star Lenses built to focus light inwards onto the Weeping Tree now refracted it outward instead in a brilliant display of iridescence that shone across the sky, illuminating all of God’s Heel in a fantastic display of coruscating lights. The Bloodbound felt buoyant, not just from the joyous nature of the spectacle, but as if gravity itself was undulating as well.",
 		"The Great Blooming had begun."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter38] = {
 	id: CodexChapters.Chapter38,
@@ -746,7 +770,7 @@ c[CodexChapters.Chapter38] = {
 	description: "AE 23,205",
 	img: RSX.chapter38_preview.img,
 	background: RSX.chapter38_background.img,
-	#audio: RSX.chapter38_audio.audio,
+	//audio: RSX.chapter38_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 56,
 	text: [
@@ -755,7 +779,7 @@ c[CodexChapters.Chapter38] = {
 		"Then the Inxikrah charged.",
 		"The Abyssians and Magmar fought alongside the Bloodbound, whose peerless magic countered the Inxikrah’s debilitating clouds of toxin. Throughout the night, God’s Heel seethed with clashing combatants, a cacophonous cauldron of violence bathed in the extraordinary light streaming from the Monolith. As dawn approached, the Inxikrah finally broke under the combined might of Mythron’s champions, and so began their retreat over the blood soaked ground, littered with the twisted bodies of their fallen. Valknu was torn: should he chase them down to secure Aperion’s clandestine location and risk leaving the Monolith vulnerable? Then, to his astonishment, he discovered not a single Bloodbound or Magmar or Abyssian had been lost. The Weeping Tree was safe — and so was the secret of Aperion’s location. The war was over."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter39] = {
 	id: CodexChapters.Chapter39,
@@ -763,7 +787,7 @@ c[CodexChapters.Chapter39] = {
 	description: "AE 23,205 - 23,380",
 	img: RSX.chapter39_preview.img,
 	background: RSX.chapter39_background.img,
-	#audio: RSX.chapter39_audio.audio,
+	//audio: RSX.chapter39_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 58,
 	text: [
@@ -772,7 +796,7 @@ c[CodexChapters.Chapter39] = {
 		"Over time, however, people began to reconsider their superstitions and fears regarding magic. Some remained cynical, but many leaders privately acknowledged magic’s essential role in rebuilding society. As people overcame their aversion to magic and sought to reincorporate it into their lives, the scarcity of crystals became a growing concern, perhaps even a threat to the planet’s hard-won peace and stability. Although many considered the Monolith a symbol of the hubris and madness of rulers like Draug and Rasha, and even Sargos, it was the only remaining viable source of crystals. Floating in the sky, it rivaled Mythron’s moon in brightness and beauty, and it was just as inaccessible.",
 		"Except to the Bloodbound."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter40] = {
 	id: CodexChapters.Chapter40,
@@ -780,7 +804,7 @@ c[CodexChapters.Chapter40] = {
 	description: "AE 23,380 - 23,401",
 	img: RSX.chapter40_preview.img,
 	background: RSX.chapter40_background.img,
-	#audio: RSX.chapter40_audio.audio,
+	//audio: RSX.chapter40_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 60,
 	text: [
@@ -788,7 +812,7 @@ c[CodexChapters.Chapter40] = {
 		"Several generations had passed since the original Bloodbound quietly melded into the populace, and their identities had been so well hidden that the only way to determine those who were descended from them — those who shared the powers of the Bloodbound — was physical demonstration. A call went out for those who had been hiding their abilities to come forward and enter a contest of Bloodbound abilities — a Trial of Champions — based on intelligence, physical skills, and, most of all, magical aptitude. The contests were wildly popular among the people, uniting the nations in good-natured rivalry and diffusing the aggression of the more warlike contingents. The new Bloodbound were celebrated, a source of pride among their people, both because of their astounding abilities and the roles their forbearers had played in delivering Mythron from the Age of Darkness.",
 		"There were six winners, one each of the Lyonar, Songhai, Vetruvian, Vanar, and Abyssian, as well as Vaath, the Magmar. They were called the Senerei, in honor of the original Seven Stars selected by Kaon Deladriss’ Trial of Champions. They would be the first to venture inside the Monolith in the sky, the first to see what the great blooming had brought forth. Tens of thousands came to God’s Heel from every continent to watch as the new Senerei, powered only by their own magic, rose into the sky and entered the Monolith."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.Chapter41] = {
 	id: CodexChapters.Chapter41,
@@ -796,7 +820,7 @@ c[CodexChapters.Chapter41] = {
 	description: "AE 23,401",
 	img: RSX.chapter41_preview.img,
 	background: RSX.chapter41_background.img,
-	#audio: RSX.chapter41_audio.audio,
+	//audio: RSX.chapter41_audio.audio,
 	enabled: true,
 	gamesRequiredToUnlock: 62,
 	text: [
@@ -805,7 +829,7 @@ c[CodexChapters.Chapter41] = {
 		"As the question of allocation dragged on, some in each nation clamored for military solutions. The Council members lamented how the good-natured rivalry of The Trial of Champions seemed like a distant memory. Then they realized there lay the answer — a contest. Once a year, each nation, or faction, would put forth a Duelyst — their Bloodbound — to compete for the energy-rich Cores. Each Duelyst would win for his nation a Core, but a Grandmaster Duelyst would bring home a Prismatic Core, the most powerful kind. The runner-up would win legendary orange, the second-most powerful. Third place would win indigo purple, fourth place cerulean blue, and fifth place emerald green. Sixth place would win crimson red, the least powerful Core, but still charged with more energy than any nation had seen in years. The past would be honored, the Bloodbound celebrated, and the peace preserved as the contest defused any lingering bellicosity.",
 		"And so was born the Duelyst Grandmasters and The Trial of the Cores."
 	].join("\n\n")
-}
+};
 
 c[CodexChapters.ChaptersComingSoon] = {
 	id: CodexChapters.ChaptersComingSoon,
@@ -814,6 +838,6 @@ c[CodexChapters.ChaptersComingSoon] = {
 	img: RSX.chapters_coming_soon_preview.img,
 	enabled: false,
 	gamesRequiredToUnlock: 0
-}
+};
 
-module.exports = Codex
+module.exports = Codex;

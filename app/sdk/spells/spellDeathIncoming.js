@@ -1,22 +1,32 @@
-Spell = require './spell'
-CardType = require 'app/sdk/cards/cardType'
-KillAction = require 'app/sdk/actions/killAction'
-PlayerModifierEndTurnRespawnEntityAnywhere = require 'app/sdk/playerModifiers/playerModifierEndTurnRespawnEntityAnywhere'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const KillAction = require('app/sdk/actions/killAction');
+const PlayerModifierEndTurnRespawnEntityAnywhere = require('app/sdk/playerModifiers/playerModifierEndTurnRespawnEntityAnywhere');
 
-class SpellDeathIncoming extends Spell
+class SpellDeathIncoming extends Spell {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
-		target = board.getCardAtPosition({x:x, y:y}, CardType.Unit)
-		if target?
-			if !target.getIsGeneral()
-				respawnModifier = PlayerModifierEndTurnRespawnEntityAnywhere.createContextObject(target.createNewCardData())
-				@getGameSession().applyModifierContextObject(respawnModifier, @getGameSession().getGeneralForPlayerId(@getOwnerId()))
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+		const target = board.getCardAtPosition({x, y}, CardType.Unit);
+		if (target != null) {
+			if (!target.getIsGeneral()) {
+				const respawnModifier = PlayerModifierEndTurnRespawnEntityAnywhere.createContextObject(target.createNewCardData());
+				this.getGameSession().applyModifierContextObject(respawnModifier, this.getGameSession().getGeneralForPlayerId(this.getOwnerId()));
 
-				# then kill the target unit
-				killAction = new KillAction(@getGameSession())
-				killAction.setOwnerId(@getOwnerId())
-				killAction.setTarget(target)
-				@getGameSession().executeAction(killAction)
+				// then kill the target unit
+				const killAction = new KillAction(this.getGameSession());
+				killAction.setOwnerId(this.getOwnerId());
+				killAction.setTarget(target);
+				return this.getGameSession().executeAction(killAction);
+			}
+		}
+	}
+}
 
-module.exports = SpellDeathIncoming
+module.exports = SpellDeathIncoming;

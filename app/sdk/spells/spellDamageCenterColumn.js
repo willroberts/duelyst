@@ -1,22 +1,33 @@
-SpellDamage = require './spellDamage'
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
+/*
+ * decaffeinate suggestions:
+ * DS202: Simplify dynamic range loops
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellDamage = require('./spellDamage');
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
 
-class SpellDamageCenterColumn extends SpellDamage
+class SpellDamageCenterColumn extends SpellDamage {
 
-	_findApplyEffectPositions: (position, sourceAction) ->
+	_findApplyEffectPositions(position, sourceAction) {
 		
-		board = @getGameSession().getBoard()
-		centerPosition = {x: 4, y: 2}
-		applyEffectPositions = []
-		validDamageLocations = UtilsGameSession.getValidBoardPositionsFromPattern(board, centerPosition, CONFIG.PATTERN_WHOLE_COLUMN, true)
-		if validDamageLocations?.length > 0
-			for i in [0...validDamageLocations.length]
-				location = validDamageLocations[i]
-				unit = board.getUnitAtPosition(location)
-				if unit?
-					applyEffectPositions.push(location)
+		const board = this.getGameSession().getBoard();
+		const centerPosition = {x: 4, y: 2};
+		const applyEffectPositions = [];
+		const validDamageLocations = UtilsGameSession.getValidBoardPositionsFromPattern(board, centerPosition, CONFIG.PATTERN_WHOLE_COLUMN, true);
+		if ((validDamageLocations != null ? validDamageLocations.length : undefined) > 0) {
+			for (let i = 0, end = validDamageLocations.length, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+				const location = validDamageLocations[i];
+				const unit = board.getUnitAtPosition(location);
+				if (unit != null) {
+					applyEffectPositions.push(location);
+				}
+			}
+		}
 
-		return applyEffectPositions
+		return applyEffectPositions;
+	}
+}
 
-module.exports = SpellDamageCenterColumn
+module.exports = SpellDamageCenterColumn;

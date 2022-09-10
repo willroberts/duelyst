@@ -1,39 +1,56 @@
-PlayerModifier = require './playerModifier'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-UtilsJavascript = require 'app/common/utils/utils_javascript'
-_ = require("underscore")
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const PlayerModifier = require('./playerModifier');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const UtilsJavascript = require('app/common/utils/utils_javascript');
+const _ = require("underscore");
 
-class PlayerModifierEndTurnRespawnEntityWithBuff extends PlayerModifier
+class PlayerModifierEndTurnRespawnEntityWithBuff extends PlayerModifier {
+	static initClass() {
+	
+		this.prototype.type ="PlayerModifierEndTurnRespawnEntityWithBuff";
+		this.type ="PlayerModifierEndTurnRespawnEntityWithBuff";
+	
+		this.isHiddenToUI = true;
+		this.prototype.durationEndTurn = 1;
+		this.prototype.cardDataOrIndexToSpawn = null;
+	}
 
-	type:"PlayerModifierEndTurnRespawnEntityWithBuff"
-	@type:"PlayerModifierEndTurnRespawnEntityWithBuff"
+	static createContextObject(cardDataOrIndexToSpawn, modifiersContextObjects, position, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.position = position;
+		contextObject.modifiersContextObjects = modifiersContextObjects;
+		return contextObject;
+	}
 
-	@isHiddenToUI: true
-	durationEndTurn: 1
-	cardDataOrIndexToSpawn: null
+	onEndTurn(action) {
+		super.onEndTurn(action);
 
-	@createContextObject: (cardDataOrIndexToSpawn, modifiersContextObjects, position, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.position = position
-		contextObject.modifiersContextObjects = modifiersContextObjects
-		return contextObject
+		// add modifiers
+		let {
+            cardDataOrIndexToSpawn
+        } = this;
+		if (cardDataOrIndexToSpawn != null) {
+			if (_.isObject(cardDataOrIndexToSpawn)) {
+				cardDataOrIndexToSpawn = UtilsJavascript.fastExtend({}, cardDataOrIndexToSpawn);
+			} else {
+				cardDataOrIndexToSpawn = this.getGameSession().getCardByIndex(cardDataOrIndexToSpawn).createNewCardData();
+			}
+			if (cardDataOrIndexToSpawn.additionalModifiersContextObjects == null) { cardDataOrIndexToSpawn.additionalModifiersContextObjects = []; }
+			cardDataOrIndexToSpawn.additionalModifiersContextObjects = cardDataOrIndexToSpawn.additionalModifiersContextObjects.concat(UtilsJavascript.deepCopy(this.modifiersContextObjects));
 
-	onEndTurn: (action) ->
-		super(action)
+			const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getPlayer().getPlayerId(), this.position.x, this.position.y, cardDataOrIndexToSpawn);
+			playCardAction.setSource(this.getCard());
+			return this.getGameSession().executeAction(playCardAction);
+		}
+	}
+}
+PlayerModifierEndTurnRespawnEntityWithBuff.initClass();
 
-		# add modifiers
-		cardDataOrIndexToSpawn = @cardDataOrIndexToSpawn
-		if cardDataOrIndexToSpawn?
-			if _.isObject(cardDataOrIndexToSpawn)
-				cardDataOrIndexToSpawn = UtilsJavascript.fastExtend({}, cardDataOrIndexToSpawn)
-			else
-				cardDataOrIndexToSpawn = @getGameSession().getCardByIndex(cardDataOrIndexToSpawn).createNewCardData()
-			cardDataOrIndexToSpawn.additionalModifiersContextObjects ?= []
-			cardDataOrIndexToSpawn.additionalModifiersContextObjects = cardDataOrIndexToSpawn.additionalModifiersContextObjects.concat(UtilsJavascript.deepCopy(@modifiersContextObjects))
-
-			playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getPlayer().getPlayerId(), @position.x, @position.y, cardDataOrIndexToSpawn)
-			playCardAction.setSource(@getCard())
-			@getGameSession().executeAction(playCardAction)
-
-module.exports = PlayerModifierEndTurnRespawnEntityWithBuff
+module.exports = PlayerModifierEndTurnRespawnEntityWithBuff;

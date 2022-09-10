@@ -1,14 +1,32 @@
-SpellDamage = require './spellDamage'
-Races = require 'app/sdk/cards/racesLookup'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellDamage = require('./spellDamage');
+const Races = require('app/sdk/cards/racesLookup');
 
-class SpellFrostburn extends SpellDamage
+class SpellFrostburn extends SpellDamage {
 
-	_postFilterApplyPositions: (originalPositions) ->
-		filteredPositions = []
-		for position in originalPositions
-			if !@getGameSession().getBoard().getUnitAtPosition(position).getBelongsToTribe?(Races.Vespyr)
-				filteredPositions.push(position)
+	_postFilterApplyPositions(originalPositions) {
+		const filteredPositions = [];
+		for (let position of Array.from(originalPositions)) {
+			if (!__guardMethod__(this.getGameSession().getBoard().getUnitAtPosition(position), 'getBelongsToTribe', o => o.getBelongsToTribe(Races.Vespyr))) {
+				filteredPositions.push(position);
+			}
+		}
 
-		return filteredPositions
+		return filteredPositions;
+	}
+}
 
-module.exports = SpellFrostburn
+module.exports = SpellFrostburn;
+
+function __guardMethod__(obj, methodName, transform) {
+  if (typeof obj !== 'undefined' && obj !== null && typeof obj[methodName] === 'function') {
+    return transform(obj, methodName);
+  } else {
+    return undefined;
+  }
+}

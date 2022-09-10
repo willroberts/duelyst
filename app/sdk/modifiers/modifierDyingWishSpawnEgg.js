@@ -1,64 +1,89 @@
-CONFIG = 'app/common/config'
-UtilsJavascript = require 'app/common/utils/utils_javascript'
-ModifierDyingWishSpawnEntity = require './modifierDyingWishSpawnEntity'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-CardType = require 'app/sdk/cards/cardType'
-ModifierEgg = require 'app/sdk/modifiers/modifierEgg'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-_ = require("underscore")
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = 'app/common/config';
+const UtilsJavascript = require('app/common/utils/utils_javascript');
+const ModifierDyingWishSpawnEntity = require('./modifierDyingWishSpawnEntity');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const CardType = require('app/sdk/cards/cardType');
+const ModifierEgg = require('app/sdk/modifiers/modifierEgg');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const _ = require("underscore");
 
-class ModifierDyingWishSpawnEgg extends ModifierDyingWishSpawnEntity
+class ModifierDyingWishSpawnEgg extends ModifierDyingWishSpawnEntity {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWishSpawnEgg";
+		this.type ="ModifierDyingWishSpawnEgg";
+	
+		this.isKeyworded = false;
+		this.keywordDefinition = "When this dies, it leaves behind a 0/1 Egg that hatches into %X";
+	
+		this.modifierName ="Rebirth: Serpenti";
+		this.description = "Will leave behind a Serpenti egg when killed";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierRebirth"];
+	}
 
-	type:"ModifierDyingWishSpawnEgg"
-	@type:"ModifierDyingWishSpawnEgg"
+	static createContextObject(cardDataOrIndexToSpawnAsEgg, spawnDescription, options) {
+		let spawnCount, spawnPattern, spawnSilently;
+		const contextObject = super.createContextObject({id: Cards.Faction5.Egg}, (spawnDescription = ""), (spawnCount=1), (spawnPattern=CONFIG.PATTERN_1x1), (spawnSilently=true),options);
+		contextObject.cardDataOrIndexToSpawnAsEgg = cardDataOrIndexToSpawnAsEgg;
+		contextObject.spawnDescription = spawnDescription;
+		return contextObject;
+	}
 
-	@isKeyworded: false
-	@keywordDefinition: "When this dies, it leaves behind a 0/1 Egg that hatches into %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			const replaceText = "a "+modifierContextObject.spawnDescription;
+			return this.description.replace(/%X/, replaceText);
+		} else {
+			return this.description;
+		}
+	}
 
-	@modifierName:"Rebirth: Serpenti"
-	@description: "Will leave behind a Serpenti egg when killed"
+	onDyingWish(action) {
+		//when this unit dies, if there isn't already a new unit queued to be spawned on the same tile where this unit died
+		if (!this.getGameSession().getBoard().getCardAtPosition(this.getCard().getPosition(), CardType.Unit, false, true)) {
+			// add modifier so egg will hatch correct unit
+			let {
+                cardDataOrIndexToSpawn
+            } = this;
 
-	fxResource: ["FX.Modifiers.ModifierRebirth"]
+			if (cardDataOrIndexToSpawn != null) {
+				if (_.isObject(cardDataOrIndexToSpawn)) {
+					cardDataOrIndexToSpawn = UtilsJavascript.fastExtend({}, cardDataOrIndexToSpawn);
+				} else {
+					cardDataOrIndexToSpawn = this.getGameSession().getCardByIndex(cardDataOrIndexToSpawn).createNewCardData();
+				}
 
-	@createContextObject: (cardDataOrIndexToSpawnAsEgg, spawnDescription, options) ->
-		contextObject = super({id: Cards.Faction5.Egg}, spawnDescription = "", spawnCount=1, spawnPattern=CONFIG.PATTERN_1x1, spawnSilently=true,options)
-		contextObject.cardDataOrIndexToSpawnAsEgg = cardDataOrIndexToSpawnAsEgg
-		contextObject.spawnDescription = spawnDescription
-		return contextObject
+				let {
+                    cardDataOrIndexToSpawnAsEgg
+                } = this;
+				if (cardDataOrIndexToSpawnAsEgg != null) {
+					if (_.isObject(cardDataOrIndexToSpawnAsEgg)) {
+						cardDataOrIndexToSpawnAsEgg = UtilsJavascript.fastExtend({}, cardDataOrIndexToSpawnAsEgg);
+					} else {
+						cardDataOrIndexToSpawnAsEgg = this.getGameSession().getCardByIndex(cardDataOrIndexToSpawnAsEgg).createNewCardData();
+					}
+				}
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			replaceText = "a "+modifierContextObject.spawnDescription
-			return @description.replace /%X/, replaceText
-		else
-			return @description
+				if (cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
+				cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(cardDataOrIndexToSpawnAsEgg, "Serpenti"));
+				//cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(cardDataOrIndexToSpawnAsEgg, cardDataOrIndexToSpawnAsEgg.getName()))
 
-	onDyingWish: (action) ->
-		#when this unit dies, if there isn't already a new unit queued to be spawned on the same tile where this unit died
-		if !@getGameSession().getBoard().getCardAtPosition(@getCard().getPosition(), CardType.Unit, false, true)
-			# add modifier so egg will hatch correct unit
-			cardDataOrIndexToSpawn = @cardDataOrIndexToSpawn
-
-			if cardDataOrIndexToSpawn?
-				if _.isObject(cardDataOrIndexToSpawn)
-					cardDataOrIndexToSpawn = UtilsJavascript.fastExtend({}, cardDataOrIndexToSpawn)
-				else
-					cardDataOrIndexToSpawn = @getGameSession().getCardByIndex(cardDataOrIndexToSpawn).createNewCardData()
-
-				cardDataOrIndexToSpawnAsEgg = @cardDataOrIndexToSpawnAsEgg
-				if cardDataOrIndexToSpawnAsEgg?
-					if _.isObject(cardDataOrIndexToSpawnAsEgg)
-						cardDataOrIndexToSpawnAsEgg = UtilsJavascript.fastExtend({}, cardDataOrIndexToSpawnAsEgg)
-					else
-						cardDataOrIndexToSpawnAsEgg = @getGameSession().getCardByIndex(cardDataOrIndexToSpawnAsEgg).createNewCardData()
-
-				cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects ?= []
-				cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(cardDataOrIndexToSpawnAsEgg, "Serpenti"))
-				#cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(cardDataOrIndexToSpawnAsEgg, cardDataOrIndexToSpawnAsEgg.getName()))
-
-				# spawn an egg
-				playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), @getCard().getPosition().x, @getCard().getPosition().y, cardDataOrIndexToSpawn)
-				@getGameSession().executeAction(playCardAction)
+				// spawn an egg
+				const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, cardDataOrIndexToSpawn);
+				return this.getGameSession().executeAction(playCardAction);
+			}
+		}
+	}
+}
+ModifierDyingWishSpawnEgg.initClass();
 
 
-module.exports = ModifierDyingWishSpawnEgg
+module.exports = ModifierDyingWishSpawnEgg;

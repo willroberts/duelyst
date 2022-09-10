@@ -1,60 +1,78 @@
-AWS = require 'aws-sdk'
-Promise = require 'bluebird'
-prettyjson = require 'prettyjson'
-_ = require 'underscore'
-moment = require 'moment'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const AWS = require('aws-sdk');
+const Promise = require('bluebird');
+const prettyjson = require('prettyjson');
+const _ = require('underscore');
+const moment = require('moment');
 
-ec2 = new AWS.EC2({region:'us-west-2'})
-Promise.promisifyAll(ec2)
+const ec2 = new AWS.EC2({region:'us-west-2'});
+Promise.promisifyAll(ec2);
 
-###*
-# console.log data as a table
-# @public
-# @param	{String}	data			data to print out.
-###
-logAsTable = (dataRows)->
-	keys = _.keys(dataRows[0])
-	Table = require('cli-table')
-	t = new Table({
+/**
+ * console.log data as a table
+ * @public
+ * @param	{String}	data			data to print out.
+ */
+const logAsTable = function(dataRows){
+	const keys = _.keys(dataRows[0]);
+	const Table = require('cli-table');
+	const t = new Table({
 		head: keys
-	})
-	_.each dataRows, (r)->
-		values = _.values(r)
-		values = _.map values, (v)->
-			if v instanceof Date
-				v = moment(v).format("YYYY-MM-DD")
-			return v || ""
-		t.push values
+	});
+	_.each(dataRows, function(r){
+		let values = _.values(r);
+		values = _.map(values, function(v){
+			if (v instanceof Date) {
+				v = moment(v).format("YYYY-MM-DD");
+			}
+			return v || "";
+		});
+		return t.push(values);
+	});
 
-	strTable = t.toString()
-	console.log(strTable)
-	return strTable
+	const strTable = t.toString();
+	console.log(strTable);
+	return strTable;
+};
 
 Promise.all([
 	ec2.describeInstancesAsync(),
 	ec2.describeReservedInstancesAsync(),
-]).spread (instances,reservedInstances)->
-	reservedInstances = _.filter(reservedInstances["ReservedInstances"],(o)-> return o["State"] != "retired")
-	reservedInstances = _.map(reservedInstances,(o)-> return _.pick(o,"InstanceType","AvailabilityZone","InstanceCount","State"))
-	reservedInstancesReduced = _.reduce(reservedInstances,(memo,o)->
-		r = _.find(memo,(i)-> return o["InstanceType"] == i["InstanceType"] and o["AvailabilityZone"] == i["AvailabilityZone"])
-		if not r?
-			r = _.clone(o)
-			memo.push(r)
-		else
-			r["InstanceCount"] += o["InstanceCount"]
-		return memo
-	,[])
+]).spread(function(instances,reservedInstances){
+	reservedInstances = _.filter(reservedInstances["ReservedInstances"],o => o["State"] !== "retired");
+	reservedInstances = _.map(reservedInstances,o => _.pick(o,"InstanceType","AvailabilityZone","InstanceCount","State"));
+	const reservedInstancesReduced = _.reduce(reservedInstances,function(memo,o){
+		let r = _.find(memo,i => (o["InstanceType"] === i["InstanceType"]) && (o["AvailabilityZone"] === i["AvailabilityZone"]));
+		if ((r == null)) {
+			r = _.clone(o);
+			memo.push(r);
+		} else {
+			r["InstanceCount"] += o["InstanceCount"];
+		}
+		return memo;
+	}
+	,[]);
 
-	for reservedInstance in reservedInstancesReduced
-		for reservation in instances["Reservations"]
-			for instance in reservation["Instances"]
-				console.log instance
-				if instance["State"]["Name"] == "running" and instance["InstanceType"] == reservedInstance["InstanceType"] and instance["Placement"]["AvailabilityZone"] == reservedInstance["AvailabilityZone"]
-					console.log "found running instance..."
-					reservedInstance.runningCount ?= 0
-					reservedInstance.runningCount += 1
+	for (let reservedInstance of Array.from(reservedInstancesReduced)) {
+		for (let reservation of Array.from(instances["Reservations"])) {
+			for (let instance of Array.from(reservation["Instances"])) {
+				console.log(instance);
+				if ((instance["State"]["Name"] === "running") && (instance["InstanceType"] === reservedInstance["InstanceType"]) && (instance["Placement"]["AvailabilityZone"] === reservedInstance["AvailabilityZone"])) {
+					console.log("found running instance...");
+					if (reservedInstance.runningCount == null) { reservedInstance.runningCount = 0; }
+					reservedInstance.runningCount += 1;
+				}
+			}
+		}
+	}
 
-	# console.log prettyjson.render(instances)
-	# console.log prettyjson.render(instances)
-	logAsTable(reservedInstancesReduced)
+	// console.log prettyjson.render(instances)
+	// console.log prettyjson.render(instances)
+	return logAsTable(reservedInstancesReduced);
+});

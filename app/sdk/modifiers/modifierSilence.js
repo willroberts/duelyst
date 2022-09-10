@@ -1,36 +1,50 @@
-Modifier = require './modifier'
-CardType = require 'app/sdk/cards/cardType'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const CardType = require('app/sdk/cards/cardType');
+const i18next = require('i18next');
 
-class ModifierSilence extends Modifier
+class ModifierSilence extends Modifier {
+	static initClass() {
+	
+		this.prototype.type = "ModifierSilence";
+		this.type = "ModifierSilence";
+	
+		this.modifierName =i18next.t("modifiers.silence_name");
+		this.description =i18next.t("modifiers.silence_def");
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDispel"];
+	}
 
-	type: "ModifierSilence"
-	@type: "ModifierSilence"
+	onApplyToCard(card) {
+		let allowableSilenceTarget = true;
+		if ((card.getType() === CardType.Unit) && !card.getIsTargetable()) {
+			allowableSilenceTarget = false;
+		}
 
-	@modifierName:i18next.t("modifiers.silence_name")
-	@description:i18next.t("modifiers.silence_def")
+		// temporarily make self unremovable
+		const wasRemovable = this.isRemovable;
+		this.isRemovable = false;
 
-	fxResource: ["FX.Modifiers.ModifierDispel"]
+		if (allowableSilenceTarget) {
+			// silence card and remove all other modifiers
+			card.silence();
+		}
 
-	onApplyToCard: (card) ->
-		allowableSilenceTarget = true
-		if card.getType() == CardType.Unit and !card.getIsTargetable()
-			allowableSilenceTarget = false
+		super.onApplyToCard(card);
 
-		# temporarily make self unremovable
-		wasRemovable = @isRemovable
-		@isRemovable = false
+		// restore removable state
+		this.isRemovable = wasRemovable;
 
-		if allowableSilenceTarget
-			# silence card and remove all other modifiers
-			card.silence()
+		if (!allowableSilenceTarget) { // remove modifier immediately after attempting to slience
+			return this.getGameSession().removeModifier(this);
+		}
+	}
+}
+ModifierSilence.initClass();
 
-		super(card)
-
-		# restore removable state
-		@isRemovable = wasRemovable
-
-		if !allowableSilenceTarget # remove modifier immediately after attempting to slience
-			@getGameSession().removeModifier(@)
-
-module.exports = ModifierSilence
+module.exports = ModifierSilence;

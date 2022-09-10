@@ -1,15 +1,22 @@
-SpellDamage = require './spellDamage'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellDamage = require('./spellDamage');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const _ = require('underscore');
 
-class SpellDamageAndPutCardInHand extends SpellDamage
+class SpellDamageAndPutCardInHand extends SpellDamage {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		applyEffectPosition = {x: x, y: y}
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		const applyEffectPosition = {x, y};
 
-		a = new PutCardInHandAction(@getGameSession(), @getOwnerId(), @cardDataOrIndexToPutInHand)
-		this.getGameSession().executeAction(a)
+		const a = new PutCardInHandAction(this.getGameSession(), this.getOwnerId(), this.cardDataOrIndexToPutInHand);
+		this.getGameSession().executeAction(a);
 
-		super(board,x,y,sourceAction)
+		return super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+	}
+}
 
-module.exports = SpellDamageAndPutCardInHand
+module.exports = SpellDamageAndPutCardInHand;

@@ -1,71 +1,108 @@
-PlayerModifierEmblemEndTurnWatch = require './playerModifierEmblemEndTurnWatch'
-CONFIG = require 'app/common/config'
-ModifierTransformed = require 'app/sdk/modifiers/modifierTransformed'
-RemoveAction = require 'app/sdk/actions/removeAction'
-PlayCardAsTransformAction = require 'app/sdk/actions/playCardAsTransformAction'
-CardType = require 'app/sdk/cards/cardType'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-GameFormat = require 'app/sdk/gameFormat'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const PlayerModifierEmblemEndTurnWatch = require('./playerModifierEmblemEndTurnWatch');
+const CONFIG = require('app/common/config');
+const ModifierTransformed = require('app/sdk/modifiers/modifierTransformed');
+const RemoveAction = require('app/sdk/actions/removeAction');
+const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
+const CardType = require('app/sdk/cards/cardType');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const GameFormat = require('app/sdk/gameFormat');
+const _ = require('underscore');
 
-class PlayerModifierEmblemEndTurnWatchLyonarSmallMinionQuest extends PlayerModifierEmblemEndTurnWatch
+class PlayerModifierEmblemEndTurnWatchLyonarSmallMinionQuest extends PlayerModifierEmblemEndTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="PlayerModifierEmblemEndTurnWatchLyonarSmallMinionQuest";
+		this.type ="PlayerModifierEmblemEndTurnWatchLyonarSmallMinionQuest";
+	
+		this.prototype.maxStacks = 1;
+	}
 
-	type:"PlayerModifierEmblemEndTurnWatchLyonarSmallMinionQuest"
-	@type:"PlayerModifierEmblemEndTurnWatchLyonarSmallMinionQuest"
+	static createContextObject(options) {
+		const contextObject = super.createContextObject(true, false, options);
+		return contextObject;
+	}
 
-	maxStacks: 1
+	onTurnWatch(action) {
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			return (() => {
+				const result = [];
+				for (let unit of Array.from(this.getGameSession().getBoard().getFriendlyEntitiesAroundEntity(this.getCard(), CardType.Unit, CONFIG.WHOLE_BOARD_RADIUS, false, false))) {
+					if ((unit != null) && !unit.getIsGeneral() && (unit.getBaseCardId() !== Cards.Faction1.RightfulHeir)) {
 
-	@createContextObject: (options) ->
-		contextObject = super(true, false, options)
-		return contextObject
+						const originalCost = unit.getManaCost();
+						let newCost = originalCost + 1;
 
-	onTurnWatch: (action) ->
-		if @getGameSession().getIsRunningAsAuthoritative()
-			for unit in @getGameSession().getBoard().getFriendlyEntitiesAroundEntity(@getCard(), CardType.Unit, CONFIG.WHOLE_BOARD_RADIUS, false, false)
-				if unit? and !unit.getIsGeneral() and unit.getBaseCardId() != Cards.Faction1.RightfulHeir
+						let allMinions = [];
+						if (this.getGameSession().getGameFormat() === GameFormat.Standard) {
+							allMinions = this.getGameSession().getCardCaches().getIsLegacy(false).getFaction(this.getCard().getFactionId()).getType(CardType.Unit).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getCards();
+						} else {
+							allMinions = this.getGameSession().getCardCaches().getFaction(this.getCard().getFactionId()).getType(CardType.Unit).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getCards();
+						}
 
-					originalCost = unit.getManaCost()
-					newCost = originalCost + 1
+						if (allMinions.length > 0) {
+							let availableMinionAtCost = false;
+							let possibleCards = [];
+							while (!availableMinionAtCost && (newCost >= 0)) {
+								const tempPossibilities = [];
+								for (let minion of Array.from(allMinions)) {
+									if (((minion != null ? minion.getManaCost() : undefined) === newCost) && (minion.getBaseCardId() !== Cards.Faction1.RightfulHeir)) {
+										possibleCards.push(minion);
+									}
+								}
+								if (possibleCards.length > 0) {
+									availableMinionAtCost = true;
+								} else {
+									possibleCards = [];
+									newCost--;
+								}
+							}
 
-					allMinions = []
-					if @getGameSession().getGameFormat() is GameFormat.Standard
-						allMinions = @getGameSession().getCardCaches().getIsLegacy(false).getFaction(@getCard().getFactionId()).getType(CardType.Unit).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getCards()
-					else
-						allMinions = @getGameSession().getCardCaches().getFaction(@getCard().getFactionId()).getType(CardType.Unit).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getCards()
+							if ((possibleCards != null ? possibleCards.length : undefined) > 0) {
+								// filter mythron cards
+								possibleCards = _.reject(possibleCards, card => card.getRarityId() === 6);
+							}
 
-					if allMinions.length > 0
-						availableMinionAtCost = false
-						possibleCards = []
-						while !availableMinionAtCost and newCost >= 0
-							tempPossibilities = []
-							for minion in allMinions
-								if minion?.getManaCost() == newCost and minion.getBaseCardId() != Cards.Faction1.RightfulHeir
-									possibleCards.push(minion)
-							if possibleCards.length > 0
-								availableMinionAtCost = true
-							else
-								possibleCards = []
-								newCost--
+							if (possibleCards.length > 0) {
+								const newUnit = possibleCards[this.getGameSession().getRandomIntegerForExecution(possibleCards.length)];
 
-						if possibleCards?.length > 0
-							# filter mythron cards
-							possibleCards = _.reject(possibleCards, (card) ->
-								return card.getRarityId() == 6
-							)
+								if (newUnit.getManaCost() > unit.getManaCost()) {
+									const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
+									removeOriginalEntityAction.setOwnerId(this.getCard().getOwnerId());
+									removeOriginalEntityAction.setTarget(unit);
+									this.getGameSession().executeAction(removeOriginalEntityAction);
 
-						if possibleCards.length > 0
-							newUnit = possibleCards[@getGameSession().getRandomIntegerForExecution(possibleCards.length)]
+									const newCardData = newUnit.createNewCardData();
+									if (newCardData.additionalInherentModifiersContextObjects == null) { newCardData.additionalInherentModifiersContextObjects = []; }
+									newCardData.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(unit.getExhausted(), unit.getMovesMade(), unit.getAttacksMade()));
+									const spawnEntityAction = new PlayCardAsTransformAction(this.getCard().getGameSession(), this.getCard().getOwnerId(), unit.getPosition().x, unit.getPosition().y, newCardData);
+									result.push(this.getGameSession().executeAction(spawnEntityAction));
+								} else {
+									result.push(undefined);
+								}
+							} else {
+								result.push(undefined);
+							}
+						} else {
+							result.push(undefined);
+						}
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+}
+PlayerModifierEmblemEndTurnWatchLyonarSmallMinionQuest.initClass();
 
-							if newUnit.getManaCost() > unit.getManaCost()
-								removeOriginalEntityAction = new RemoveAction(@getGameSession())
-								removeOriginalEntityAction.setOwnerId(@getCard().getOwnerId())
-								removeOriginalEntityAction.setTarget(unit)
-								@getGameSession().executeAction(removeOriginalEntityAction)
-
-								newCardData = newUnit.createNewCardData()
-								newCardData.additionalInherentModifiersContextObjects ?= []
-								newCardData.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(unit.getExhausted(), unit.getMovesMade(), unit.getAttacksMade()))
-								spawnEntityAction = new PlayCardAsTransformAction(@getCard().getGameSession(), @getCard().getOwnerId(), unit.getPosition().x, unit.getPosition().y, newCardData)
-								@getGameSession().executeAction(spawnEntityAction)
-
-module.exports = PlayerModifierEmblemEndTurnWatchLyonarSmallMinionQuest
+module.exports = PlayerModifierEmblemEndTurnWatchLyonarSmallMinionQuest;

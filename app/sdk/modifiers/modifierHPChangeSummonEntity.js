@@ -1,65 +1,90 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
-UtilsPosition = require 'app/common/utils/utils_position'
-ModifierHPChange = require 'app/sdk/modifiers/modifierHPChange'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
+const UtilsPosition = require('app/common/utils/utils_position');
+const ModifierHPChange = require('app/sdk/modifiers/modifierHPChange');
+const _ = require('underscore');
 
-class ModifierHPChangeSummonEntity extends ModifierHPChange
+class ModifierHPChangeSummonEntity extends ModifierHPChange {
+	static initClass() {
+	
+		this.prototype.type ="ModifierHPChangeSummonEntity";
+		this.type ="ModifierHPChangeSummonEntity";
+	
+		this.modifierName ="Modifier HP Change Summon Entity";
+		this.description = "When this falls below %X health, summon %Y on a random space";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierBuffSelfOnReplace"];
+	}
 
-	type:"ModifierHPChangeSummonEntity"
-	@type:"ModifierHPChangeSummonEntity"
+	static createContextObject(cardDataOrIndexToSpawn,healthThreshold,spawnDescription,spawnCount, spawnSilently,options) {
+		if (spawnCount == null) { spawnCount = 1; }
+		if (spawnSilently == null) { spawnSilently = true; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.healthThreshold = healthThreshold;
+		contextObject.spawnDescription = spawnDescription;
+		contextObject.spawnCount = spawnCount;
+		contextObject.spawnSilently = spawnSilently;
+		return contextObject;
+	}
 
-	@modifierName:"Modifier HP Change Summon Entity"
-	@description: "When this falls below %X health, summon %Y on a random space"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			const descriptionText = this.description.replace(/%Y/, modifierContextObject.spawnDescription);
+			return descriptionText.replace(/%X/, modifierContextObject.healthThreshold);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierBuffSelfOnReplace"]
+	onHPChange(action) {
+		super.onHPChange(action);
 
-	@createContextObject: (cardDataOrIndexToSpawn,healthThreshold,spawnDescription,spawnCount=1, spawnSilently=true,options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.healthThreshold = healthThreshold
-		contextObject.spawnDescription = spawnDescription
-		contextObject.spawnCount = spawnCount
-		contextObject.spawnSilently = spawnSilently
-		return contextObject
+		const hp = this.getCard().getHP();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			descriptionText = @description.replace /%Y/, modifierContextObject.spawnDescription
-			return descriptionText.replace /%X/, modifierContextObject.healthThreshold
-		else
-			return @description
+		if (hp <= this.healthThreshold) {
+			if (this.getGameSession().getIsRunningAsAuthoritative()) {
+				const ownerId = this.getSpawnOwnerId(action);
+				const wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS;
+				const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+				const thisEntityPosition = this.getCard().getPosition();
+				const validPositions = _.reject(wholeBoardPattern, position => UtilsPosition.getPositionsAreEqual(position, thisEntityPosition));
+				const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, validPositions, card, this.getCard(), this.spawnCount);
 
-	onHPChange: (action) ->
-		super(action)
+				for (let position of Array.from(spawnLocations)) {
+					var playCardAction;
+					if (!this.spawnSilently) {
+						playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+					} else {
+						playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+					}
+					playCardAction.setSource(this.getCard());
+					this.getGameSession().executeAction(playCardAction);
+				}
+				// remove modifier so it doesn't trigger again
+				return this.getGameSession().removeModifier(this);
+			}
+		}
+	}
 
-		hp = @getCard().getHP()
+	getCardDataOrIndexToSpawn() {
+		return this.cardDataOrIndexToSpawn;
+	}
 
-		if hp <= @healthThreshold
-			if @getGameSession().getIsRunningAsAuthoritative()
-				ownerId = @getSpawnOwnerId(action)
-				wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS
-				card = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(@cardDataOrIndexToSpawn)
-				thisEntityPosition = @getCard().getPosition()
-				validPositions = _.reject(wholeBoardPattern, (position) -> UtilsPosition.getPositionsAreEqual(position, thisEntityPosition))
-				spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), {x:0, y:0}, validPositions, card, @getCard(), @spawnCount)
+	getSpawnOwnerId(action) {
+		return this.getCard().getOwnerId();
+	}
+}
+ModifierHPChangeSummonEntity.initClass();
 
-				for position in spawnLocations
-					if !@spawnSilently
-						playCardAction = new PlayCardAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, @cardDataOrIndexToSpawn)
-					else
-						playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, @cardDataOrIndexToSpawn)
-					playCardAction.setSource(@getCard())
-					@getGameSession().executeAction(playCardAction)
-				# remove modifier so it doesn't trigger again
-				@getGameSession().removeModifier(@)
-
-	getCardDataOrIndexToSpawn: () ->
-		return @cardDataOrIndexToSpawn
-
-	getSpawnOwnerId: (action) ->
-		return @getCard().getOwnerId()
-
-module.exports = ModifierHPChangeSummonEntity
+module.exports = ModifierHPChangeSummonEntity;

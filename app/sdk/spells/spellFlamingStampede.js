@@ -1,14 +1,23 @@
-SpellDamage = require './spellDamage'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellDamage = require('./spellDamage');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class SpellFlamingStampede extends SpellDamage
+class SpellFlamingStampede extends SpellDamage {
 
-	_postFilterApplyPositions: (originalPositions) ->
-		filteredPositions = []
-		for position in originalPositions
-			if @getGameSession().getBoard().getUnitAtPosition(position).getBaseCardId() isnt Cards.Faction5.Egg
-				filteredPositions.push(position)
+	_postFilterApplyPositions(originalPositions) {
+		const filteredPositions = [];
+		for (let position of Array.from(originalPositions)) {
+			if (this.getGameSession().getBoard().getUnitAtPosition(position).getBaseCardId() !== Cards.Faction5.Egg) {
+				filteredPositions.push(position);
+			}
+		}
 
-		return filteredPositions
+		return filteredPositions;
+	}
+}
 
-module.exports = SpellFlamingStampede
+module.exports = SpellFlamingStampede;

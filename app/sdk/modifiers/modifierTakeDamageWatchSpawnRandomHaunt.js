@@ -1,20 +1,30 @@
-ModifierTakeDamageWatchSpawnEntity = require './modifierTakeDamageWatchSpawnEntity'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierTakeDamageWatchSpawnEntity = require('./modifierTakeDamageWatchSpawnEntity');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class ModifierTakeDamageWatchSpawnRandomHaunt extends ModifierTakeDamageWatchSpawnEntity
+class ModifierTakeDamageWatchSpawnRandomHaunt extends ModifierTakeDamageWatchSpawnEntity {
+	static initClass() {
+	
+		this.prototype.type ="ModifierTakeDamageWatchSpawnRandomHaunt";
+		this.type ="ModifierTakeDamageWatchSpawnRandomHaunt";
+	
+		this.description ="Whenever this minion takes damage, summon a random haunt nearby";
+	
+		this.prototype.possibleTokens = [
+			{id: Cards.Boss.Boss31Haunt1 },
+			{id: Cards.Boss.Boss31Haunt2 },
+			{id: Cards.Boss.Boss31Haunt3 }
+		];
+	}
 
-	type:"ModifierTakeDamageWatchSpawnRandomHaunt"
-	@type:"ModifierTakeDamageWatchSpawnRandomHaunt"
+	getCardDataOrIndexToSpawn() {
+		return this.possibleTokens[this.getGameSession().getRandomIntegerForExecution(this.possibleTokens.length)];
+	}
+}
+ModifierTakeDamageWatchSpawnRandomHaunt.initClass();
 
-	@description:"Whenever this minion takes damage, summon a random haunt nearby"
-
-	possibleTokens: [
-		{id: Cards.Boss.Boss31Haunt1 },
-		{id: Cards.Boss.Boss31Haunt2 },
-		{id: Cards.Boss.Boss31Haunt3 }
-	]
-
-	getCardDataOrIndexToSpawn: () ->
-		return @possibleTokens[@getGameSession().getRandomIntegerForExecution(@possibleTokens.length)]
-
-module.exports = ModifierTakeDamageWatchSpawnRandomHaunt
+module.exports = ModifierTakeDamageWatchSpawnRandomHaunt;

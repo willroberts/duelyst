@@ -1,37 +1,56 @@
-ModifierDynamicCountModifySelf = require './modifierDynamicCountModifySelf'
-ModifierManaCostChange = require './modifierManaCostChange'
-Races = require 'app/sdk/cards/racesLookup'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierDynamicCountModifySelf = require('./modifierDynamicCountModifySelf');
+const ModifierManaCostChange = require('./modifierManaCostChange');
+const Races = require('app/sdk/cards/racesLookup');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierDynamicCountModifySelfCostByBattlePetsOnBoard extends ModifierDynamicCountModifySelf
+class ModifierDynamicCountModifySelfCostByBattlePetsOnBoard extends ModifierDynamicCountModifySelf {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDynamicCountModifySelfCostByBattlePetsOnBoard";
+		this.type ="ModifierDynamicCountModifySelfCostByBattlePetsOnBoard";
+	
+		this.description ="Costs %X for each friendly Battle Pet on the field";
+	
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInHand = true;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	}
 
-	type:"ModifierDynamicCountModifySelfCostByBattlePetsOnBoard"
-	@type:"ModifierDynamicCountModifySelfCostByBattlePetsOnBoard"
+	static createContextObject(manaCostChange, description, appliedName, options) {
+		if (manaCostChange == null) { manaCostChange = 0; }
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		const perPetCostChangeBuff = ModifierManaCostChange.createContextObject(manaCostChange);
+		if (appliedName) {
+			perPetCostChangeBuff.appliedName = appliedName;
+		}
+		contextObject.description = description;
+		contextObject.modifiersContextObjects = [perPetCostChangeBuff];
+		return contextObject;
+	}
 
-	@description:"Costs %X for each friendly Battle Pet on the field"
+	static getDescription(modifierContextObject) {
+		return this.description.replace(/%X/, modifierContextObject.description);
+	}
 
-	activeInDeck: false
-	activeInHand: true
-	activeInSignatureCards: false
-	activeOnBoard: true
+	getCurrentCount() {
+		let battlePetCount = 0;
+		for (let card of Array.from(this.getGameSession().getBoard().getCards(CardType.Unit))) {
+			if ((card.getOwnerId() === this.getCard().getOwnerId()) && card.getBelongsToTribe(Races.BattlePet)) {
+				battlePetCount++;
+			}
+		}
+		return battlePetCount;
+	}
+}
+ModifierDynamicCountModifySelfCostByBattlePetsOnBoard.initClass();
 
-	@createContextObject: (manaCostChange=0, description, appliedName, options = undefined) ->
-		contextObject = super(options)
-		perPetCostChangeBuff = ModifierManaCostChange.createContextObject(manaCostChange)
-		if appliedName
-			perPetCostChangeBuff.appliedName = appliedName
-		contextObject.description = description
-		contextObject.modifiersContextObjects = [perPetCostChangeBuff]
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		return @description.replace /%X/, modifierContextObject.description
-
-	getCurrentCount: () ->
-		battlePetCount = 0
-		for card in @getGameSession().getBoard().getCards(CardType.Unit)
-			if card.getOwnerId() is @getCard().getOwnerId() and card.getBelongsToTribe(Races.BattlePet)
-				battlePetCount++
-		return battlePetCount
-
-module.exports = ModifierDynamicCountModifySelfCostByBattlePetsOnBoard
+module.exports = ModifierDynamicCountModifySelfCostByBattlePetsOnBoard;

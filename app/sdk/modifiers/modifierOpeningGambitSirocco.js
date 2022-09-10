@@ -1,44 +1,69 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-CardType = require 'app/sdk/cards/cardType'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardFromHandAction = require 'app/sdk/actions/playCardFromHandAction'
-ModifierOpeningGambit = require './modifierOpeningGambit'
-Races = require 'app/sdk/cards/racesLookup'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const CardType = require('app/sdk/cards/cardType');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const Races = require('app/sdk/cards/racesLookup');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class ModifierOpeningGambitSirocco extends ModifierOpeningGambit
+class ModifierOpeningGambitSirocco extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitSirocco";
+		this.type ="ModifierOpeningGambitSirocco";
+	
+		this.modifierName ="Opening Gambit";
+		this.description = "Summon a 3/2 Skyrock Golem on random spaces for each Golem you've summoned this game";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambitSirocco"];
+	}
 
-	type:"ModifierOpeningGambitSirocco"
-	@type:"ModifierOpeningGambitSirocco"
+	getIsActionRelevant(a) {
+		// triggers once for each Golem tribe minion this card's owner summoned previously
+		if (a instanceof PlayCardFromHandAction && (a.getOwnerId() === this.getCard().getOwnerId())) {
+			const card = a.getCard();
+			return (card != null) && (card.type === CardType.Unit) && card.getBelongsToTribe(Races.Golem) && (card !== this.getCard());
+		}
+	}
 
-	@modifierName:"Opening Gambit"
-	@description: "Summon a 3/2 Skyrock Golem on random spaces for each Golem you've summoned this game"
+	onOpeningGambit() {
+		super.onOpeningGambit();
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambitSirocco"]
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const summonActions = this.getGameSession().filterActions(this.getIsActionRelevant.bind(this));
 
-	getIsActionRelevant: (a) ->
-		# triggers once for each Golem tribe minion this card's owner summoned previously
-		if a instanceof PlayCardFromHandAction and a.getOwnerId() is @getCard().getOwnerId()
-			card = a.getCard()
-			return card? and card.type is CardType.Unit and card.getBelongsToTribe(Races.Golem) and card != @getCard()
+			const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData({id: Cards.Neutral.SkyrockGolem});
+			const spawnLocations = [];
+			const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, CONFIG.PATTERN_WHOLE_BOARD, card);
+			for (let i = 0, end = summonActions.length, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+				if (validSpawnLocations.length > 0) {
+					spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+				}
+			}
 
-	onOpeningGambit: () ->
-		super()
+			return (() => {
+				const result = [];
+				for (let position of Array.from(spawnLocations)) {
+					const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, {id: Cards.Neutral.SkyrockGolem});
+					playCardAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(playCardAction));
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierOpeningGambitSirocco.initClass();
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			summonActions = @getGameSession().filterActions(@getIsActionRelevant.bind(@))
-
-			card = @getGameSession().getExistingCardFromIndexOrCachedCardFromData({id: Cards.Neutral.SkyrockGolem})
-			spawnLocations = []
-			validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(@getGameSession(), {x:0, y:0}, CONFIG.PATTERN_WHOLE_BOARD, card)
-			for i in [0...summonActions.length]
-				if validSpawnLocations.length > 0
-					spawnLocations.push(validSpawnLocations.splice(@getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0])
-
-			for position in spawnLocations
-				playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, {id: Cards.Neutral.SkyrockGolem})
-				playCardAction.setSource(@getCard())
-				@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierOpeningGambitSirocco
+module.exports = ModifierOpeningGambitSirocco;

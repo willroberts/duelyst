@@ -1,73 +1,107 @@
-EVENTS = require 'app/common/event_types'
-Modifier = require './modifier'
-AttackAction = require 'app/sdk/actions/attackAction'
-ForcedAttackAction = require 'app/sdk/actions/forcedAttackAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const EVENTS = require('app/common/event_types');
+const Modifier = require('./modifier');
+const AttackAction = require('app/sdk/actions/attackAction');
+const ForcedAttackAction = require('app/sdk/actions/forcedAttackAction');
+const CardType = require('app/sdk/cards/cardType');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierFrenzy extends Modifier
+class ModifierFrenzy extends Modifier {
+	static initClass() {
+	
+		this.prototype.type = "ModifierFrenzy";
+		this.type = "ModifierFrenzy";
+	
+		this.isKeyworded = true;
+		this.keywordDefinition = i18next.t("modifiers.frenzy_def");
+		this.prototype.maxStacks = 1;
+	
+		this.modifierName = i18next.t("modifiers.frenzy_name");
+		this.description = null;
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierFrenzy"];
+	}
 
-	type: "ModifierFrenzy"
-	@type: "ModifierFrenzy"
+	onEvent(event) {
+		super.onEvent(event);
 
-	@isKeyworded: true
-	@keywordDefinition: i18next.t("modifiers.frenzy_def")
-	maxStacks: 1
+		if (this._private.listeningToEvents) {
+			if (event.type === EVENTS.entities_involved_in_attack) {
+				return this.onEntitiesInvolvedInAttack(event);
+			}
+		}
+	}
 
-	@modifierName: i18next.t("modifiers.frenzy_name")
-	@description: null
+	getIsActionRelevant(a) {
+		// frenzy when we notice our entity is attacking, but only on an explict attack (i.e. not on a strikeback)
+		if ((a.getSource() === this.getCard()) && ((a instanceof AttackAction && !a.getIsImplicit()) || a instanceof ForcedAttackAction)) {
+			// check if attack is in melee range
+			const target = a.getTarget();
+			const targetPosition = target.getPosition();
+			const entityPosition = this.getCard().getPosition();
+			return (Math.abs(targetPosition.x - entityPosition.x) <= 1) && (Math.abs(targetPosition.y - entityPosition.y) <= 1);
+		}
+		return false;
+	}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	getAttackableEntities(a) {
+		const entities = [];
+		const target = a.getTarget();
 
-	fxResource: ["FX.Modifiers.ModifierFrenzy"]
+		// find all other attackable enemy entities
+		for (let entity of Array.from(this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1))) {
+			if (entity !== target) {
+				entities.push(entity);
+			}
+		}
 
-	onEvent: (event) ->
-		super(event)
+		return entities;
+	}
 
-		if @_private.listeningToEvents
-			if event.type == EVENTS.entities_involved_in_attack
-				@onEntitiesInvolvedInAttack(event)
+	onBeforeAction(event) {
+		super.onBeforeAction(event);
 
-	getIsActionRelevant: (a) ->
-		# frenzy when we notice our entity is attacking, but only on an explict attack (i.e. not on a strikeback)
-		if a.getSource() == @getCard() and ((a instanceof AttackAction and !a.getIsImplicit()) or a instanceof ForcedAttackAction)
-			# check if attack is in melee range
-			target = a.getTarget()
-			targetPosition = target.getPosition()
-			entityPosition = @getCard().getPosition()
-			return Math.abs(targetPosition.x - entityPosition.x) <= 1 and Math.abs(targetPosition.y - entityPosition.y) <= 1
-		return false
+		const a = event.action;
+		if (this.getIsActionRelevant(a)) {
+			return (() => {
+				const result = [];
+				for (let entity of Array.from(this.getAttackableEntities(a))) {
+					const attackAction = this.getCard().actionAttack(entity);
+					result.push(this.getGameSession().executeAction(attackAction));
+				}
+				return result;
+			})();
+		}
+	}
 
-	getAttackableEntities: (a) ->
-		entities = []
-		target = a.getTarget()
+	onEntitiesInvolvedInAttack(actionEvent) {
+		const a = actionEvent.action;
+		if (this.getIsActive() && this.getIsActionRelevant(a)) {
+			return (() => {
+				const result = [];
+				for (let entity of Array.from(this.getAttackableEntities(a))) {
+					const attackAction = this.getCard().actionAttack(entity);
+					attackAction.setTriggeringModifier(this);
+					result.push(actionEvent.actions.push(attackAction));
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierFrenzy.initClass();
 
-		# find all other attackable enemy entities
-		for entity in @getGameSession().getBoard().getEnemyEntitiesAroundEntity(@getCard(), CardType.Unit, 1)
-			if entity != target
-				entities.push(entity)
-
-		return entities
-
-	onBeforeAction: (event) ->
-		super(event)
-
-		a = event.action
-		if @getIsActionRelevant(a)
-			for entity in @getAttackableEntities(a)
-				attackAction = @getCard().actionAttack(entity)
-				@getGameSession().executeAction(attackAction)
-
-	onEntitiesInvolvedInAttack: (actionEvent) ->
-		a = actionEvent.action
-		if @getIsActive() and @getIsActionRelevant(a)
-			for entity in @getAttackableEntities(a)
-				attackAction = @getCard().actionAttack(entity)
-				attackAction.setTriggeringModifier(@)
-				actionEvent.actions.push(attackAction)
-
-module.exports = ModifierFrenzy
+module.exports = ModifierFrenzy;

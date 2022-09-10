@@ -1,25 +1,46 @@
-CONFIG = require 'app/common/config'
-ModifierOpeningGambit = require './modifierOpeningGambit'
-KillAction = require 'app/sdk/actions/killAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const KillAction = require('app/sdk/actions/killAction');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierOpeningGambitDestroyEnemyMinions extends ModifierOpeningGambit
+class ModifierOpeningGambitDestroyEnemyMinions extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitDestroyEnemyMinions";
+		this.type = "ModifierOpeningGambitDestroyEnemyMinions";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type: "ModifierOpeningGambitDestroyEnemyMinions"
-	@type: "ModifierOpeningGambitDestroyEnemyMinions"
+	onOpeningGambit() {
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
+		const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, CONFIG.WHOLE_BOARD_RADIUS);
 
-	onOpeningGambit: () ->
+		return (() => {
+			const result = [];
+			for (let entity of Array.from(entities)) {
+				if (!entity.getIsGeneral()) { // this ability only kills minions, not Generals
+					const killAction = new KillAction(this.getGameSession());
+					killAction.setOwnerId(this.getCard().getOwnerId());
+					killAction.setSource(this.getCard());
+					killAction.setTarget(entity);
+					result.push(this.getGameSession().executeAction(killAction));
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
+ModifierOpeningGambitDestroyEnemyMinions.initClass();
 
-		entities = @getGameSession().getBoard().getEnemyEntitiesAroundEntity(@getCard(), CardType.Unit, CONFIG.WHOLE_BOARD_RADIUS)
-
-		for entity in entities
-			if !entity.getIsGeneral() # this ability only kills minions, not Generals
-				killAction = new KillAction(@getGameSession())
-				killAction.setOwnerId(@getCard().getOwnerId())
-				killAction.setSource(@getCard())
-				killAction.setTarget(entity)
-				@getGameSession().executeAction(killAction)
-
-module.exports = ModifierOpeningGambitDestroyEnemyMinions
+module.exports = ModifierOpeningGambitDestroyEnemyMinions;

@@ -1,25 +1,35 @@
-SpellSpawnEntity = 	require './spellSpawnEntity.coffee'
-Factions = require 'app/sdk/cards/factionsLookup.coffee'
-Races = require 'app/sdk/cards/racesLookup.coffee'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellSpawnEntity = 	require('./spellSpawnEntity.coffee');
+const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Races = require('app/sdk/cards/racesLookup.coffee');
 
-class SpellNaturesConfluence extends SpellSpawnEntity
+class SpellNaturesConfluence extends SpellSpawnEntity {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		# pick random battle pet ONCE, all battle pets that get spawned will be the same pet
-		if !@cardDataOrIndexToSpawn
-			# pull faction battle pets + neutral token battle pets
-			factionBattlePetCards = @getGameSession().getCardCaches().getFaction(Factions.Faction5).getRace(Races.BattlePet).getIsToken(false).getIsPrismatic(false).getIsSkinned(false).getCards()
-			neutralBattlePetCards = @getGameSession().getCardCaches().getFaction(Factions.Neutral).getRace(Races.BattlePet).getIsToken(true).getIsPrismatic(false).getIsSkinned(false).getCards()
-			battlePetCards = [].concat(factionBattlePetCards, neutralBattlePetCards)
+		// pick random battle pet ONCE, all battle pets that get spawned will be the same pet
+		if (!this.cardDataOrIndexToSpawn) {
+			// pull faction battle pets + neutral token battle pets
+			const factionBattlePetCards = this.getGameSession().getCardCaches().getFaction(Factions.Faction5).getRace(Races.BattlePet).getIsToken(false).getIsPrismatic(false).getIsSkinned(false).getCards();
+			const neutralBattlePetCards = this.getGameSession().getCardCaches().getFaction(Factions.Neutral).getRace(Races.BattlePet).getIsToken(true).getIsPrismatic(false).getIsSkinned(false).getCards();
+			const battlePetCards = [].concat(factionBattlePetCards, neutralBattlePetCards);
 
-			card = battlePetCards[@getGameSession().getRandomIntegerForExecution(battlePetCards.length)]
-			@cardDataOrIndexToSpawn = card.createNewCardData()
+			const card = battlePetCards[this.getGameSession().getRandomIntegerForExecution(battlePetCards.length)];
+			this.cardDataOrIndexToSpawn = card.createNewCardData();
+		}
 
-		# spawn random battle pet
-		spawnAction = @getSpawnAction(x, y, @cardDataOrIndexToSpawn)
-		if spawnAction?
-			@getGameSession().executeAction(spawnAction)
+		// spawn random battle pet
+		const spawnAction = this.getSpawnAction(x, y, this.cardDataOrIndexToSpawn);
+		if (spawnAction != null) {
+			return this.getGameSession().executeAction(spawnAction);
+		}
+	}
+}
 
-module.exports = SpellNaturesConfluence
+module.exports = SpellNaturesConfluence;

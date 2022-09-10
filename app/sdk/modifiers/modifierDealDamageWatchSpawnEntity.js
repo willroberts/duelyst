@@ -1,60 +1,92 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierDealDamageWatch = require './modifierDealDamageWatch'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
 
-class ModifierDealDamageWatchSpawnEntity extends ModifierDealDamageWatch
+class ModifierDealDamageWatchSpawnEntity extends ModifierDealDamageWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDealDamageWatchSpawnEntity";
+		this.type ="ModifierDealDamageWatchSpawnEntity";
+	
+		this.modifierName ="Deal Damage Watch";
+		this.description ="Whenever this minion damages an enemy, summon %X";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDealDamageWatch", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierDealDamageWatchSpawnEntity"
-	@type:"ModifierDealDamageWatchSpawnEntity"
+	static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently, options) {
+		if (spawnDescription == null) { spawnDescription = ""; }
+		if (spawnCount == null) { spawnCount = 1; }
+		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
+		if (spawnSilently == null) { spawnSilently = true; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.spawnDescription = spawnDescription;
+		contextObject.spawnCount = spawnCount;
+		contextObject.spawnPattern = spawnPattern;
+		contextObject.spawnSilently = spawnSilently;
+		return contextObject;
+	}
 
-	@modifierName:"Deal Damage Watch"
-	@description:"Whenever this minion damages an enemy, summon %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			let replaceText = "";
+			if (modifierContextObject.spawnCount === 1) {
+				replaceText = "a "+modifierContextObject.spawnDescription+" into a nearby space";
+			} else if (modifierContextObject.spawnCount === 8) {
+				replaceText = ""+modifierContextObject.spawnDescription+"s in all nearby spaces";
+			} else {
+				replaceText = ""+modifierContextObject.spawnDescription+"s into "+modifierContextObject.spawnCount+" nearby spaces";
+			}
+			return this.description.replace(/%X/, replaceText);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierDealDamageWatch", "FX.Modifiers.ModifierGenericSpawn"]
+	onDealDamage(action) {
+		super.onDealDamage(action);
 
-	@createContextObject: (cardDataOrIndexToSpawn, spawnDescription="", spawnCount=1, spawnPattern=CONFIG.PATTERN_3x3, spawnSilently=true, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.spawnDescription = spawnDescription
-		contextObject.spawnCount = spawnCount
-		contextObject.spawnPattern = spawnPattern
-		contextObject.spawnSilently = spawnSilently
-		return contextObject
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const ownerId = this.getSpawnOwnerId(action);
+			const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierDealDamageWatchSpawnEntity);
+			return (() => {
+				const result = [];
+				for (let spawnPosition of Array.from(spawnPositions)) {
+					var spawnAction;
+					const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
+					if (this.spawnSilently) {
+						spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					} else {
+						spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					}
+					spawnAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(spawnAction));
+				}
+				return result;
+			})();
+		}
+	}
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			replaceText = ""
-			if modifierContextObject.spawnCount == 1
-				replaceText = "a "+modifierContextObject.spawnDescription+" into a nearby space"
-			else if modifierContextObject.spawnCount == 8
-				replaceText = ""+modifierContextObject.spawnDescription+"s in all nearby spaces"
-			else
-				replaceText = ""+modifierContextObject.spawnDescription+"s into "+modifierContextObject.spawnCount+" nearby spaces"
-			return @description.replace /%X/, replaceText
-		else
-			return @description
+	getCardDataOrIndexToSpawn() {
+		return this.cardDataOrIndexToSpawn;
+	}
 
-	onDealDamage: (action) ->
-		super(action)
+	getSpawnOwnerId(action) {
+		return this.getCard().getOwnerId();
+	}
+}
+ModifierDealDamageWatchSpawnEntity.initClass();
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			ownerId = @getSpawnOwnerId(action)
-			spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(@, ModifierDealDamageWatchSpawnEntity)
-			for spawnPosition in spawnPositions
-				cardDataOrIndexToSpawn = @getCardDataOrIndexToSpawn()
-				if @spawnSilently
-					spawnAction = new PlayCardSilentlyAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				else
-					spawnAction = new PlayCardAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				spawnAction.setSource(@getCard())
-				@getGameSession().executeAction(spawnAction)
-
-	getCardDataOrIndexToSpawn: () ->
-		return @cardDataOrIndexToSpawn
-
-	getSpawnOwnerId: (action) ->
-		return @getCard().getOwnerId()
-
-module.exports = ModifierDealDamageWatchSpawnEntity
+module.exports = ModifierDealDamageWatchSpawnEntity;

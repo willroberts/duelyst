@@ -1,54 +1,77 @@
-ModifierBackstabWatch = require './modifierBackstabWatch'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
-ModifierBackstab = require './modifierBackstab'
-CardType = require 'app/sdk/cards/cardType'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-CONFIG = require 'app/common/config'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierBackstabWatch = require('./modifierBackstabWatch');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
+const ModifierBackstab = require('./modifierBackstab');
+const CardType = require('app/sdk/cards/cardType');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const CONFIG = require('app/common/config');
 
-class ModifierBackstabWatchSummonBackstabMinion extends ModifierBackstabWatch
+class ModifierBackstabWatchSummonBackstabMinion extends ModifierBackstabWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierBackstabWatchSummonBackstabMinion";
+		this.type ="ModifierBackstabWatchSummonBackstabMinion";
+	
+		this.prototype.cardToAdd = null;
+		this.prototype.numToAdd = 0;
+	}
 
-	type:"ModifierBackstabWatchSummonBackstabMinion"
-	@type:"ModifierBackstabWatchSummonBackstabMinion"
+	static createContextObject(backstabManaCost, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.backstabManaCost = backstabManaCost;
+		return contextObject;
+	}
 
-	cardToAdd: null
-	numToAdd: 0
+	onBackstabWatch(action) {
 
-	@createContextObject: (backstabManaCost, options) ->
-		contextObject = super(options)
-		contextObject.backstabManaCost = backstabManaCost
-		return contextObject
+		let card, i;
+		let asc, end;
+		for (i = 0, end = this.numToAdd, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+			const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), this.getOwnerId(), this.cardToAdd);
+			this.getGameSession().executeAction(putCardInHandAction);
+		}
 
-	onBackstabWatch: (action) ->
+		const deck = this.getOwner().getDeck();
+		const drawPile = deck.getDrawPile();
+		const indexesOfMinions = [];
+		for (i = 0; i < drawPile.length; i++) {
+			// find only frost minions
+			const cardIndex = drawPile[i];
+			card = this.getGameSession().getCardByIndex(cardIndex);
+			if ((card != null) && (card.getType() === CardType.Unit) && (card.getManaCost() <= this.backstabManaCost) && card.hasModifierClass(ModifierBackstab)) {
+				indexesOfMinions.push(i);
+			}
+		}
 
-		for i in [0...@numToAdd]
-			putCardInHandAction = new PutCardInHandAction(@getGameSession(), @getOwnerId(), @cardToAdd)
-			@getGameSession().executeAction(putCardInHandAction)
+		if (indexesOfMinions.length > 0) {
+			const indexOfCardInDeck = indexesOfMinions[this.getGameSession().getRandomIntegerForExecution(indexesOfMinions.length)];
+			const cardIndexToDraw = drawPile[indexOfCardInDeck];
+			card = this.getGameSession().getCardByIndex(cardIndexToDraw);
 
-		deck = @getOwner().getDeck()
-		drawPile = deck.getDrawPile()
-		indexesOfMinions = []
-		for cardIndex, i in drawPile
-			# find only frost minions
-			card = @getGameSession().getCardByIndex(cardIndex)
-			if card? and card.getType() == CardType.Unit and card.getManaCost() <= @backstabManaCost and card.hasModifierClass(ModifierBackstab)
-				indexesOfMinions.push(i)
+			let spawnLocation = null;
+			const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), CONFIG.PATTERN_3x3, card);
+			if ((validSpawnLocations != null ? validSpawnLocations.length : undefined) > 0) {
+				spawnLocation = validSpawnLocations[this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length)];
 
-		if indexesOfMinions.length > 0
-			indexOfCardInDeck = indexesOfMinions[@getGameSession().getRandomIntegerForExecution(indexesOfMinions.length)]
-			cardIndexToDraw = drawPile[indexOfCardInDeck]
-			card = @getGameSession().getCardByIndex(cardIndexToDraw)
+				if (spawnLocation != null) {
+					const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), spawnLocation.x, spawnLocation.y, card);
+					playCardAction.setSource(this.getCard());
+					return this.getGameSession().executeAction(playCardAction);
+				}
+			}
+		}
+	}
+}
+ModifierBackstabWatchSummonBackstabMinion.initClass();
 
-			spawnLocation = null
-			validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(@getGameSession(), @getCard().getPosition(), CONFIG.PATTERN_3x3, card)
-			if validSpawnLocations?.length > 0
-				spawnLocation = validSpawnLocations[@getGameSession().getRandomIntegerForExecution(validSpawnLocations.length)]
-
-				if spawnLocation?
-					playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), spawnLocation.x, spawnLocation.y, card)
-					playCardAction.setSource(@getCard())
-					@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierBackstabWatchSummonBackstabMinion
+module.exports = ModifierBackstabWatchSummonBackstabMinion;

@@ -1,9 +1,18 @@
-ModifierStunned = require './modifierStunned'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierStunned = require('./modifierStunned');
 
-class ModifierStunnedVanar extends ModifierStunned
+class ModifierStunnedVanar extends ModifierStunned {
+	static initClass() {
+	
+		this.prototype.type ="ModifierStunnedVanar";
+		this.type ="ModifierStunnedVanar";
+		this.prototype.fxResource = ["FX.Modifiers.ModifierStunnedVanar"];
+	}
+}
+ModifierStunnedVanar.initClass();
 
-	type:"ModifierStunnedVanar"
-	@type:"ModifierStunnedVanar"
-	fxResource: ["FX.Modifiers.ModifierStunnedVanar"]
-
-module.exports = ModifierStunnedVanar
+module.exports = ModifierStunnedVanar;

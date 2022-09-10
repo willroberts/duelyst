@@ -1,35 +1,50 @@
-ModifierStartTurnWatch = require './modifierStartTurnWatch'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-CONFIG = require 'app/common/config'
+const CONFIG = require('app/common/config');
 
-class ModifierStartTurnWatchDamageMyGeneral extends ModifierStartTurnWatch
+class ModifierStartTurnWatchDamageMyGeneral extends ModifierStartTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierStartTurnWatchDamageMyGeneral";
+		this.type ="ModifierStartTurnWatchDamageMyGeneral";
+	
+		this.prototype.damageAmount = 0;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericChainLightningRed"];
+	}
 
-	type:"ModifierStartTurnWatchDamageMyGeneral"
-	@type:"ModifierStartTurnWatchDamageMyGeneral"
+	static createContextObject(damageAmount, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	damageAmount: 0
+	onTurnWatch(action) {
+		super.onTurnWatch(action);
 
-	fxResource: ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericChainLightningRed"]
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		if (general != null) {
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setOwnerId(this.getCard().getOwnerId());
+			damageAction.setSource(this.getCard());
+			damageAction.setTarget(general);
+			if (!this.damageAmount) {
+				damageAction.setDamageAmount(this.getCard().getATK());
+			} else {
+				damageAction.setDamageAmount(this.damageAmount);
+			}
+			return this.getGameSession().executeAction(damageAction);
+		}
+	}
+}
+ModifierStartTurnWatchDamageMyGeneral.initClass();
 
-	@createContextObject: (damageAmount, options) ->
-		contextObject = super(options)
-		contextObject.damageAmount = damageAmount
-		return contextObject
-
-	onTurnWatch: (action) ->
-		super(action)
-
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		if general?
-			damageAction = new DamageAction(this.getGameSession())
-			damageAction.setOwnerId(@getCard().getOwnerId())
-			damageAction.setSource(@getCard())
-			damageAction.setTarget(general)
-			if !@damageAmount
-				damageAction.setDamageAmount(@getCard().getATK())
-			else
-				damageAction.setDamageAmount(@damageAmount)
-			@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierStartTurnWatchDamageMyGeneral
+module.exports = ModifierStartTurnWatchDamageMyGeneral;

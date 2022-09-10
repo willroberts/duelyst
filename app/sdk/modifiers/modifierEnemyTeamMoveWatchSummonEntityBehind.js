@@ -1,65 +1,91 @@
-ModifierEnemyTeamMoveWatch = require './modifierEnemyTeamMoveWatch'
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-UtilsPosition = require 'app/common/utils/utils_position'
-CardType = require 'app/sdk/cards/cardType'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEnemyTeamMoveWatch = require('./modifierEnemyTeamMoveWatch');
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const UtilsPosition = require('app/common/utils/utils_position');
+const CardType = require('app/sdk/cards/cardType');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
 
-class ModifierEnemyTeamMoveWatchSummonEntityBehind extends ModifierEnemyTeamMoveWatch
+class ModifierEnemyTeamMoveWatchSummonEntityBehind extends ModifierEnemyTeamMoveWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEnemyTeamMoveWatchSummonEntityBehind";
+		this.type ="ModifierEnemyTeamMoveWatchSummonEntityBehind";
+	
+		this.modifierName ="Enemy Team Move Watch Buff Target";
+		this.description = "Whenever an enemy minion is moved for any reason, summon %X";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierMyTeamMoveWatch", "FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierEnemyTeamMoveWatchSummonEntityBehind"
-	@type:"ModifierEnemyTeamMoveWatchSummonEntityBehind"
+	static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnSilently, options) {
+		if (spawnDescription == null) { spawnDescription = ""; }
+		if (spawnCount == null) { spawnCount = 1; }
+		if (spawnSilently == null) { spawnSilently = false; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.spawnDescription = spawnDescription;
+		contextObject.spawnCount = spawnCount;
+		contextObject.spawnSilently = spawnSilently;
+		return contextObject;
+	}
 
-	@modifierName:"Enemy Team Move Watch Buff Target"
-	@description: "Whenever an enemy minion is moved for any reason, summon %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			const replaceText = "a "+modifierContextObject.spawnDescription+" behind them";
+			return this.description.replace(/%X/, replaceText);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierMyTeamMoveWatch", "FX.Modifiers.ModifierGenericBuff"]
+	onEnemyTeamMoveWatch(action, movingTarget) {
+		super.onEnemyTeamMoveWatch(action);
 
-	@createContextObject: (cardDataOrIndexToSpawn, spawnDescription="", spawnCount=1, spawnSilently=false, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.spawnDescription = spawnDescription
-		contextObject.spawnCount = spawnCount
-		contextObject.spawnSilently = spawnSilently
-		return contextObject
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const behindPosition = this.getSpaceBehindMovingUnit(movingTarget);
+			const board = this.getGameSession().getBoard();
+			const unitInBehindPosition = board.getUnitAtPosition(behindPosition);
+			// check to see if there's anything behind the unit (where we want to summon).  if there's not, summon the unit there
+			if(!unitInBehindPosition) {
+				let spawnAction;
+				const ownerId = this.getSpawnOwnerId(action);
+				const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
+				if (this.spawnSilently) {
+					spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, behindPosition.x, behindPosition.y, cardDataOrIndexToSpawn);
+				} else {
+					spawnAction = new PlayCardAction(this.getGameSession(), ownerId, behindPosition.x, behindPosition.y, cardDataOrIndexToSpawn);
+				}
+				spawnAction.setSource(this.getCard());
+				return this.getGameSession().executeAction(spawnAction);
+			}
+		}
+	}
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			replaceText = "a "+modifierContextObject.spawnDescription+" behind them"
-			return @description.replace /%X/, replaceText
-		else
-			return @description
+	getCardDataOrIndexToSpawn() {
+		return this.cardDataOrIndexToSpawn;
+	}
 
-	onEnemyTeamMoveWatch: (action, movingTarget) ->
-		super(action)
+	getSpaceBehindMovingUnit(behindUnit) {
+		if (behindUnit != null) {
+			const position = behindUnit.getPosition();
+			position.x += behindUnit.isOwnedByPlayer1() ? -1 : 1;
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			behindPosition = @getSpaceBehindMovingUnit(movingTarget)
-			board = @getGameSession().getBoard()
-			unitInBehindPosition = board.getUnitAtPosition(behindPosition)
-			# check to see if there's anything behind the unit (where we want to summon).  if there's not, summon the unit there
-			if(!unitInBehindPosition)
-				ownerId = @getSpawnOwnerId(action)
-				cardDataOrIndexToSpawn = @getCardDataOrIndexToSpawn()
-				if @spawnSilently
-					spawnAction = new PlayCardSilentlyAction(@getGameSession(), ownerId, behindPosition.x, behindPosition.y, cardDataOrIndexToSpawn)
-				else
-					spawnAction = new PlayCardAction(@getGameSession(), ownerId, behindPosition.x, behindPosition.y, cardDataOrIndexToSpawn)
-				spawnAction.setSource(@getCard())
-				@getGameSession().executeAction(spawnAction)
+			return position;
+		}
+	}
 
-	getCardDataOrIndexToSpawn: () ->
-		return @cardDataOrIndexToSpawn
+	getSpawnOwnerId(action) {
+		return this.getCard().getOwnerId();
+	}
+}
+ModifierEnemyTeamMoveWatchSummonEntityBehind.initClass();
 
-	getSpaceBehindMovingUnit: (behindUnit) ->
-		if behindUnit?
-			position = behindUnit.getPosition()
-			position.x += if behindUnit.isOwnedByPlayer1() then -1 else 1
-
-			return position
-
-	getSpawnOwnerId: (action) ->
-		return @getCard().getOwnerId()
-
-module.exports = ModifierEnemyTeamMoveWatchSummonEntityBehind
+module.exports = ModifierEnemyTeamMoveWatchSummonEntityBehind;

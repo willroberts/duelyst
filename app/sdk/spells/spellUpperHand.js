@@ -1,21 +1,30 @@
-Spell = require './spell'
-CardType = require 'app/sdk/cards/cardType'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class SpellUpperHand extends Spell
+class SpellUpperHand extends Spell {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		applyEffectPosition = {x: x, y: y}
-		minion = board.getCardAtPosition(applyEffectPosition, CardType.Unit, false, false)
-		hand = @getGameSession().getOpponentPlayerOfPlayerId(@getOwnerId()).getDeck().getCardsInHandExcludingMissing()
-		if hand? and minion? and hand.length > 0
-			damageAction = new DamageAction(@getGameSession())
-			damageAction.setOwnerId(@getOwnerId())
-			damageAction.setSource(@)
-			damageAction.setTarget(minion)
-			damageAction.setDamageAmount(hand.length)
-			@getGameSession().executeAction(damageAction)
+		const applyEffectPosition = {x, y};
+		const minion = board.getCardAtPosition(applyEffectPosition, CardType.Unit, false, false);
+		const hand = this.getGameSession().getOpponentPlayerOfPlayerId(this.getOwnerId()).getDeck().getCardsInHandExcludingMissing();
+		if ((hand != null) && (minion != null) && (hand.length > 0)) {
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setOwnerId(this.getOwnerId());
+			damageAction.setSource(this);
+			damageAction.setTarget(minion);
+			damageAction.setDamageAmount(hand.length);
+			return this.getGameSession().executeAction(damageAction);
+		}
+	}
+}
 
-module.exports = SpellUpperHand
+module.exports = SpellUpperHand;

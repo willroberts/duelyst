@@ -1,68 +1,100 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-UtilsPosition = require 'app/common/utils/utils_position'
-ModifierDyingWish = require './modifierDyingWish'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const UtilsPosition = require('app/common/utils/utils_position');
+const ModifierDyingWish = require('./modifierDyingWish');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
 
-class ModifierDyingWishSpawnEntity extends ModifierDyingWish
+class ModifierDyingWishSpawnEntity extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWishSpawnEntity";
+		this.type ="ModifierDyingWishSpawnEntity";
+	
+		this.modifierName ="Dying Wish";
+		this.description = "Summon %X";
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+		this.prototype.spawnDescription = null;
+		this.prototype.spawnCount = null;
+		this.prototype.spawnPattern = null;
+		this.prototype.spawnSilently = true;
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierDyingWishSpawnEntity"
-	@type:"ModifierDyingWishSpawnEntity"
+	static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently,options) {
+		if (spawnDescription == null) { spawnDescription = ""; }
+		if (spawnCount == null) { spawnCount = 1; }
+		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_1x1; }
+		if (spawnSilently == null) { spawnSilently = true; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.spawnDescription = spawnDescription;
+		contextObject.spawnCount = spawnCount;
+		contextObject.spawnPattern = spawnPattern;
+		contextObject.spawnSilently = spawnSilently;
+		return contextObject;
+	}
 
-	@modifierName:"Dying Wish"
-	@description: "Summon %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			let replaceText = "";
+			if (UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)) {
+				replaceText = "a "+modifierContextObject.spawnDescription+" on this space";
+			} else if (modifierContextObject.spawnCount === 1) {
+				replaceText = "a "+modifierContextObject.spawnDescription+" in a random nearby space";
+			} else if (modifierContextObject.spawnCount === 8) {
+				replaceText = ""+modifierContextObject.spawnDescription+"s in all nearby spaces";
+			} else {
+				replaceText = ""+modifierContextObject.spawnDescription+" nearby";
+			}
+			return this.description.replace(/%X/, replaceText);
+		} else {
+			return this.description;
+		}
+	}
 
-	cardDataOrIndexToSpawn: null
-	spawnDescription: null
-	spawnCount: null
-	spawnPattern: null
-	spawnSilently: true
-	fxResource: ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn"]
+	onDyingWish(action) {
+		super.onDyingWish(action);
 
-	@createContextObject: (cardDataOrIndexToSpawn, spawnDescription = "", spawnCount=1, spawnPattern=CONFIG.PATTERN_1x1, spawnSilently=true,options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.spawnDescription = spawnDescription
-		contextObject.spawnCount = spawnCount
-		contextObject.spawnPattern = spawnPattern
-		contextObject.spawnSilently = spawnSilently
-		return contextObject
+		if (this.getGameSession().getIsRunningAsAuthoritative() && (this.getCardDataOrIndexToSpawn() != null)) {
+			const ownerId = this.getSpawnOwnerId(action);
+			const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierDyingWishSpawnEntity);
+			return (() => {
+				const result = [];
+				for (let spawnPosition of Array.from(spawnPositions)) {
+					var spawnAction;
+					const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
+					if (this.spawnSilently) {
+						spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					} else {
+						spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					}
+					spawnAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(spawnAction));
+				}
+				return result;
+			})();
+		}
+	}
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			replaceText = ""
-			if UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)
-				replaceText = "a "+modifierContextObject.spawnDescription+" on this space"
-			else if modifierContextObject.spawnCount == 1
-				replaceText = "a "+modifierContextObject.spawnDescription+" in a random nearby space"
-			else if modifierContextObject.spawnCount == 8
-				replaceText = ""+modifierContextObject.spawnDescription+"s in all nearby spaces"
-			else
-				replaceText = ""+modifierContextObject.spawnDescription+" nearby"
-			return @description.replace /%X/, replaceText
-		else
-			return @description
+	getCardDataOrIndexToSpawn() {
+		return this.cardDataOrIndexToSpawn;
+	}
 
-	onDyingWish: (action) ->
-		super(action)
+	getSpawnOwnerId(action) {
+		return this.getCard().getOwnerId();
+	}
+}
+ModifierDyingWishSpawnEntity.initClass();
 
-		if @getGameSession().getIsRunningAsAuthoritative() and @getCardDataOrIndexToSpawn()?
-			ownerId = @getSpawnOwnerId(action)
-			spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(@, ModifierDyingWishSpawnEntity)
-			for spawnPosition in spawnPositions
-				cardDataOrIndexToSpawn = @getCardDataOrIndexToSpawn()
-				if @spawnSilently
-					spawnAction = new PlayCardSilentlyAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				else
-					spawnAction = new PlayCardAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				spawnAction.setSource(@getCard())
-				@getGameSession().executeAction(spawnAction)
-
-	getCardDataOrIndexToSpawn: () ->
-		return @cardDataOrIndexToSpawn
-
-	getSpawnOwnerId: (action) ->
-		return @getCard().getOwnerId()
-
-module.exports = ModifierDyingWishSpawnEntity
+module.exports = ModifierDyingWishSpawnEntity;

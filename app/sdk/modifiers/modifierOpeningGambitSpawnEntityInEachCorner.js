@@ -1,46 +1,72 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierOpeningGambit = 	require './modifierOpeningGambit'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierOpeningGambit = 	require('./modifierOpeningGambit');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierOpeningGambitSpawnEntityInEachCorner extends ModifierOpeningGambit
+class ModifierOpeningGambitSpawnEntityInEachCorner extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitSpawnEntityInEachCorner";
+		this.type ="ModifierOpeningGambitSpawnEntityInEachCorner";
+	
+		this.description = "Summon %X";
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierOpeningGambitSpawnEntityInEachCorner"
-	@type:"ModifierOpeningGambitSpawnEntityInEachCorner"
+	static createContextObject(cardDataOrIndexToSpawn, spawnDescription, options) {
+		if (spawnDescription == null) { spawnDescription = ""; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.spawnDescription = spawnDescription;
+		return contextObject;
+	}
 
-	@description: "Summon %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.spawnDescription+" in each corner");
+		} else {
+			return this.description;
+		}
+	}
 
-	cardDataOrIndexToSpawn: null
+	onOpeningGambit() {
+		super.onOpeningGambit();
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"]
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+			const spawnLocations = [];
+			const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, CONFIG.PATTERN_CORNERS, card);
+			for (let i = 0; i < 4; i++) {
+				if (validSpawnLocations.length > 0) {
+					spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+				}
+			}
 
-	@createContextObject: (cardDataOrIndexToSpawn, spawnDescription = "", options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.spawnDescription = spawnDescription
-		return contextObject
+			return (() => {
+				const result = [];
+				for (let position of Array.from(spawnLocations)) {
+					const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+					playCardAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(playCardAction));
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierOpeningGambitSpawnEntityInEachCorner.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.spawnDescription+" in each corner"
-		else
-			return @description
-
-	onOpeningGambit: () ->
-		super()
-
-		if @getGameSession().getIsRunningAsAuthoritative()
-			card = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(@cardDataOrIndexToSpawn)
-			spawnLocations = []
-			validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(@getGameSession(), {x:0, y:0}, CONFIG.PATTERN_CORNERS, card)
-			for i in [0...4]
-				if validSpawnLocations.length > 0
-					spawnLocations.push(validSpawnLocations.splice(@getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0])
-
-			for position in spawnLocations
-				playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, @cardDataOrIndexToSpawn)
-				playCardAction.setSource(@getCard())
-				@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierOpeningGambitSpawnEntityInEachCorner
+module.exports = ModifierOpeningGambitSpawnEntityInEachCorner;

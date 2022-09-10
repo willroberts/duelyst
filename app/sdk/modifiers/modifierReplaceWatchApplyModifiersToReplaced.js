@@ -1,24 +1,49 @@
-ModifierReplaceWatch = require './modifierReplaceWatch'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierReplaceWatch = require('./modifierReplaceWatch');
 
-class ModifierReplaceWatchApplyModifiersToReplaced extends ModifierReplaceWatch
+class ModifierReplaceWatchApplyModifiersToReplaced extends ModifierReplaceWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierReplaceWatchApplyModifiersToReplaced";
+		this.type ="ModifierReplaceWatchApplyModifiersToReplaced";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierReplaceWatch"];
+	
+		this.prototype.modifierContextObjects = null;
+	}
 
-	type:"ModifierReplaceWatchApplyModifiersToReplaced"
-	@type:"ModifierReplaceWatchApplyModifiersToReplaced"
+	static createContextObject(modifierContextObjects, options) {
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		contextObject.modifierContextObjects = modifierContextObjects;
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierReplaceWatch"]
+	onReplaceWatch(action) {
+		const card = action.getReplacedCard();
+		if (this.modifierContextObjects != null) {
+			return (() => {
+				const result = [];
+				for (let modifierContextObject of Array.from(this.modifierContextObjects)) {
+					if (modifierContextObject != null) {
+						result.push(this.getGameSession().applyModifierContextObject(modifierContextObject, card));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierReplaceWatchApplyModifiersToReplaced.initClass();
 
-	modifierContextObjects: null
-
-	@createContextObject: (modifierContextObjects, options=undefined) ->
-		contextObject = super(options)
-		contextObject.modifierContextObjects = modifierContextObjects
-		return contextObject
-
-	onReplaceWatch: (action) ->
-		card = action.getReplacedCard()
-		if @modifierContextObjects?
-			for modifierContextObject in @modifierContextObjects
-				if modifierContextObject?
-					@getGameSession().applyModifierContextObject(modifierContextObject, card)
-
-module.exports = ModifierReplaceWatchApplyModifiersToReplaced
+module.exports = ModifierReplaceWatchApplyModifiersToReplaced;

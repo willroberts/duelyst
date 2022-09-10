@@ -1,37 +1,51 @@
-ModifierEndEveryTurnWatch = require './modifierEndEveryTurnWatch'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEndEveryTurnWatch = require('./modifierEndEveryTurnWatch');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class ModifierEndTurnWatchDamagePlayerBasedOnRemainingMana extends ModifierEndEveryTurnWatch
+class ModifierEndTurnWatchDamagePlayerBasedOnRemainingMana extends ModifierEndEveryTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEndTurnWatchDamagePlayerBasedOnRemainingMana";
+		this.type ="ModifierEndTurnWatchDamagePlayerBasedOnRemainingMana";
+	
+		this.modifierName ="End Watch";
+		this.description ="At the end of each turn, deal damage to the player equal to their remaining mana";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierEndTurnWatch", "FX.Modifiers.ModifierExplosionsNearby"];
+	}
 
-	type:"ModifierEndTurnWatchDamagePlayerBasedOnRemainingMana"
-	@type:"ModifierEndTurnWatchDamagePlayerBasedOnRemainingMana"
+	static createContextObject(options) {
+		const contextObject = super.createContextObject(options);
+		return contextObject;
+	}
 
-	@modifierName:"End Watch"
-	@description:"At the end of each turn, deal damage to the player equal to their remaining mana"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierEndTurnWatch", "FX.Modifiers.ModifierExplosionsNearby"]
+	onTurnWatch(action) {
+		//get remaining mana
+		const owner = action.getOwner();
+		const damageAmount = owner.getRemainingMana();
 
-	@createContextObject: (options) ->
-		contextObject = super(options)
-		return contextObject
+		const target = this.getGameSession().getGeneralForPlayer(owner);
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description
+		//damage self
+		const damageAction = new DamageAction(this.getGameSession());
+		damageAction.setOwnerId(this.getCard().getOwnerId());
+		damageAction.setSource(this.getCard());
+		damageAction.setTarget(target);
+		damageAction.setDamageAmount(damageAmount);
+		return this.getGameSession().executeAction(damageAction);
+	}
+}
+ModifierEndTurnWatchDamagePlayerBasedOnRemainingMana.initClass();
 
-	onTurnWatch: (action) ->
-		#get remaining mana
-		owner = action.getOwner()
-		damageAmount = owner.getRemainingMana()
-
-		target = @getGameSession().getGeneralForPlayer(owner)
-
-		#damage self
-		damageAction = new DamageAction(@getGameSession())
-		damageAction.setOwnerId(@getCard().getOwnerId())
-		damageAction.setSource(@getCard())
-		damageAction.setTarget(target)
-		damageAction.setDamageAmount(damageAmount)
-		@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierEndTurnWatchDamagePlayerBasedOnRemainingMana
+module.exports = ModifierEndTurnWatchDamagePlayerBasedOnRemainingMana;

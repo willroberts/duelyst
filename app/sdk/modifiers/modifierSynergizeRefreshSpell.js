@@ -1,18 +1,29 @@
-ModifierSynergize = require './modifierSynergize'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierSynergize = require('./modifierSynergize');
 
-class ModifierSynergizeRefreshSpell extends ModifierSynergize
+class ModifierSynergizeRefreshSpell extends ModifierSynergize {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSynergizeRefreshSpell";
+		this.type ="ModifierSynergizeRefreshSpell";
+	
+		this.description ="Refresh your Bloodbound spell";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch"];
+	}
 
-	type:"ModifierSynergizeRefreshSpell"
-	@type:"ModifierSynergizeRefreshSpell"
+	onSynergize(action) {
+		super.onSynergize(action);
 
-	@description:"Refresh your Bloodbound spell"
+		const player = this.getCard().getGameSession().getPlayerById(this.getCard().getOwnerId());
+		return this.getGameSession().executeAction(player.actionActivateSignatureCard());
+	}
+}
+ModifierSynergizeRefreshSpell.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierSpellWatch"]
-
-	onSynergize: (action) ->
-		super(action)
-
-		player = @getCard().getGameSession().getPlayerById(@getCard().getOwnerId())
-		@getGameSession().executeAction(player.actionActivateSignatureCard())
-
-module.exports = ModifierSynergizeRefreshSpell
+module.exports = ModifierSynergizeRefreshSpell;

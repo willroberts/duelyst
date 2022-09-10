@@ -1,44 +1,60 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
-Modifier = require './modifier'
-CONFIG = require 'app/common/config'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
+const Modifier = require('./modifier');
+const CONFIG = require('app/common/config');
 
 
-class ModifierOpeningGambitDamageInFront extends ModifierOpeningGambit
+class ModifierOpeningGambitDamageInFront extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitDamageInFront";
+		this.type = "ModifierOpeningGambitDamageInFront";
+	
+		this.modifierName = "Opening Gambit";
+		this.description = "Deal %X damage to ANY minion in front of this";
+	
+		this.prototype.damageAmount = 0;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type: "ModifierOpeningGambitDamageInFront"
-	@type: "ModifierOpeningGambitDamageInFront"
+	static createContextObject(damageAmount, options) {
+		const contextObject = super.createContextObject();
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	@modifierName: "Opening Gambit"
-	@description: "Deal %X damage to ANY minion in front of this"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.damageAmount);
+		} else {
+			return this.description;
+		}
+	}
 
-	damageAmount: 0
+	onOpeningGambit() {
+		let playerOffset = 0;
+		if (this.getCard().isOwnedByPlayer1()) { playerOffset = 1; } else { playerOffset = -1; }
+		const offsetPosition = {x:this.getCard().getPosition().x+playerOffset, y:this.getCard().getPosition().y};
+		const target = this.getCard().getGameSession().getBoard().getUnitAtPosition(offsetPosition);
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
+		if ((target != null) && !target.getIsGeneral()) { //if there is a unit in front of this one, then damage it
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setOwnerId(this.getCard().getOwnerId());
+			damageAction.setTarget(target);
+			damageAction.setDamageAmount(this.damageAmount);
+			return this.getGameSession().executeAction(damageAction);
+		}
+	}
+}
+ModifierOpeningGambitDamageInFront.initClass();
 
-	@createContextObject: (damageAmount, options) ->
-		contextObject = super()
-		contextObject.damageAmount = damageAmount
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.damageAmount
-		else
-			return @description
-
-	onOpeningGambit: () ->
-		playerOffset = 0
-		if @getCard().isOwnedByPlayer1() then playerOffset = 1 else playerOffset = -1
-		offsetPosition = {x:@getCard().getPosition().x+playerOffset, y:@getCard().getPosition().y}
-		target = @getCard().getGameSession().getBoard().getUnitAtPosition(offsetPosition)
-
-		if target? and !target.getIsGeneral() #if there is a unit in front of this one, then damage it
-			damageAction = new DamageAction(this.getGameSession())
-			damageAction.setOwnerId(@getCard().getOwnerId())
-			damageAction.setTarget(target)
-			damageAction.setDamageAmount(@damageAmount)
-			@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierOpeningGambitDamageInFront
+module.exports = ModifierOpeningGambitDamageInFront;

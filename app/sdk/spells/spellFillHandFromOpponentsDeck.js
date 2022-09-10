@@ -1,45 +1,75 @@
-CONFIG = require 'app/common/config'
-Spell = require './spell'
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType =	require './spellFilterType'
-_ = require 'underscore'
-RemoveCardFromDeckAction = require 'app/sdk/actions/removeCardFromDeckAction'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const Spell = require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType =	require('./spellFilterType');
+const _ = require('underscore');
+const RemoveCardFromDeckAction = require('app/sdk/actions/removeCardFromDeckAction');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 
-class SpellFillHandFromOpponentsDeck extends Spell
+class SpellFillHandFromOpponentsDeck extends Spell {
+	static initClass() {
+	
+		this.prototype.spellFilterType = SpellFilterType.NeutralIndirect;
+	}
 
-	spellFilterType: SpellFilterType.NeutralIndirect
+	onApplyOneEffectToBoard(board,x,y,sourceAction) {
+		super.onApplyOneEffectToBoard(board,x,y,sourceAction);
 
-	onApplyOneEffectToBoard: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		//get number of empty slots in hand I need to Fill
+		let emptySlots = 0;
+		const myHand = this.getGameSession().getPlayerById(this.getOwnerId()).getDeck().getHand();
+		for (let card of Array.from(myHand)) {
+			if ((card === null) || (card === undefined)) {
+				emptySlots++;
+			}
+		}
 
-		#get number of empty slots in hand I need to Fill
-		emptySlots = 0
-		myHand = @getGameSession().getPlayerById(@getOwnerId()).getDeck().getHand()
-		for card in myHand
-			if card is null or card is undefined
-				emptySlots++
+		if (emptySlots > 0) {
+			let opponentCard, opponentPlayer;
+			const cardIndices = []; //first create indices of the cards we want to take from the opponent's deck
+			for (let i = 1, end = emptySlots, asc = 1 <= end; asc ? i <= end : i >= end; asc ? i++ : i--) {
+				opponentPlayer = this.getGameSession().getOpponentPlayerOfPlayerId(this.getOwnerId());
+				const opponentsDrawPile = opponentPlayer.getDeck().getDrawPile();
+				if (opponentsDrawPile.length > 0) {
+					const randomIndex = this.getGameSession().getRandomIntegerForExecution(opponentsDrawPile.length);
+					opponentCard = this.getGameSession().getCardByIndex(opponentsDrawPile[randomIndex]);
+					cardIndices.push(opponentCard);
+					opponentsDrawPile.splice(randomIndex, 1);
+				}
+			}
 
-		if emptySlots > 0
-			cardIndices = [] #first create indices of the cards we want to take from the opponent's deck
-			for i in [1..emptySlots]
-				opponentPlayer = @getGameSession().getOpponentPlayerOfPlayerId(@getOwnerId())
-				opponentsDrawPile = opponentPlayer.getDeck().getDrawPile()
-				if opponentsDrawPile.length > 0
-					randomIndex = @getGameSession().getRandomIntegerForExecution(opponentsDrawPile.length)
-					opponentCard = @getGameSession().getCardByIndex(opponentsDrawPile[randomIndex])
-					cardIndices.push(opponentCard)
-					opponentsDrawPile.splice(randomIndex, 1)
+			//then we can cycle through those indices without worrying about the same instance of a card being chosen multiple times
+			if (cardIndices.length > 0) {
+				return (() => {
+					const result = [];
+					for (let newCard of Array.from(cardIndices)) {
+						if (opponentCard != null) {
+							const myNewCardData = newCard.createCardData();
+							myNewCardData.ownerId = this.getOwnerId(); // reset owner id to player who will recieve this card
+							const removeCardFromDeckAction = new RemoveCardFromDeckAction(this.getGameSession(), newCard.getIndex(), opponentPlayer.getPlayerId());
+							this.getGameSession().executeAction(removeCardFromDeckAction);
+							const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), this.getOwnerId(), myNewCardData);
+							result.push(this.getGameSession().executeAction(putCardInHandAction));
+						} else {
+							result.push(undefined);
+						}
+					}
+					return result;
+				})();
+			}
+		}
+	}
+}
+SpellFillHandFromOpponentsDeck.initClass();
 
-			#then we can cycle through those indices without worrying about the same instance of a card being chosen multiple times
-			if cardIndices.length > 0
-				for newCard in cardIndices
-					if opponentCard?
-						myNewCardData = newCard.createCardData()
-						myNewCardData.ownerId = @getOwnerId() # reset owner id to player who will recieve this card
-						removeCardFromDeckAction = new RemoveCardFromDeckAction(@getGameSession(), newCard.getIndex(), opponentPlayer.getPlayerId())
-						@getGameSession().executeAction(removeCardFromDeckAction)
-						putCardInHandAction = new PutCardInHandAction(@getGameSession(), @getOwnerId(), myNewCardData)
-						@getGameSession().executeAction(putCardInHandAction)
-
-module.exports = SpellFillHandFromOpponentsDeck
+module.exports = SpellFillHandFromOpponentsDeck;

@@ -1,45 +1,68 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierKillWatch = require './modifierKillWatch'
-ModifierEgg = require './modifierEgg'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierKillWatch = require('./modifierKillWatch');
+const ModifierEgg = require('./modifierEgg');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class ModifierKillWatchSpawnEgg extends ModifierKillWatch
+class ModifierKillWatchSpawnEgg extends ModifierKillWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierKillWatchSpawnEgg";
+		this.type ="ModifierKillWatchSpawnEgg";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericSpawn"];
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+		this.prototype.minionName = null;
+		this.prototype.numSpawns = 0;
+		this.prototype.spawnPattern = null;
+	}
 
-	type:"ModifierKillWatchSpawnEgg"
-	@type:"ModifierKillWatchSpawnEgg"
+	static createContextObject(includeAllies, includeGenerals, cardDataOrIndexToSpawn, minionName, numSpawns, spawnPattern, options) {
+		if (includeAllies == null) { includeAllies = true; }
+		if (includeGenerals == null) { includeGenerals = true; }
+		const contextObject = super.createContextObject(includeAllies, includeGenerals, options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.minionName = minionName;
+		contextObject.numSpawns = numSpawns;
+		contextObject.spawnPattern = spawnPattern;
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericSpawn"]
+	onKillWatch(action) {
+		super.onKillWatch(action);
 
-	cardDataOrIndexToSpawn: null
-	minionName: null
-	numSpawns: 0
-	spawnPattern: null
+		const egg = {id: Cards.Faction5.Egg};
+		if (egg.additionalInherentModifiersContextObjects == null) { egg.additionalInherentModifiersContextObjects = []; }
+		egg.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(this.cardDataOrIndexToSpawn, this.minionName));
 
-	@createContextObject: (includeAllies=true, includeGenerals=true, cardDataOrIndexToSpawn, minionName, numSpawns, spawnPattern, options) ->
-		contextObject = super(includeAllies, includeGenerals, options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.minionName = minionName
-		contextObject.numSpawns = numSpawns
-		contextObject.spawnPattern = spawnPattern
-		return contextObject
+		const position = action.getTargetPosition();
+		const cardToSpawn = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(egg);
+		const spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), position, this.spawnPattern, cardToSpawn, this.getCard(), this.numSpawns);
 
-	onKillWatch: (action) ->
-		super(action)
+		if (spawnPositions != null) {
+			return (() => {
+				const result = [];
+				for (let spawnPosition of Array.from(spawnPositions)) {
+					const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), spawnPosition.x, spawnPosition.y, egg);
+					spawnAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(spawnAction));
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierKillWatchSpawnEgg.initClass();
 
-		egg = {id: Cards.Faction5.Egg}
-		egg.additionalInherentModifiersContextObjects ?= []
-		egg.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(@cardDataOrIndexToSpawn, @minionName))
-
-		position = action.getTargetPosition()
-		cardToSpawn = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(egg)
-		spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), position, @spawnPattern, cardToSpawn, @getCard(), @numSpawns)
-
-		if spawnPositions?
-			for spawnPosition in spawnPositions
-				spawnAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), spawnPosition.x, spawnPosition.y, egg)
-				spawnAction.setSource(@getCard())
-				@getGameSession().executeAction(spawnAction)
-
-module.exports = ModifierKillWatchSpawnEgg
+module.exports = ModifierKillWatchSpawnEgg;

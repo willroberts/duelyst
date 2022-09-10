@@ -1,66 +1,98 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-UtilsPosition = require 'app/common/utils/utils_position'
-ModifierStartTurnWatch = require './modifierStartTurnWatch'
-CardType = require 'app/sdk/cards/cardType'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const UtilsPosition = require('app/common/utils/utils_position');
+const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
+const CardType = require('app/sdk/cards/cardType');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
 
-class ModifierStartTurnWatchSpawnEntity extends ModifierStartTurnWatch
+class ModifierStartTurnWatchSpawnEntity extends ModifierStartTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierStartTurnWatchSpawnEntity";
+		this.type ="ModifierStartTurnWatchSpawnEntity";
+	
+		this.modifierName ="Turn Watch";
+		this.description ="At the start of your turn, summon %X";
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierStartTurnWatchSpawnEntity"
-	@type:"ModifierStartTurnWatchSpawnEntity"
+	static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently, options) {
+		if (spawnDescription == null) { spawnDescription = ""; }
+		if (spawnCount == null) { spawnCount = 1; }
+		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
+		if (spawnSilently == null) { spawnSilently = false; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.spawnDescription = spawnDescription;
+		contextObject.spawnCount = spawnCount;
+		contextObject.spawnPattern = spawnPattern;
+		contextObject.spawnSilently = spawnSilently;
+		return contextObject;
+	}
 
-	@modifierName:"Turn Watch"
-	@description:"At the start of your turn, summon %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			let replaceText = "";
+			if (UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)) {
+				replaceText = "a "+modifierContextObject.spawnDescription+" in the same space";
+			} else if (modifierContextObject.spawnCount === 1) {
+				replaceText = "a "+modifierContextObject.spawnDescription+" into a nearby space";
+			} else if (modifierContextObject.spawnCount === 8) {
+				replaceText = ""+modifierContextObject.spawnDescription+"s in all nearby spaces";
+			} else {
+				replaceText = ""+modifierContextObject.spawnDescription+"s into "+modifierContextObject.spawnCount+" nearby spaces";
+			}
+			return this.description.replace(/%X/, replaceText);
+		} else {
+			return this.description;
+		}
+	}
 
-	cardDataOrIndexToSpawn: null
+	onTurnWatch(action) {
+		super.onTurnWatch(action);
 
-	fxResource: ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericSpawn"]
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const ownerId = this.getSpawnOwnerId(action);
+			const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierStartTurnWatchSpawnEntity);
+			return (() => {
+				const result = [];
+				for (let spawnPosition of Array.from(spawnPositions)) {
+					var spawnAction;
+					const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
+					if (this.spawnSilently) {
+						spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					} else {
+						spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					}
+					spawnAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(spawnAction));
+				}
+				return result;
+			})();
+		}
+	}
 
-	@createContextObject: (cardDataOrIndexToSpawn, spawnDescription="", spawnCount=1, spawnPattern=CONFIG.PATTERN_3x3, spawnSilently=false, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.spawnDescription = spawnDescription
-		contextObject.spawnCount = spawnCount
-		contextObject.spawnPattern = spawnPattern
-		contextObject.spawnSilently = spawnSilently
-		return contextObject
+	getCardDataOrIndexToSpawn() {
+		return this.cardDataOrIndexToSpawn;
+	}
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			replaceText = ""
-			if UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)
-				replaceText = "a "+modifierContextObject.spawnDescription+" in the same space"
-			else if modifierContextObject.spawnCount == 1
-				replaceText = "a "+modifierContextObject.spawnDescription+" into a nearby space"
-			else if modifierContextObject.spawnCount == 8
-				replaceText = ""+modifierContextObject.spawnDescription+"s in all nearby spaces"
-			else
-				replaceText = ""+modifierContextObject.spawnDescription+"s into "+modifierContextObject.spawnCount+" nearby spaces"
-			return @description.replace /%X/, replaceText
-		else
-			return @description
+	getSpawnOwnerId(action) {
+		return this.getCard().getOwnerId();
+	}
+}
+ModifierStartTurnWatchSpawnEntity.initClass();
 
-	onTurnWatch: (action) ->
-		super(action)
-
-		if @getGameSession().getIsRunningAsAuthoritative()
-			ownerId = @getSpawnOwnerId(action)
-			spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(@, ModifierStartTurnWatchSpawnEntity)
-			for spawnPosition in spawnPositions
-				cardDataOrIndexToSpawn = @getCardDataOrIndexToSpawn()
-				if @spawnSilently
-					spawnAction = new PlayCardSilentlyAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				else
-					spawnAction = new PlayCardAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				spawnAction.setSource(@getCard())
-				@getGameSession().executeAction(spawnAction)
-
-	getCardDataOrIndexToSpawn: () ->
-		return @cardDataOrIndexToSpawn
-
-	getSpawnOwnerId: (action) ->
-		return @getCard().getOwnerId()
-
-module.exports = ModifierStartTurnWatchSpawnEntity
+module.exports = ModifierStartTurnWatchSpawnEntity;

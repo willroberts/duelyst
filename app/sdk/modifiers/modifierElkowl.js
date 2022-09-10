@@ -1,25 +1,35 @@
-Modifier = require './modifier'
-ModifierOpeningGambit = require './modifierOpeningGambit'
-CardType = require 'app/sdk/cards/cardType'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierFrenzy = require './modifierFrenzy'
-ModifierFlying = require './modifierFlying'
-ModifierTranscendance = require './modifierTranscendance'
-ModifierProvoke = require './modifierProvoke'
-ModifierRanged = require './modifierRanged'
-ModifierFirstBlood = require './modifierFirstBlood'
-ModifierRebirth = require './modifierRebirth'
-ModifierBlastAttack = require './modifierBlastAttack'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const CardType = require('app/sdk/cards/cardType');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierFrenzy = require('./modifierFrenzy');
+const ModifierFlying = require('./modifierFlying');
+const ModifierTranscendance = require('./modifierTranscendance');
+const ModifierProvoke = require('./modifierProvoke');
+const ModifierRanged = require('./modifierRanged');
+const ModifierFirstBlood = require('./modifierFirstBlood');
+const ModifierRebirth = require('./modifierRebirth');
+const ModifierBlastAttack = require('./modifierBlastAttack');
 
-class ModifierElkowl extends ModifierOpeningGambit
+class ModifierElkowl extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierElkowl";
+		this.type ="ModifierElkowl";
+	
+		this.description = "Gain two random abilities";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierElkowl"
-	@type:"ModifierElkowl"
-
-	@description: "Gain two random abilities"
-
-	@createContextObject: () ->
-		contextObject = super()
+	static createContextObject() {
+		const contextObject = super.createContextObject();
 		contextObject.allModifierContextObjects = [
 			ModifierFrenzy.createContextObject(),
 			ModifierFlying.createContextObject(),
@@ -29,19 +39,22 @@ class ModifierElkowl extends ModifierOpeningGambit
 			ModifierFirstBlood.createContextObject(),
 			ModifierRebirth.createContextObject(),
 			ModifierBlastAttack.createContextObject()
-		]
-		return contextObject
+		];
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierGenericBuff"]
+	onOpeningGambit(action) {
+		super.onOpeningGambit(action);
 
-	onOpeningGambit: (action) ->
-		super(action)
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			// pick two unique modifiers from the list
+			const modifierContextObject = this.allModifierContextObjects.splice(this.getGameSession().getRandomIntegerForExecution(this.allModifierContextObjects.length), 1)[0];
+			this.getGameSession().applyModifierContextObject(modifierContextObject, this.getCard());
+			const modifierContextObject2 = this.allModifierContextObjects.splice(this.getGameSession().getRandomIntegerForExecution(this.allModifierContextObjects.length), 1)[0];
+			return this.getGameSession().applyModifierContextObject(modifierContextObject2, this.getCard());
+		}
+	}
+}
+ModifierElkowl.initClass();
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			# pick two unique modifiers from the list
-			modifierContextObject = @allModifierContextObjects.splice(@getGameSession().getRandomIntegerForExecution(@allModifierContextObjects.length), 1)[0]
-			@getGameSession().applyModifierContextObject(modifierContextObject, @getCard())
-			modifierContextObject2 = @allModifierContextObjects.splice(@getGameSession().getRandomIntegerForExecution(@allModifierContextObjects.length), 1)[0]
-			@getGameSession().applyModifierContextObject(modifierContextObject2, @getCard())
-
-module.exports = ModifierElkowl
+module.exports = ModifierElkowl;

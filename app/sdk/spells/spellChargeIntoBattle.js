@@ -1,27 +1,40 @@
-SpellApplyModifiers = require './spellApplyModifiers'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellApplyModifiers = require('./spellApplyModifiers');
+const CardType = require('app/sdk/cards/cardType');
 
-class SpellChargeIntoBattle extends SpellApplyModifiers
+class SpellChargeIntoBattle extends SpellApplyModifiers {
 
-	_postFilterPlayPositions: (validPositions) ->
-		# use super filter play positions
-		validPositions = super(validPositions)
-		filteredValidPositions = []
+	_postFilterPlayPositions(validPositions) {
+		// use super filter play positions
+		let player1;
+		validPositions = super._postFilterPlayPositions(validPositions);
+		const filteredValidPositions = [];
 
-		# find unit that is behind the general
-		generalPosition = @getGameSession().getGeneralForPlayerId(@getOwnerId()).getPosition()
-		if @getGameSession().getGeneralForPlayerId(@getOwnerId()).isOwnedByPlayer1()
-			player1 = true
-		else
-			player1 = false
+		// find unit that is behind the general
+		const generalPosition = this.getGameSession().getGeneralForPlayerId(this.getOwnerId()).getPosition();
+		if (this.getGameSession().getGeneralForPlayerId(this.getOwnerId()).isOwnedByPlayer1()) {
+			player1 = true;
+		} else {
+			player1 = false;
+		}
 
-		for position in validPositions
-			unit = @getGameSession().getBoard().getUnitAtPosition(position)
-			if player1 and unit?.getPosition().x == generalPosition.x-1 and unit.getPosition().y == generalPosition.y
-				filteredValidPositions.push(unit.getPosition())
-			if !player1 and unit?.getPosition().x == generalPosition.x+1 and unit.getPosition().y == generalPosition.y
-				filteredValidPositions.push(unit.getPosition())
+		for (let position of Array.from(validPositions)) {
+			const unit = this.getGameSession().getBoard().getUnitAtPosition(position);
+			if (player1 && ((unit != null ? unit.getPosition().x : undefined) === (generalPosition.x-1)) && (unit.getPosition().y === generalPosition.y)) {
+				filteredValidPositions.push(unit.getPosition());
+			}
+			if (!player1 && ((unit != null ? unit.getPosition().x : undefined) === (generalPosition.x+1)) && (unit.getPosition().y === generalPosition.y)) {
+				filteredValidPositions.push(unit.getPosition());
+			}
+		}
 
-		return filteredValidPositions
+		return filteredValidPositions;
+	}
+}
 
-module.exports = SpellChargeIntoBattle
+module.exports = SpellChargeIntoBattle;

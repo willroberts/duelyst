@@ -1,31 +1,47 @@
-Logger = require 'app/common/logger'
-HealAction = require 'app/sdk/actions/healAction'
-DamageAction = require 'app/sdk/actions/damageAction'
-Modifier = require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const HealAction = require('app/sdk/actions/healAction');
+const DamageAction = require('app/sdk/actions/damageAction');
+const Modifier = require('./modifier');
 
-class ModifierHealSelfWhenDealingDamage extends Modifier
+class ModifierHealSelfWhenDealingDamage extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierHealSelfWhenDealingDamage";
+		this.type ="ModifierHealSelfWhenDealingDamage";
+	
+		this.description ="Whenever this deals damage, restore that much Health to it";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	}
 
-	type:"ModifierHealSelfWhenDealingDamage"
-	@type:"ModifierHealSelfWhenDealingDamage"
+	onBeforeAction(event) {
+		super.onBeforeAction(event);
+		const {
+            action
+        } = event;
+		if (action instanceof DamageAction && (action.getSource() === this.getCard())) {
+			if (this.getCard().getHP() < this.getCard().getMaxHP()) {
+				const healAction = this.getCard().getGameSession().createActionForType(HealAction.type);
+				healAction.setTarget(this.getCard());
+				let damageToHeal = action.getTotalDamageAmount();
+				if (damageToHeal > this.getCard().getDamage()) {
+					damageToHeal = this.getCard().getDamage();
+				}
+				healAction.setHealAmount(damageToHeal);
+				return this.getCard().getGameSession().executeAction(healAction);
+			}
+		}
+	}
+}
+ModifierHealSelfWhenDealingDamage.initClass();
 
-	@description:"Whenever this deals damage, restore that much Health to it"
-
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
-
-	onBeforeAction: (event) ->
-		super(event)
-		action = event.action
-		if action instanceof DamageAction and action.getSource() == @getCard()
-			if @getCard().getHP() < @getCard().getMaxHP()
-				healAction = @getCard().getGameSession().createActionForType(HealAction.type)
-				healAction.setTarget(@getCard())
-				damageToHeal = action.getTotalDamageAmount()
-				if damageToHeal > @getCard().getDamage()
-					damageToHeal = @getCard().getDamage()
-				healAction.setHealAmount(damageToHeal)
-				@getCard().getGameSession().executeAction(healAction)
-
-module.exports = ModifierHealSelfWhenDealingDamage
+module.exports = ModifierHealSelfWhenDealingDamage;

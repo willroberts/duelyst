@@ -1,38 +1,53 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-Modifier = require './modifier'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const Modifier = require('./modifier');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
-class ModifierOnRemoveSpawnEntities extends Modifier
+class ModifierOnRemoveSpawnEntities extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOnRemoveSpawnEntities";
+		this.type ="ModifierOnRemoveSpawnEntities";
+	
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInHand = false;
+		this.prototype.activeInSignatureCards = false;
+	
+		this.prototype.numSpawns = 0;
+		this.prototype.cardDataOrIndexToSpawn = null;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierOnRemoveSpawnEntities"
-	@type:"ModifierOnRemoveSpawnEntities"
+	static createContextObject(cardDataOrIndexToSpawn, numSpawns, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.numSpawns = numSpawns;
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		return contextObject;
+	}
 
-	activeInDeck: false
-	activeInHand: false
-	activeInSignatureCards: false
+	onRemoveFromCard(action) {
 
-	numSpawns: 0
-	cardDataOrIndexToSpawn: null
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const cardToSpawn = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+			const spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), CONFIG.PATTERN_3x3, cardToSpawn, this.getCard(), this.numSpawns);
+			for (let spawnPosition of Array.from(spawnPositions)) {
+				const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), spawnPosition.x, spawnPosition.y, this.cardDataOrIndexToSpawn);
+				spawnAction.setSource(this.getCard());
+				this.getGameSession().executeAction(spawnAction);
+			}
+		}
 
-	fxResource: ["FX.Modifiers.ModifierGenericSpawn"]
+		return super.onRemoveFromCard(action);
+	}
+}
+ModifierOnRemoveSpawnEntities.initClass();
 
-	@createContextObject: (cardDataOrIndexToSpawn, numSpawns, options) ->
-		contextObject = super(options)
-		contextObject.numSpawns = numSpawns
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		return contextObject
-
-	onRemoveFromCard: (action) ->
-
-		if @getGameSession().getIsRunningAsAuthoritative()
-			cardToSpawn = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(@cardDataOrIndexToSpawn)
-			spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), @getCard().getPosition(), CONFIG.PATTERN_3x3, cardToSpawn, @getCard(), @numSpawns)
-			for spawnPosition in spawnPositions
-				spawnAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), spawnPosition.x, spawnPosition.y, @cardDataOrIndexToSpawn)
-				spawnAction.setSource(@getCard())
-				@getGameSession().executeAction(spawnAction)
-
-		super(action)
-
-module.exports = ModifierOnRemoveSpawnEntities
+module.exports = ModifierOnRemoveSpawnEntities;

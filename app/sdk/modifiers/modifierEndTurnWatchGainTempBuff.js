@@ -1,43 +1,60 @@
-ModifierEndTurnWatch = require './modifierEndTurnWatch'
-Modifier = require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
+const Modifier = require('./modifier');
 
-class ModifierEndTurnWatchGainTempBuff extends ModifierEndTurnWatch
+class ModifierEndTurnWatchGainTempBuff extends ModifierEndTurnWatch {
+	static initClass() {
+	
+		this.prototype.type = "ModifierEndTurnWatchGainTempBuff";
+		this.type = "ModifierEndTurnWatchGainTempBuff";
+	
+		this.modifierName = "End Turn Watch Temp Buff";
+		this.description = "Gain a buff on your opponent's turn";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierEndTurnWatch"];
+	
+		this.prototype.attackBuff = 0;
+		this.prototype.healthBuff = 0;
+		this.prototype.modifierName = null;
+	}
 
-	type: "ModifierEndTurnWatchGainTempBuff"
-	@type: "ModifierEndTurnWatchGainTempBuff"
+	onActivate() {
+		super.onActivate();
 
-	@modifierName: "End Turn Watch Temp Buff"
-	@description: "Gain a buff on your opponent's turn"
+		// when activated on opponent's turn, immediately activate buff for this turn
+		if (!this.getCard().isOwnersTurn()) {
+			const statContextObject = Modifier.createContextObjectWithAttributeBuffs(this.attackBuff, this.healthBuff);
+			statContextObject.appliedName = this.modifierName;
+			statContextObject.durationEndTurn = 1;
+			return this.getGameSession().applyModifierContextObject(statContextObject, this.getCard());
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierEndTurnWatch"]
+	static createContextObject(attackBuff, healthBuff, modifierName, options) {
+		if (attackBuff == null) { attackBuff = 0; }
+		if (healthBuff == null) { healthBuff = 0; }
+		const contextObject = super.createContextObject(options);
+		contextObject.attackBuff = attackBuff;
+		contextObject.healthBuff = healthBuff;
+		contextObject.modifierName = modifierName;
+		return contextObject;
+	}
 
-	attackBuff: 0
-	healthBuff: 0
-	modifierName: null
+	onTurnWatch() {
+		super.onTurnWatch();
+		// at end of my turn, activate buff (so it will be active on opponent's turn)
+		const statContextObject = Modifier.createContextObjectWithAttributeBuffs(this.attackBuff, this.healthBuff);
+		statContextObject.appliedName = this.modifierName;
+		statContextObject.durationEndTurn = 2;
+		return this.getGameSession().applyModifierContextObject(statContextObject, this.getCard());
+	}
+}
+ModifierEndTurnWatchGainTempBuff.initClass();
 
-	onActivate: () ->
-		super()
-
-		# when activated on opponent's turn, immediately activate buff for this turn
-		if !@getCard().isOwnersTurn()
-			statContextObject = Modifier.createContextObjectWithAttributeBuffs(@attackBuff, @healthBuff)
-			statContextObject.appliedName = @modifierName
-			statContextObject.durationEndTurn = 1
-			@getGameSession().applyModifierContextObject(statContextObject, @getCard())
-
-	@createContextObject: (attackBuff=0, healthBuff=0, modifierName, options) ->
-		contextObject = super(options)
-		contextObject.attackBuff = attackBuff
-		contextObject.healthBuff = healthBuff
-		contextObject.modifierName = modifierName
-		return contextObject
-
-	onTurnWatch: () ->
-		super()
-		# at end of my turn, activate buff (so it will be active on opponent's turn)
-		statContextObject = Modifier.createContextObjectWithAttributeBuffs(@attackBuff, @healthBuff)
-		statContextObject.appliedName = @modifierName
-		statContextObject.durationEndTurn = 2
-		@getGameSession().applyModifierContextObject(statContextObject, @getCard())
-
-module.exports = ModifierEndTurnWatchGainTempBuff
+module.exports = ModifierEndTurnWatchGainTempBuff;

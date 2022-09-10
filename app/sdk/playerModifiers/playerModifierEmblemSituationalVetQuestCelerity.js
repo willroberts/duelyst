@@ -1,61 +1,79 @@
-PlayerModifierEmblem = require './playerModifierEmblem'
-ModifierTranscendance = require 'app/sdk/modifiers/modifierTranscendance'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const PlayerModifierEmblem = require('./playerModifierEmblem');
+const ModifierTranscendance = require('app/sdk/modifiers/modifierTranscendance');
 
-class PlayerModifierEmblemSituationalVetQuestCelerity extends PlayerModifierEmblem
+class PlayerModifierEmblemSituationalVetQuestCelerity extends PlayerModifierEmblem {
+	static initClass() {
+	
+		this.prototype.type ="PlayerModifierEmblemSituationalVetQuestCelerity";
+		this.type ="PlayerModifierEmblemSituationalVetQuestCelerity";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.maxStacks = 1;
+	
+		this.prototype.numArtifactsRequired = 0;
+	}
 
-	type:"PlayerModifierEmblemSituationalVetQuestCelerity"
-	@type:"PlayerModifierEmblemSituationalVetQuestCelerity"
+	static createContextObject(numArtifactsRequired, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.numArtifactsRequired = numArtifactsRequired;
+		return contextObject;
+	}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	maxStacks: 1
+		p.cachedIsSituationActive = false;
+		p.cachedWasSituationActive = false;
 
-	numArtifactsRequired: 0
+		return p;
+	}
 
-	@createContextObject: (numArtifactsRequired, options) ->
-		contextObject = super(options)
-		contextObject.numArtifactsRequired = numArtifactsRequired
-		return contextObject
+	onApplyToCardBeforeSyncState() {
+		super.onApplyToCardBeforeSyncState();
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		// apply situational modifiers once and retain them on self
+		// this way we can enable/disable based on whether the situation is active
+		// rather than constantly adding and removing modifiers
+		return this.applyManagedModifiersFromModifiersContextObjectsOnce([ModifierTranscendance.createContextObject()], this.getCard());
+	}
 
-		p.cachedIsSituationActive = false
-		p.cachedWasSituationActive = false
+	updateCachedStateAfterActive() {
+		this._private.cachedWasSituationActive = this._private.cachedIsSituationActive;
+		this._private.cachedIsSituationActive = this._private.cachedIsActive && this.getIsSituationActiveForCache();
 
-		return p
+		// call super after updating whether situation is active
+		// because we need to know if situation is active to know whether sub modifiers are disabled
+		return super.updateCachedStateAfterActive();
+	}
 
-	onApplyToCardBeforeSyncState: () ->
-		super()
+	getAreSubModifiersActiveForCache() {
+		return this._private.cachedIsSituationActive;
+	}
 
-		# apply situational modifiers once and retain them on self
-		# this way we can enable/disable based on whether the situation is active
-		# rather than constantly adding and removing modifiers
-		@applyManagedModifiersFromModifiersContextObjectsOnce([ModifierTranscendance.createContextObject()], @getCard())
+	getIsAura() {
+		// situational modifiers act as auras but do not use the default aura behavior
+		return true;
+	}
 
-	updateCachedStateAfterActive: () ->
-		@_private.cachedWasSituationActive = @_private.cachedIsSituationActive
-		@_private.cachedIsSituationActive = @_private.cachedIsActive and @getIsSituationActiveForCache()
+	getIsSituationActiveForCache() {
 
-		# call super after updating whether situation is active
-		# because we need to know if situation is active to know whether sub modifiers are disabled
-		super()
+		const modifiersByArtifact = this.getCard().getArtifactModifiersGroupedByArtifactCard();
+		if (modifiersByArtifact.length >= this.numArtifactsRequired) {
+			return true;
+		}
+		return false;
+	}
+}
+PlayerModifierEmblemSituationalVetQuestCelerity.initClass();
 
-	getAreSubModifiersActiveForCache: () ->
-		return @_private.cachedIsSituationActive
-
-	getIsAura: () ->
-		# situational modifiers act as auras but do not use the default aura behavior
-		return true
-
-	getIsSituationActiveForCache: () ->
-
-		modifiersByArtifact = @getCard().getArtifactModifiersGroupedByArtifactCard()
-		if modifiersByArtifact.length >= @numArtifactsRequired
-			return true
-		return false
-
-module.exports = PlayerModifierEmblemSituationalVetQuestCelerity
+module.exports = PlayerModifierEmblemSituationalVetQuestCelerity;

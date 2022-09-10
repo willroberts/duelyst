@@ -1,24 +1,37 @@
-ModifierManaCostChange = require 'app/sdk/modifiers/modifierManaCostChange'
-ModifierSentinelOpponentSummon = require './modifierSentinelOpponentSummon'
-SwapUnitsAction = require 'app/sdk/actions/swapUnitsAction'
-FXType = require 'app/sdk/helpers/fxType'
-CardType = require 'app/sdk/cards/cardType'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierManaCostChange = require('app/sdk/modifiers/modifierManaCostChange');
+const ModifierSentinelOpponentSummon = require('./modifierSentinelOpponentSummon');
+const SwapUnitsAction = require('app/sdk/actions/swapUnitsAction');
+const FXType = require('app/sdk/helpers/fxType');
+const CardType = require('app/sdk/cards/cardType');
+const _ = require('underscore');
 
-class ModifierSentinelOpponentSummonSwapPlaces extends ModifierSentinelOpponentSummon
+class ModifierSentinelOpponentSummonSwapPlaces extends ModifierSentinelOpponentSummon {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSentinelOpponentSummonSwapPlaces";
+		this.type ="ModifierSentinelOpponentSummonSwapPlaces";
+	}
 
-	type:"ModifierSentinelOpponentSummonSwapPlaces"
-	@type:"ModifierSentinelOpponentSummonSwapPlaces"
+	onOverwatch(action) {
+		// damage unit that was just summoned by enemy
+		const transformedUnit = super.onOverwatch(action); // transform unit
+		if ((action.getTarget() != null) && this.getGameSession().getCanCardBeScheduledForRemoval(transformedUnit, true)) {
+			const swapAction = new SwapUnitsAction(this.getGameSession());
+			swapAction.setOwnerId(this.getOwnerId());
+			swapAction.setSource(transformedUnit);
+			swapAction.setTarget(action.getTarget());
+			swapAction.setFXResource(_.union(swapAction.getFXResource(), this.getFXResource()));
+			return this.getGameSession().executeAction(swapAction);
+		}
+	}
+}
+ModifierSentinelOpponentSummonSwapPlaces.initClass();
 
-	onOverwatch: (action) ->
-		# damage unit that was just summoned by enemy
-		transformedUnit = super(action) # transform unit
-		if action.getTarget()? and @getGameSession().getCanCardBeScheduledForRemoval(transformedUnit, true)
-			swapAction = new SwapUnitsAction(@getGameSession())
-			swapAction.setOwnerId(@getOwnerId())
-			swapAction.setSource(transformedUnit)
-			swapAction.setTarget(action.getTarget())
-			swapAction.setFXResource(_.union(swapAction.getFXResource(), @getFXResource()))
-			@getGameSession().executeAction(swapAction)
-
-module.exports = ModifierSentinelOpponentSummonSwapPlaces
+module.exports = ModifierSentinelOpponentSummonSwapPlaces;

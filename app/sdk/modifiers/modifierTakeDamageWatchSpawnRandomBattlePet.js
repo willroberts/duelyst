@@ -1,17 +1,27 @@
-ModifierTakeDamageWatchSpawnEntity = require './modifierTakeDamageWatchSpawnEntity'
-Factions = require 'app/sdk/cards/factionsLookup.coffee'
-Races = require 'app/sdk/cards/racesLookup.coffee'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierTakeDamageWatchSpawnEntity = require('./modifierTakeDamageWatchSpawnEntity');
+const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Races = require('app/sdk/cards/racesLookup.coffee');
 
-class ModifierTakeDamageWatchSpawnRandomBattlePet extends ModifierTakeDamageWatchSpawnEntity
+class ModifierTakeDamageWatchSpawnRandomBattlePet extends ModifierTakeDamageWatchSpawnEntity {
+	static initClass() {
+	
+		this.prototype.type ="ModifierTakeDamageWatchSpawnRandomBattlePet";
+		this.type ="ModifierTakeDamageWatchSpawnRandomBattlePet";
+	
+		this.description ="Whenever this minion takes damage, summon a random Battle Pet nearby";
+	}
 
-	type:"ModifierTakeDamageWatchSpawnRandomBattlePet"
-	@type:"ModifierTakeDamageWatchSpawnRandomBattlePet"
+	getCardDataOrIndexToSpawn() {
+		const neutralBattlePetCards = this.getGameSession().getCardCaches().getFaction(Factions.Neutral).getRace(Races.BattlePet).getIsToken(true).getIsPrismatic(false).getIsSkinned(false).getCards();
+		const card = neutralBattlePetCards[this.getGameSession().getRandomIntegerForExecution(neutralBattlePetCards.length)];
+		return card.createNewCardData();
+	}
+}
+ModifierTakeDamageWatchSpawnRandomBattlePet.initClass();
 
-	@description:"Whenever this minion takes damage, summon a random Battle Pet nearby"
-
-	getCardDataOrIndexToSpawn: () ->
-		neutralBattlePetCards = @getGameSession().getCardCaches().getFaction(Factions.Neutral).getRace(Races.BattlePet).getIsToken(true).getIsPrismatic(false).getIsSkinned(false).getCards()
-		card = neutralBattlePetCards[@getGameSession().getRandomIntegerForExecution(neutralBattlePetCards.length)]
-		return card.createNewCardData()
-
-module.exports = ModifierTakeDamageWatchSpawnRandomBattlePet
+module.exports = ModifierTakeDamageWatchSpawnRandomBattlePet;

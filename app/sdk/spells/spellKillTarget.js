@@ -1,24 +1,37 @@
-Logger = require 'app/common/logger'
-Spell = 	require('./spell')
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-KillAction = require 'app/sdk/actions/killAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Spell = 	require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const KillAction = require('app/sdk/actions/killAction');
 
-class SpellKillTarget extends Spell
+class SpellKillTarget extends Spell {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Unit;
+		this.prototype.spellFilterType = SpellFilterType.NeutralDirect;
+	}
 
-	targetType: CardType.Unit
-	spellFilterType: SpellFilterType.NeutralDirect
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		const target = board.getCardAtPosition({x, y}, this.targetType);
+		if (target != null) {
+			//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "SpellKillTarget::onApplyEffectToBoardTile -> kill #{target.getName()} at #{x}, #{y}"
 
-		target = board.getCardAtPosition({x:x, y:y}, @targetType)
-		if target?
-			#Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "SpellKillTarget::onApplyEffectToBoardTile -> kill #{target.getName()} at #{x}, #{y}"
+			const killAction = new KillAction(this.getGameSession());
+			killAction.setOwnerId(this.getOwnerId());
+			killAction.setTarget(target);
+			return this.getGameSession().executeAction(killAction);
+		}
+	}
+}
+SpellKillTarget.initClass();
 
-			killAction = new KillAction(@getGameSession())
-			killAction.setOwnerId(@getOwnerId())
-			killAction.setTarget(target)
-			@getGameSession().executeAction(killAction)
-
-module.exports = SpellKillTarget
+module.exports = SpellKillTarget;

@@ -1,12 +1,18 @@
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
 
 
-SDK = require "../../app/sdk"
+const SDK = require("../../app/sdk");
 
-console.log "running"
+console.log("running");
 
-str = "id,factionid,factionname,rarity,name\n"
-for card in SDK.CardFactory.getAllCards(SDK.GameSession.current())
-	str += "#{card.id},#{card.factionId},#{SDK.FactionFactory.factionForIdentifier(card.factionId).name},\"#{SDK.RarityFactory.rarityForIdentifier(card.rarityId).name}\",\"#{card.name}\" \n"
+let str = "id,factionid,factionname,rarity,name\n";
+for (let card of Array.from(SDK.CardFactory.getAllCards(SDK.GameSession.current()))) {
+	str += `${card.id},${card.factionId},${SDK.FactionFactory.factionForIdentifier(card.factionId).name},\"${SDK.RarityFactory.rarityForIdentifier(card.rarityId).name}\",\"${card.name}\" \n`;
+}
 
-console.log str
-process.exit(1)
+console.log(str);
+process.exit(1);

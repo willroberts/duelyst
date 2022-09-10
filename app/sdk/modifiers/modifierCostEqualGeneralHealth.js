@@ -1,58 +1,78 @@
-Modifier = require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
 
-class ModifierCostEqualGeneralHealth extends Modifier
+class ModifierCostEqualGeneralHealth extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierCostEqualGeneralHealth";
+		this.type ="ModifierCostEqualGeneralHealth";
+	
+		this.modifierName = "Raging Taura";
+		this.description ="This minion's cost is equal to your General's Health";
+	
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInHand = true;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.maxStacks = 1;
+	}
 
-	type:"ModifierCostEqualGeneralHealth"
-	@type:"ModifierCostEqualGeneralHealth"
+	constructor(gameSession) {
+		super(gameSession);
+		this.attributeBuffsAbsolute = ["manaCost"];
+		this.attributeBuffsFixed = ["manaCost"];
+	}
 
-	@modifierName: "Raging Taura"
-	@description:"This minion's cost is equal to your General's Health"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	activeInDeck: false
-	activeInHand: true
-	activeInSignatureCards: false
-	activeOnBoard: true
+		p.cachedManaCost = 0;
 
-	maxStacks: 1
+		return p;
+	}
 
-	constructor: (gameSession) ->
-		super(gameSession)
-		@attributeBuffsAbsolute = ["manaCost"]
-		@attributeBuffsFixed = ["manaCost"]
+	getBuffedAttribute(attributeValue, buffKey) {
+		if (buffKey === "manaCost") {
+			return this._private.cachedManaCost;
+		} else {
+			return super.getBuffedAttribute(attributeValue, buffKey);
+		}
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	getBuffsAttributes() {
+		return true;
+	}
 
-		p.cachedManaCost = 0
+	getBuffsAttribute(buffKey) {
+		return (buffKey === "manaCost") || super.getBuffsAttribute(buffKey);
+	}
 
-		return p
+	updateCachedStateAfterActive() {
+		super.updateCachedStateAfterActive();
 
-	getBuffedAttribute: (attributeValue, buffKey) ->
-		if buffKey == "manaCost"
-			return @_private.cachedManaCost
-		else
-			return super(attributeValue, buffKey)
+		const card = this.getCard();
+		const owner = card != null ? card.getOwner() : undefined;
+		const general = this.getGameSession().getGeneralForPlayer(owner);
+		let manaCost = 0;
+		if (general != null) {
+			manaCost = Math.max(0, general.getHP());
+		} else {
+			manaCost = 0;
+		}
 
-	getBuffsAttributes: () ->
-		return true
+		if (this._private.cachedManaCost !== manaCost) {
+			this._private.cachedManaCost = manaCost;
+			return this.getCard().flushCachedAttribute("manaCost");
+		}
+	}
+}
+ModifierCostEqualGeneralHealth.initClass();
 
-	getBuffsAttribute: (buffKey) ->
-		return buffKey == "manaCost" or super(buffKey)
-
-	updateCachedStateAfterActive: () ->
-		super()
-
-		card = @getCard()
-		owner = card?.getOwner()
-		general = @getGameSession().getGeneralForPlayer(owner)
-		manaCost = 0
-		if general?
-			manaCost = Math.max(0, general.getHP())
-		else
-			manaCost = 0
-
-		if @_private.cachedManaCost != manaCost
-			@_private.cachedManaCost = manaCost
-			@getCard().flushCachedAttribute("manaCost")
-
-module.exports = ModifierCostEqualGeneralHealth
+module.exports = ModifierCostEqualGeneralHealth;

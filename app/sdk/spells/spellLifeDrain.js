@@ -1,34 +1,44 @@
-SpellKillTarget = require './spellKillTarget.coffee'
-HealAction = require 'app/sdk/actions/healAction'
-UtilsPosition = require 'app/common/utils/utils_position'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellKillTarget = require('./spellKillTarget.coffee');
+const HealAction = require('app/sdk/actions/healAction');
+const UtilsPosition = require('app/common/utils/utils_position');
 
-class SpellLifeDrain extends SpellKillTarget
+class SpellLifeDrain extends SpellKillTarget {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		entity = board.getCardAtPosition({x:x, y:y}, @targetType)
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		const entity = board.getCardAtPosition({x, y}, this.targetType);
 
-		# kill target
-		if !entity.isGeneral
-			super(board,x,y,sourceAction)
+		// kill target
+		if (!entity.isGeneral) {
+			return super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		# heal your general
-		else
-			general = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-			healAction = new HealAction(@getGameSession())
-			healAction.setOwnerId(@getOwnerId())
-			healAction.setTarget(general)
-			healAction.setHealAmount(@healAmount)
-			@getGameSession().executeAction(healAction)
+		// heal your general
+		} else {
+			const general = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+			const healAction = new HealAction(this.getGameSession());
+			healAction.setOwnerId(this.getOwnerId());
+			healAction.setTarget(general);
+			healAction.setHealAmount(this.healAmount);
+			return this.getGameSession().executeAction(healAction);
+		}
+	}
 
-	_findApplyEffectPositions: (position, sourceAction) ->
-		applyEffectPositions = super(position, sourceAction)
+	_findApplyEffectPositions(position, sourceAction) {
+		const applyEffectPositions = super._findApplyEffectPositions(position, sourceAction);
 
-		# add your the General's position in as well
-		general = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-		generalPosition = general.getPosition()
-		if !UtilsPosition.getIsPositionInPositions(applyEffectPositions, generalPosition)
-			applyEffectPositions.push(generalPosition)
+		// add your the General's position in as well
+		const general = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+		const generalPosition = general.getPosition();
+		if (!UtilsPosition.getIsPositionInPositions(applyEffectPositions, generalPosition)) {
+			applyEffectPositions.push(generalPosition);
+		}
 
-		return applyEffectPositions
+		return applyEffectPositions;
+	}
+}
 
-module.exports = SpellLifeDrain
+module.exports = SpellLifeDrain;

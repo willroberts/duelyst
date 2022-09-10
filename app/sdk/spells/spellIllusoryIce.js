@@ -1,33 +1,54 @@
-Spell = require './spell'
-CardType = require 'app/sdk/cards/cardType'
-RemoveAction = require 'app/sdk/actions/removeAction'
-PlayCardAsTransformAction = require 'app/sdk/actions/playCardAsTransformAction'
-ModifierTransformed = require 'app/sdk/modifiers/modifierTransformed'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const RemoveAction = require('app/sdk/actions/removeAction');
+const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
+const ModifierTransformed = require('app/sdk/modifiers/modifierTransformed');
 
-class SpellIllusoryIce extends Spell
+class SpellIllusoryIce extends Spell {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		originalEntity = @getGameSession().getBoard().getEntityAtPosition({x:x,y:y})
-		entities = @getGameSession().getBoard().getEntitiesAroundEntity(originalEntity, CardType.Unit, 1)
+		const originalEntity = this.getGameSession().getBoard().getEntityAtPosition({x,y});
+		const entities = this.getGameSession().getBoard().getEntitiesAroundEntity(originalEntity, CardType.Unit, 1);
 
-		for entity in entities
-			if entity? and !entity.getIsGeneral()
-				position = entity.getPosition()
-				ownerId = entity.getOwnerId()
+		return (() => {
+			const result = [];
+			for (let entity of Array.from(entities)) {
+				if ((entity != null) && !entity.getIsGeneral()) {
+					const position = entity.getPosition();
+					const ownerId = entity.getOwnerId();
 
-				removeEntityAction = new RemoveAction(@getGameSession())
-				removeEntityAction.setOwnerId(@getOwnerId())
-				removeEntityAction.setTarget(entity)
-				@getGameSession().executeAction(removeEntityAction)
+					const removeEntityAction = new RemoveAction(this.getGameSession());
+					removeEntityAction.setOwnerId(this.getOwnerId());
+					removeEntityAction.setTarget(entity);
+					this.getGameSession().executeAction(removeEntityAction);
 
-				existingEntity = @getGameSession().getBoard().getCardAtPosition({x:x, y:y}, CardType.Unit)
-				if existingEntity? and !@getGameSession().getBoard().getObstructionAtPositionForEntity(position, existingEntity)
-					cardDataOrIndexToSpawn = existingEntity.createCloneCardData()
-					cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects ?= []
-					cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(entity.getExhausted(), entity.getMovesMade(), entity.getAttacksMade()))
-					spawnEntityAction = new PlayCardAsTransformAction(@getGameSession(), ownerId, position.x, position.y, cardDataOrIndexToSpawn)
-					@getGameSession().executeAction(spawnEntityAction)
+					const existingEntity = this.getGameSession().getBoard().getCardAtPosition({x, y}, CardType.Unit);
+					if ((existingEntity != null) && !this.getGameSession().getBoard().getObstructionAtPositionForEntity(position, existingEntity)) {
+						const cardDataOrIndexToSpawn = existingEntity.createCloneCardData();
+						if (cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
+						cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(entity.getExhausted(), entity.getMovesMade(), entity.getAttacksMade()));
+						const spawnEntityAction = new PlayCardAsTransformAction(this.getGameSession(), ownerId, position.x, position.y, cardDataOrIndexToSpawn);
+						result.push(this.getGameSession().executeAction(spawnEntityAction));
+					} else {
+						result.push(undefined);
+					}
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
 
-module.exports = SpellIllusoryIce
+module.exports = SpellIllusoryIce;

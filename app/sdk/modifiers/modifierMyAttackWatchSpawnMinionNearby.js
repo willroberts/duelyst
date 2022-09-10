@@ -1,54 +1,85 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierMyAttackWatch = require './modifierMyAttackWatch'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-CardType = require 'app/sdk/cards/cardType'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const CardType = require('app/sdk/cards/cardType');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class ModifierMyAttackWatchSpawnMinionNearby extends ModifierMyAttackWatch
+class ModifierMyAttackWatchSpawnMinionNearby extends ModifierMyAttackWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyAttackWatchSpawnMinionNearby";
+		this.type ="ModifierMyAttackWatchSpawnMinionNearby";
+	
+		this.modifierName ="Attack Watch and Spawn Minion";
+		this.description ="Whenever this minion attacks, summon %X nearby";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericSpawn"];
+		this.prototype.cardDataOrIndexToSpawn = null;
+	}
 
-	type:"ModifierMyAttackWatchSpawnMinionNearby"
-	@type:"ModifierMyAttackWatchSpawnMinionNearby"
+	static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently,options) {
+		if (spawnDescription == null) { spawnDescription = ""; }
+		if (spawnCount == null) { spawnCount = 1; }
+		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
+		if (spawnSilently == null) { spawnSilently = true; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.spawnDescription = spawnDescription;
+		contextObject.spawnCount = spawnCount;
+		contextObject.spawnPattern = spawnPattern;
+		contextObject.spawnSilently = spawnSilently;
+		return contextObject;
+	}
 
-	@modifierName:"Attack Watch and Spawn Minion"
-	@description:"Whenever this minion attacks, summon %X nearby"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.spawnDescription);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierGenericSpawn"]
-	cardDataOrIndexToSpawn: null
+	onMyAttackWatch(action) {
+		super.onMyAttackWatch(action);
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const ownerId = this.getSpawnOwnerId(action);
+			const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierMyAttackWatchSpawnMinionNearby);
+			return (() => {
+				const result = [];
+				for (let spawnPosition of Array.from(spawnPositions)) {
+					var spawnAction;
+					const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
+					if (this.spawnSilently) {
+						spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					} else {
+						spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					}
+					spawnAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(spawnAction));
+				}
+				return result;
+			})();
+		}
+	}
 
-	@createContextObject: (cardDataOrIndexToSpawn, spawnDescription = "", spawnCount=1, spawnPattern=CONFIG.PATTERN_3x3, spawnSilently=true,options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.spawnDescription = spawnDescription
-		contextObject.spawnCount = spawnCount
-		contextObject.spawnPattern = spawnPattern
-		contextObject.spawnSilently = spawnSilently
-		return contextObject
+	getCardDataOrIndexToSpawn() {
+		return this.cardDataOrIndexToSpawn;
+	}
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.spawnDescription
-		else
-			return @description
+	getSpawnOwnerId(action) {
+		return this.getCard().getOwnerId();
+	}
+}
+ModifierMyAttackWatchSpawnMinionNearby.initClass();
 
-	onMyAttackWatch: (action) ->
-		super(action)
-		if @getGameSession().getIsRunningAsAuthoritative()
-			ownerId = @getSpawnOwnerId(action)
-			spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(@, ModifierMyAttackWatchSpawnMinionNearby)
-			for spawnPosition in spawnPositions
-				cardDataOrIndexToSpawn = @getCardDataOrIndexToSpawn()
-				if @spawnSilently
-					spawnAction = new PlayCardSilentlyAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				else
-					spawnAction = new PlayCardAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				spawnAction.setSource(@getCard())
-				@getGameSession().executeAction(spawnAction)
-
-	getCardDataOrIndexToSpawn: () ->
-		return @cardDataOrIndexToSpawn
-
-	getSpawnOwnerId: (action) ->
-		return @getCard().getOwnerId()
-
-module.exports = ModifierMyAttackWatchSpawnMinionNearby
+module.exports = ModifierMyAttackWatchSpawnMinionNearby;

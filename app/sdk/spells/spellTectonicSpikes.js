@@ -1,40 +1,53 @@
-CONFIG = require 'app/common/config'
-Spell = require './spell'
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType =	require './spellFilterType'
-DamageAction = require 'app/sdk/actions/damageAction'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const Spell = require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType =	require('./spellFilterType');
+const DamageAction = require('app/sdk/actions/damageAction');
+const _ = require('underscore');
 
-class SpellRainOfSpikes extends Spell
+class SpellRainOfSpikes extends Spell {
+	static initClass() {
+	
+		this.prototype.spellFilterType = SpellFilterType.NeutralIndirect;
+	}
 
-	spellFilterType: SpellFilterType.NeutralIndirect
+	onApplyOneEffectToBoard(board,x,y,sourceAction) {
+		super.onApplyOneEffectToBoard(board,x,y,sourceAction);
 
-	onApplyOneEffectToBoard: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		// draw cards
+		for (let i = 1, end = this.cardsToDraw, asc = 1 <= end; asc ? i <= end : i >= end; asc ? i++ : i--) {
+			let player = this.getGameSession().getPlayerById(this.getOwnerId());
+			const action1 = player.getDeck().actionDrawCard();
+			this.getGameSession().executeAction(action1);
 
-		# draw cards
-		for i in [1..@cardsToDraw]
-			player = @getGameSession().getPlayerById(@getOwnerId())
-			action1 = player.getDeck().actionDrawCard()
-			@getGameSession().executeAction(action1)
+			player = this.getGameSession().getOpponentPlayerOfPlayerId(this.getOwnerId());
+			const action2 = player.getDeck().actionDrawCard();
+			this.getGameSession().executeAction(action2);
+		}
 
-			player = @getGameSession().getOpponentPlayerOfPlayerId(@getOwnerId())
-			action2 = player.getDeck().actionDrawCard()
-			@getGameSession().executeAction(action2)
+		// deal damage
+		const enemyGeneral = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId());
+		const damageAction1 = new DamageAction(this.getGameSession());
+		damageAction1.setOwnerId(this.getOwnerId());
+		damageAction1.setTarget(enemyGeneral);
+		damageAction1.setDamageAmount(this.damageAmount);
+		this.getGameSession().executeAction(damageAction1);
 
-		# deal damage
-		enemyGeneral = @getGameSession().getGeneralForOpponentOfPlayerId(@getOwnerId())
-		damageAction1 = new DamageAction(@getGameSession())
-		damageAction1.setOwnerId(@getOwnerId())
-		damageAction1.setTarget(enemyGeneral)
-		damageAction1.setDamageAmount(@damageAmount)
-		@getGameSession().executeAction(damageAction1)
+		const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+		const damageAction2 = new DamageAction(this.getGameSession());
+		damageAction2.setOwnerId(this.getOwnerId());
+		damageAction2.setTarget(myGeneral);
+		damageAction2.setDamageAmount(this.damageAmount);
+		return this.getGameSession().executeAction(damageAction2);
+	}
+}
+SpellRainOfSpikes.initClass();
 
-		myGeneral = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-		damageAction2 = new DamageAction(@getGameSession())
-		damageAction2.setOwnerId(@getOwnerId())
-		damageAction2.setTarget(myGeneral)
-		damageAction2.setDamageAmount(@damageAmount)
-		@getGameSession().executeAction(damageAction2)
-
-module.exports = SpellRainOfSpikes
+module.exports = SpellRainOfSpikes;

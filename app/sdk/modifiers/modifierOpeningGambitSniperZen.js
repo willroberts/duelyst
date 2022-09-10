@@ -1,23 +1,46 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-CardType = require 'app/sdk/cards/cardType'
-SwapUnitAllegianceAction = require 'app/sdk/actions/swapUnitAllegianceAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const CardType = require('app/sdk/cards/cardType');
+const SwapUnitAllegianceAction = require('app/sdk/actions/swapUnitAllegianceAction');
 
-class ModifierOpeningGambitSniperZen extends ModifierOpeningGambit
+class ModifierOpeningGambitSniperZen extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitSniperZen";
+		this.type = "ModifierOpeningGambitSniperZen";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type: "ModifierOpeningGambitSniperZen"
-	@type: "ModifierOpeningGambitSniperZen"
+	onOpeningGambit() {
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
+		const position = this.getCard().getPosition();
+		const units = this.getGameSession().getBoard().getEntitiesInRow(position.y, CardType.Unit);
+		if (units != null) {
+			return (() => {
+				const result = [];
+				for (let unit of Array.from(units)) {
+					if ((unit != null) && !unit.getIsGeneral() && (unit.getOwnerId() !== this.getCard().getOwnerId()) && (unit.getATK() <= 2)) {
+						const a = new SwapUnitAllegianceAction(this.getGameSession());
+						a.setTarget(unit);
+						result.push(this.getGameSession().executeAction(a));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierOpeningGambitSniperZen.initClass();
 
-	onOpeningGambit: () ->
-
-		position = @getCard().getPosition()
-		units = @getGameSession().getBoard().getEntitiesInRow(position.y, CardType.Unit)
-		if units?
-			for unit in units
-				if unit? and !unit.getIsGeneral() and unit.getOwnerId() != @getCard().getOwnerId() and unit.getATK() <= 2
-					a = new SwapUnitAllegianceAction(@getGameSession())
-					a.setTarget(unit)
-					@getGameSession().executeAction(a)
-
-module.exports = ModifierOpeningGambitSniperZen
+module.exports = ModifierOpeningGambitSniperZen;

@@ -1,49 +1,65 @@
-CONFIG = require 'app/common/config'
-Logger = require 'app/common/logger'
-Entity = require './entity'
-CardType = require 'app/sdk/cards/cardType'
-ModifierStrikeback = require 'app/sdk/modifiers/modifierStrikeback'
-PlayerModifierBattlePetManager = require 'app/sdk/playerModifiers/playerModifierBattlePetManager'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const Logger = require('app/common/logger');
+const Entity = require('./entity');
+const CardType = require('app/sdk/cards/cardType');
+const ModifierStrikeback = require('app/sdk/modifiers/modifierStrikeback');
+const PlayerModifierBattlePetManager = require('app/sdk/playerModifiers/playerModifierBattlePetManager');
 
-_ = require 'underscore'
+const _ = require('underscore');
 
-class Unit extends Entity
+class Unit extends Entity {
+	static initClass() {
+	
+		this.prototype.type = CardType.Unit;
+		this.type = CardType.Unit;
+		this.prototype.name = "Unit";
+	
+		this.prototype.isTargetable = true;
+		this.prototype.isObstructing = true;
+		this.prototype.hp = 1;
+		this.prototype.maxHP = 1;
+		this.prototype.speed = CONFIG.SPEED_BASE;
+		this.prototype.reach = CONFIG.REACH_MELEE;
+	}
 
-	type: CardType.Unit
-	@type: CardType.Unit
-	name: "Unit"
+	onApplyToBoard(board,x,y,sourceAction) {
+		super.onApplyToBoard(board, x, y, sourceAction);
 
-	isTargetable: true
-	isObstructing: true
-	hp: 1
-	maxHP: 1
-	speed: CONFIG.SPEED_BASE
-	reach: CONFIG.REACH_MELEE
+		// spawn units as exhausted
+		return this.applyExhaustion();
+	}
 
-	onApplyToBoard: (board,x,y,sourceAction) ->
-		super(board, x, y, sourceAction)
+	onApplyModifiersForApplyToNewLocation() {
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			// unit base modifiers should always be applied first
+			// they should always react before any card specific modifiers
 
-		# spawn units as exhausted
-		@applyExhaustion()
+			// generals manage their battle pets
+			let contextObject;
+			if (this.getIsGeneral() && !this.hasModifierClass(PlayerModifierBattlePetManager)) {
+				contextObject = PlayerModifierBattlePetManager.createContextObject();
+				contextObject.isInherent = true;
+				this.getGameSession().applyModifierContextObject(contextObject, this);
+			}
 
-	onApplyModifiersForApplyToNewLocation: () ->
-		if @getGameSession().getIsRunningAsAuthoritative()
-			# unit base modifiers should always be applied first
-			# they should always react before any card specific modifiers
+			// all units strikeback
+			if (!this.hasModifierClass(ModifierStrikeback)) {
+				contextObject = ModifierStrikeback.createContextObject();
+				contextObject.isInherent = true;
+				this.getGameSession().applyModifierContextObject(contextObject, this);
+			}
+		}
 
-			# generals manage their battle pets
-			if @getIsGeneral() and !@hasModifierClass(PlayerModifierBattlePetManager)
-				contextObject = PlayerModifierBattlePetManager.createContextObject()
-				contextObject.isInherent = true
-				@getGameSession().applyModifierContextObject(contextObject, @)
+		// apply card specific modifiers
+		return super.onApplyModifiersForApplyToNewLocation();
+	}
+}
+Unit.initClass();
 
-			# all units strikeback
-			if !@hasModifierClass(ModifierStrikeback)
-				contextObject = ModifierStrikeback.createContextObject()
-				contextObject.isInherent = true
-				@getGameSession().applyModifierContextObject(contextObject, @)
-
-		# apply card specific modifiers
-		super()
-
-module.exports = Unit
+module.exports = Unit;

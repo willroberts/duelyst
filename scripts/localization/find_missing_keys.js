@@ -1,34 +1,32 @@
-# libraries
-path = require('path')
-require('app-module-path').addPath(path.join(__dirname, '../..'))
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+// libraries
+const path = require('path');
+require('app-module-path').addPath(path.join(__dirname, '../..'));
 
-npmRun = require 'npm-run'
+const npmRun = require('npm-run');
 
-Promise = require 'bluebird'
-_ = require 'underscore'
-fs = require('fs');
+const Promise = require('bluebird');
+const _ = require('underscore');
+const fs = require('fs');
 
-helpers = require 'scripts/helpers'
-UtilsLocalization = require 'scripts/localization/utils_localization'
+const helpers = require('scripts/helpers');
+const UtilsLocalization = require('scripts/localization/utils_localization');
 
 
-# git log -G "win_streak_message" --pretty=oneline ./rank.json
+// git log -G "win_streak_message" --pretty=oneline ./rank.json
 
 
 Promise.resolve()
-.bind {}
-.then ()->
-	return Promise.all([
-		UtilsLocalization.readFileToJsonData(UtilsLocalization.PATH_TO_LOCALES + "/en/index.json")
-		# UtilsLocalization.readFileToJsonData(UtilsLocalization.PATH_TO_LOCALES + "/de/index.json")
-	])
-# .spread (englishData, germanData)->
-# 	@.englishData = englishData
-# 	@.germanData = germanData
+.bind({})
+.then(() => Promise.all([
+    UtilsLocalization.readFileToJsonData(UtilsLocalization.PATH_TO_LOCALES + "/en/index.json")
+    // UtilsLocalization.readFileToJsonData(UtilsLocalization.PATH_TO_LOCALES + "/de/index.json")
+])).then(function(){
 
-# 	return UtilsLocalization.writeMissingTranslationFiles("de",@.englishData,@.germanData)
-
-.then ()->
-
-	console.log("Complete.")
-	process.exit(1)
+	console.log("Complete.");
+	return process.exit(1);
+});

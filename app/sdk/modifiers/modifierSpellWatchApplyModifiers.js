@@ -1,22 +1,34 @@
-Modifier = require './modifier'
-ModifierSpellWatch = require './modifierSpellWatch'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierSpellWatch = require('./modifierSpellWatch');
 
-class ModifierSpellWatchApplyModifiers extends ModifierSpellWatch
+class ModifierSpellWatchApplyModifiers extends ModifierSpellWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSpellWatchApplyModifiers";
+		this.type ="ModifierSpellWatchApplyModifiers";
+	
+		this.modifierName ="Spell Watch";
+		this.description = "Whenever you cast a spell, apply a modifier to this minion";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch", "FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierSpellWatchApplyModifiers"
-	@type:"ModifierSpellWatchApplyModifiers"
+	static createContextObject(modifiers, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = modifiers;
+		return contextObject;
+	}
 
-	@modifierName:"Spell Watch"
-	@description: "Whenever you cast a spell, apply a modifier to this minion"
+	onSpellWatch(action) {
+		return this.applyManagedModifiersFromModifiersContextObjects(this.modifiersContextObjects, this.getCard());
+	}
+}
+ModifierSpellWatchApplyModifiers.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierSpellWatch", "FX.Modifiers.ModifierGenericBuff"]
-
-	@createContextObject: (modifiers, options) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = modifiers
-		return contextObject
-
-	onSpellWatch: (action) ->
-		@applyManagedModifiersFromModifiersContextObjects(@modifiersContextObjects, @getCard())
-
-module.exports = ModifierSpellWatchApplyModifiers
+module.exports = ModifierSpellWatchApplyModifiers;

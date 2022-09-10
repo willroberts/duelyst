@@ -1,47 +1,66 @@
-Modifier = require './modifier'
-ReplaceCardFromHandAction = require 'app/sdk/actions/replaceCardFromHandAction'
-i18next = require 'i18next'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ReplaceCardFromHandAction = require('app/sdk/actions/replaceCardFromHandAction');
+const i18next = require('i18next');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class ModifierDamageBothGeneralsOnReplace extends Modifier
+class ModifierDamageBothGeneralsOnReplace extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDamageBothGeneralsOnReplace";
+		this.type ="ModifierDamageBothGeneralsOnReplace";
+	
+		this.prototype.activeInHand = true;
+		this.prototype.activeInDeck = true;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = false;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierBuffSelfOnReplace"];
+	}
 
-	type:"ModifierDamageBothGeneralsOnReplace"
-	@type:"ModifierDamageBothGeneralsOnReplace"
+	static createContextObject(damageAmount, options) {
+		if (damageAmount == null) { damageAmount = 3; }
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	activeInHand: true
-	activeInDeck: true
-	activeInSignatureCards: false
-	activeOnBoard: false
+	onAction(e) {
+		super.onAction(e);
 
-	fxResource: ["FX.Modifiers.ModifierBuffSelfOnReplace"]
+		const {
+            action
+        } = e;
 
-	@createContextObject: (damageAmount=3, options=undefined) ->
-		contextObject = super(options)
-		contextObject.damageAmount = damageAmount
-		return contextObject
+		// watch for my player replacing THIS card
+		if (action instanceof ReplaceCardFromHandAction && (action.getOwnerId() === this.getCard().getOwnerId())) {
+			const replacedCard = this.getGameSession().getExistingCardFromIndexOrCreateCardFromData(action.replacedCardIndex);
+			if (replacedCard === this.getCard()) {
+				const opponentGeneral = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+				const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
 
-	onAction: (e) ->
-		super(e)
+				const damageAction = this.getCard().getGameSession().createActionForType(DamageAction.type);
+				damageAction.setSource(this.getCard());
+				damageAction.setTarget(opponentGeneral);
+				damageAction.setDamageAmount(this.damageAmount);
+				this.getCard().getGameSession().executeAction(damageAction);
 
-		action = e.action
+				const damageAction2 = this.getCard().getGameSession().createActionForType(DamageAction.type);
+				damageAction2.setSource(this.getCard());
+				damageAction2.setTarget(myGeneral);
+				damageAction2.setDamageAmount(this.damageAmount);
+				return this.getCard().getGameSession().executeAction(damageAction2);
+			}
+		}
+	}
+}
+ModifierDamageBothGeneralsOnReplace.initClass();
 
-		# watch for my player replacing THIS card
-		if action instanceof ReplaceCardFromHandAction and action.getOwnerId() is @getCard().getOwnerId()
-			replacedCard = @getGameSession().getExistingCardFromIndexOrCreateCardFromData(action.replacedCardIndex)
-			if replacedCard is @getCard()
-				opponentGeneral = @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-				myGeneral = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-
-				damageAction = @getCard().getGameSession().createActionForType(DamageAction.type)
-				damageAction.setSource(@getCard())
-				damageAction.setTarget(opponentGeneral)
-				damageAction.setDamageAmount(@damageAmount)
-				@getCard().getGameSession().executeAction(damageAction)
-
-				damageAction2 = @getCard().getGameSession().createActionForType(DamageAction.type)
-				damageAction2.setSource(@getCard())
-				damageAction2.setTarget(myGeneral)
-				damageAction2.setDamageAmount(@damageAmount)
-				@getCard().getGameSession().executeAction(damageAction2)
-
-module.exports = ModifierDamageBothGeneralsOnReplace
+module.exports = ModifierDamageBothGeneralsOnReplace;

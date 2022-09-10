@@ -1,34 +1,49 @@
-CONFIG = require '../../common/config'
-SpellSpawnEntity = require './spellSpawnEntity.coffee'
-CardType = require './../cards/cardType.coffee'
-Cards = require '../cards/cardsLookupComplete.coffee'
-UtilsGameSession = require '../../common/utils/utils_game_session.coffee'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('../../common/config');
+const SpellSpawnEntity = require('./spellSpawnEntity.coffee');
+const CardType = require('./../cards/cardType.coffee');
+const Cards = require('../cards/cardsLookupComplete.coffee');
+const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
+const _ = require('underscore');
 
-class SpellShadowspawn extends SpellSpawnEntity
+class SpellShadowspawn extends SpellSpawnEntity {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Unit;
+		this.prototype.spawnSilently = true;
+		this.prototype.numUnits = 2;
+		this.prototype.cardDataOrIndexToSpawn = {id: Cards.Faction4.Wraithling};
+		 // spawns wraithlings
+	}
 
-	targetType: CardType.Unit
-	spawnSilently: true
-	numUnits: 2
-	cardDataOrIndexToSpawn: {id: Cards.Faction4.Wraithling} # spawns wraithlings
+	_findApplyEffectPositions(position, sourceAction) {
+		let applyEffectPositions;
+		const card = this.getEntityToSpawn();
+		const generalPosition = this.getGameSession().getGeneralForPlayerId(this.ownerId).getPosition();
+		const numberOfApplyPositions = this.numUnits;
 
-	_findApplyEffectPositions: (position, sourceAction) ->
-		card = @getEntityToSpawn()
-		generalPosition = @getGameSession().getGeneralForPlayerId(@ownerId).getPosition()
-		numberOfApplyPositions = @numUnits
+		if (numberOfApplyPositions > 0) {
+			applyEffectPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), generalPosition, CONFIG.PATTERN_3x3, card, this, numberOfApplyPositions);
+		} else {
+			applyEffectPositions = [];
+		}
 
-		if numberOfApplyPositions > 0
-			applyEffectPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), generalPosition, CONFIG.PATTERN_3x3, card, @, numberOfApplyPositions)
-		else
-			applyEffectPositions = []
+		return applyEffectPositions;
+	}
 
-		return applyEffectPositions
+	getAppliesSameEffectToMultipleTargets() {
+		return true;
+	}
 
-	getAppliesSameEffectToMultipleTargets: () ->
-		return true
+	// Shadowspawn picks its apply locations by itself, so don't set limits on where it can be cast
+	_postFilterPlayPositions(validPositions) {
+		return validPositions;
+	}
+}
+SpellShadowspawn.initClass();
 
-	# Shadowspawn picks its apply locations by itself, so don't set limits on where it can be cast
-	_postFilterPlayPositions: (validPositions) ->
-		return validPositions
-
-module.exports = SpellShadowspawn
+module.exports = SpellShadowspawn;

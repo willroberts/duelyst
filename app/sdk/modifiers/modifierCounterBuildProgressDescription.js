@@ -1,21 +1,33 @@
-Modifier = require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierCounterBuildProgressDescription extends Modifier
+class ModifierCounterBuildProgressDescription extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierCounterBuildProgressDescription";
+		this.type ="ModifierCounterBuildProgressDescription";
+	
+		this.prototype.maxStacks = 1;
+	}
 
-	type:"ModifierCounterBuildProgressDescription"
-	@type:"ModifierCounterBuildProgressDescription"
+	static createContextObject(turnsLeft) {
+		const contextObject = super.createContextObject();
+		contextObject.turnsLeft = turnsLeft;
+		return contextObject;
+	}
 
-	maxStacks: 1
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return i18next.t("modifiers.building_counter_applied_desc",{turns_until_complete: modifierContextObject.turnsLeft});
+		}
+	}
+}
+ModifierCounterBuildProgressDescription.initClass();
 
-	@createContextObject: (turnsLeft) ->
-		contextObject = super()
-		contextObject.turnsLeft = turnsLeft
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return i18next.t("modifiers.building_counter_applied_desc",{turns_until_complete: modifierContextObject.turnsLeft})
-
-module.exports = ModifierCounterBuildProgressDescription
+module.exports = ModifierCounterBuildProgressDescription;

@@ -1,40 +1,57 @@
-Modifier = require './modifier'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
-ModifierDealDamageWatch = require './modifierDealDamageWatch'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
+const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
 
-class ModifierDamageGeneralOnAttack extends ModifierDealDamageWatch
+class ModifierDamageGeneralOnAttack extends ModifierDealDamageWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDamageGeneralOnAttack";
+		this.type ="ModifierDamageGeneralOnAttack";
+	
+		this.modifierName ="Damaging Attacks";
+		this.description ="Whenever this damages an enemy minion, deal %X damage to the enemy General";
+	
+		this.prototype.enemyOnly = true; // should only trigger on dealing damage to enemy, not on ANY damage dealt
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDamageGeneralOnAttack"];
+	}
 
-	type:"ModifierDamageGeneralOnAttack"
-	@type:"ModifierDamageGeneralOnAttack"
+	static createContextObject(damageAmount,options) {
+		if (damageAmount == null) { damageAmount = 0; }
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	@modifierName:"Damaging Attacks"
-	@description:"Whenever this damages an enemy minion, deal %X damage to the enemy General"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.damageAmount);
+		} else {
+			return this.description;
+		}
+	}
 
-	enemyOnly: true # should only trigger on dealing damage to enemy, not on ANY damage dealt
+	onDealDamage(action) {
+		const opponentGeneral = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+		if (action.getTarget() !== opponentGeneral) { //if not attacking the enemy general
+			// then damage the enemy general as well
+			// we can't use an attack action here in case the general has strikeback
+			const damageAction = this.getCard().getGameSession().createActionForType(DamageAction.type);
+			damageAction.setSource(this.getCard());
+			damageAction.setTarget(opponentGeneral);
+			damageAction.setDamageAmount(this.damageAmount);
+			return this.getCard().getGameSession().executeAction(damageAction);
+		}
+	}
+}
+ModifierDamageGeneralOnAttack.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierDamageGeneralOnAttack"]
-
-	@createContextObject: (damageAmount=0,options) ->
-		contextObject = super(options)
-		contextObject.damageAmount = damageAmount
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.damageAmount
-		else
-			return @description
-
-	onDealDamage: (action) ->
-		opponentGeneral = @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-		if action.getTarget() != opponentGeneral #if not attacking the enemy general
-			# then damage the enemy general as well
-			# we can't use an attack action here in case the general has strikeback
-			damageAction = @getCard().getGameSession().createActionForType(DamageAction.type)
-			damageAction.setSource(@getCard())
-			damageAction.setTarget(opponentGeneral)
-			damageAction.setDamageAmount(@damageAmount)
-			@getCard().getGameSession().executeAction(damageAction)
-
-module.exports = ModifierDamageGeneralOnAttack
+module.exports = ModifierDamageGeneralOnAttack;

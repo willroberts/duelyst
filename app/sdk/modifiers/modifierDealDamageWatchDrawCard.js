@@ -1,17 +1,28 @@
-ModifierDealDamageWatch = require './modifierDealDamageWatch'
-CardType = require 'app/sdk/cards/cardType'
-DrawCardAction = require 'app/sdk/actions/drawCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
+const CardType = require('app/sdk/cards/cardType');
+const DrawCardAction = require('app/sdk/actions/drawCardAction');
 
-class ModifierDealDamageWatchDrawCard extends ModifierDealDamageWatch
+class ModifierDealDamageWatchDrawCard extends ModifierDealDamageWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDealDamageWatchDrawCard";
+		this.type ="ModifierDealDamageWatchDrawCard";
+	
+		this.modifierName ="Deal Damage and draw card";
+		this.description ="Whenever this minion deals damage, draw a card";
+	}
 
-	type:"ModifierDealDamageWatchDrawCard"
-	@type:"ModifierDealDamageWatchDrawCard"
+	onDealDamage(action) {
+		const a = new DrawCardAction(this.getGameSession(), this.getCard().getOwnerId());
+		return this.getGameSession().executeAction(a);
+	}
+}
+ModifierDealDamageWatchDrawCard.initClass();
 
-	@modifierName:"Deal Damage and draw card"
-	@description:"Whenever this minion deals damage, draw a card"
-
-	onDealDamage: (action) ->
-		a = new DrawCardAction(this.getGameSession(), @getCard().getOwnerId())
-		this.getGameSession().executeAction(a)
-
-module.exports = ModifierDealDamageWatchDrawCard
+module.exports = ModifierDealDamageWatchDrawCard;

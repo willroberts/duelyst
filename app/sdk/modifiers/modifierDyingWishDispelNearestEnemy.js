@@ -1,39 +1,56 @@
-Modifier = require './modifier'
-ModifierDyingWish = require './modifierDyingWish'
-ModifierSilence = require './modifierSilence'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-CardType = require 'app/sdk/cards/cardType'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierDyingWish = require('./modifierDyingWish');
+const ModifierSilence = require('./modifierSilence');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const CardType = require('app/sdk/cards/cardType');
+const _ = require('underscore');
 
-class ModifierDyingWishDispelNearestEnemy extends ModifierDyingWish
+class ModifierDyingWishDispelNearestEnemy extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWishDispelNearestEnemy";
+		this.type ="ModifierDyingWishDispelNearestEnemy";
+	
+		this.description ="Dispel the nearest enemy minion";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish"];
+	}
 
-	type:"ModifierDyingWishDispelNearestEnemy"
-	@type:"ModifierDyingWishDispelNearestEnemy"
+	onDyingWish(action) {
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			let bestAbsoluteDistance = 9999;
+			let potentialTargets = [];
+			for (let potentialTarget of Array.from(this.getGameSession().getBoard().getEnemyEntitiesForEntity(this.getCard(), CardType.Unit))) {
+				if (!potentialTarget.getIsGeneral() && potentialTarget.getIsActive()) { // don't target Generals or inactive cards for dispel
+					const absoluteDistance = Math.abs(this.getCard().position.x - potentialTarget.position.x) + Math.abs(this.getCard().position.y - potentialTarget.position.y);
+					// found a new best target
+					if (absoluteDistance < bestAbsoluteDistance) {
+						bestAbsoluteDistance = absoluteDistance;
+						potentialTargets = []; // reset potential targets
+						potentialTargets.push(potentialTarget);
+						//found an equally good target
+					} else if (absoluteDistance === bestAbsoluteDistance) {
+						potentialTargets.push(potentialTarget);
+					}
+				}
+			}
 
-	@description:"Dispel the nearest enemy minion"
-
-	fxResource: ["FX.Modifiers.ModifierDyingWish"]
-
-	onDyingWish: (action) ->
-		if @getGameSession().getIsRunningAsAuthoritative()
-			bestAbsoluteDistance = 9999
-			potentialTargets = []
-			for potentialTarget in @getGameSession().getBoard().getEnemyEntitiesForEntity(@getCard(), CardType.Unit)
-				if !potentialTarget.getIsGeneral() and potentialTarget.getIsActive() # don't target Generals or inactive cards for dispel
-					absoluteDistance = Math.abs(@getCard().position.x - potentialTarget.position.x) + Math.abs(@getCard().position.y - potentialTarget.position.y)
-					# found a new best target
-					if absoluteDistance < bestAbsoluteDistance
-						bestAbsoluteDistance = absoluteDistance
-						potentialTargets = [] # reset potential targets
-						potentialTargets.push(potentialTarget)
-						#found an equally good target
-					else if absoluteDistance == bestAbsoluteDistance
-						potentialTargets.push(potentialTarget)
-
-			if potentialTargets.length > 0
-				# choose randomly between all equally close enemy minions and dispel one
-				target = potentialTargets[@getGameSession().getRandomIntegerForExecution(potentialTargets.length)]
-				@getGameSession().applyModifierContextObject(ModifierSilence.createContextObject(), target)
+			if (potentialTargets.length > 0) {
+				// choose randomly between all equally close enemy minions and dispel one
+				const target = potentialTargets[this.getGameSession().getRandomIntegerForExecution(potentialTargets.length)];
+				return this.getGameSession().applyModifierContextObject(ModifierSilence.createContextObject(), target);
+			}
+		}
+	}
+}
+ModifierDyingWishDispelNearestEnemy.initClass();
 
 
-module.exports = ModifierDyingWishDispelNearestEnemy
+module.exports = ModifierDyingWishDispelNearestEnemy;

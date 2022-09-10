@@ -1,32 +1,46 @@
-Spell = require './spell'
-ModifierStunned = require 'app/sdk/modifiers/modifierStunned'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const ModifierStunned = require('app/sdk/modifiers/modifierStunned');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 
-class SpellEssenceSculpt extends Spell
+class SpellEssenceSculpt extends Spell {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		target = board.getUnitAtPosition({x: x, y: y})
+		const target = board.getUnitAtPosition({x, y});
 
-		# put a fresh card matching the original unit into hand
-		newCardData = target.createNewCardData()
-		# add additional modifiers as needed
-		if @targetModifiersContextObjects
-			if newCardData.additionalModifiersContextObjects?
-				newCardData.additionalModifiersContextObjects.concat(UtilsJavascript.deepCopy(@targetModifiersContextObjects))
-			else
-				newCardData.additionalModifiersContextObjects = UtilsJavascript.deepCopy(@targetModifiersContextObjects)
+		// put a fresh card matching the original unit into hand
+		const newCardData = target.createNewCardData();
+		// add additional modifiers as needed
+		if (this.targetModifiersContextObjects) {
+			if (newCardData.additionalModifiersContextObjects != null) {
+				newCardData.additionalModifiersContextObjects.concat(UtilsJavascript.deepCopy(this.targetModifiersContextObjects));
+			} else {
+				newCardData.additionalModifiersContextObjects = UtilsJavascript.deepCopy(this.targetModifiersContextObjects);
+			}
+		}
 
-		a = new PutCardInHandAction(@getGameSession(), @getOwnerId(), newCardData)
-		@getGameSession().executeAction(a)
+		const a = new PutCardInHandAction(this.getGameSession(), this.getOwnerId(), newCardData);
+		return this.getGameSession().executeAction(a);
+	}
 
-	_postFilterPlayPositions: (validPositions) ->
-		filteredPositions = []
-		for position in validPositions
-			entityAtPosition = @getGameSession().getBoard().getEntityAtPosition(position)
-			if entityAtPosition? and entityAtPosition.hasModifierClass(ModifierStunned)
-				filteredPositions.push(position)
-		return filteredPositions
+	_postFilterPlayPositions(validPositions) {
+		const filteredPositions = [];
+		for (let position of Array.from(validPositions)) {
+			const entityAtPosition = this.getGameSession().getBoard().getEntityAtPosition(position);
+			if ((entityAtPosition != null) && entityAtPosition.hasModifierClass(ModifierStunned)) {
+				filteredPositions.push(position);
+			}
+		}
+		return filteredPositions;
+	}
+}
 
-module.exports = SpellEssenceSculpt
+module.exports = SpellEssenceSculpt;

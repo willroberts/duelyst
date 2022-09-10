@@ -1,61 +1,65 @@
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
 
-config = require("../../config/config.js")
-Firebase = require("firebase")
-_ = require("underscore")
-moment = require('moment')
-fbRef = new Firebase(config.get("firebase"))
-util = require('util')
-fs = require('fs')
-UsersModule = require('../../server/lib/users_module')
-FirebasePromises = require('../../server/lib/firebase_promises')
-DuelystFirebaseModule = require("../../server/lib/duelyst_firebase_module")
-Promise = require("bluebird")
-colors = require("colors")
+const config = require("../../config/config.js");
+const Firebase = require("firebase");
+const _ = require("underscore");
+const moment = require('moment');
+const fbRef = new Firebase(config.get("firebase"));
+const util = require('util');
+const fs = require('fs');
+const UsersModule = require('../../server/lib/users_module');
+const FirebasePromises = require('../../server/lib/firebase_promises');
+const DuelystFirebaseModule = require("../../server/lib/duelyst_firebase_module");
+const Promise = require("bluebird");
+const colors = require("colors");
 
 
-processUsersStartingWith = (rootRef,startingKey,lastUserKey,limitToCount,callback)->
+var processUsersStartingWith = function(rootRef,startingKey,lastUserKey,limitToCount,callback){
 
-	console.log("Grabbing batch of #{limitToCount} users (starting with #{startingKey})".green)
+	console.log(`Grabbing batch of ${limitToCount} users (starting with ${startingKey})`.green);
 
-	counter = 0
-	usersRef = rootRef.child("users").orderByKey().startAt(startingKey).limitToFirst(limitToCount)
-	usersRef.on "child_added",(userSnapshot,error)->
-		counter++
-		console.log("User #{userSnapshot?.key()} @ #{counter}")
-		if userSnapshot.key() == lastUserKey
-			usersRef.off("child_added")
-			callback(true)
-		else if counter == limitToCount
-			usersRef.off("child_added")
-			processUsersStartingWith(rootRef,userSnapshot.key(),lastUserKey,limitToCount,callback)
+	let counter = 0;
+	const usersRef = rootRef.child("users").orderByKey().startAt(startingKey).limitToFirst(limitToCount);
+	return usersRef.on("child_added",function(userSnapshot,error){
+		counter++;
+		console.log(`User ${(userSnapshot != null ? userSnapshot.key() : undefined)} @ ${counter}`);
+		if (userSnapshot.key() === lastUserKey) {
+			usersRef.off("child_added");
+			return callback(true);
+		} else if (counter === limitToCount) {
+			usersRef.off("child_added");
+			return processUsersStartingWith(rootRef,userSnapshot.key(),lastUserKey,limitToCount,callback);
+		}
+	});
+};
 
 
 DuelystFirebaseModule.connect().getRootRef()
 
-.bind {}
+.bind({})
 
-.then (fbRootRef) ->
+.then(function(fbRootRef) {
 
 	console.log("CONNECTED... Looking for last user.");
 
-	@.fbRootRef = fbRootRef
-	return FirebasePromises.once(@.fbRootRef.child("users").orderByKey().limitToLast(1),"child_added")
-	
-.then (lastUserSnapshot) ->
+	this.fbRootRef = fbRootRef;
+	return FirebasePromises.once(this.fbRootRef.child("users").orderByKey().limitToLast(1),"child_added");}).then(function(lastUserSnapshot) {
 
-	console.log("Found last user: #{lastUserSnapshot.key()}");
+	console.log(`Found last user: ${lastUserSnapshot.key()}`);
 
-	return new Promise (resolve,reject)=>
+	return new Promise((resolve,reject)=> {
 
-		processUsersStartingWith @.fbRootRef,undefined,lastUserSnapshot.key(),20,()->
-			resolve()
+		return processUsersStartingWith(this.fbRootRef,undefined,lastUserSnapshot.key(),20,() => resolve());
+	});}).then(function(){
 
-.then ()->
+	console.log("ALL DONE!");
+	return process.exit(1);}).catch(function(err){
 
-	console.log("ALL DONE!")
-	process.exit(1)
-
-.catch (err)->
-
-	console.log("ERROR:",err)
-	process.exit(1)
+	console.log("ERROR:",err);
+	return process.exit(1);
+});

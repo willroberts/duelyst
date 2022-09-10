@@ -1,14 +1,16 @@
-CONFIG = require '../../common/config'
-SpellSpawnEntity = require './spellSpawnEntity'
-UtilsGameSession = require '../../common/utils/utils_game_session.coffee'
+const CONFIG = require('../../common/config');
+const SpellSpawnEntity = require('./spellSpawnEntity');
+const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
 
-###
+/*
   Spawns a new entity nearby my general.
-###
-class SpellSpawnEntityNearbyGeneral extends SpellSpawnEntity
+*/
+class SpellSpawnEntityNearbyGeneral extends SpellSpawnEntity {
 
-	_getPrefilteredValidTargetPositions: () ->
-		# get positions around General
-		return UtilsGameSession.getValidBoardPositionsFromPattern(@getGameSession().getBoard(), @getGameSession().getGeneralForPlayerId(@ownerId).getPosition(), CONFIG.PATTERN_3x3)
+	_getPrefilteredValidTargetPositions() {
+		// get positions around General
+		return UtilsGameSession.getValidBoardPositionsFromPattern(this.getGameSession().getBoard(), this.getGameSession().getGeneralForPlayerId(this.ownerId).getPosition(), CONFIG.PATTERN_3x3);
+}
+}
 
-module.exports = SpellSpawnEntityNearbyGeneral
+module.exports = SpellSpawnEntityNearbyGeneral;

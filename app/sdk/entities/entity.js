@@ -1,665 +1,804 @@
-Logger = require 'app/common/logger'
-CONFIG = require('app/common/config')
-EVENTS = require 'app/common/event_types'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-UtilsPosition = require 'app/common/utils/utils_position'
-Card = require 'app/sdk/cards/card'
-CardType = require 'app/sdk/cards/cardType'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const CONFIG = require('app/common/config');
+const EVENTS = require('app/common/event_types');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const UtilsPosition = require('app/common/utils/utils_position');
+const Card = require('app/sdk/cards/card');
+const CardType = require('app/sdk/cards/cardType');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-MovementRange = require './movementRange'
-AttackRange = 	require './attackRange'
+const MovementRange = require('./movementRange');
+const AttackRange = 	require('./attackRange');
 
-MoveAction = 	require 'app/sdk/actions/moveAction'
-DamageAction = 	require 'app/sdk/actions/damageAction'
-AttackAction = 	require 'app/sdk/actions/attackAction'
-RemoveAction = 	require 'app/sdk/actions/removeAction'
-DieAction = 	require 'app/sdk/actions/dieAction'
-KillAction = 	require 'app/sdk/actions/killAction'
+const MoveAction = 	require('app/sdk/actions/moveAction');
+const DamageAction = 	require('app/sdk/actions/damageAction');
+const AttackAction = 	require('app/sdk/actions/attackAction');
+const RemoveAction = 	require('app/sdk/actions/removeAction');
+const DieAction = 	require('app/sdk/actions/dieAction');
+const KillAction = 	require('app/sdk/actions/killAction');
 
-ModifierUntargetable = 	require 'app/sdk/modifiers/modifierUntargetable'
-ModifierObstructing = 	require 'app/sdk/modifiers/modifierObstructing'
-ModifierProvoked = 	require 'app/sdk/modifiers/modifierProvoked'
-ModifierCustomSpawn = require 'app/sdk/modifiers/modifierCustomSpawn'
+const ModifierUntargetable = 	require('app/sdk/modifiers/modifierUntargetable');
+const ModifierObstructing = 	require('app/sdk/modifiers/modifierObstructing');
+const ModifierProvoked = 	require('app/sdk/modifiers/modifierProvoked');
+const ModifierCustomSpawn = require('app/sdk/modifiers/modifierCustomSpawn');
 
-ModifierAirdrop = 	require 'app/sdk/modifiers/modifierAirdrop'
-ModifierProvoke = 	require 'app/sdk/modifiers/modifierProvoke'
-ModifierRangedProvoked = require 'app/sdk/modifiers/modifierRangedProvoked'
-ModifierRangedProvoke = require 'app/sdk/modifiers/modifierRangedProvoke'
-ModifierBattlePet = require 'app/sdk/modifiers/modifierBattlePet'
-ModifierTamedBattlePet = require 'app/sdk/modifiers/modifierTamedBattlePet'
+const ModifierAirdrop = 	require('app/sdk/modifiers/modifierAirdrop');
+const ModifierProvoke = 	require('app/sdk/modifiers/modifierProvoke');
+const ModifierRangedProvoked = require('app/sdk/modifiers/modifierRangedProvoked');
+const ModifierRangedProvoke = require('app/sdk/modifiers/modifierRangedProvoke');
+const ModifierBattlePet = require('app/sdk/modifiers/modifierBattlePet');
+const ModifierTamedBattlePet = require('app/sdk/modifiers/modifierTamedBattlePet');
 
-PlayerModifierChangeSignatureCard = require 'app/sdk/playerModifiers/playerModifierChangeSignatureCard'
+const PlayerModifierChangeSignatureCard = require('app/sdk/playerModifiers/playerModifierChangeSignatureCard');
 
-_ = require 'underscore'
+const _ = require('underscore');
 
-class Entity extends Card
+class Entity extends Card {
+	static initClass() {
+	
+		this.prototype.type = CardType.Entity;
+		this.type = CardType.Entity;
+		this.prototype.name = "Entity";
+	
+		this.prototype.atk = 0; // attack damage
+		this.prototype.attacks = 1; // max attacks this entity can make
+		this.prototype.attacksMade = 0; // number of attacks this entity has made this turn
+		this.prototype.damage = 0; // current damage
+		this.prototype.exhausted = true; // whether an entity is exhausted regardless of how many moves/attacks it has made
+		this.prototype.isGeneral = false; // whether entity is a general
+		this.prototype.isObstructing = false; // whether the entity takes up an entire board position and blocks view for units that need LOS
+		this.prototype.isTargetable = true; // whether the entity can be targeted
+		this.prototype.lastDmg = 0; // value of last damage taken
+		this.prototype.lastHeal = 0; // value of last heal
+		this.prototype.maxHP = 1; // max HP
+		this.prototype.moves = 1; // max moves this entity can make
+		this.prototype.movesMade = 0; // number of moves this entity has made this turn
+		this.prototype.reach = 0; // how far the entity can attack
+		this.prototype.speed = 0; // how far the entity can go per move
+		this.prototype.wasGeneral = false; // whether this entity was a general at some time during game
+		this.prototype.signatureCardData = null;
+		 // normally this will be null, but will be populated for Generals
+	}
 
-	type: CardType.Entity
-	@type: CardType.Entity
-	name: "Entity"
+	constructor(gameSession) {
+		// super constructor
+		super(gameSession);
+	}
 
-	atk: 0 # attack damage
-	attacks: 1 # max attacks this entity can make
-	attacksMade: 0 # number of attacks this entity has made this turn
-	damage: 0 # current damage
-	exhausted: true # whether an entity is exhausted regardless of how many moves/attacks it has made
-	isGeneral: false # whether entity is a general
-	isObstructing: false # whether the entity takes up an entire board position and blocks view for units that need LOS
-	isTargetable: true # whether the entity can be targeted
-	lastDmg: 0 # value of last damage taken
-	lastHeal: 0 # value of last heal
-	maxHP: 1 # max HP
-	moves: 1 # max moves this entity can make
-	movesMade: 0 # number of moves this entity has made this turn
-	reach: 0 # how far the entity can attack
-	speed: 0 # how far the entity can go per move
-	wasGeneral: false # whether this entity was a general at some time during game
-	signatureCardData: null # normally this will be null, but will be populated for Generals
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	constructor: (gameSession) ->
-		# super constructor
-		super(gameSession)
+		// cache
+		p.cachedAttackPattern = null;
+		p.cachedAttackPatternMap = null;
+		p.cachedEntitiesKilledByAttackOn = null;
+		p.cachedMovementPattern = null;
+		p.cachedMovementPatternMap = null;
+		p.cachedReferenceSignatureCard = null;
+		p.cachedIsBattlePet = null;
+		p.cachedIsUncontrollableBattlePet = null;
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		// misc
+		p.attackRange = new AttackRange(p.gameSession);
+		p.movementRange = new MovementRange(p.gameSession);
+		p.customAttackPattern = null;
+		p.boundingBox = {x: 0, y: 0, width: 80, height: 80};
 
-		# cache
-		p.cachedAttackPattern = null
-		p.cachedAttackPatternMap = null
-		p.cachedEntitiesKilledByAttackOn = null
-		p.cachedMovementPattern = null
-		p.cachedMovementPatternMap = null
-		p.cachedReferenceSignatureCard = null
-		p.cachedIsBattlePet = null
-		p.cachedIsUncontrollableBattlePet = null
+		return p;
+	}
 
-		# misc
-		p.attackRange = new AttackRange(p.gameSession)
-		p.movementRange = new MovementRange(p.gameSession)
-		p.customAttackPattern = null
-		p.boundingBox = {x: 0, y: 0, width: 80, height: 80}
+	createCloneCardData() {
+		const cardData = super.createCloneCardData();
 
-		return p
+		cardData.damage = this.damage;
 
-	createCloneCardData: () ->
-		cardData = super()
+		return cardData;
+	}
 
-		cardData.damage = @damage
+	onRemoveFromBoard(board, x, y, sourceAction) {
+		super.onRemoveFromBoard(board, x, y, sourceAction);
 
-		return cardData
+		if (this.getIsGeneral()) {
+			// notify the game session this entity is a general and has died
+			return this.getGameSession().p_requestGameOver();
+		}
+	}
 
-	onRemoveFromBoard: (board, x, y, sourceAction) ->
-		super(board, x, y, sourceAction)
+	//region ### Getters/Setters ###
 
-		if @getIsGeneral()
-			# notify the game session this entity is a general and has died
-			@getGameSession().p_requestGameOver()
+	getLogName(){
+		return super.getLogName() + `(${this.getPosition().x},${this.getPosition().y})`;
+	}
 
-	#region ### Getters/Setters ###
+	setIsGeneral(isGeneral) {
+		if (this.isGeneral !== isGeneral) {
+			this.wasGeneral = this.isGeneral || isGeneral || this.wasGeneral;
+			this.isGeneral = isGeneral;
+			this.flushCachedDescription();
+			return this.flushCachedModifiers();
+		}
+	}
 
-	getLogName: ()->
-		return super() + "(#{@.getPosition().x},#{@.getPosition().y})"
+	getIsGeneral() {
+		return this.isGeneral;
+	}
 
-	setIsGeneral: (isGeneral) ->
-		if @isGeneral != isGeneral
-			@wasGeneral = @isGeneral or isGeneral or @wasGeneral
-			@isGeneral = isGeneral
-			@flushCachedDescription()
-			@flushCachedModifiers()
+	getWasGeneral() {
+		return this.wasGeneral;
+	}
 
-	getIsGeneral: () ->
-		return @isGeneral
+	getIsBattlePet() {
+		if (this._private.cachedIsBattlePet == null) { this._private.cachedIsBattlePet = this.hasModifierClass(ModifierBattlePet); }
+		return this._private.cachedIsBattlePet;
+	}
 
-	getWasGeneral: () ->
-		return @wasGeneral
+	getIsUncontrollableBattlePet() {
+		// normally battle pets are uncontrollable, unless tamed
+		// generals that are acting like battle pets are always uncontrollable
+		if (this._private.cachedIsUncontrollableBattlePet == null) { this._private.cachedIsUncontrollableBattlePet = this.getIsBattlePet() && (!this.hasModifierClass(ModifierTamedBattlePet) || this.getIsGeneral()); }
+		return this._private.cachedIsUncontrollableBattlePet;
+	}
 
-	getIsBattlePet:() ->
-		@_private.cachedIsBattlePet ?= @hasModifierClass(ModifierBattlePet)
-		return @_private.cachedIsBattlePet
+	getDescription(options) {
+		// TODO: Is removing this commented out code correct?
+//		# general description should be description of signature card
+//		if @getWasGeneral() and (!@_private.cachedDescription? or @_private.cachedDescriptionOptions != options)
+//			signatureCard = @getReferenceSignatureCard()
+//			if signatureCard?
+//				@_private.cachedDescriptionOptions = options
+//				boldStart = options?.boldStart or ""
+//				boldEnd = options?.boldEnd or ""
+//				@_private.cachedDescription = boldStart + "Bloodbound Spell:" + boldEnd + " " + signatureCard.getDescription()
 
-	getIsUncontrollableBattlePet:() ->
-		# normally battle pets are uncontrollable, unless tamed
-		# generals that are acting like battle pets are always uncontrollable
-		@_private.cachedIsUncontrollableBattlePet ?= @getIsBattlePet() and (!@hasModifierClass(ModifierTamedBattlePet) or @getIsGeneral())
-		return @_private.cachedIsUncontrollableBattlePet
+		return super.getDescription(options);
+	}
 
-	getDescription: (options) ->
-		# TODO: Is removing this commented out code correct?
-#		# general description should be description of signature card
-#		if @getWasGeneral() and (!@_private.cachedDescription? or @_private.cachedDescriptionOptions != options)
-#			signatureCard = @getReferenceSignatureCard()
-#			if signatureCard?
-#				@_private.cachedDescriptionOptions = options
-#				boldStart = options?.boldStart or ""
-#				boldEnd = options?.boldEnd or ""
-#				@_private.cachedDescription = boldStart + "Bloodbound Spell:" + boldEnd + " " + signatureCard.getDescription()
+	//endregion ### Getters/Setters ###
 
-		return super(options)
+	//region ### BOUNDING BOX ###
 
-	#endregion ### Getters/Setters ###
+	setBoundingBox(val) {
+		return this._private.boundingBox = val;
+	}
 
-	#region ### BOUNDING BOX ###
+	getBoundingBox() {
+		return this._private.boundingBox;
+	}
 
-	setBoundingBox: (val) ->
-		@_private.boundingBox = val
+	setBoundingBoxX(val) {
+		return this._private.boundingBox.x = val;
+	}
 
-	getBoundingBox: () ->
-		return @_private.boundingBox
+	getBoundingBoxX() {
+		return this._private.boundingBox.x;
+	}
 
-	setBoundingBoxX: (val) ->
-		@_private.boundingBox.x = val
+	setBoundingBoxY(val) {
+		return this._private.boundingBox.y = val;
+	}
 
-	getBoundingBoxX: () ->
-		return @_private.boundingBox.x
+	getBoundingBoxY() {
+		return this._private.boundingBox.y;
+	}
 
-	setBoundingBoxY: (val) ->
-		@_private.boundingBox.y = val
+	setBoundingBoxWidth(val) {
+		return this._private.boundingBox.width = val;
+	}
 
-	getBoundingBoxY: () ->
-		return @_private.boundingBox.y
+	getBoundingBoxWidth() {
+		return this._private.boundingBox.width;
+	}
 
-	setBoundingBoxWidth: (val) ->
-		@_private.boundingBox.width = val
+	setBoundingBoxHeight(val) {
+		return this._private.boundingBox.height = val;
+	}
 
-	getBoundingBoxWidth: () ->
-		return @_private.boundingBox.width
+	getBoundingBoxHeight() {
+		return this._private.boundingBox.height;
+	}
 
-	setBoundingBoxHeight: (val) ->
-		@_private.boundingBox.height = val
+	//endregion ### BOUNDING BOX ###
 
-	getBoundingBoxHeight: () ->
-		return @_private.boundingBox.height
+	//region ### VALID POSITIONS ###
 
-	#endregion ### BOUNDING BOX ###
+	getValidTargetPositions() {
+		if ((this._private.cachedValidTargetPositions == null)) {
+			let validPositions;
+			if (this.getCanBeAppliedAnywhere()) {
+				// some cards can be applied anywhere on board
+				validPositions = this._getValidApplyAnywherePositions();
+			} else if (this.hasActiveModifierClass(ModifierCustomSpawn)) {
+				validPositions = this.getActiveModifiersByClass(ModifierCustomSpawn)[0].getCustomSpawnPositions();
+			} else {
+				validPositions = this.getGameSession().getBoard().getValidSpawnPositions(this);
+			}
 
-	#region ### VALID POSITIONS ###
+			// always guarantee at least an empty array
+			this._private.cachedValidTargetPositions = validPositions || [];
+		}
+		return this._private.cachedValidTargetPositions;
+	}
 
-	getValidTargetPositions: () ->
-		if !@_private.cachedValidTargetPositions?
-			if @getCanBeAppliedAnywhere()
-				# some cards can be applied anywhere on board
-				validPositions = @_getValidApplyAnywherePositions()
-			else if @hasActiveModifierClass(ModifierCustomSpawn)
-				validPositions = @getActiveModifiersByClass(ModifierCustomSpawn)[0].getCustomSpawnPositions()
-			else
-				validPositions = @getGameSession().getBoard().getValidSpawnPositions(@)
+	_getValidApplyAnywherePositions() {
+		return this.getGameSession().getBoard().getUnobstructedPositionsForEntity(this);
+	}
 
-			# always guarantee at least an empty array
-			@_private.cachedValidTargetPositions = validPositions || []
-		return @_private.cachedValidTargetPositions
+	getCanBeAppliedAnywhere() {
+		// airdrop is a special trait that allows units to spawn anywhere on the map
+		return super.getCanBeAppliedAnywhere() || this.hasActiveModifierClass(ModifierAirdrop);
+	}
 
-	_getValidApplyAnywherePositions: () ->
-		return @getGameSession().getBoard().getUnobstructedPositionsForEntity(@)
+	//endregion ### VALID POSITIONS ###
 
-	getCanBeAppliedAnywhere: () ->
-		# airdrop is a special trait that allows units to spawn anywhere on the map
-		return super() or @hasActiveModifierClass(ModifierAirdrop)
+	// region ### SIGNATURE CARD ###
 
-	#endregion ### VALID POSITIONS ###
-
-	# region ### SIGNATURE CARD ###
-
-	###*
+	/**
    * Sets signature card data. Should only be valid for generals.
    * @param {Object|null}
-   ###
-	setSignatureCardData: (cardData) ->
-		@signatureCardData = cardData
-		@flushCachedReferenceSignatureCard()
-		@flushCachedDescription()
+   */
+	setSignatureCardData(cardData) {
+		this.signatureCardData = cardData;
+		this.flushCachedReferenceSignatureCard();
+		return this.flushCachedDescription();
+	}
 
-	###*
+	/**
    * Gets current signature card data, accounting for modifiers.
    * NOTE: only valid for generals!
    * @returns {Object|null}
-   ###
-	getSignatureCardData: () ->
-		# first check to see if a player modifier is overriding signature card data
-		if @hasModifierClass(PlayerModifierChangeSignatureCard)
-			# populate signature card data based on order of application of player modifiers
-			modifiers = @getActiveModifiersByClass(PlayerModifierChangeSignatureCard)
-			if modifiers.length > 0 then signatureCardData = modifiers[modifiers.length - 1].getSignatureCardData()
+   */
+	getSignatureCardData() {
+		// first check to see if a player modifier is overriding signature card data
+		let signatureCardData;
+		if (this.hasModifierClass(PlayerModifierChangeSignatureCard)) {
+			// populate signature card data based on order of application of player modifiers
+			const modifiers = this.getActiveModifiersByClass(PlayerModifierChangeSignatureCard);
+			if (modifiers.length > 0) { signatureCardData = modifiers[modifiers.length - 1].getSignatureCardData(); }
+		}
 
-		if signatureCardData?
-			# if General is prismatic, return a prismatic signature card
-			if Cards.getIsPrismaticCardId(@getId())
-				signatureCardData.id = Cards.getPrismaticCardId(signatureCardData.id)
+		if (signatureCardData != null) {
+			// if General is prismatic, return a prismatic signature card
+			if (Cards.getIsPrismaticCardId(this.getId())) {
+				signatureCardData.id = Cards.getPrismaticCardId(signatureCardData.id);
+			}
 
-			return signatureCardData
-		else
-			# if no updated signature card found (based on modifiers), use the base
-			return @getBaseSignatureCardData()
+			return signatureCardData;
+		} else {
+			// if no updated signature card found (based on modifiers), use the base
+			return this.getBaseSignatureCardData();
+		}
+	}
 
-	###*
+	/**
    * Gets signature card data, unmodified.
    * NOTE: only valid for generals!
    * @returns {Object|null}
-   ###
-	getBaseSignatureCardData: () ->
-		signatureCardData = @signatureCardData
+   */
+	getBaseSignatureCardData() {
+		const {
+            signatureCardData
+        } = this;
 
-		# if General is prismatic, return a prismatic signature card
-		if signatureCardData?
-			if Cards.getIsPrismaticCardId(@getId())
-				signatureCardData.id = Cards.getPrismaticCardId(signatureCardData.id)
-		return signatureCardData
+		// if General is prismatic, return a prismatic signature card
+		if (signatureCardData != null) {
+			if (Cards.getIsPrismaticCardId(this.getId())) {
+				signatureCardData.id = Cards.getPrismaticCardId(signatureCardData.id);
+			}
+		}
+		return signatureCardData;
+	}
 
-	###*
+	/**
    * Gets a for reference signature card.
    * NOTE: this card is never used in game and is only for reference!
    * @returns {Card|null}
-   ###
-	getReferenceSignatureCard: () ->
-		owner = @getOwner()
-		if owner? and owner != @getGameSession()
-			return owner.getReferenceSignatureCard()
-		else if !@_private.cachedReferenceSignatureCard?
-			@_private.cachedReferenceSignatureCard = @getGameSession().getExistingCardFromIndexOrCreateCardFromData(@getSignatureCardData())
-		return @_private.cachedReferenceSignatureCard
+   */
+	getReferenceSignatureCard() {
+		const owner = this.getOwner();
+		if ((owner != null) && (owner !== this.getGameSession())) {
+			return owner.getReferenceSignatureCard();
+		} else if ((this._private.cachedReferenceSignatureCard == null)) {
+			this._private.cachedReferenceSignatureCard = this.getGameSession().getExistingCardFromIndexOrCreateCardFromData(this.getSignatureCardData());
+		}
+		return this._private.cachedReferenceSignatureCard;
+	}
 
-	###*
+	/**
    * Flushes the cached reference card for signature so that the next call will regenerate the card.
-   ###
-	flushCachedReferenceSignatureCard: () ->
-		@_private.cachedReferenceSignatureCard = null
+   */
+	flushCachedReferenceSignatureCard() {
+		return this._private.cachedReferenceSignatureCard = null;
+	}
 
-	# endregion ### SIGNATURE CARD ###
+	// endregion ### SIGNATURE CARD ###
 
-	# region ### STATS ###
+	// region ### STATS ###
 
-	getHP:() ->
-		return Math.max(0, @getMaxHP() - @getDamage())
+	getHP() {
+		return Math.max(0, this.getMaxHP() - this.getDamage());
+	}
 
-	getMaxHP:(withAuras) ->
-		return @getBuffedAttribute(@maxHP, "maxHP", withAuras)
+	getMaxHP(withAuras) {
+		return this.getBuffedAttribute(this.maxHP, "maxHP", withAuras);
+	}
 
-	getBaseMaxHP:() ->
-		return @getBaseAttribute(@maxHP, "maxHP")
+	getBaseMaxHP() {
+		return this.getBaseAttribute(this.maxHP, "maxHP");
+	}
 
-	setDamage:(damage) ->
-		@damage = Math.max(0, damage)
+	setDamage(damage) {
+		return this.damage = Math.max(0, damage);
+	}
 
-	getDamage:() ->
-		return @damage
+	getDamage() {
+		return this.damage;
+	}
 
-	resetDamage:() ->
-		@lastDmg = @getDamage()
-		@setDamage(0)
+	resetDamage() {
+		this.lastDmg = this.getDamage();
+		return this.setDamage(0);
+	}
 
-	applyDamage: (dmg) ->
-		@lastDmg = @getDamage()
-		@setDamage(@damage + dmg)
+	applyDamage(dmg) {
+		this.lastDmg = this.getDamage();
+		return this.setDamage(this.damage + dmg);
+	}
 
-	applyHeal: (heal) ->
-		@lastDmg = @getDamage()
-		@setDamage(@damage - heal)
+	applyHeal(heal) {
+		this.lastDmg = this.getDamage();
+		return this.setDamage(this.damage - heal);
+	}
 
-	getCanBeHealed: () ->
-		return @getHP() < @getMaxHP()
+	getCanBeHealed() {
+		return this.getHP() < this.getMaxHP();
+	}
 
-	getATK:(withAuras) ->
-		return @getBuffedAttribute(@atk, "atk", withAuras)
+	getATK(withAuras) {
+		return this.getBuffedAttribute(this.atk, "atk", withAuras);
+	}
 
-	getBaseATK:() ->
-		return @getBaseAttribute(@atk, "atk")
+	getBaseATK() {
+		return this.getBaseAttribute(this.atk, "atk");
+	}
 
-	setReach: (reach) ->
-		@reach = reach
-		@flushCachedAttackPattern()
+	setReach(reach) {
+		this.reach = reach;
+		return this.flushCachedAttackPattern();
+	}
 
-	getReach: (withAuras) ->
-		return @getBuffedAttribute(@reach, "reach", withAuras)
+	getReach(withAuras) {
+		return this.getBuffedAttribute(this.reach, "reach", withAuras);
+	}
 
-	isMelee: () ->
-		return @getReach() == CONFIG.REACH_MELEE
+	isMelee() {
+		return this.getReach() === CONFIG.REACH_MELEE;
+	}
 
-	isRanged: () ->
-		return @getReach() == CONFIG.REACH_RANGED
+	isRanged() {
+		return this.getReach() === CONFIG.REACH_RANGED;
+	}
 
-	getAttackRange:() ->
-		return @_private.attackRange;
+	getAttackRange() {
+		return this._private.attackRange;
+	}
 
-	setCustomAttackPattern: (pattern) ->
-		@_private.customAttackPattern = pattern
-		if !@isRanged()
-			@flushCachedAttackPattern()
+	setCustomAttackPattern(pattern) {
+		this._private.customAttackPattern = pattern;
+		if (!this.isRanged()) {
+			return this.flushCachedAttackPattern();
+		}
+	}
 
-	getAttackPattern: () ->
-		if !@_private.cachedAttackPattern?
-			# don't use custom attack patterns if ranged (can already attack everywhere)
-			if @_private.customAttackPattern? and !@isRanged()
-				@_private.cachedAttackPattern = @_private.customAttackPattern
-			else
-				@_private.cachedAttackPattern = @_private.attackRange.getPatternByDistance(@getGameSession().getBoard(), @getReach())
-		return @_private.cachedAttackPattern
+	getAttackPattern() {
+		if ((this._private.cachedAttackPattern == null)) {
+			// don't use custom attack patterns if ranged (can already attack everywhere)
+			if ((this._private.customAttackPattern != null) && !this.isRanged()) {
+				this._private.cachedAttackPattern = this._private.customAttackPattern;
+			} else {
+				this._private.cachedAttackPattern = this._private.attackRange.getPatternByDistance(this.getGameSession().getBoard(), this.getReach());
+			}
+		}
+		return this._private.cachedAttackPattern;
+	}
 
-	getAttackPatternMap: () ->
-		if !@_private.cachedAttackPatternMap?
-			# don't use custom attack patterns if ranged (can already attack everywhere)
-			if @_private.customAttackPattern? and !@isRanged()
-				@_private.cachedAttackPatternMap = @_private.attackRange.getPatternMapFromPattern(@getGameSession().getBoard(), @_private.customAttackPattern)
-			else
-				@_private.cachedAttackPatternMap = @_private.attackRange.getPatternMapByDistance(@getGameSession().getBoard(), @getReach())
-		return @_private.cachedAttackPatternMap
+	getAttackPatternMap() {
+		if ((this._private.cachedAttackPatternMap == null)) {
+			// don't use custom attack patterns if ranged (can already attack everywhere)
+			if ((this._private.customAttackPattern != null) && !this.isRanged()) {
+				this._private.cachedAttackPatternMap = this._private.attackRange.getPatternMapFromPattern(this.getGameSession().getBoard(), this._private.customAttackPattern);
+			} else {
+				this._private.cachedAttackPatternMap = this._private.attackRange.getPatternMapByDistance(this.getGameSession().getBoard(), this.getReach());
+			}
+		}
+		return this._private.cachedAttackPatternMap;
+	}
 
-	flushCachedAttackPattern: () ->
-		@_private.cachedAttackPattern = null
-		@_private.cachedAttackPatternMap = null
-		@_private.attackRange.flushCachedState()
+	flushCachedAttackPattern() {
+		this._private.cachedAttackPattern = null;
+		this._private.cachedAttackPatternMap = null;
+		return this._private.attackRange.flushCachedState();
+	}
 
-	getAttackNeedsLOS: () ->
-		return false
+	getAttackNeedsLOS() {
+		return false;
+	}
 
-	setSpeed: (speed) ->
-		@speed = speed
-		@flushCachedMovementPattern()
+	setSpeed(speed) {
+		this.speed = speed;
+		return this.flushCachedMovementPattern();
+	}
 
-	getSpeed: (withAuras) ->
-		return @getBuffedAttribute(@speed, "speed", withAuras)
+	getSpeed(withAuras) {
+		return this.getBuffedAttribute(this.speed, "speed", withAuras);
+	}
 
-	getMovementRange:() ->
-		return @_private.movementRange
+	getMovementRange() {
+		return this._private.movementRange;
+	}
 
-	getMovementPattern: () ->
-		if !@_private.cachedMovementPattern?
-			@_private.cachedMovementPattern = @_private.movementRange.getPatternByDistance(@getGameSession().getBoard(), @getSpeed())
-		return @_private.cachedMovementPattern
+	getMovementPattern() {
+		if ((this._private.cachedMovementPattern == null)) {
+			this._private.cachedMovementPattern = this._private.movementRange.getPatternByDistance(this.getGameSession().getBoard(), this.getSpeed());
+		}
+		return this._private.cachedMovementPattern;
+	}
 
-	getMovementPatternMap: () ->
-		if !@_private.cachedMovementPatternMap?
-			@_private.cachedMovementPatternMap = @_private.movementRange.getPatternMapByDistance(@getGameSession().getBoard(), @getSpeed())
-		return @_private.cachedMovementPatternMap
+	getMovementPatternMap() {
+		if ((this._private.cachedMovementPatternMap == null)) {
+			this._private.cachedMovementPatternMap = this._private.movementRange.getPatternMapByDistance(this.getGameSession().getBoard(), this.getSpeed());
+		}
+		return this._private.cachedMovementPatternMap;
+	}
 
-	flushCachedMovementPattern: () ->
-		@_private.cachedMovementPattern = null
-		@_private.cachedMovementPatternMap = null
-		@_private.movementRange.flushCachedState()
+	flushCachedMovementPattern() {
+		this._private.cachedMovementPattern = null;
+		this._private.cachedMovementPatternMap = null;
+		return this._private.movementRange.flushCachedState();
+	}
 
-	setMovesMade:(movesMade) ->
-		@movesMade = Math.max(0, movesMade)
-		# also check attacks made and increase to always be at least 1 less than moves
-		# this enforces celerity rules of not allowing more than one move per attack
-		minimumAttacksMade = @movesMade - 1
-		if @getAttacksMade() < minimumAttacksMade then @setAttacksMade(minimumAttacksMade)
+	setMovesMade(movesMade) {
+		this.movesMade = Math.max(0, movesMade);
+		// also check attacks made and increase to always be at least 1 less than moves
+		// this enforces celerity rules of not allowing more than one move per attack
+		const minimumAttacksMade = this.movesMade - 1;
+		if (this.getAttacksMade() < minimumAttacksMade) { return this.setAttacksMade(minimumAttacksMade); }
+	}
 
-	getMovesMade:() ->
-		return @movesMade
+	getMovesMade() {
+		return this.movesMade;
+	}
 
-	getMoves:(withAuras) ->
-		return @getBuffedAttribute(@moves, "moves", withAuras)
+	getMoves(withAuras) {
+		return this.getBuffedAttribute(this.moves, "moves", withAuras);
+	}
 
-	getHasMovesLeft:() ->
-		return @getIsUncontrollableBattlePet() or @getMovesMade() < @getMoves()
+	getHasMovesLeft() {
+		return this.getIsUncontrollableBattlePet() || (this.getMovesMade() < this.getMoves());
+	}
 
-	getCanMove:() ->
-		return !@getIsExhausted() and @getHasMovesLeft() and @getSpeed() > 0
+	getCanMove() {
+		return !this.getIsExhausted() && this.getHasMovesLeft() && (this.getSpeed() > 0);
+	}
 
-	setAttacksMade:(attacksMade) ->
-		@attacksMade = Math.max(0, attacksMade)
-		# also check moves made and increase to match attacks
-		# this enforces sequence of move before attack and never after
-		if @getMovesMade() < @attacksMade then @setMovesMade(@attacksMade)
+	setAttacksMade(attacksMade) {
+		this.attacksMade = Math.max(0, attacksMade);
+		// also check moves made and increase to match attacks
+		// this enforces sequence of move before attack and never after
+		if (this.getMovesMade() < this.attacksMade) { return this.setMovesMade(this.attacksMade); }
+	}
 
-	getAttacksMade:() ->
-		return @attacksMade
+	getAttacksMade() {
+		return this.attacksMade;
+	}
 
-	getAttacks:(withAuras) ->
-		return @getBuffedAttribute(@attacks, "attacks", withAuras)
+	getAttacks(withAuras) {
+		return this.getBuffedAttribute(this.attacks, "attacks", withAuras);
+	}
 
-	getHasAttacksLeft:() ->
-		return @getIsUncontrollableBattlePet() or @getAttacksMade() < @getAttacks()
+	getHasAttacksLeft() {
+		return this.getIsUncontrollableBattlePet() || (this.getAttacksMade() < this.getAttacks());
+	}
 
-	getCanAttack:() ->
-		return !@getIsExhausted() and @getHasAttacksLeft() and @getATK() > 0 and @getReach() > 0
+	getCanAttack() {
+		return !this.getIsExhausted() && this.getHasAttacksLeft() && (this.getATK() > 0) && (this.getReach() > 0);
+	}
 
-	getCanAct:() ->
-		return @isOwnersTurn() and @getDoesOwnerHaveEnoughManaToAct() and (@getCanMove() or @getCanAttack())
+	getCanAct() {
+		return this.isOwnersTurn() && this.getDoesOwnerHaveEnoughManaToAct() && (this.getCanMove() || this.getCanAttack());
+	}
 
-	getNeverActs: () ->
-		return @getSpeed() <= 0 and @getATK() <= 0
+	getNeverActs() {
+		return (this.getSpeed() <= 0) && (this.getATK() <= 0);
+	}
 
-	###
+	/*
   * Returns exhausted state, accounting for all factors.
   * NOTE: for checking actual exhausted state value, use "getExhausted".
   * @returns {Boolean}
-  ###
-	getIsExhausted:() ->
-		if @getIsUncontrollableBattlePet()
-			return false
-		else
-			return @getExhausted() or !@getHasAttacksLeft()
+  */
+	getIsExhausted() {
+		if (this.getIsUncontrollableBattlePet()) {
+			return false;
+		} else {
+			return this.getExhausted() || !this.getHasAttacksLeft();
+		}
+	}
 
-	setExhausted: (val) ->
-		@exhausted = val
+	setExhausted(val) {
+		return this.exhausted = val;
+	}
 
-	###
+	/*
   * Returns actual exhausted state value, not accounting for any other factors.
   * NOTE: for checking exhausted state that accounts for all factors, use "getIsExhausted".
   * @returns {Boolean}
-  ###
-	getExhausted: () ->
-		return @exhausted
+  */
+	getExhausted() {
+		return this.exhausted;
+	}
 
-	refreshExhaustion:() ->
-		@setExhausted(false)
-		@setMovesMade(0)
-		@setAttacksMade(0)
+	refreshExhaustion() {
+		this.setExhausted(false);
+		this.setMovesMade(0);
+		return this.setAttacksMade(0);
+	}
 
-	applyExhaustion: () ->
-		@setExhausted(true)
+	applyExhaustion() {
+		return this.setExhausted(true);
+	}
 
-	getDoesOwnerHaveEnoughManaToAct: () ->
-		if @getGameSession()?
-			# if we want unit moves to cost mana, un-comment the lines below
-			###
+	getDoesOwnerHaveEnoughManaToAct() {
+		if (this.getGameSession() != null) {
+			// if we want unit moves to cost mana, un-comment the lines below
+			/*
 			owner = this.getGameSession().getPlayerById(@ownerId)
 			return !@getIsExhausted() && (owner.getRemainingMana() > 0 || (owner.getRemainingMana() == 0 && @getCanAct()))
-  		###
-			return !@getIsExhausted()
-		else
-			return false
+  		*/
+			return !this.getIsExhausted();
+		} else {
+			return false;
+		}
+	}
 
-	getCanAssist: (unit) ->
-		return false
+	getCanAssist(unit) {
+		return false;
+	}
 
-	getEntitiesKilledByAttackOn: (attackTarget) ->
-		gameSession = @getGameSession()
+	getEntitiesKilledByAttackOn(attackTarget) {
+		const gameSession = this.getGameSession();
 
-		# prefer cached
-		entitiesKilled = @_private.cachedEntitiesKilledByAttackOn?[attackTarget.getIndex()]
-		if entitiesKilled? then return entitiesKilled else entitiesKilled = []
+		// prefer cached
+		let entitiesKilled = this._private.cachedEntitiesKilledByAttackOn != null ? this._private.cachedEntitiesKilledByAttackOn[attackTarget.getIndex()] : undefined;
+		if (entitiesKilled != null) { return entitiesKilled; } else { entitiesKilled = []; }
 
-		# calculate entities killed
-		if attackTarget? and @getAttackRange().getIsValidTarget(gameSession.getBoard(), @, attackTarget)
-			# create explicit attack
-			attackAction = @actionAttack(attackTarget)
+		// calculate entities killed
+		if ((attackTarget != null) && this.getAttackRange().getIsValidTarget(gameSession.getBoard(), this, attackTarget)) {
+			// create explicit attack
+			const attackAction = this.actionAttack(attackTarget);
 
-			# set index on attack to allow it to be the parent for all sub attacks
-			attackAction.setIndex("attack")
+			// set index on attack to allow it to be the parent for all sub attacks
+			attackAction.setIndex("attack");
 
-			# create list of actions
-			actions = []
-			validActions = []
+			// create list of actions
+			const actions = [];
+			const validActions = [];
 
-			# emit event for all modifiers to validate explicit attack for attack prediction
-			gameSession.pushEvent({type: EVENTS.validate_action, action: attackAction, gameSession: gameSession}, {blockNewImplicitActions: true})
+			// emit event for all modifiers to validate explicit attack for attack prediction
+			gameSession.pushEvent({type: EVENTS.validate_action, action: attackAction, gameSession}, {blockNewImplicitActions: true});
 
-			if attackAction.getIsValid()
-				# emit event for all modifiers to modify explicit attack for attack prediction
-				gameSession.pushEvent({type: EVENTS.modify_action_for_entities_involved_in_attack, action: attackAction, gameSession: gameSession})
+			if (attackAction.getIsValid()) {
+				// emit event for all modifiers to modify explicit attack for attack prediction
+				let action;
+				gameSession.pushEvent({type: EVENTS.modify_action_for_entities_involved_in_attack, action: attackAction, gameSession});
 
-				# emit event for all modifiers to add entities and attacks that are involved in this attack
-				gameSession.pushEvent({type: EVENTS.entities_involved_in_attack, action: attackAction, actions: actions, gameSession: gameSession})
+				// emit event for all modifiers to add entities and attacks that are involved in this attack
+				gameSession.pushEvent({type: EVENTS.entities_involved_in_attack, action: attackAction, actions, gameSession});
 
-				# for all implicit actions
-				while actions.length > 0
-					# get next action
-					action = actions.shift()
+				// for all implicit actions
+				while (actions.length > 0) {
+					// get next action
+					action = actions.shift();
 
-					# parent/root actions are retrieved by index but none of these actions have indices
-					# so the getter methods must be modified to always return the attack action
-					action.getParentAction = action.getResolveParentAction = action.getRootAction = () -> return attackAction
-					action.getIsImplicit = () -> return true
+					// parent/root actions are retrieved by index but none of these actions have indices
+					// so the getter methods must be modified to always return the attack action
+					action.getParentAction = (action.getResolveParentAction = (action.getRootAction = () => attackAction));
+					action.getIsImplicit = () => true;
 
-					# emit event for all modifiers to validate resulting actions for attack prediction
-					gameSession.pushEvent({type: EVENTS.validate_action, action: action, gameSession: gameSession}, {blockNewImplicitActions: true})
+					// emit event for all modifiers to validate resulting actions for attack prediction
+					gameSession.pushEvent({type: EVENTS.validate_action, action, gameSession}, {blockNewImplicitActions: true});
 
-					if action.getIsValid()
-						# add valid action
-						validActions.push(action)
+					if (action.getIsValid()) {
+						// add valid action
+						validActions.push(action);
 
-						# set action as sub action of explicit attack action
-						attackAction.addSubAction(action)
+						// set action as sub action of explicit attack action
+						attackAction.addSubAction(action);
 
-						# emit event for all modifiers to modify resulting actions for attack prediction
-						gameSession.pushEvent({type: EVENTS.modify_action_for_entities_involved_in_attack, action: action, gameSession: gameSession})
+						// emit event for all modifiers to modify resulting actions for attack prediction
+						gameSession.pushEvent({type: EVENTS.modify_action_for_entities_involved_in_attack, action, gameSession});
 
-						# emit event for all modifiers to add entities and attacks that are involved in this attack
-						gameSession.pushEvent({type: EVENTS.entities_involved_in_attack, action: action, actions: actions, gameSession: gameSession})
+						// emit event for all modifiers to add entities and attacks that are involved in this attack
+						gameSession.pushEvent({type: EVENTS.entities_involved_in_attack, action, actions, gameSession});
+					}
+				}
 
-				# after testing actions add explicit attack action to list
-				validActions.push(attackAction)
+				// after testing actions add explicit attack action to list
+				validActions.push(attackAction);
 
-				# test damage of each attack action against hp of target
-				for action in validActions
-					target = action.getTarget()
-					if target? and (action instanceof DamageAction and action.getTotalDamageAmount() >= target.getHP()) or (action instanceof RemoveAction or action instanceof KillAction)
-						entitiesKilled.push(target)
+				// test damage of each attack action against hp of target
+				for (action of Array.from(validActions)) {
+					const target = action.getTarget();
+					if (((target != null) && (action instanceof DamageAction && (action.getTotalDamageAmount() >= target.getHP()))) || (action instanceof RemoveAction || action instanceof KillAction)) {
+						entitiesKilled.push(target);
+					}
+				}
+			}
+		}
 
-		# make list unique
-		entitiesKilled = _.uniq(entitiesKilled)
+		// make list unique
+		entitiesKilled = _.uniq(entitiesKilled);
 
-		# cache results
-		@_private.cachedEntitiesKilledByAttackOn ?= {}
-		@_private.cachedEntitiesKilledByAttackOn[attackTarget.getIndex()] = entitiesKilled
+		// cache results
+		if (this._private.cachedEntitiesKilledByAttackOn == null) { this._private.cachedEntitiesKilledByAttackOn = {}; }
+		this._private.cachedEntitiesKilledByAttackOn[attackTarget.getIndex()] = entitiesKilled;
 
-		return entitiesKilled
+		return entitiesKilled;
+	}
 
-	# endregion ### STATS ###
+	// endregion ### STATS ###
 
-	#region ### PROPERTIES FROM MODIFIERS ###
+	//region ### PROPERTIES FROM MODIFIERS ###
 
-	getIsObstructing: () ->
-		return @isObstructing or @hasModifierClass(ModifierObstructing)
+	getIsObstructing() {
+		return this.isObstructing || this.hasModifierClass(ModifierObstructing);
+	}
 
-	getObstructsEntity: (entity) ->
-		if @getType() == CardType.Unit
-			if entity.getType() == CardType.Unit then return true
-			if entity.getIsObstructing() then return true
-		else if entity.getType() == CardType.Unit
-			if @getIsObstructing() then return true
-		else if @getType() == CardType.Tile and entity.getType() == CardType.Tile
-			if @getObstructsOtherTiles() then return true
-		return false
+	getObstructsEntity(entity) {
+		if (this.getType() === CardType.Unit) {
+			if (entity.getType() === CardType.Unit) { return true; }
+			if (entity.getIsObstructing()) { return true; }
+		} else if (entity.getType() === CardType.Unit) {
+			if (this.getIsObstructing()) { return true; }
+		} else if ((this.getType() === CardType.Tile) && (entity.getType() === CardType.Tile)) {
+			if (this.getObstructsOtherTiles()) { return true; }
+		}
+		return false;
+	}
 
-	getIsTargetable: () ->
-		return @isTargetable and !@hasActiveModifierClass(ModifierUntargetable)
+	getIsTargetable() {
+		return this.isTargetable && !this.hasActiveModifierClass(ModifierUntargetable);
+	}
 
-	getIsProvoked:() ->
-		return @hasActiveModifierClass(ModifierProvoked)
+	getIsProvoked() {
+		return this.hasActiveModifierClass(ModifierProvoked);
+	}
 
-	getIsProvoker:() ->
-		return @hasActiveModifierClass(ModifierProvoke)
+	getIsProvoker() {
+		return this.hasActiveModifierClass(ModifierProvoke);
+	}
 
-	getIsRangedProvoked:() ->
-		return @hasActiveModifierClass(ModifierRangedProvoked)
+	getIsRangedProvoked() {
+		return this.hasActiveModifierClass(ModifierRangedProvoked);
+	}
 
-	getIsRangedProvoker:() ->
-		return @hasActiveModifierClass(ModifierRangedProvoke)
+	getIsRangedProvoker() {
+		return this.hasActiveModifierClass(ModifierRangedProvoke);
+	}
 
-	getEntitiesProvoked: () ->
-		provokeModifier = @getActiveModifierByClass(ModifierProvoke)
-		if provokeModifier?
-			return provokeModifier.getEntitiesInAura()
-		else
-			rangedProvokeModifier = @getActiveModifierByClass(ModifierRangedProvoke)
-			if rangedProvokeModifier?
-				return rangedProvokeModifier.getEntitiesInAura()
+	getEntitiesProvoked() {
+		const provokeModifier = this.getActiveModifierByClass(ModifierProvoke);
+		if (provokeModifier != null) {
+			return provokeModifier.getEntitiesInAura();
+		} else {
+			const rangedProvokeModifier = this.getActiveModifierByClass(ModifierRangedProvoke);
+			if (rangedProvokeModifier != null) {
+				return rangedProvokeModifier.getEntitiesInAura();
+			}
+		}
 
-		# default to no entities provoked
-		return []
+		// default to no entities provoked
+		return [];
+	}
 
-	#endregion ### PROPERTIES FROM MODIFIERS ###
+	//endregion ### PROPERTIES FROM MODIFIERS ###
 
-	#region ### ACTIONS ###
+	//region ### ACTIONS ###
 
-	actionDie:(source) ->
-		a = @getGameSession().createActionForType(DieAction.type)
-		a.setSource(source)
-		a.setTarget(@)
-		return a
+	actionDie(source) {
+		const a = this.getGameSession().createActionForType(DieAction.type);
+		a.setSource(source);
+		a.setTarget(this);
+		return a;
+	}
 
-	actionMove:(pos) ->
-		a = @getGameSession().createActionForType(MoveAction.type)
-		a.setSource(@)
-		a.setTarget(@)
-		a.setTargetPosition(pos)
-		return a
+	actionMove(pos) {
+		const a = this.getGameSession().createActionForType(MoveAction.type);
+		a.setSource(this);
+		a.setTarget(this);
+		a.setTargetPosition(pos);
+		return a;
+	}
 
-	actionAttack: (entity) ->
-		a = @getGameSession().createActionForType(AttackAction.type)
-		a.setSource(@)
-		a.setTarget(entity)
-		return a
+	actionAttack(entity) {
+		const a = this.getGameSession().createActionForType(AttackAction.type);
+		a.setSource(this);
+		a.setTarget(entity);
+		return a;
+	}
 
-	actionAttackEntityAtPosition: (position) ->
-		targetEntity = @getGameSession().getBoard().getUnitAtPosition(position)
-		if !targetEntity
-			Logger.module("SDK").error("[G:#{@getGameSession().getGameId()}] Entity #{@getLogName()} actionAttackEntityAtPosition - attempt to attack position with no entity")
-		return @actionAttack(targetEntity)
+	actionAttackEntityAtPosition(position) {
+		const targetEntity = this.getGameSession().getBoard().getUnitAtPosition(position);
+		if (!targetEntity) {
+			Logger.module("SDK").error(`[G:${this.getGameSession().getGameId()}] Entity ${this.getLogName()} actionAttackEntityAtPosition - attempt to attack position with no entity`);
+		}
+		return this.actionAttack(targetEntity);
+	}
 
-	#endregion ### ACTIONS ###
+	//endregion ### ACTIONS ###
 
-	# region CACHE
+	// region CACHE
 
-	updateCachedState: () ->
-		super()
+	updateCachedState() {
+		super.updateCachedState();
 
-		@_private.cachedEntitiesKilledByAttackOn = null
+		this._private.cachedEntitiesKilledByAttackOn = null;
 
-		# flush movement and attack range cached state
-		# ideally this only needs to be done once per step
-		# because movement and attack ranges ONLY affect explicit actions
-		@_private.movementRange.flushCachedState()
-		@_private.attackRange.flushCachedState()
+		// flush movement and attack range cached state
+		// ideally this only needs to be done once per step
+		// because movement and attack ranges ONLY affect explicit actions
+		this._private.movementRange.flushCachedState();
+		return this._private.attackRange.flushCachedState();
+	}
 
-	flushCachedModifiers: () ->
-		super()
+	flushCachedModifiers() {
+		super.flushCachedModifiers();
 
-		@_private.cachedIsBattlePet = null
-		@_private.cachedIsUncontrollableBattlePet = null
+		this._private.cachedIsBattlePet = null;
+		return this._private.cachedIsUncontrollableBattlePet = null;
+	}
 
-	# endregion CACHE
+	// endregion CACHE
 
-	# region ACTION STATE RECORD
+	// region ACTION STATE RECORD
 
-	actionPropertiesForActionStateRecord: () ->
-		properties = super()
+	actionPropertiesForActionStateRecord() {
+		const properties = super.actionPropertiesForActionStateRecord();
 
-		# add entity specific properties to record
-		properties.damage = (() -> return @getDamage() ).bind(@)
-		properties.hp = (() -> return @getHP() ).bind(@)
-		properties.maxHP = (() -> return @getMaxHP() ).bind(@)
-		properties.baseMaxHP = (() -> return @getBaseMaxHP() ).bind(@)
-		properties.atk = (() -> return @getATK() ).bind(@)
-		properties.baseATK = (() -> return @getBaseATK() ).bind(@)
+		// add entity specific properties to record
+		properties.damage = () => { return this.getDamage();  };
+		properties.hp = () => { return this.getHP();  };
+		properties.maxHP = () => { return this.getMaxHP();  };
+		properties.baseMaxHP = () => { return this.getBaseMaxHP();  };
+		properties.atk = () => { return this.getATK();  };
+		properties.baseATK = () => { return this.getBaseATK();  };
 
-		return properties
+		return properties;
+	}
 
-	resolvePropertiesForActionStateRecord: () ->
-		properties = super()
+	resolvePropertiesForActionStateRecord() {
+		const properties = super.resolvePropertiesForActionStateRecord();
 
-		# add entity specific properties to record
-		properties.damage = (() -> return @getDamage() ).bind(@)
-		properties.hp = (() -> return @getHP() ).bind(@)
-		properties.maxHP = (() -> return @getMaxHP() ).bind(@)
-		properties.baseMaxHP = (() -> return @getBaseMaxHP() ).bind(@)
-		properties.atk = (() -> return @getATK() ).bind(@)
-		properties.baseATK = (() -> return @getBaseATK() ).bind(@)
+		// add entity specific properties to record
+		properties.damage = () => { return this.getDamage();  };
+		properties.hp = () => { return this.getHP();  };
+		properties.maxHP = () => { return this.getMaxHP();  };
+		properties.baseMaxHP = () => { return this.getBaseMaxHP();  };
+		properties.atk = () => { return this.getATK();  };
+		properties.baseATK = () => { return this.getBaseATK();  };
 
-		return properties
+		return properties;
+	}
+}
+Entity.initClass();
 
-	# endregion ACTION STATE RECORD
+	// endregion ACTION STATE RECORD
 
-module.exports = Entity
+module.exports = Entity;

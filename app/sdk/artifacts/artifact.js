@@ -1,69 +1,94 @@
-CONFIG = require 'app/common/config'
-Card = require 'app/sdk/cards/card'
-CardType = require 'app/sdk/cards/cardType'
-Modifier = require 'app/sdk/modifiers/modifier'
-ModifierDestructible = require 'app/sdk/modifiers/modifierDestructible'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const Card = require('app/sdk/cards/card');
+const CardType = require('app/sdk/cards/cardType');
+const Modifier = require('app/sdk/modifiers/modifier');
+const ModifierDestructible = require('app/sdk/modifiers/modifierDestructible');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const _ = require('underscore');
 
-class Artifact extends Card
+class Artifact extends Card {
+	static initClass() {
+	
+		this.prototype.type = CardType.Artifact;
+		this.type = CardType.Artifact;
+		this.prototype.name = "Artifact";
+	
+		this.prototype.targetModifiersContextObjects = null; // just like entity modifier options, but used to create modifiers that are added to target of artifact
+		this.prototype.durability = CONFIG.MAX_ARTIFACT_DURABILITY; // modifiers durability
+		this.prototype.canBeAppliedAnywhere = true;
+	}
 
-	type: CardType.Artifact
-	@type: CardType.Artifact
-	name: "Artifact"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	targetModifiersContextObjects: null # just like entity modifier options, but used to create modifiers that are added to target of artifact
-	durability: CONFIG.MAX_ARTIFACT_DURABILITY # modifiers durability
-	canBeAppliedAnywhere: true
+		p.keywordClassesToInclude.push(ModifierDestructible);
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		return p;
+	}
 
-		p.keywordClassesToInclude.push(ModifierDestructible)
+	// region ### GETTERS / SETTERS ###
 
-		return p
+	setTargetModifiersContextObjects(targetModifiersContextObjects) {
+		return this.targetModifiersContextObjects = targetModifiersContextObjects;
+	}
 
-	# region ### GETTERS / SETTERS ###
+	getTargetModifiersContextObjects() {
+		return this.targetModifiersContextObjects;
+	}
 
-	setTargetModifiersContextObjects: (targetModifiersContextObjects) ->
-		@targetModifiersContextObjects = targetModifiersContextObjects
+	// region ### GETTERS / SETTERS ###
 
-	getTargetModifiersContextObjects: () ->
-		return @targetModifiersContextObjects
+	// region ### APPLY ###
 
-	# region ### GETTERS / SETTERS ###
+	onApplyToBoard(board,x,y,sourceAction) {
+		super.onApplyToBoard(board,x,y,sourceAction);
 
-	# region ### APPLY ###
+		if (this.getGameSession().getIsRunningAsAuthoritative() && (this.targetModifiersContextObjects != null)) {
 
-	onApplyToBoard: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+			// find all artifacts on the General
+			const general = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+			const modifiersByArtifact = general.getArtifactModifiersGroupedByArtifactCard();
 
-		if @getGameSession().getIsRunningAsAuthoritative() and @targetModifiersContextObjects?
+			if (modifiersByArtifact.length >= CONFIG.MAX_ARTIFACTS) { // if there are already max number of artifacts on the General
+				const artifactModifiers = modifiersByArtifact.shift(); // get all modifiers attached to the oldest artifact
+				for (let modifier of Array.from(artifactModifiers)) {
+					this.getGameSession().removeModifier(modifier);
+				}	// and remove them
+			}
 
-			# find all artifacts on the General
-			general = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-			modifiersByArtifact = general.getArtifactModifiersGroupedByArtifactCard()
+			// add new artifact
+			return (() => {
+				const result = [];
+				for (let modifierContextObject of Array.from(this.targetModifiersContextObjects)) {
+				// artifact modifiers are not visible to the UI
+					modifierContextObject.isHiddenToUI = true;
 
-			if modifiersByArtifact.length >= CONFIG.MAX_ARTIFACTS # if there are already max number of artifacts on the General
-				artifactModifiers = modifiersByArtifact.shift() # get all modifiers attached to the oldest artifact
-				for modifier in artifactModifiers
-					@getGameSession().removeModifier(modifier)	# and remove them
+					// artifact modifiers are not removable by normal methods
+					modifierContextObject.isRemovable = false;
 
-			# add new artifact
-			for modifierContextObject in @targetModifiersContextObjects
-				# artifact modifiers are not visible to the UI
-				modifierContextObject.isHiddenToUI = true
+					// artifact modifiers are removed when their durability reaches 0
+					modifierContextObject.maxDurability = this.durability;
+					modifierContextObject.durability = this.durability;
 
-				# artifact modifiers are not removable by normal methods
-				modifierContextObject.isRemovable = false
+					// apply modifier
+					result.push(this.getGameSession().applyModifierContextObject(modifierContextObject, general));
+				}
+				return result;
+			})();
+		}
+	}
+}
+Artifact.initClass();
 
-				# artifact modifiers are removed when their durability reaches 0
-				modifierContextObject.maxDurability = @durability
-				modifierContextObject.durability = @durability
+	// endregion ### APPLY ###
 
-				# apply modifier
-				@getGameSession().applyModifierContextObject(modifierContextObject, general)
-
-	# endregion ### APPLY ###
-
-module.exports = Artifact
+module.exports = Artifact;

@@ -1,39 +1,54 @@
-ModifierSummonWatch = require './modifierSummonWatch'
-RemoveAction = require 'app/sdk/actions/removeAction'
-PlayCardAsTransformAction = require 'app/sdk/actions/playCardAsTransformAction'
-ModifierTransformed = require 'app/sdk/modifiers/modifierTransformed'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierSummonWatch = require('./modifierSummonWatch');
+const RemoveAction = require('app/sdk/actions/removeAction');
+const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
+const ModifierTransformed = require('app/sdk/modifiers/modifierTransformed');
 
-class ModifierSummonWatchTransform extends ModifierSummonWatch
+class ModifierSummonWatchTransform extends ModifierSummonWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSummonWatchTransform";
+		this.type ="ModifierSummonWatchTransform";
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch"];
+	}
 
-	type:"ModifierSummonWatchTransform"
-	@type:"ModifierSummonWatchTransform"
+	static createContextObject(cardDataOrIndexToSpawn, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		return contextObject;
+	}
 
-	cardDataOrIndexToSpawn: null
+	onSummonWatch(action) {
+		super.onSummonWatch(action);
+		const entity = action.getTarget();
+		if ((entity != null) && (this.cardDataOrIndexToSpawn != null) && this.getIsValidTransformPosition(entity.getPosition())) {
 
-	fxResource: ["FX.Modifiers.ModifierSummonWatch"]
+			const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
+			removeOriginalEntityAction.setOwnerId(this.getCard().getOwnerId());
+			removeOriginalEntityAction.setTarget(entity);
+			this.getGameSession().executeAction(removeOriginalEntityAction);
 
-	@createContextObject: (cardDataOrIndexToSpawn, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		return contextObject
+			if (this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
+			this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(entity.getExhausted(), entity.getMovesMade(), entity.getAttacksMade()));
+			const spawnEntityAction = new PlayCardAsTransformAction(this.getCard().getGameSession(), this.getCard().getOwnerId(), entity.getPosition().x, entity.getPosition().y, this.cardDataOrIndexToSpawn);
+			return this.getGameSession().executeAction(spawnEntityAction);
+		}
+	}
 
-	onSummonWatch: (action) ->
-		super(action)
-		entity = action.getTarget()
-		if entity? and @cardDataOrIndexToSpawn? and @getIsValidTransformPosition(entity.getPosition())
+	getIsValidTransformPosition(summonedUnitPosition) {
+		// override this in subclass to filter by position
+		return true;
+	}
+}
+ModifierSummonWatchTransform.initClass();
 
-			removeOriginalEntityAction = new RemoveAction(@getGameSession())
-			removeOriginalEntityAction.setOwnerId(@getCard().getOwnerId())
-			removeOriginalEntityAction.setTarget(entity)
-			@getGameSession().executeAction(removeOriginalEntityAction)
-
-			@cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects ?= []
-			@cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(entity.getExhausted(), entity.getMovesMade(), entity.getAttacksMade()))
-			spawnEntityAction = new PlayCardAsTransformAction(@getCard().getGameSession(), @getCard().getOwnerId(), entity.getPosition().x, entity.getPosition().y, @cardDataOrIndexToSpawn)
-			@getGameSession().executeAction(spawnEntityAction)
-
-	getIsValidTransformPosition: (summonedUnitPosition) ->
-		# override this in subclass to filter by position
-		return true
-
-module.exports = ModifierSummonWatchTransform
+module.exports = ModifierSummonWatchTransform;

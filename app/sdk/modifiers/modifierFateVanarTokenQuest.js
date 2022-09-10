@@ -1,107 +1,141 @@
-ModifierFate = require './modifierFate'
-CardType = require 'app/sdk/cards/cardType'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-Rarity = require 'app/sdk/cards/rarityLookup'
-ApplyCardToBoardAction = require 'app/sdk/actions/applyCardToBoardAction'
-CloneEntityAction = require 'app/sdk/actions/cloneEntityAction'
-SwapUnitAllegianceAction = require 'app/sdk/actions/swapUnitAllegianceAction'
-RemoveAction = require 'app/sdk/actions/removeAction'
-PlayerModifierEmblemSummonWatchVanarTokenQuest = require 'app/sdk/playerModifiers/playerModifierEmblemSummonWatchVanarTokenQuest'
-ModifierQuestStatusVanar = require './modifierQuestStatusVanar'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierFate = require('./modifierFate');
+const CardType = require('app/sdk/cards/cardType');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const Rarity = require('app/sdk/cards/rarityLookup');
+const ApplyCardToBoardAction = require('app/sdk/actions/applyCardToBoardAction');
+const CloneEntityAction = require('app/sdk/actions/cloneEntityAction');
+const SwapUnitAllegianceAction = require('app/sdk/actions/swapUnitAllegianceAction');
+const RemoveAction = require('app/sdk/actions/removeAction');
+const PlayerModifierEmblemSummonWatchVanarTokenQuest = require('app/sdk/playerModifiers/playerModifierEmblemSummonWatchVanarTokenQuest');
+const ModifierQuestStatusVanar = require('./modifierQuestStatusVanar');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierFateVanarTokenQuest extends ModifierFate
+class ModifierFateVanarTokenQuest extends ModifierFate {
+	static initClass() {
+	
+		this.prototype.type ="ModifierFateVanarTokenQuest";
+		this.type ="ModifierFateVanarTokenQuest";
+	
+		this.prototype.numTokensRequired = 1;
+		this.prototype.numTokensFound = 0;
+	}
 
-	type:"ModifierFateVanarTokenQuest"
-	@type:"ModifierFateVanarTokenQuest"
+	static createContextObject(numTokensRequired, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.numTokensRequired = numTokensRequired;
+		return contextObject;
+	}
 
-	numTokensRequired: 1
-	numTokensFound: 0
+	onActivate() {
+		const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		this.numTokensFound = this.getTokenCount();
+		if (((general != null) && general.hasActiveModifierClass(PlayerModifierEmblemSummonWatchVanarTokenQuest)) || (this.numTokensFound >= this.numTokensRequired)) {
+			this._private.fateFulfilled = true;
+			this.unlockFateCard();
+			if (!general.hasActiveModifierClass(ModifierQuestStatusVanar)) {
+				return this.applyQuestStatusModifier(true);
+			}
+		} else {
+			if (!general.hasActiveModifierClass(ModifierQuestStatusVanar)) {
+				return this.applyQuestStatusModifier(false);
+			}
+		}
+	}
 
-	@createContextObject: (numTokensRequired, options) ->
-		contextObject = super(options)
-		contextObject.numTokensRequired = numTokensRequired
-		return contextObject
+	updateFateCondition(action) {
+		if (this.getIsActionRelevant(action)) {
+			this.removeQuestStatusModifier();
+			this.numTokensFound = this.getTokenCount();
+			if (this.numTokensFound >= this.numTokensRequired) {
+				this._private.fateFulfilled = true;
+				super.updateFateCondition();
+				const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+				return this.applyQuestStatusModifier(true);
+			} else {
+				return this.applyQuestStatusModifier(false);
+			}
+		}
+	}
 
-	onActivate: () ->
-		general = @getCard().getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		@numTokensFound = @getTokenCount()
-		if (general? and general.hasActiveModifierClass(PlayerModifierEmblemSummonWatchVanarTokenQuest)) or @numTokensFound >= @numTokensRequired
-			@_private.fateFulfilled = true
-			@unlockFateCard()
-			if !general.hasActiveModifierClass(ModifierQuestStatusVanar)
-				@applyQuestStatusModifier(true)
-		else
-			if !general.hasActiveModifierClass(ModifierQuestStatusVanar)
-				@applyQuestStatusModifier(false)
+	getTokenCount(action) {
 
-	updateFateCondition: (action) ->
-		if @getIsActionRelevant(action)
-			@removeQuestStatusModifier()
-			@numTokensFound = @getTokenCount()
-			if @numTokensFound >= @numTokensRequired
-				@_private.fateFulfilled = true
-				super()
-				general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-				@applyQuestStatusModifier(true)
-			else
-				@applyQuestStatusModifier(false)
+		const uniqueTokenIds = [];
+		let numTokensFound = 0;
+		let foundBuildingToken = false;
+		const units = this.getGameSession().getBoard().getFriendlyEntitiesForEntity(this.getCard(), CardType.Unit);
+		for (let unit of Array.from(units)) {
+			if ((unit != null) && !unit.getIsGeneral() && (unit.getRarityId() === Rarity.TokenUnit)) {
+				const unitId = unit.getBaseCardId();
+				let tokenAlreadyCounted = false;
+				for (let tokenId of Array.from(uniqueTokenIds)) {
+					if (unitId === tokenId) {
+						tokenAlreadyCounted = true;
+						break;
+					}
+				}
+				if (!tokenAlreadyCounted) {
+					if (this.unitIsABuildingToken(unitId)) {
+						foundBuildingToken = true;
+					} else {
+						uniqueTokenIds.push(unitId);
+					}
+					numTokensFound = uniqueTokenIds.length;
+					if (foundBuildingToken) {
+						numTokensFound++;
+					}
+				}
+			}
+		}
+		return numTokensFound;
+	}
 
-	getTokenCount: (action) ->
+	unitIsABuildingToken(unitId) {
+		return (unitId === Cards.Faction1.VigilatorBuilding) ||
+		(unitId === Cards.Faction1.MonumentBuilding) ||
+		(unitId === Cards.Faction2.ManakiteBuilding) ||
+		(unitId === Cards.Faction2.PenumbraxxBuilding) ||
+		(unitId === Cards.Faction3.ShrikeBuilding) ||
+		(unitId === Cards.Faction3.SimulacraBuilding) ||
+		(unitId === Cards.Faction4.VoidTalonBuilding) ||
+		(unitId === Cards.Faction4.GateBuilding) ||
+		(unitId === Cards.Faction5.HulkBuilding) ||
+		(unitId === Cards.Faction5.GigalothBuilding) ||
+		(unitId === Cards.Faction6.ProtosensorBuilding) ||
+		(unitId === Cards.Faction6.EyolithBuilding) ||
+		(unitId === Cards.Neutral.RescueRXBuilding) ||
+		(unitId === Cards.Neutral.ArchitectBuilding);
+	}
 
-		uniqueTokenIds = []
-		numTokensFound = 0
-		foundBuildingToken = false
-		units = @getGameSession().getBoard().getFriendlyEntitiesForEntity(@getCard(), CardType.Unit)
-		for unit in units
-			if unit? and !unit.getIsGeneral() and unit.getRarityId() == Rarity.TokenUnit
-				unitId = unit.getBaseCardId()
-				tokenAlreadyCounted = false
-				for tokenId in uniqueTokenIds
-					if unitId == tokenId
-						tokenAlreadyCounted = true
-						break
-				if !tokenAlreadyCounted
-					if @unitIsABuildingToken(unitId)
-						foundBuildingToken = true
-					else
-						uniqueTokenIds.push(unitId)
-					numTokensFound = uniqueTokenIds.length
-					if foundBuildingToken
-						numTokensFound++
-		return numTokensFound
+	getIsActionRelevant(action) {
+		if (action instanceof ApplyCardToBoardAction || action instanceof CloneEntityAction || action instanceof SwapUnitAllegianceAction || action instanceof RemoveAction) {
+				return true;
+			}
+		return false;
+	}
 
-	unitIsABuildingToken: (unitId) ->
-		return unitId == Cards.Faction1.VigilatorBuilding or
-		unitId == Cards.Faction1.MonumentBuilding or
-		unitId == Cards.Faction2.ManakiteBuilding or
-		unitId == Cards.Faction2.PenumbraxxBuilding or
-		unitId == Cards.Faction3.ShrikeBuilding or
-		unitId == Cards.Faction3.SimulacraBuilding or
-		unitId == Cards.Faction4.VoidTalonBuilding or
-		unitId == Cards.Faction4.GateBuilding or
-		unitId == Cards.Faction5.HulkBuilding or
-		unitId == Cards.Faction5.GigalothBuilding or
-		unitId == Cards.Faction6.ProtosensorBuilding or
-		unitId == Cards.Faction6.EyolithBuilding or
-		unitId == Cards.Neutral.RescueRXBuilding or
-		unitId == Cards.Neutral.ArchitectBuilding
+	removeQuestStatusModifier() {
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		if (general.hasActiveModifierClass(ModifierQuestStatusVanar)) {
+				return Array.from(general.getModifiersByClass(ModifierQuestStatusVanar)).map((mod) =>
+					this.getGameSession().removeModifier(mod));
+			}
+	}
 
-	getIsActionRelevant: (action) ->
-		if action instanceof ApplyCardToBoardAction or action instanceof CloneEntityAction or action instanceof SwapUnitAllegianceAction or action instanceof RemoveAction
-				return true
-		return false
+	applyQuestStatusModifier(questCompleted) {
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		const countModifier = ModifierQuestStatusVanar.createContextObject(questCompleted, this.numTokensFound);
+		return this.getGameSession().applyModifierContextObject(countModifier, general);
+	}
+}
+ModifierFateVanarTokenQuest.initClass();
 
-	removeQuestStatusModifier: () ->
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		if general.hasActiveModifierClass(ModifierQuestStatusVanar)
-				for mod in general.getModifiersByClass(ModifierQuestStatusVanar)
-					@getGameSession().removeModifier(mod)
-
-	applyQuestStatusModifier: (questCompleted) ->
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		countModifier = ModifierQuestStatusVanar.createContextObject(questCompleted, @numTokensFound)
-		@getGameSession().applyModifierContextObject(countModifier, general)
-
-module.exports = ModifierFateVanarTokenQuest
+module.exports = ModifierFateVanarTokenQuest;

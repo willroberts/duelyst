@@ -1,76 +1,120 @@
-ModifierEndTurnWatch = require './modifierEndTurnWatch'
-ModifierFrenzy = require './modifierFrenzy'
-ModifierTranscendance = require './modifierTranscendance'
-ModifierRanged = require './modifierRanged'
-ModifierForcefield = require './modifierForcefield'
-ModifierCannotMove = require './modifierCannotMove'
-ModifierStunned = require './modifierStunned'
-ModifierCannotStrikeback = require './modifierCannotStrikeback'
-Modifier = require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
+const ModifierFrenzy = require('./modifierFrenzy');
+const ModifierTranscendance = require('./modifierTranscendance');
+const ModifierRanged = require('./modifierRanged');
+const ModifierForcefield = require('./modifierForcefield');
+const ModifierCannotMove = require('./modifierCannotMove');
+const ModifierStunned = require('./modifierStunned');
+const ModifierCannotStrikeback = require('./modifierCannotStrikeback');
+const Modifier = require('./modifier');
 
-class ModifierEndTurnWatchHsuku extends ModifierEndTurnWatch
+class ModifierEndTurnWatchHsuku extends ModifierEndTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEndTurnWatchHsuku";
+		this.type ="ModifierEndTurnWatchHsuku";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericBuff"];
+	
+		this.prototype.buffName = null;
+		this.prototype.debuffName = null;
+	}
 
-	type:"ModifierEndTurnWatchHsuku"
-	@type:"ModifierEndTurnWatchHsuku"
+	onTurnWatch() {
+		super.onTurnWatch();
 
-	fxResource: ["FX.Modifiers.ModifierGenericBuff"]
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
 
-	buffName: null
-	debuffName: null
+			const units = this.getGameSession().getBoard().getUnits();
 
-	onTurnWatch: () ->
-		super()
-
-		if @getGameSession().getIsRunningAsAuthoritative()
-
-			units = @getGameSession().getBoard().getUnits()
-
-			for unit in units
-				if unit? and !unit.getIsGeneral()
-					randomNum = @getGameSession().getRandomIntegerForExecution(6)
-					statModifier = null
-					abilityModifier = null
-					if unit.getOwnerId() == @getCard().getOwnerId()
-						switch randomNum
-							when 0
-								statModifier = Modifier.createContextObjectWithAttributeBuffs(1,0)
-								abilityModifier = ModifierTranscendance.createContextObject()
-							when 1
-								statModifier = Modifier.createContextObjectWithAttributeBuffs(1,0)
-								abilityModifier = ModifierRanged.createContextObject()
-							when 2
-								statModifier = Modifier.createContextObjectWithAttributeBuffs(1,0)
-								abilityModifier = ModifierFrenzy.createContextObject()
-							when 3
-								statModifier = Modifier.createContextObjectWithAttributeBuffs(1,3)
-							when 4
-								statModifier = Modifier.createContextObjectWithAttributeBuffs(2,2)
-							when 5
-								abilityModifier = ModifierForcefield.createContextObject()
-						if statModifier?
-							statModifier.appliedName = @buffName
-					else
-						switch randomNum
-							when 0
-								statModifier = Modifier.createContextObjectWithAttributeBuffs(-1,0)
-								abilityModifier = ModifierCannotMove.createContextObject()
-							when 1
-								statModifier = Modifier.createContextObjectWithAttributeBuffs(-1,0)
-								abilityModifier = ModifierCannotStrikeback.createContextObject()
-							when 2
-								statModifier = Modifier.createContextObjectWithAttributeBuffs(2,-2)
-							when 3
-								statModifier = Modifier.createContextObjectWithAttributeBuffs(-2,0)
-							when 4
-								statModifier = Modifier.createContextObjectWithAttributeBuffs(-1,-1)
-							when 5
-								abilityModifier = ModifierStunned.createContextObject()
-						if statModifier?
-							statModifier.appliedName = @debuffName
+			return (() => {
+				const result = [];
+				for (let unit of Array.from(units)) {
+					if ((unit != null) && !unit.getIsGeneral()) {
+						const randomNum = this.getGameSession().getRandomIntegerForExecution(6);
+						let statModifier = null;
+						let abilityModifier = null;
+						if (unit.getOwnerId() === this.getCard().getOwnerId()) {
+							switch (randomNum) {
+								case 0:
+									statModifier = Modifier.createContextObjectWithAttributeBuffs(1,0);
+									abilityModifier = ModifierTranscendance.createContextObject();
+									break;
+								case 1:
+									statModifier = Modifier.createContextObjectWithAttributeBuffs(1,0);
+									abilityModifier = ModifierRanged.createContextObject();
+									break;
+								case 2:
+									statModifier = Modifier.createContextObjectWithAttributeBuffs(1,0);
+									abilityModifier = ModifierFrenzy.createContextObject();
+									break;
+								case 3:
+									statModifier = Modifier.createContextObjectWithAttributeBuffs(1,3);
+									break;
+								case 4:
+									statModifier = Modifier.createContextObjectWithAttributeBuffs(2,2);
+									break;
+								case 5:
+									abilityModifier = ModifierForcefield.createContextObject();
+									break;
+							}
+							if (statModifier != null) {
+								statModifier.appliedName = this.buffName;
+							}
+						} else {
+							switch (randomNum) {
+								case 0:
+									statModifier = Modifier.createContextObjectWithAttributeBuffs(-1,0);
+									abilityModifier = ModifierCannotMove.createContextObject();
+									break;
+								case 1:
+									statModifier = Modifier.createContextObjectWithAttributeBuffs(-1,0);
+									abilityModifier = ModifierCannotStrikeback.createContextObject();
+									break;
+								case 2:
+									statModifier = Modifier.createContextObjectWithAttributeBuffs(2,-2);
+									break;
+								case 3:
+									statModifier = Modifier.createContextObjectWithAttributeBuffs(-2,0);
+									break;
+								case 4:
+									statModifier = Modifier.createContextObjectWithAttributeBuffs(-1,-1);
+									break;
+								case 5:
+									abilityModifier = ModifierStunned.createContextObject();
+									break;
+							}
+							if (statModifier != null) {
+								statModifier.appliedName = this.debuffName;
+							}
+						}
 					
-					if statModifier?
-						@getGameSession().applyModifierContextObject(statModifier, unit)
-					if abilityModifier?
-						@getGameSession().applyModifierContextObject(abilityModifier, unit)
+						if (statModifier != null) {
+							this.getGameSession().applyModifierContextObject(statModifier, unit);
+						}
+						if (abilityModifier != null) {
+							result.push(this.getGameSession().applyModifierContextObject(abilityModifier, unit));
+						} else {
+							result.push(undefined);
+						}
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierEndTurnWatchHsuku.initClass();
 
-module.exports = ModifierEndTurnWatchHsuku
+module.exports = ModifierEndTurnWatchHsuku;

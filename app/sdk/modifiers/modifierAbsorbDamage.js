@@ -1,68 +1,91 @@
-EVENTS = require 'app/common/event_types'
-Modifier = require './modifier'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const EVENTS = require('app/common/event_types');
+const Modifier = require('./modifier');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
+const i18next = require('i18next');
 
 
-class ModifierAbsorbDamage extends Modifier
+class ModifierAbsorbDamage extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierAbsorbDamage";
+		this.type ="ModifierAbsorbDamage";
+	
+		this.modifierName =i18next.t("modifiers.absorb_damage_name");
+		this.description =i18next.t("modifiers.absorb_damage_def");
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.canAbsorb = true; // can absorb damage from 1 damage action per turn
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierAbsorbDamage"];
+	}
 
-	type:"ModifierAbsorbDamage"
-	@type:"ModifierAbsorbDamage"
+	onEvent(event) {
+		super.onEvent(event);
 
-	@modifierName:i18next.t("modifiers.absorb_damage_name")
-	@description:i18next.t("modifiers.absorb_damage_def")
+		if (this._private.listeningToEvents) {
+			if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
+				return this.onModifyActionForEntitiesInvolvedInAttack(event);
+			}
+		}
+	}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	static createContextObject(absorbAmount, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAbsorbAmount = absorbAmount;
+		return contextObject;
+	}
 
-	canAbsorb: true # can absorb damage from 1 damage action per turn
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return i18next.t("modifiers.absorb_damage_def",{amount:this.damageAbsorbAmount});
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierAbsorbDamage"]
+	onStartTurn(actionEvent) {
+		super.onStartTurn(actionEvent);
+		return this.canAbsorb = true;
+	}
 
-	onEvent: (event) ->
-		super(event)
+	getIsActionRelevant(a) {
+		return this.canAbsorb && a instanceof DamageAction && (a.getTarget() === this.getCard());
+	}
 
-		if @_private.listeningToEvents
-			if event.type == EVENTS.modify_action_for_entities_involved_in_attack
-				@onModifyActionForEntitiesInvolvedInAttack(event)
+	_modifyAction(a) {
+		a.setChangedByModifier(this);
+		return a.changeFinalDamageBy(-this.damageAbsorbAmount);
+	}
 
-	@createContextObject: (absorbAmount, options) ->
-		contextObject = super(options)
-		contextObject.damageAbsorbAmount = absorbAmount
-		return contextObject
+	onModifyActionForExecution(actionEvent) {
+		super.onModifyActionForExecution(actionEvent);
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return i18next.t("modifiers.absorb_damage_def",{amount:@damageAbsorbAmount})
-		else
-			return @description
+		const a = actionEvent.action;
+		if (this.getIsActionRelevant(a)) {
+			this._modifyAction(a);
+			return this.canAbsorb = false;
+		}
+	}
 
-	onStartTurn: (actionEvent) ->
-		super(actionEvent)
-		@canAbsorb = true
+	onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
+		const a = actionEvent.action;
+		if (this.getIsActive() && this.getIsActionRelevant(a)) {
+			return this._modifyAction(a);
+		}
+	}
+}
+ModifierAbsorbDamage.initClass();
 
-	getIsActionRelevant: (a) ->
-		return @canAbsorb and a instanceof DamageAction and a.getTarget() is @getCard()
-
-	_modifyAction: (a) ->
-		a.setChangedByModifier(@)
-		a.changeFinalDamageBy(-@damageAbsorbAmount)
-
-	onModifyActionForExecution: (actionEvent) ->
-		super(actionEvent)
-
-		a = actionEvent.action
-		if @getIsActionRelevant(a)
-			@_modifyAction(a)
-			@canAbsorb = false
-
-	onModifyActionForEntitiesInvolvedInAttack: (actionEvent) ->
-		a = actionEvent.action
-		if @getIsActive() and @getIsActionRelevant(a)
-			@_modifyAction(a)
-
-module.exports = ModifierAbsorbDamage
+module.exports = ModifierAbsorbDamage;

@@ -1,53 +1,74 @@
-Modifier = require './modifier'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const i18next = require('i18next');
 
-class ModifierAttackEqualsHealth extends Modifier
+class ModifierAttackEqualsHealth extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierAttackEqualsHealth";
+		this.type ="ModifierAttackEqualsHealth";
+	
+		this.prototype.name =i18next.t("modifiers.attack_equals_health_name");
+		this.prototype.description =i18next.t("modifiers.attack_equals_health_def");
+	
+		this.prototype.maxStacks = 1;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierAttackEqualsHealth"];
+	}
 
-	type:"ModifierAttackEqualsHealth"
-	@type:"ModifierAttackEqualsHealth"
+	constructor(gameSession) {
+		super(gameSession);
+		this.attributeBuffsAbsolute = ["atk"];
+		this.attributeBuffsFixed = ["atk"];
+	}
 
-	name:i18next.t("modifiers.attack_equals_health_name")
-	description:i18next.t("modifiers.attack_equals_health_def")
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	maxStacks: 1
+		p.cachedHP = 0;
 
-	fxResource: ["FX.Modifiers.ModifierAttackEqualsHealth"]
+		return p;
+	}
 
-	constructor: (gameSession) ->
-		super(gameSession)
-		@attributeBuffsAbsolute = ["atk"]
-		@attributeBuffsFixed = ["atk"]
+	getBuffedAttribute(attributeValue, buffKey) {
+		if (buffKey === "atk") {
+			return this._private.cachedHP;
+		} else {
+			return super.getBuffedAttribute(attributeValue, buffKey);
+		}
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	getBuffsAttributes() {
+		return true;
+	}
 
-		p.cachedHP = 0
+	getBuffsAttribute(buffKey) {
+		return (buffKey === "atk") || super.getBuffsAttribute(buffKey);
+	}
 
-		return p
+	updateCachedStateAfterActive() {
+		let hp;
+		super.updateCachedStateAfterActive();
 
-	getBuffedAttribute: (attributeValue, buffKey) ->
-		if buffKey == "atk"
-			return @_private.cachedHP
-		else
-			return super(attributeValue, buffKey)
+		const card = this.getCard();
+		if (card != null) {
+			hp = Math.max(0, card.getHP());
+		} else {
+			hp = 0;
+		}
 
-	getBuffsAttributes: () ->
-		return true
+		if (this._private.cachedHP !== hp) {
+			this._private.cachedHP = hp;
+			return this.getCard().flushCachedAttribute("atk");
+		}
+	}
+}
+ModifierAttackEqualsHealth.initClass();
 
-	getBuffsAttribute: (buffKey) ->
-		return buffKey == "atk" or super(buffKey)
-
-	updateCachedStateAfterActive: () ->
-		super()
-
-		card = @getCard()
-		if card?
-			hp = Math.max(0, card.getHP())
-		else
-			hp = 0
-
-		if @_private.cachedHP != hp
-			@_private.cachedHP = hp
-			@getCard().flushCachedAttribute("atk")
-
-module.exports = ModifierAttackEqualsHealth
+module.exports = ModifierAttackEqualsHealth;

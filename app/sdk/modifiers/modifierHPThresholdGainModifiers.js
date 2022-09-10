@@ -1,93 +1,119 @@
-Modifier = require './modifier'
-ModifierRanged = require 'app/sdk/modifiers/modifierRanged'
-ModifierForcefield = require 'app/sdk/modifiers/modifierForcefield'
-ModifierFlying = require 'app/sdk/modifiers/modifierFlying'
-ModifierTranscendance = require 'app/sdk/modifiers/modifierTranscendance'
-ModifierHPChange = require 'app/sdk/modifiers/modifierHPChange'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierRanged = require('app/sdk/modifiers/modifierRanged');
+const ModifierForcefield = require('app/sdk/modifiers/modifierForcefield');
+const ModifierFlying = require('app/sdk/modifiers/modifierFlying');
+const ModifierTranscendance = require('app/sdk/modifiers/modifierTranscendance');
+const ModifierHPChange = require('app/sdk/modifiers/modifierHPChange');
 
-i18next = require 'i18next'
+const i18next = require('i18next');
 
-class ModifierHPThresholdGainModifiers extends ModifierHPChange
+class ModifierHPThresholdGainModifiers extends ModifierHPChange {
+	static initClass() {
+	
+		this.prototype.type ="ModifierHPThresholdGainModifiers";
+		this.type ="ModifierHPThresholdGainModifiers";
+	
+		this.modifierName ="Modifier HP Threshold Gain Modifiers";
+		this.description = "Gains new keyword abilities as health decreases";
+		this.description =i18next.t("modifiers.HP_threshold_gain_modifiers_def");
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierBuffSelfOnReplace"];
+	}
 
-	type:"ModifierHPThresholdGainModifiers"
-	@type:"ModifierHPThresholdGainModifiers"
+	static createContextObject(options) {
+		const contextObject = super.createContextObject(options);
 
-	@modifierName:"Modifier HP Threshold Gain Modifiers"
-	@description: "Gains new keyword abilities as health decreases"
-	@description:i18next.t("modifiers.HP_threshold_gain_modifiers_def")
+		const rangedModifier = ModifierRanged.createContextObject();
+		rangedModifier.isRemovable = false;
+		const forcefieldModifier = ModifierForcefield.createContextObject();
+		forcefieldModifier.isRemovable = false;
+		const celerityModifier = ModifierTranscendance.createContextObject();
+		celerityModifier.isRemovable = false;
+		const flyingModifier = ModifierFlying.createContextObject();
+		flyingModifier.isRemovable = false;
 
-	fxResource: ["FX.Modifiers.ModifierBuffSelfOnReplace"]
+		contextObject.listOfModifiersContextObjectsFor30HP = [];
+		contextObject.listOfModifiersContextObjectsFor20HP = [rangedModifier];
+		contextObject.listOfModifiersContextObjectsFor15HP = [forcefieldModifier];
+		contextObject.listOfModifiersContextObjectsFor10HP = [celerityModifier];
+		contextObject.listOfModifiersContextObjectsFor5HP = [flyingModifier];
+		return contextObject;
+	}
 
-	@createContextObject: (options) ->
-		contextObject = super(options)
+	static getDescription(modifierContextObject) {
+		return this.description;
+	}
 
-		rangedModifier = ModifierRanged.createContextObject()
-		rangedModifier.isRemovable = false
-		forcefieldModifier = ModifierForcefield.createContextObject()
-		forcefieldModifier.isRemovable = false
-		celerityModifier = ModifierTranscendance.createContextObject()
-		celerityModifier.isRemovable = false
-		flyingModifier = ModifierFlying.createContextObject()
-		flyingModifier.isRemovable = false
+	onHPChange(e) {
+		super.onHPChange(e);
 
-		contextObject.listOfModifiersContextObjectsFor30HP = []
-		contextObject.listOfModifiersContextObjectsFor20HP = [rangedModifier]
-		contextObject.listOfModifiersContextObjectsFor15HP = [forcefieldModifier]
-		contextObject.listOfModifiersContextObjectsFor10HP = [celerityModifier]
-		contextObject.listOfModifiersContextObjectsFor5HP = [flyingModifier]
-		return contextObject
+		const card = this.getCard();
+		const hp = card.getHP();
+		let missingModifierContextObjects = [];
+		let extraModifierContextObjects = [];
+		if (hp <= 30) { missingModifierContextObjects = missingModifierContextObjects.concat(this.searchMissingModifiers(this.listOfModifiersContextObjectsFor30HP, card));
+		} else { extraModifierContextObjects = extraModifierContextObjects.concat(this.getExistingModifiersFromContextObjects(this.listOfModifiersContextObjectsFor30HP, card)); }
+		if (hp <= 20) { missingModifierContextObjects = missingModifierContextObjects.concat(this.searchMissingModifiers(this.listOfModifiersContextObjectsFor20HP, card));
+		} else { extraModifierContextObjects = extraModifierContextObjects.concat(this.getExistingModifiersFromContextObjects(this.listOfModifiersContextObjectsFor20HP, card)); }
+		if (hp <= 15) { missingModifierContextObjects = missingModifierContextObjects.concat(this.searchMissingModifiers(this.listOfModifiersContextObjectsFor15HP, card));
+		} else { extraModifierContextObjects = extraModifierContextObjects.concat(this.getExistingModifiersFromContextObjects(this.listOfModifiersContextObjectsFor15HP, card)); }
+		if (hp <= 10) { missingModifierContextObjects = missingModifierContextObjects.concat(this.searchMissingModifiers(this.listOfModifiersContextObjectsFor10HP, card));
+		} else { extraModifierContextObjects = extraModifierContextObjects.concat(this.getExistingModifiersFromContextObjects(this.listOfModifiersContextObjectsFor10HP, card)); }
+		if (hp <= 5) { missingModifierContextObjects = missingModifierContextObjects.concat(this.searchMissingModifiers(this.listOfModifiersContextObjectsFor5HP, card));
+		} else { extraModifierContextObjects = extraModifierContextObjects.concat(this.getExistingModifiersFromContextObjects(this.listOfModifiersContextObjectsFor5HP, card)); }
 
-	@getDescription: (modifierContextObject) ->
-		return @description
+		//adding the missing modifiers
+		if (missingModifierContextObjects.length > 0) {
+			this.applyManagedModifiersFromModifiersContextObjects(missingModifierContextObjects, card);
+		}
 
-	onHPChange: (e) ->
-		super(e)
+		//removing the extra modifiers we don't need
+		if (extraModifierContextObjects.length > 0) {
+			return Array.from(extraModifierContextObjects).map((modifier) =>
+				this.getGameSession().removeModifier(modifier));
+		}
+	}
 
-		card = @getCard()
-		hp = card.getHP()
-		missingModifierContextObjects = []
-		extraModifierContextObjects = []
-		if hp <= 30 then missingModifierContextObjects = missingModifierContextObjects.concat(@searchMissingModifiers(@listOfModifiersContextObjectsFor30HP, card))
-		else extraModifierContextObjects = extraModifierContextObjects.concat(@getExistingModifiersFromContextObjects(@listOfModifiersContextObjectsFor30HP, card))
-		if hp <= 20 then missingModifierContextObjects = missingModifierContextObjects.concat(@searchMissingModifiers(@listOfModifiersContextObjectsFor20HP, card))
-		else extraModifierContextObjects = extraModifierContextObjects.concat(@getExistingModifiersFromContextObjects(@listOfModifiersContextObjectsFor20HP, card))
-		if hp <= 15 then missingModifierContextObjects = missingModifierContextObjects.concat(@searchMissingModifiers(@listOfModifiersContextObjectsFor15HP, card))
-		else extraModifierContextObjects = extraModifierContextObjects.concat(@getExistingModifiersFromContextObjects(@listOfModifiersContextObjectsFor15HP, card))
-		if hp <= 10 then missingModifierContextObjects = missingModifierContextObjects.concat(@searchMissingModifiers(@listOfModifiersContextObjectsFor10HP, card))
-		else extraModifierContextObjects = extraModifierContextObjects.concat(@getExistingModifiersFromContextObjects(@listOfModifiersContextObjectsFor10HP, card))
-		if hp <= 5 then missingModifierContextObjects = missingModifierContextObjects.concat(@searchMissingModifiers(@listOfModifiersContextObjectsFor5HP, card))
-		else extraModifierContextObjects = extraModifierContextObjects.concat(@getExistingModifiersFromContextObjects(@listOfModifiersContextObjectsFor5HP, card))
+	searchMissingModifiers(modifierContextObjects, card) {
+		const missingModifierContextObjects = [];
+		const index = this.getIndex();
+		for (let modifierContextObject of Array.from(modifierContextObjects)) {
+			const modifierType = modifierContextObject.type;
+			let hasModifier = false;
+			for (let existingModifier of Array.from(card.getModifiers())) {
+				if ((existingModifier != null) && (existingModifier.getType() === modifierType) && (existingModifier.getParentModifierIndex() === index)) {
+					hasModifier = true;
+					break;
+				}
+			}
+			if (!hasModifier) {
+				missingModifierContextObjects.push(modifierContextObject);
+			}
+		}
+		return missingModifierContextObjects;
+	}
 
-		#adding the missing modifiers
-		if missingModifierContextObjects.length > 0
-			this.applyManagedModifiersFromModifiersContextObjects(missingModifierContextObjects, card)
+	getExistingModifiersFromContextObjects(modifierContextObjects, card) {
+		const modifiers = [];
+		const index = this.getIndex();
+		for (let modifier of Array.from(card.getModifiers())) {
+		  	for (let modifierContextObject of Array.from(modifierContextObjects)) {
+		    		if ((modifier.getType() === modifierContextObject.type) && (modifier.getParentModifierIndex() === index)) {
+		      		modifiers.push(modifier);
+			}
+			}
+		}
+		return modifiers;
+	}
+}
+ModifierHPThresholdGainModifiers.initClass();
 
-		#removing the extra modifiers we don't need
-		if extraModifierContextObjects.length > 0
-			for modifier in extraModifierContextObjects
-				@getGameSession().removeModifier(modifier)
-
-	searchMissingModifiers: (modifierContextObjects, card) ->
-		missingModifierContextObjects = []
-		index = @getIndex()
-		for modifierContextObject in modifierContextObjects
-			modifierType = modifierContextObject.type
-			hasModifier = false
-			for existingModifier in card.getModifiers()
-				if existingModifier? and existingModifier.getType() == modifierType and existingModifier.getParentModifierIndex() == index
-					hasModifier = true
-					break
-			if !hasModifier
-				missingModifierContextObjects.push(modifierContextObject)
-		return missingModifierContextObjects
-
-	getExistingModifiersFromContextObjects: (modifierContextObjects, card) ->
-		modifiers = []
-		index = @getIndex()
-		for modifier in card.getModifiers()
-		  for modifierContextObject in modifierContextObjects
-		    if modifier.getType() == modifierContextObject.type and modifier.getParentModifierIndex() == index
-		      modifiers.push(modifier)
-		return modifiers
-
-module.exports = ModifierHPThresholdGainModifiers
+module.exports = ModifierHPThresholdGainModifiers;

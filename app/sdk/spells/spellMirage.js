@@ -1,32 +1,57 @@
-CONFIG = require 'app/common/config'
-SpellApplyEntityToBoard =	require './spellApplyEntityToBoard'
-CardType = require 'app/sdk/cards/cardType'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-CloneEntityAction = require 'app/sdk/actions/cloneEntityAction'
-ModifierMirage = require 'app/sdk/modifiers/modifierMirage'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const SpellApplyEntityToBoard =	require('./spellApplyEntityToBoard');
+const CardType = require('app/sdk/cards/cardType');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const CloneEntityAction = require('app/sdk/actions/cloneEntityAction');
+const ModifierMirage = require('app/sdk/modifiers/modifierMirage');
 
-class SpellMirage extends SpellApplyEntityToBoard
+class SpellMirage extends SpellApplyEntityToBoard {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Entity;
+	}
 
-	targetType: CardType.Entity
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		const card = this.getGameSession().getBoard().getCardAtPosition({x, y}, this.targetType);
+		const targetSpawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), {x, y}, CONFIG.PATTERN_3x3, card, this, 3);
+		if (targetSpawnPositions.length > 0) {
+			return (() => {
+				const result = [];
+				for (let position of Array.from(targetSpawnPositions)) {
+					const spawnAction = this.getSpawnAction(x, y, position);
+					if (spawnAction != null) {
+						this.getGameSession().executeAction(spawnAction);
+						result.push(this.getGameSession().applyModifierContextObject(ModifierMirage.createContextObject(), spawnAction.getCard()));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
 
-		card = @getGameSession().getBoard().getCardAtPosition({x: x, y: y}, @targetType)
-		targetSpawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), {x:x, y:y}, CONFIG.PATTERN_3x3, card, @, 3)
-		if targetSpawnPositions.length > 0
-			for position in targetSpawnPositions
-				spawnAction = @getSpawnAction(x, y, position)
-				if spawnAction?
-					@getGameSession().executeAction(spawnAction)
-					@getGameSession().applyModifierContextObject(ModifierMirage.createContextObject(), spawnAction.getCard())
+	getSpawnAction(x, y, targetSpawnPosition) {
+		const cloningEntity = this.getGameSession().getBoard().getCardAtPosition({x, y}, this.targetType);
+		if ((cloningEntity != null) && !this.getGameSession().getBoard().getObstructionAtPositionForEntity(targetSpawnPosition, cloningEntity)) {
+			const spawnEntityAction = new CloneEntityAction(this.getGameSession(), this.getOwnerId(), targetSpawnPosition.x, targetSpawnPosition.y);
+			spawnEntityAction.setOwnerId(this.getOwnerId());
+			spawnEntityAction.setSource(cloningEntity);
+			return spawnEntityAction;
+		}
+	}
+}
+SpellMirage.initClass();
 
-	getSpawnAction: (x, y, targetSpawnPosition) ->
-		cloningEntity = @getGameSession().getBoard().getCardAtPosition({x:x, y:y}, @targetType)
-		if cloningEntity? and !@getGameSession().getBoard().getObstructionAtPositionForEntity(targetSpawnPosition, cloningEntity)
-			spawnEntityAction = new CloneEntityAction(@getGameSession(), @getOwnerId(), targetSpawnPosition.x, targetSpawnPosition.y)
-			spawnEntityAction.setOwnerId(@getOwnerId())
-			spawnEntityAction.setSource(cloningEntity)
-			return spawnEntityAction
-
-module.exports = SpellMirage
+module.exports = SpellMirage;

@@ -1,51 +1,77 @@
-CONFIG = require 'app/common/config'
-SpellIntensify = require './spellIntensify'
-RandomTeleportAction = require 'app/sdk/actions/randomTeleportAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const SpellIntensify = require('./spellIntensify');
+const RandomTeleportAction = require('app/sdk/actions/randomTeleportAction');
+const CardType = require('app/sdk/cards/cardType');
 
-class SpellIntensifyTeleportOwnSide extends SpellIntensify
+class SpellIntensifyTeleportOwnSide extends SpellIntensify {
 
-	onApplyOneEffectToBoard: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+	onApplyOneEffectToBoard(board,x,y,sourceAction) {
+		super.onApplyOneEffectToBoard(board,x,y,sourceAction);
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			general = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-			enemies = @getGameSession().getBoard().getEnemyEntitiesForEntity(general, CardType.Unit, false, false)
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const general = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+			const enemies = this.getGameSession().getBoard().getEnemyEntitiesForEntity(general, CardType.Unit, false, false);
 
-			if enemies?
-				potentialTargets = []
-				for enemy in enemies
-					if enemy? and !enemy.getIsGeneral() and !@isOnMySideOfBattlefield(enemy)
-						potentialTargets.push(enemy)
+			if (enemies != null) {
+				const potentialTargets = [];
+				for (let enemy of Array.from(enemies)) {
+					if ((enemy != null) && !enemy.getIsGeneral() && !this.isOnMySideOfBattlefield(enemy)) {
+						potentialTargets.push(enemy);
+					}
+				}
 
-				if potentialTargets.length > 0
-					enemiesToTeleport = []
-					numberToTeleport = Math.min(@getIntensifyAmount(), potentialTargets.length)
-					for [0...numberToTeleport]
-						enemiesToTeleport.push(potentialTargets.splice(@getGameSession().getRandomIntegerForExecution(potentialTargets.length), 1)[0])
+				if (potentialTargets.length > 0) {
+					const enemiesToTeleport = [];
+					const numberToTeleport = Math.min(this.getIntensifyAmount(), potentialTargets.length);
+					for (let i = 0, end = numberToTeleport, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+						enemiesToTeleport.push(potentialTargets.splice(this.getGameSession().getRandomIntegerForExecution(potentialTargets.length), 1)[0]);
+					}
 
-					for teleportTarget in enemiesToTeleport
-						randomTeleportAction = new RandomTeleportAction(@getGameSession())
-						randomTeleportAction.setOwnerId(@getOwnerId())
-						randomTeleportAction.setSource(teleportTarget)
-						if @isOwnedByPlayer1()
-							randomTeleportAction.setPatternSourcePosition({x:0, y:0})
-						else 
-							randomTeleportAction.setPatternSourcePosition({x: Math.ceil(CONFIG.BOARDCOL * 0.5), y:0})
-						randomTeleportAction.setTeleportPattern(CONFIG.PATTERN_HALF_BOARD)
-						@getGameSession().executeAction(randomTeleportAction)
+					return (() => {
+						const result = [];
+						for (let teleportTarget of Array.from(enemiesToTeleport)) {
+							const randomTeleportAction = new RandomTeleportAction(this.getGameSession());
+							randomTeleportAction.setOwnerId(this.getOwnerId());
+							randomTeleportAction.setSource(teleportTarget);
+							if (this.isOwnedByPlayer1()) {
+								randomTeleportAction.setPatternSourcePosition({x:0, y:0});
+							} else { 
+								randomTeleportAction.setPatternSourcePosition({x: Math.ceil(CONFIG.BOARDCOL * 0.5), y:0});
+							}
+							randomTeleportAction.setTeleportPattern(CONFIG.PATTERN_HALF_BOARD);
+							result.push(this.getGameSession().executeAction(randomTeleportAction));
+						}
+						return result;
+					})();
+				}
+			}
+		}
+	}
 
-	isOnMySideOfBattlefield: (unit) ->
+	isOnMySideOfBattlefield(unit) {
 
-		mySideStartX = 0
-		mySideEndX = CONFIG.BOARDCOL
-		if @isOwnedByPlayer1()
-			mySideEndX = Math.floor((mySideEndX - mySideStartX) * 0.5 - 1)
-		else
-			mySideStartX = Math.floor((mySideEndX - mySideStartX) * 0.5 + 1)
+		let mySideStartX = 0;
+		let mySideEndX = CONFIG.BOARDCOL;
+		if (this.isOwnedByPlayer1()) {
+			mySideEndX = Math.floor(((mySideEndX - mySideStartX) * 0.5) - 1);
+		} else {
+			mySideStartX = Math.floor(((mySideEndX - mySideStartX) * 0.5) + 1);
+		}
 
-		if unit.getPosition().x >= mySideStartX and unit.getPosition().x <= mySideEndX
-			return true
-		return false
+		if ((unit.getPosition().x >= mySideStartX) && (unit.getPosition().x <= mySideEndX)) {
+			return true;
+		}
+		return false;
+	}
+}
 
-module.exports = SpellIntensifyTeleportOwnSide
+module.exports = SpellIntensifyTeleportOwnSide;

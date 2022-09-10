@@ -1,19 +1,36 @@
-SpellApplyModifiers = require './spellApplyModifiers'
-CardType = require 'app/sdk/cards/cardType'
-ModifierStunned = 		require 'app/sdk/modifiers/modifierStunned'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellApplyModifiers = require('./spellApplyModifiers');
+const CardType = require('app/sdk/cards/cardType');
+const ModifierStunned = 		require('app/sdk/modifiers/modifierStunned');
 
-class SpellYellRealLoud extends SpellApplyModifiers
+class SpellYellRealLoud extends SpellApplyModifiers {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		applyEffectPosition = {x: x, y: y}
+		const applyEffectPosition = {x, y};
 
-		targetEntity = board.getUnitAtPosition(applyEffectPosition)
+		const targetEntity = board.getUnitAtPosition(applyEffectPosition);
 
-		entities = board.getEnemyEntitiesAroundEntity(targetEntity, CardType.Unit, 1)
-		for entity in entities
-			if !entity.getIsGeneral()
-				@getGameSession().applyModifierContextObject(ModifierStunned.createContextObject(), entity)
+		const entities = board.getEnemyEntitiesAroundEntity(targetEntity, CardType.Unit, 1);
+		return (() => {
+			const result = [];
+			for (let entity of Array.from(entities)) {
+				if (!entity.getIsGeneral()) {
+					result.push(this.getGameSession().applyModifierContextObject(ModifierStunned.createContextObject(), entity));
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
 
-module.exports = SpellYellRealLoud
+module.exports = SpellYellRealLoud;

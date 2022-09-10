@@ -1,24 +1,38 @@
-Logger = require 'app/common/logger'
-CONFIG = require 'app/common/config'
-SpellKillTarget = require('./spellKillTarget')
-SpellFilterType = require './spellFilterType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const CONFIG = require('app/common/config');
+const SpellKillTarget = require('./spellKillTarget');
+const SpellFilterType = require('./spellFilterType');
 
-class SpellLavastorm extends SpellKillTarget
+class SpellLavastorm extends SpellKillTarget {
+	static initClass() {
+	
+		this.minAttackValue = 0;
+		this.prototype.spellFilterType = SpellFilterType.NeutralIndirect;
+	}
 
-	@minAttackValue: 0
-	spellFilterType: SpellFilterType.NeutralIndirect
+	_findApplyEffectPositions(position, sourceAction) {
+		const potentialApplyEffectPositions = super._findApplyEffectPositions(position, sourceAction);
+		const applyEffectPositions = [];
+		const board = this.getGameSession().getBoard();
 
-	_findApplyEffectPositions: (position, sourceAction) ->
-		potentialApplyEffectPositions = super(position, sourceAction)
-		applyEffectPositions = []
-		board = @getGameSession().getBoard()
+		// apply to each unit with < minAttackValue attack
+		for (position of Array.from(potentialApplyEffectPositions)) {
+			const unit = board.getUnitAtPosition(position);
+			if (((unit != null ? unit.getATK() : undefined) < this.minAttackValue) && !unit.getIsGeneral()) {
+				applyEffectPositions.push(position);
+			}
+		}
 
-		# apply to each unit with < minAttackValue attack
-		for position in potentialApplyEffectPositions
-			unit = board.getUnitAtPosition(position)
-			if unit?.getATK() < @minAttackValue and !unit.getIsGeneral()
-				applyEffectPositions.push(position)
+		return applyEffectPositions;
+	}
+}
+SpellLavastorm.initClass();
 
-		return applyEffectPositions
-
-module.exports = SpellLavastorm
+module.exports = SpellLavastorm;

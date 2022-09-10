@@ -1,28 +1,41 @@
-Modifier = require './modifier'
-AttackAction = require 'app/sdk/actions/attackAction'
-CardType = require 'app/sdk/cards/cardType'
-ModifierDealDamageWatch = require './modifierDealDamageWatch'
-TeleportInFrontOfUnitAction = require 'app/sdk/actions/teleportInFrontOfUnitAction'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const AttackAction = require('app/sdk/actions/attackAction');
+const CardType = require('app/sdk/cards/cardType');
+const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
+const TeleportInFrontOfUnitAction = require('app/sdk/actions/teleportInFrontOfUnitAction');
+const _ = require('underscore');
 
-class ModifierDealDamageWatchTeleportToMe extends ModifierDealDamageWatch
+class ModifierDealDamageWatchTeleportToMe extends ModifierDealDamageWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDealDamageWatchTeleportToMe";
+		this.type ="ModifierDealDamageWatchTeleportToMe";
+	
+		this.modifierName ="Deal Damage Watch Teleport To Me";
+		this.description ="Minions damaged by Syvrel are pulled in front of him";
+	
+		this.prototype.maxStacks = 1;
+	}
 
-	type:"ModifierDealDamageWatchTeleportToMe"
-	@type:"ModifierDealDamageWatchTeleportToMe"
+	onDealDamage(action) {
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			// calculate results of teleport only on server, since results may change at execution time
+			const target = action.getTarget();
+			if (target && !target.getIsGeneral()) {
+				// move target in front of this minion
+				const teleAction = new TeleportInFrontOfUnitAction(this.getGameSession(), this.getCard(), target);
+				teleAction.setFXResource(_.union(teleAction.getFXResource(), this.getFXResource()));
+				return this.getGameSession().executeAction(teleAction);
+			}
+		}
+	}
+}
+ModifierDealDamageWatchTeleportToMe.initClass();
 
-	@modifierName:"Deal Damage Watch Teleport To Me"
-	@description:"Minions damaged by Syvrel are pulled in front of him"
-
-	maxStacks: 1
-
-	onDealDamage: (action) ->
-		if @getGameSession().getIsRunningAsAuthoritative()
-			# calculate results of teleport only on server, since results may change at execution time
-			target = action.getTarget()
-			if target and !target.getIsGeneral()
-				# move target in front of this minion
-				teleAction = new TeleportInFrontOfUnitAction(@getGameSession(), @getCard(), target)
-				teleAction.setFXResource(_.union(teleAction.getFXResource(), @getFXResource()))
-				@getGameSession().executeAction(teleAction)
-
-module.exports = ModifierDealDamageWatchTeleportToMe
+module.exports = ModifierDealDamageWatchTeleportToMe;

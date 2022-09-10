@@ -1,28 +1,39 @@
-ModifierEndTurnWatch = require './modifierEndTurnWatch.coffee'
-RandomTeleportAction = require 'app/sdk/actions/randomTeleportAction'
-CONFIG = require 'app/common/config'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch.coffee');
+const RandomTeleportAction = require('app/sdk/actions/randomTeleportAction');
+const CONFIG = require('app/common/config');
+const _ = require('underscore');
 
-class ModifierEndTurnWatchTeleportCorner extends ModifierEndTurnWatch
+class ModifierEndTurnWatchTeleportCorner extends ModifierEndTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEndTurnWatchTeleportCorner";
+		this.type ="ModifierEndTurnWatchTeleportCorner";
+	
+		this.modifierName ="Turn Watch";
+		this.description ="At the end of your turn, teleport to a random corner";
+	
+		this.prototype.isHiddenToUI = true; // don't show this modifier by default
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierEndTurnWatch"];
+	}
 
-	type:"ModifierEndTurnWatchTeleportCorner"
-	@type:"ModifierEndTurnWatchTeleportCorner"
+	onTurnWatch(action) {
+		super.onTurnWatch(action);
 
-	@modifierName:"Turn Watch"
-	@description:"At the end of your turn, teleport to a random corner"
+		const randomTeleportAction = new RandomTeleportAction(this.getGameSession());
+		randomTeleportAction.setOwnerId(this.getCard().getOwnerId());
+		randomTeleportAction.setSource(this.getCard());
+		randomTeleportAction.setTeleportPattern(CONFIG.PATTERN_CORNERS);
+		randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), this.getFXResource()));
+		return this.getGameSession().executeAction(randomTeleportAction);
+	}
+}
+ModifierEndTurnWatchTeleportCorner.initClass();
 
-	isHiddenToUI: true # don't show this modifier by default
-
-	fxResource: ["FX.Modifiers.ModifierEndTurnWatch"]
-
-	onTurnWatch: (action) ->
-		super(action)
-
-		randomTeleportAction = new RandomTeleportAction(@getGameSession())
-		randomTeleportAction.setOwnerId(@getCard().getOwnerId())
-		randomTeleportAction.setSource(@getCard())
-		randomTeleportAction.setTeleportPattern(CONFIG.PATTERN_CORNERS)
-		randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), @getFXResource()))
-		@getGameSession().executeAction(randomTeleportAction)
-
-module.exports = ModifierEndTurnWatchTeleportCorner
+module.exports = ModifierEndTurnWatchTeleportCorner;

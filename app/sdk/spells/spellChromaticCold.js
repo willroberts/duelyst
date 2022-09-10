@@ -1,24 +1,34 @@
-SpellSilence = require './spellSilence'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellSilence = require('./spellSilence');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class SpellChromaticCold extends SpellSilence
+class SpellChromaticCold extends SpellSilence {
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
-		p.targetsSpace = true # does not target any unit directly
-		return p
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
+		p.targetsSpace = true; // does not target any unit directly
+		return p;
+	}
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction) # dispel the space
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction); // dispel the space
 
-		applyEffectPosition = {x: x, y: y}
-		unit = board.getUnitAtPosition(applyEffectPosition)
-		if unit? and unit.getOwnerId() != @getOwnerId() # damage enemies on this space
-			damageAction = new DamageAction(@getGameSession())
-			damageAction.setOwnerId(@getOwnerId())
-			damageAction.setTarget(unit)
-			damageAction.setDamageAmount(@damageAmount)
-			@getGameSession().executeAction(damageAction)
+		const applyEffectPosition = {x, y};
+		const unit = board.getUnitAtPosition(applyEffectPosition);
+		if ((unit != null) && (unit.getOwnerId() !== this.getOwnerId())) { // damage enemies on this space
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setOwnerId(this.getOwnerId());
+			damageAction.setTarget(unit);
+			damageAction.setDamageAmount(this.damageAmount);
+			return this.getGameSession().executeAction(damageAction);
+		}
+	}
+}
 
 
-module.exports = SpellChromaticCold
+module.exports = SpellChromaticCold;

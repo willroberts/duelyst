@@ -1,43 +1,57 @@
-Achievement = require 'app/sdk/achievements/achievement'
-Factions = require 'app/sdk/cards/factionsLookup'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-Rarity = require 'app/sdk/cards/rarityLookup'
-CardSet = require 'app/sdk/cards/cardSetLookup'
-_ = require 'underscore'
-i18next = require('i18next')
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Achievement = require('app/sdk/achievements/achievement');
+const Factions = require('app/sdk/cards/factionsLookup');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const Rarity = require('app/sdk/cards/rarityLookup');
+const CardSet = require('app/sdk/cards/cardSetLookup');
+const _ = require('underscore');
+const i18next = require('i18next');
 
-class CollectorSupremeAchievement extends Achievement
-	@id: "collectorSupreme"
-	@title: i18next.t("achievements.collector_supreme_title")
-	@description: i18next.t("achievements.collector_supreme_desc")
-	@progressRequired: 1
-	@rewards:
-		neutralEpicCard: 1
-		neutralRareCard: 1
+class CollectorSupremeAchievement extends Achievement {
+	static initClass() {
+		this.id = "collectorSupreme";
+		this.title = i18next.t("achievements.collector_supreme_title");
+		this.description = i18next.t("achievements.collector_supreme_desc");
+		this.progressRequired = 1;
+		this.rewards = {
+			neutralEpicCard: 1,
+			neutralRareCard: 1
+		};
+	}
 
-	@progressForCardCollection: (cardCollection, allCards) ->
+	static progressForCardCollection(cardCollection, allCards) {
 
-		if not cardCollection?
-			return 0
+		if ((cardCollection == null)) {
+			return 0;
+		}
 
-		# check if player owns one of every common card
-		allCommonCards = _.filter(allCards,(card) ->
-			return card.getRarityId() == Rarity.Common and
-				card.getCardSetId() == CardSet.Core and
-				!card.getIsHiddenInCollection() and
-				card.getIsAvailable() and
-				card.factionId != Factions.Tutorial and
-				!Cards.getIsPrismaticCardId(card.getId())
-		)
+		// check if player owns one of every common card
+		const allCommonCards = _.filter(allCards,card => (card.getRarityId() === Rarity.Common) &&
+            (card.getCardSetId() === CardSet.Core) &&
+            !card.getIsHiddenInCollection() &&
+            card.getIsAvailable() &&
+            (card.factionId !== Factions.Tutorial) &&
+            !Cards.getIsPrismaticCardId(card.getId()));
 
-		for card in allCommonCards
-			baseCardId = card.getBaseCardId()
-			prismaticCardId = Cards.getPrismaticCardId(baseCardId)
-			cardCollectionBase = cardCollection[baseCardId]
-			cardCollectionPrismatic = cardCollection[prismaticCardId]
-			if (cardCollectionBase?.count || 0) + (cardCollectionPrismatic?.count || 0) == 0
-				return 0
+		for (let card of Array.from(allCommonCards)) {
+			const baseCardId = card.getBaseCardId();
+			const prismaticCardId = Cards.getPrismaticCardId(baseCardId);
+			const cardCollectionBase = cardCollection[baseCardId];
+			const cardCollectionPrismatic = cardCollection[prismaticCardId];
+			if ((((cardCollectionBase != null ? cardCollectionBase.count : undefined) || 0) + ((cardCollectionPrismatic != null ? cardCollectionPrismatic.count : undefined) || 0)) === 0) {
+				return 0;
+			}
+		}
 
-		return 1
+		return 1;
+	}
+}
+CollectorSupremeAchievement.initClass();
 
-module.exports = CollectorSupremeAchievement
+module.exports = CollectorSupremeAchievement;

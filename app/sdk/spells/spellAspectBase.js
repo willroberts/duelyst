@@ -1,19 +1,27 @@
-SpellRemoveAndReplaceEntity = require './spellRemoveAndReplaceEntity'
-ModifierTransformed = require 'app/sdk/modifiers/modifierTransformed'
-CardType = require 'app/sdk/cards/cardType'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellRemoveAndReplaceEntity = require('./spellRemoveAndReplaceEntity');
+const ModifierTransformed = require('app/sdk/modifiers/modifierTransformed');
+const CardType = require('app/sdk/cards/cardType');
+const _ = require('underscore');
 
-class SpellAspectBase extends SpellRemoveAndReplaceEntity
+class SpellAspectBase extends SpellRemoveAndReplaceEntity {
 
-	getCardDataOrIndexToSpawn: (x, y) ->
-		cardDataOrIndexToSpawn = super(x, y)
+	getCardDataOrIndexToSpawn(x, y) {
+		let cardDataOrIndexToSpawn = super.getCardDataOrIndexToSpawn(x, y);
 
-		existingEntity = @getGameSession().getBoard().getCardAtPosition({x: x, y: y}, CardType.Entity)
-		if existingEntity?
-			if cardDataOrIndexToSpawn? and !_.isObject(cardDataOrIndexToSpawn) then cardDataOrIndexToSpawn = @getGameSession().getCardByIndex(cardDataOrIndexToSpawn).createNewCardData()
-			cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects ?= []
-			cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(existingEntity.getExhausted(), existingEntity.getMovesMade(), existingEntity.getAttacksMade()))
+		const existingEntity = this.getGameSession().getBoard().getCardAtPosition({x, y}, CardType.Entity);
+		if (existingEntity != null) {
+			if ((cardDataOrIndexToSpawn != null) && !_.isObject(cardDataOrIndexToSpawn)) { cardDataOrIndexToSpawn = this.getGameSession().getCardByIndex(cardDataOrIndexToSpawn).createNewCardData(); }
+			if (cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
+			cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(existingEntity.getExhausted(), existingEntity.getMovesMade(), existingEntity.getAttacksMade()));
+		}
 
-		return cardDataOrIndexToSpawn
+		return cardDataOrIndexToSpawn;
+	}
+}
 
-module.exports = SpellAspectBase
+module.exports = SpellAspectBase;

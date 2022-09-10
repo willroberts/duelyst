@@ -1,51 +1,65 @@
-Modifier = require './modifier'
-ModifierSilence = 	require 'app/sdk/modifiers/modifierSilence'
-KillAction = require 'app/sdk/actions/killAction'
-DieAction = require 'app/sdk/actions/dieAction'
-SwapGeneralAction = require 'app/sdk/actions/swapGeneralAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierSilence = 	require('app/sdk/modifiers/modifierSilence');
+const KillAction = require('app/sdk/actions/killAction');
+const DieAction = require('app/sdk/actions/dieAction');
+const SwapGeneralAction = require('app/sdk/actions/swapGeneralAction');
 
-class ModifierOnSpawnKillMyGeneral extends Modifier
+class ModifierOnSpawnKillMyGeneral extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOnSpawnKillMyGeneral";
+		this.type ="ModifierOnSpawnKillMyGeneral";
+	
+		this.modifierName ="ModifierOnSpawnKillMyGeneral";
+		this.description = "Kill your General";
+	
+		this.isHiddenToUI = true;
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierOnSpawnKillMyGeneral"
-	@type:"ModifierOnSpawnKillMyGeneral"
+	static createContextObject(options) {
+		const contextObject = super.createContextObject(options);
+		return contextObject;
+	}
 
-	@modifierName:"ModifierOnSpawnKillMyGeneral"
-	@description: "Kill your General"
+	onActivate() {
+		super.onActivate();
 
-	@isHiddenToUI: true
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		const myCard = this.getCard();
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		// make sure to remove self to prevent triggering this modifier again
+		this.getGameSession().removeModifier(this);
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"]
+		// turn the new unit into your general
+		if (general != null) {
+			const swapGeneralAction = new SwapGeneralAction(this.getGameSession());
+			swapGeneralAction.setIsDepthFirst(false);
+			swapGeneralAction.setSource(general);
+			swapGeneralAction.setTarget(myCard);
+			this.getGameSession().executeAction(swapGeneralAction);
+		}
 
-	@createContextObject: (options) ->
-		contextObject = super(options)
-		return contextObject
+		// kill the old general
+		const dieAction = new DieAction(this.getGameSession());
+		dieAction.setOwnerId(myCard.getOwnerId());
+		dieAction.setTarget(general);
+		return this.getGameSession().executeAction(dieAction);
+	}
+}
+ModifierOnSpawnKillMyGeneral.initClass();
 
-	onActivate: () ->
-		super()
-
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		myCard = @getCard()
-
-		# make sure to remove self to prevent triggering this modifier again
-		@getGameSession().removeModifier(@)
-
-		# turn the new unit into your general
-		if general?
-			swapGeneralAction = new SwapGeneralAction(@getGameSession())
-			swapGeneralAction.setIsDepthFirst(false)
-			swapGeneralAction.setSource(general)
-			swapGeneralAction.setTarget(myCard)
-			@getGameSession().executeAction(swapGeneralAction)
-
-		# kill the old general
-		dieAction = new DieAction(@getGameSession())
-		dieAction.setOwnerId(myCard.getOwnerId())
-		dieAction.setTarget(general)
-		@getGameSession().executeAction(dieAction)
-
-module.exports = ModifierOnSpawnKillMyGeneral
+module.exports = ModifierOnSpawnKillMyGeneral;

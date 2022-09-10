@@ -1,47 +1,75 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-UtilsPosition = require 'app/common/utils/utils_position'
-ModifierKillWatch = require './modifierKillWatch'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const UtilsPosition = require('app/common/utils/utils_position');
+const ModifierKillWatch = require('./modifierKillWatch');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
 
-class ModifierKillWatchRespawnEntity extends ModifierKillWatch
+class ModifierKillWatchRespawnEntity extends ModifierKillWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierKillWatchRespawnEntity";
+		this.type ="ModifierKillWatchRespawnEntity";
+	
+		this.description ="Whenever Monolith Guardian destroys an enemy, it assimilates them";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericSpawn"];
+		this.prototype.cardDataOrIndexToSpawn = null;
+	}
 
-	type:"ModifierKillWatchRespawnEntity"
-	@type:"ModifierKillWatchRespawnEntity"
+	static createContextObject(spawnCount, spawnPattern, spawnSilently, options) {
+		if (spawnCount == null) { spawnCount = 1; }
+		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_1x1; }
+		if (spawnSilently == null) { spawnSilently = true; }
+		const contextObject = super.createContextObject(false, false, options);
+		contextObject.spawnCount = spawnCount;
+		contextObject.spawnPattern = spawnPattern;
+		contextObject.spawnSilently = spawnSilently;
+		return contextObject;
+	}
 
-	@description:"Whenever Monolith Guardian destroys an enemy, it assimilates them"
+	static getDescription(modifierContextObject) {
+		return this.description;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericSpawn"]
-	cardDataOrIndexToSpawn: null
+	onKillWatch(action) {
+		super.onKillWatch(action);
 
-	@createContextObject: (spawnCount=1, spawnPattern=CONFIG.PATTERN_1x1, spawnSilently=true, options) ->
-		contextObject = super(false, false, options)
-		contextObject.spawnCount = spawnCount
-		contextObject.spawnPattern = spawnPattern
-		contextObject.spawnSilently = spawnSilently
-		return contextObject
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const ownerId = this.getSpawnOwnerId(action);
+			const cardDataOrIndexToSpawn = action.getTarget().createNewCardData();
+			const cardToSpawn = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(cardDataOrIndexToSpawn);
+			const spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), action.getTargetPosition(), this.spawnPattern, cardToSpawn, this.getCard(), this.spawnCount);
+			return (() => {
+				const result = [];
+				for (let spawnPosition of Array.from(spawnPositions)) {
+					var spawnAction;
+					if (this.spawnSilently) {
+						spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					} else {
+						spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					}
+					spawnAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(spawnAction));
+				}
+				return result;
+			})();
+		}
+	}
 
-	@getDescription: (modifierContextObject) ->
-		return @description
+	getSpawnOwnerId(action) {
+		return this.getCard().getOwnerId();
+	}
+}
+ModifierKillWatchRespawnEntity.initClass();
 
-	onKillWatch: (action) ->
-		super(action)
-
-		if @getGameSession().getIsRunningAsAuthoritative()
-			ownerId = @getSpawnOwnerId(action)
-			cardDataOrIndexToSpawn = action.getTarget().createNewCardData()
-			cardToSpawn = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(cardDataOrIndexToSpawn)
-			spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), action.getTargetPosition(), @spawnPattern, cardToSpawn, @getCard(), @spawnCount)
-			for spawnPosition in spawnPositions
-				if @spawnSilently
-					spawnAction = new PlayCardSilentlyAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				else
-					spawnAction = new PlayCardAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				spawnAction.setSource(@getCard())
-				@getGameSession().executeAction(spawnAction)
-
-	getSpawnOwnerId: (action) ->
-		return @getCard().getOwnerId()
-
-module.exports = ModifierKillWatchRespawnEntity
+module.exports = ModifierKillWatchRespawnEntity;

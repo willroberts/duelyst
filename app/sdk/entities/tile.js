@@ -1,71 +1,94 @@
-Logger = require 'app/common/logger'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-Entity = require './entity'
-CardType = require 'app/sdk/cards/cardType'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const Entity = require('./entity');
+const CardType = require('app/sdk/cards/cardType');
+const _ = require('underscore');
 
-class Tile extends Entity
+class Tile extends Entity {
+	static initClass() {
+	
+		this.prototype.type = CardType.Tile;
+		this.type = CardType.Tile;
+		this.prototype.name = "Tile";
+	
+		this.prototype.hp = 0;
+		this.prototype.maxHP = 0;
+		this.prototype.manaCost = 0;
+		this.prototype.isTargetable = false;
+		this.prototype.isObstructing = false;
+		this.prototype.depleted = false;
+		this.prototype.dieOnDepleted = true; // whether tile dies once used up
+		this.prototype.obstructsOtherTiles = false;
+		this.prototype.canBeDispelled = true;
+	
+		this.prototype.cleanse = this.prototype.silence;
+		this.prototype.dispel = this.prototype.silence;
+	}
 
-	type: CardType.Tile
-	@type: CardType.Tile
-	name: "Tile"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	hp: 0
-	maxHP: 0
-	manaCost: 0
-	isTargetable: false
-	isObstructing: false
-	depleted: false
-	dieOnDepleted: true # whether tile dies once used up
-	obstructsOtherTiles: false
-	canBeDispelled: true
+		p.occupant = null; // current entity occupying tile
+		p.occupantChangingAction = null; // action that caused current unit to occupy tile
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		return p;
+	}
 
-		p.occupant = null # current entity occupying tile
-		p.occupantChangingAction = null # action that caused current unit to occupy tile
+	getCanBeAppliedAnywhere() {
+		return true;
+	}
 
-		return p
+	silence() {
+		if (this.canBeDispelled) {
+			// silence/cleanse/dispel kills tiles
+			return this.getGameSession().executeAction(this.actionDie());
+		}
+	}
 
-	getCanBeAppliedAnywhere: () ->
-		return true
+	// region OCCUPANT
 
-	silence: () ->
-		if @canBeDispelled
-			# silence/cleanse/dispel kills tiles
-			@getGameSession().executeAction(@actionDie())
+	setOccupant(occupant) {
+		if (this._private.occupant !== occupant) {
+			this._private.occupant = occupant;
+			return this._private.occupantChangingAction = this.getGameSession().getExecutingAction();
+		}
+	}
 
-	cleanse: @::silence
-	dispel: @::silence
+	getOccupant() {
+		return this._private.occupant;
+	}
 
-	# region OCCUPANT
+	getOccupantChangingAction() {
+		return this._private.occupantChangingAction;
+	}
 
-	setOccupant: (occupant) ->
-		if @_private.occupant != occupant
-			@_private.occupant = occupant
-			@_private.occupantChangingAction = @getGameSession().getExecutingAction()
+	setDepleted(depleted) {
+		this.depleted = depleted;
+		if (this.depleted && this.getDieOnDepleted()) {
+			return this.getGameSession().executeAction(this.actionDie());
+		}
+	}
 
-	getOccupant: () ->
-		return @_private.occupant
+	getDepleted() {
+		return this.depleted;
+	}
 
-	getOccupantChangingAction: () ->
-		return @_private.occupantChangingAction
+	getDieOnDepleted(){
+		return this.dieOnDepleted;
+	}
 
-	setDepleted: (depleted) ->
-		@depleted = depleted
-		if @depleted and @getDieOnDepleted()
-			@getGameSession().executeAction(@actionDie())
+	// endregion OCCUPANT
 
-	getDepleted: () ->
-		return @depleted
+	getObstructsOtherTiles() {
+		return this.obstructsOtherTiles;
+	}
+}
+Tile.initClass();
 
-	getDieOnDepleted: ()->
-		return @dieOnDepleted
-
-	# endregion OCCUPANT
-
-	getObstructsOtherTiles: () ->
-		return @obstructsOtherTiles
-
-module.exports = Tile
+module.exports = Tile;

@@ -1,36 +1,50 @@
-Modifier = require './modifier'
-DieAction = require 'app/sdk/actions/dieAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const DieAction = require('app/sdk/actions/dieAction');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierDyingWish extends Modifier
+class ModifierDyingWish extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWish";
+		this.type ="ModifierDyingWish";
+	
+		this.isKeyworded = true;
+		this.keywordDefinition = i18next.t("modifiers.dying_wish_def");
+	
+		this.modifierName =i18next.t("modifiers.dying_wish_name");
+		this.description = null;
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish"];
+	}
 
-	type:"ModifierDyingWish"
-	@type:"ModifierDyingWish"
+	onAction(e) {
+		super.onAction(e);
 
-	@isKeyworded: true
-	@keywordDefinition: i18next.t("modifiers.dying_wish_def")
+		const {
+            action
+        } = e;
 
-	@modifierName:i18next.t("modifiers.dying_wish_name")
-	@description: null
+		// when our entity has died
+		if (action instanceof DieAction && (action.getTarget() === this.getCard()) && this.getCard().getIsRemoved()) {
+			return this.onDyingWish(action);
+		}
+	}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	onDyingWish(action) {}
+}
+ModifierDyingWish.initClass();
+		// override me in sub classes to implement special behavior
 
-	fxResource: ["FX.Modifiers.ModifierDyingWish"]
-
-	onAction: (e) ->
-		super(e)
-
-		action = e.action
-
-		# when our entity has died
-		if action instanceof DieAction and action.getTarget() is @getCard() and @getCard().getIsRemoved()
-			@onDyingWish(action)
-
-	onDyingWish: (action) ->
-		# override me in sub classes to implement special behavior
-
-module.exports = ModifierDyingWish
+module.exports = ModifierDyingWish;

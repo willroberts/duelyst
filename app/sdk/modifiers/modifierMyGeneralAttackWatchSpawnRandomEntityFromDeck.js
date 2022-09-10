@@ -1,49 +1,71 @@
-ModifierMyGeneralAttackWatch = require './modifierMyGeneralAttackWatch'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-CardType = require 'app/sdk/cards/cardType'
-CONFIG = require 'app/common/config'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierMyGeneralAttackWatch = require('./modifierMyGeneralAttackWatch');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const CardType = require('app/sdk/cards/cardType');
+const CONFIG = require('app/common/config');
 
-class ModifierMyGeneralAttackWatchSpawnRandomEntityFromDeck extends ModifierMyGeneralAttackWatch
+class ModifierMyGeneralAttackWatchSpawnRandomEntityFromDeck extends ModifierMyGeneralAttackWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyGeneralAttackWatchSpawnRandomEntityFromDeck";
+		this.type ="ModifierMyGeneralAttackWatchSpawnRandomEntityFromDeck";
+	
+		this.prototype.manaCostLimit = 0;
+		this.prototype.spawnCount = 1;
+		this.prototype.onlyThisManaCost = false;
+	}
 
-	type:"ModifierMyGeneralAttackWatchSpawnRandomEntityFromDeck"
-	@type:"ModifierMyGeneralAttackWatchSpawnRandomEntityFromDeck"
+	static createContextObject(manaCostLimit, onlyThisManaCost, spawnCount, options) {
+		if (onlyThisManaCost == null) { onlyThisManaCost = false; }
+		if (spawnCount == null) { spawnCount = 1; }
+		const contextObject = super.createContextObject(options);
+		contextObject.manaCostLimit = manaCostLimit;
+		contextObject.spawnCount = spawnCount;
+		contextObject.onlyThisManaCost = onlyThisManaCost;
+		return contextObject;
+	}
 
-	manaCostLimit: 0
-	spawnCount: 1
-	onlyThisManaCost: false
+	onMyGeneralAttackWatch(action) {
 
-	@createContextObject: (manaCostLimit, onlyThisManaCost=false, spawnCount=1, options) ->
-		contextObject = super(options)
-		contextObject.manaCostLimit = manaCostLimit
-		contextObject.spawnCount = spawnCount
-		contextObject.onlyThisManaCost = onlyThisManaCost
-		return contextObject
+		let card;
+		const deck = this.getOwner().getDeck();
+		const drawPile = deck.getDrawPile();
+		const indexesOfMinions = [];
+		for (let i = 0; i < drawPile.length; i++) {
+			const cardIndex = drawPile[i];
+			card = this.getGameSession().getCardByIndex(cardIndex);
+			if ((card != null) && (card.getType() === CardType.Unit) && ((this.onlyThisManaCost && (card.getManaCost() === this.manaCostLimit)) || (!this.onlyThisManaCost && (card.getManaCost() <= this.manaCostLimit)))) {
+				indexesOfMinions.push(i);
+			}
+		}
 
-	onMyGeneralAttackWatch: (action) ->
+		if (indexesOfMinions.length > 0) {
+			const indexOfCardInDeck = indexesOfMinions[this.getGameSession().getRandomIntegerForExecution(indexesOfMinions.length)];
+			const cardIndexToDraw = drawPile[indexOfCardInDeck];
+			card = this.getGameSession().getCardByIndex(cardIndexToDraw);
 
-		deck = @getOwner().getDeck()
-		drawPile = deck.getDrawPile()
-		indexesOfMinions = []
-		for cardIndex, i in drawPile
-			card = @getGameSession().getCardByIndex(cardIndex)
-			if card? and card.getType() == CardType.Unit and ((@onlyThisManaCost and card.getManaCost() == @manaCostLimit) or (!@onlyThisManaCost and card.getManaCost() <= @manaCostLimit))
-				indexesOfMinions.push(i)
+			let spawnLocation = null;
+			const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), CONFIG.PATTERN_3x3, card);
+			if ((validSpawnLocations != null ? validSpawnLocations.length : undefined) > 0) {
+				spawnLocation = validSpawnLocations[this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length)];
 
-		if indexesOfMinions.length > 0
-			indexOfCardInDeck = indexesOfMinions[@getGameSession().getRandomIntegerForExecution(indexesOfMinions.length)]
-			cardIndexToDraw = drawPile[indexOfCardInDeck]
-			card = @getGameSession().getCardByIndex(cardIndexToDraw)
-
-			spawnLocation = null
-			validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(@getGameSession(), @getCard().getPosition(), CONFIG.PATTERN_3x3, card)
-			if validSpawnLocations?.length > 0
-				spawnLocation = validSpawnLocations[@getGameSession().getRandomIntegerForExecution(validSpawnLocations.length)]
-
-				if spawnLocation?
-					playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), spawnLocation.x, spawnLocation.y, card)
-					playCardAction.setSource(@getCard())
-					@getGameSession().executeAction(playCardAction)
+				if (spawnLocation != null) {
+					const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), spawnLocation.x, spawnLocation.y, card);
+					playCardAction.setSource(this.getCard());
+					return this.getGameSession().executeAction(playCardAction);
+				}
+			}
+		}
+	}
+}
+ModifierMyGeneralAttackWatchSpawnRandomEntityFromDeck.initClass();
 
 
-module.exports = ModifierMyGeneralAttackWatchSpawnRandomEntityFromDeck
+module.exports = ModifierMyGeneralAttackWatchSpawnRandomEntityFromDeck;

@@ -1,16 +1,26 @@
-Modifier = require './modifier'
-ModifierSummonWatchApplyModifiers = require './modifierSummonWatchApplyModifiers'
-ModifierRanged = require './modifierRanged'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierSummonWatchApplyModifiers = require('./modifierSummonWatchApplyModifiers');
+const ModifierRanged = require('./modifierRanged');
 
-class ModifierSummonWatchApplyModifiersToRanged extends ModifierSummonWatchApplyModifiers
+class ModifierSummonWatchApplyModifiersToRanged extends ModifierSummonWatchApplyModifiers {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSummonWatchApplyModifiersToRanged";
+		this.type ="ModifierSummonWatchApplyModifiersToRanged";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierSummonWatchApplyModifiersToRanged"
-	@type:"ModifierSummonWatchApplyModifiersToRanged"
 
-	fxResource: ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"]
+	getIsCardRelevantToWatcher(card) {
+		return card.hasActiveModifierClass(ModifierRanged);
+	}
+}
+ModifierSummonWatchApplyModifiersToRanged.initClass();
 
-
-	getIsCardRelevantToWatcher: (card) ->
-		return card.hasActiveModifierClass(ModifierRanged)
-
-module.exports = ModifierSummonWatchApplyModifiersToRanged
+module.exports = ModifierSummonWatchApplyModifiersToRanged;

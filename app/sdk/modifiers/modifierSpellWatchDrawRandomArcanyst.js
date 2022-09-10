@@ -1,30 +1,44 @@
-Modifier = require './modifier'
-ModifierSpellWatch = require './modifierSpellWatch'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-Races = require 'app/sdk/cards/racesLookup'
-GameFormat = require 'app/sdk/gameFormat'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierSpellWatch = require('./modifierSpellWatch');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const Races = require('app/sdk/cards/racesLookup');
+const GameFormat = require('app/sdk/gameFormat');
 
-class ModifierSpellWatchDrawRandomArcanyst extends ModifierSpellWatch
+class ModifierSpellWatchDrawRandomArcanyst extends ModifierSpellWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSpellWatchDrawRandomArcanyst";
+		this.type ="ModifierSpellWatchDrawRandomArcanyst";
+	
+		this.modifierName ="Spell Watch";
+		this.description = "Whenever you cast a spell, draw a random Arcanyst";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch"];
+	}
 
-	type:"ModifierSpellWatchDrawRandomArcanyst"
-	@type:"ModifierSpellWatchDrawRandomArcanyst"
+	onSpellWatch(action) {
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			let arcanystCards = [];
+			if (this.getGameSession().getGameFormat() === GameFormat.Standard) {
+				arcanystCards = this.getGameSession().getCardCaches().getIsLegacy(false).getRace(Races.Arcanyst).getIsToken(false).getIsHiddenInCollection(false).getIsPrismatic(false).getIsSkinned(false).getCards();
+			} else {
+				arcanystCards = this.getGameSession().getCardCaches().getRace(Races.Arcanyst).getIsToken(false).getIsHiddenInCollection(false).getIsPrismatic(false).getIsSkinned(false).getCards();
+			}
+			if (arcanystCards.length > 0) {
+				const arcanystCard = arcanystCards[this.getGameSession().getRandomIntegerForExecution(arcanystCards.length)];
+				const cardData = arcanystCard.createNewCardData();
+				const a = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), cardData);
+				return this.getGameSession().executeAction(a);
+			}
+		}
+	}
+}
+ModifierSpellWatchDrawRandomArcanyst.initClass();
 
-	@modifierName:"Spell Watch"
-	@description: "Whenever you cast a spell, draw a random Arcanyst"
-
-	fxResource: ["FX.Modifiers.ModifierSpellWatch"]
-
-	onSpellWatch: (action) ->
-		if @getGameSession().getIsRunningAsAuthoritative()
-			arcanystCards = []
-			if @getGameSession().getGameFormat() is GameFormat.Standard
-				arcanystCards = @getGameSession().getCardCaches().getIsLegacy(false).getRace(Races.Arcanyst).getIsToken(false).getIsHiddenInCollection(false).getIsPrismatic(false).getIsSkinned(false).getCards()
-			else
-				arcanystCards = @getGameSession().getCardCaches().getRace(Races.Arcanyst).getIsToken(false).getIsHiddenInCollection(false).getIsPrismatic(false).getIsSkinned(false).getCards()
-			if arcanystCards.length > 0
-				arcanystCard = arcanystCards[@getGameSession().getRandomIntegerForExecution(arcanystCards.length)]
-				cardData = arcanystCard.createNewCardData()
-				a = new PutCardInHandAction(@getGameSession(), @getCard().getOwnerId(), cardData)
-				@getGameSession().executeAction(a)
-
-module.exports = ModifierSpellWatchDrawRandomArcanyst
+module.exports = ModifierSpellWatchDrawRandomArcanyst;

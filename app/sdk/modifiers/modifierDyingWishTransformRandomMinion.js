@@ -1,62 +1,87 @@
-ModifierDyingWish = require './modifierDyingWish'
-CardType = require 'app/sdk/cards/cardType'
-RemoveAction = require 'app/sdk/actions/removeAction'
-PlayCardAsTransformAction = require 'app/sdk/actions/playCardAsTransformAction'
-ModifierTransformed = require 'app/sdk/modifiers/modifierTransformed'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierDyingWish = require('./modifierDyingWish');
+const CardType = require('app/sdk/cards/cardType');
+const RemoveAction = require('app/sdk/actions/removeAction');
+const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
+const ModifierTransformed = require('app/sdk/modifiers/modifierTransformed');
 
-class ModifierDyingWishTransformRandomMinion extends ModifierDyingWish
+class ModifierDyingWishTransformRandomMinion extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWishTransformRandomMinion";
+		this.type ="ModifierDyingWishTransformRandomMinion";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericBuff"];
+	
+		this.prototype.minionToTransformTo = null;
+		this.prototype.includeAllies = true;
+		this.prototype.includeEnemies = true;
+		this.prototype.race = null;
+	}
 
-	type:"ModifierDyingWishTransformRandomMinion"
-	@type:"ModifierDyingWishTransformRandomMinion"
+	static createContextObject(minionToTransformTo, includeAllies, includeEnemies, race, options) {
+		if (includeAllies == null) { includeAllies = true; }
+		if (includeEnemies == null) { includeEnemies = true; }
+		const contextObject = super.createContextObject(options);
+		contextObject.minionToTransformTo = minionToTransformTo;
+		contextObject.includeAllies = includeAllies;
+		contextObject.includeEnemies = includeEnemies;
+		contextObject.race = race;
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericBuff"]
+	onDyingWish(action) {
 
-	minionToTransformTo: null
-	includeAllies: true
-	includeEnemies: true
-	race: null
+		if (this.minionToTransformTo != null) {
+			const potentialUnits = [];
+			// find all potential minions
+			for (let unit of Array.from(this.getGameSession().getBoard().getUnits())) {
+				if (unit != null) {
+					if (this.includeAllies) {
+						if (unit.getIsSameTeamAs(this.getCard()) && !unit.getIsGeneral() && this.getGameSession().getCanCardBeScheduledForRemoval(unit) && ((this.race == null) || unit.getBelongsToTribe(this.race))) {
+							potentialUnits.push(unit);
+						}
+					}
 
-	@createContextObject: (minionToTransformTo, includeAllies=true, includeEnemies=true, race, options) ->
-		contextObject = super(options)
-		contextObject.minionToTransformTo = minionToTransformTo
-		contextObject.includeAllies = includeAllies
-		contextObject.includeEnemies = includeEnemies
-		contextObject.race = race
-		return contextObject
+					if (this.includeEnemies) {
+						if (!unit.getIsSameTeamAs(this.getCard()) && !unit.getIsGeneral() && this.getGameSession().getCanCardBeScheduledForRemoval(unit) && ((this.race == null) || unit.getBelongsToTribe(this.race))) {
+							potentialUnits.push(unit);
+						}
+					}
+				}
+			}
 
-	onDyingWish: (action) ->
+			// if we found at least one minion on the board
+			if (potentialUnits.length > 0) {
+				// pick one
+				const existingEntity = potentialUnits[this.getGameSession().getRandomIntegerForExecution(potentialUnits.length)];
+				const targetPosition = existingEntity.getPosition();
 
-		if @minionToTransformTo?
-			potentialUnits = []
-			# find all potential minions
-			for unit in @getGameSession().getBoard().getUnits()
-				if unit?
-					if @includeAllies
-						if unit.getIsSameTeamAs(@getCard()) and !unit.getIsGeneral() and @getGameSession().getCanCardBeScheduledForRemoval(unit) and (!(@race?) or unit.getBelongsToTribe(@race))
-							potentialUnits.push(unit)
+				// remove it
+				const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
+				removeOriginalEntityAction.setOwnerId(this.getCard().getOwnerId());
+				removeOriginalEntityAction.setTarget(existingEntity);
+				this.getGameSession().executeAction(removeOriginalEntityAction);
 
-					if @includeEnemies
-						if !unit.getIsSameTeamAs(@getCard()) and !unit.getIsGeneral() and @getGameSession().getCanCardBeScheduledForRemoval(unit) and (!(@race?) or unit.getBelongsToTribe(@race))
-							potentialUnits.push(unit)
+				//transform it
+				if (existingEntity != null) {
+					const cardData = this.minionToTransformTo;
+					if (cardData.additionalInherentModifiersContextObjects == null) { cardData.additionalInherentModifiersContextObjects = []; }
+					cardData.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(existingEntity.getExhausted(), existingEntity.getMovesMade(), existingEntity.getAttacksMade()));
+					const spawnEntityAction = new PlayCardAsTransformAction(this.getCard().getGameSession(), this.getCard().getOwnerId(), targetPosition.x, targetPosition.y, cardData);
+					return this.getGameSession().executeAction(spawnEntityAction);
+				}
+			}
+		}
+	}
+}
+ModifierDyingWishTransformRandomMinion.initClass();
 
-			# if we found at least one minion on the board
-			if potentialUnits.length > 0
-				# pick one
-				existingEntity = potentialUnits[@getGameSession().getRandomIntegerForExecution(potentialUnits.length)]
-				targetPosition = existingEntity.getPosition()
-
-				# remove it
-				removeOriginalEntityAction = new RemoveAction(@getGameSession())
-				removeOriginalEntityAction.setOwnerId(@getCard().getOwnerId())
-				removeOriginalEntityAction.setTarget(existingEntity)
-				@getGameSession().executeAction(removeOriginalEntityAction)
-
-				#transform it
-				if existingEntity?
-					cardData = @minionToTransformTo
-					cardData.additionalInherentModifiersContextObjects ?= []
-					cardData.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(existingEntity.getExhausted(), existingEntity.getMovesMade(), existingEntity.getAttacksMade()))
-					spawnEntityAction = new PlayCardAsTransformAction(@getCard().getGameSession(), @getCard().getOwnerId(), targetPosition.x, targetPosition.y, cardData)
-					@getGameSession().executeAction(spawnEntityAction)
-
-module.exports = ModifierDyingWishTransformRandomMinion
+module.exports = ModifierDyingWishTransformRandomMinion;

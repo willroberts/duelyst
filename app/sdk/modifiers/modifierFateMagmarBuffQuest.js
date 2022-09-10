@@ -1,77 +1,122 @@
-ModifierFate = require './modifierFate'
-CardType = require 'app/sdk/cards/cardType'
-DieAction = require 'app/sdk/actions/dieAction'
-PlayCardFromHandAction = require 'app/sdk/actions/playCardFromHandAction'
-PlaySignatureCardAction = require 'app/sdk/actions/playSignatureCardAction'
-ApplyModifierAction = require 'app/sdk/actions/applyModifierAction'
-ModifierQuestStatusMagmar = require './modifierQuestStatusMagmar'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierFate = require('./modifierFate');
+const CardType = require('app/sdk/cards/cardType');
+const DieAction = require('app/sdk/actions/dieAction');
+const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
+const PlaySignatureCardAction = require('app/sdk/actions/playSignatureCardAction');
+const ApplyModifierAction = require('app/sdk/actions/applyModifierAction');
+const ModifierQuestStatusMagmar = require('./modifierQuestStatusMagmar');
+const _ = require('underscore');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierFateMagmarBuffQuest extends ModifierFate
+class ModifierFateMagmarBuffQuest extends ModifierFate {
+	static initClass() {
+	
+		this.prototype.type ="ModifierFateMagmarBuffQuest";
+		this.type ="ModifierFateMagmarBuffQuest";
+	
+		this.prototype.attackBuffCount = 1;
+	}
 
-	type:"ModifierFateMagmarBuffQuest"
-	@type:"ModifierFateMagmarBuffQuest"
+	static createContextObject(attackBuffCount, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.attackBuffCount = attackBuffCount;
+		return contextObject;
+	}
 
-	attackBuffCount: 1
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
+		p.buffSpellActionIndices = null;
+		return p;
+	}
 
-	@createContextObject: (attackBuffCount, options) ->
-		contextObject = super(options)
-		contextObject.attackBuffCount = attackBuffCount
-		return contextObject
+	getNumBuffSpells() {
+		if ((this._private.buffSpellActionIndices == null)) {
+			this._private.buffSpellActionIndices = [];
+			this.checkFate(this.getGameSession().filterActions(this.getIsActionRelevant.bind(this)));
+		}
+		return this._private.buffSpellActionIndices;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
-		p.buffSpellActionIndices = null
-		return p
+	updateFateCondition(action) {
+		if (action != null) {
+			if (this.getIsActionRelevant(action)) {
+				if (!_.contains(this.getNumBuffSpells(), action.getRootAction().getIndex())) {
+					this.getNumBuffSpells().push(action.getRootAction().getIndex());
+					if (this.getNumBuffSpells().length < this.attackBuffCount) {
+						this.removeQuestStatusModifier();
+						this.applyQuestStatusModifier(false);
+					}
+				}
+			}
+		}
 
-	getNumBuffSpells: () ->
-		if !@_private.buffSpellActionIndices?
-			@_private.buffSpellActionIndices = []
-			@checkFate(@getGameSession().filterActions(@getIsActionRelevant.bind(@)))
-		return @_private.buffSpellActionIndices
+		if (this.getNumBuffSpells().length >= this.attackBuffCount) {
+			this._private.fateFulfilled = true;
+			super.updateFateCondition(); // unlock the card
+			this.removeQuestStatusModifier();
+			return this.applyQuestStatusModifier(true);
+		}
+	}
 
-	updateFateCondition: (action) ->
-		if action?
-			if @getIsActionRelevant(action)
-				if ! _.contains(@getNumBuffSpells(), action.getRootAction().getIndex())
-					@getNumBuffSpells().push(action.getRootAction().getIndex())
-					if @getNumBuffSpells().length < @attackBuffCount
-						@removeQuestStatusModifier()
-						@applyQuestStatusModifier(false)
+	getIsActionRelevant(action) {
+		if (action.getOwnerId() === this.getOwnerId()) {
+			if ((action.getRootAction() instanceof PlayCardFromHandAction || action.getRootAction() instanceof PlaySignatureCardAction) && (__guard__(action.getRootAction().getCard(), x => x.type) === CardType.Spell)) {
+				if (action instanceof ApplyModifierAction && action.getModifier().getBuffsAttribute("atk") && !__guardMethod__(action.getTarget(), 'getIsGeneral', o => o.getIsGeneral())) {
+					const modifier = action.getModifier();
+					if (modifier.getBuffsAttribute("atk") && (modifier.attributeBuffs["atk"] > 0) && !modifier.getRebasesAttribute("atk") && !modifier.getBuffsAttributeAbsolutely("atk")) {
+						if (__guard__(action.getTarget().getAppliedToBoardByAction(), x1 => x1.getRootAction()) !== action.getRootAction()) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
 
-		if @getNumBuffSpells().length >= @attackBuffCount
-			@_private.fateFulfilled = true
-			super() # unlock the card
-			@removeQuestStatusModifier()
-			@applyQuestStatusModifier(true)
+	onActivate() {
+		super.onActivate();
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		if (!general.hasActiveModifierClass(ModifierQuestStatusMagmar)) {
+			return this.applyQuestStatusModifier(false);
+		}
+	}
 
-	getIsActionRelevant: (action) ->
-		if action.getOwnerId() == @getOwnerId()
-			if (action.getRootAction() instanceof PlayCardFromHandAction or action.getRootAction() instanceof PlaySignatureCardAction) and action.getRootAction().getCard()?.type is CardType.Spell
-				if action instanceof ApplyModifierAction and action.getModifier().getBuffsAttribute("atk") and !action.getTarget().getIsGeneral?()
-					modifier = action.getModifier()
-					if modifier.getBuffsAttribute("atk") and modifier.attributeBuffs["atk"] > 0 and !modifier.getRebasesAttribute("atk") and !modifier.getBuffsAttributeAbsolutely("atk")
-						if action.getTarget().getAppliedToBoardByAction()?.getRootAction() isnt action.getRootAction()
-							return true
-		return false
+	removeQuestStatusModifier() {
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		if (general.hasActiveModifierClass(ModifierQuestStatusMagmar)) {
+				return Array.from(general.getModifiersByClass(ModifierQuestStatusMagmar)).map((mod) =>
+					this.getGameSession().removeModifier(mod));
+			}
+	}
 
-	onActivate: () ->
-		super()
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		if !general.hasActiveModifierClass(ModifierQuestStatusMagmar)
-			@applyQuestStatusModifier(false)
+	applyQuestStatusModifier(questCompleted) {
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		const countModifier = ModifierQuestStatusMagmar.createContextObject(questCompleted, this.getNumBuffSpells().length);
+		return this.getGameSession().applyModifierContextObject(countModifier, general);
+	}
+}
+ModifierFateMagmarBuffQuest.initClass();
 
-	removeQuestStatusModifier: () ->
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		if general.hasActiveModifierClass(ModifierQuestStatusMagmar)
-				for mod in general.getModifiersByClass(ModifierQuestStatusMagmar)
-					@getGameSession().removeModifier(mod)
+module.exports = ModifierFateMagmarBuffQuest;
 
-	applyQuestStatusModifier: (questCompleted) ->
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		countModifier = ModifierQuestStatusMagmar.createContextObject(questCompleted, @getNumBuffSpells().length)
-		@getGameSession().applyModifierContextObject(countModifier, general)
-
-module.exports = ModifierFateMagmarBuffQuest
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}
+function __guardMethod__(obj, methodName, transform) {
+  if (typeof obj !== 'undefined' && obj !== null && typeof obj[methodName] === 'function') {
+    return transform(obj, methodName);
+  } else {
+    return undefined;
+  }
+}

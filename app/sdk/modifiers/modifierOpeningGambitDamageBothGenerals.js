@@ -1,50 +1,64 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
-Modifier = require './modifier'
-CONFIG = require 'app/common/config'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
+const Modifier = require('./modifier');
+const CONFIG = require('app/common/config');
 
 
-class ModifierOpeningGambitDamageBothGenerals extends ModifierOpeningGambit
+class ModifierOpeningGambitDamageBothGenerals extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitDamageBothGenerals";
+		this.type = "ModifierOpeningGambitDamageBothGenerals";
+	
+		this.modifierName = "Opening Gambit";
+		this.description = "Deal %X damage to BOTH Generals";
+	
+		this.prototype.damageAmount = 0;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericDamageFire"];
+	}
 
-	type: "ModifierOpeningGambitDamageBothGenerals"
-	@type: "ModifierOpeningGambitDamageBothGenerals"
+	static createContextObject(damageAmount, options) {
+		const contextObject = super.createContextObject();
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	@modifierName: "Opening Gambit"
-	@description: "Deal %X damage to BOTH Generals"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.damageAmount);
+		} else {
+			return this.description;
+		}
+	}
 
-	damageAmount: 0
+	onOpeningGambit() {
+		const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericDamageFire"]
+		const damageAction = new DamageAction(this.getGameSession());
+		damageAction.setOwnerId(this.getCard().getOwnerId());
+		damageAction.setSource(this.getCard());
+		damageAction.setTarget(general);
+		damageAction.setDamageAmount(this.damageAmount);
+		this.getGameSession().executeAction(damageAction);
 
-	@createContextObject: (damageAmount, options) ->
-		contextObject = super()
-		contextObject.damageAmount = damageAmount
-		return contextObject
+		const enemyGeneral = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.damageAmount
-		else
-			return @description
+		const enemyDamageAction = new DamageAction(this.getGameSession());
+		enemyDamageAction.setOwnerId(this.getCard().getOwnerId());
+		enemyDamageAction.setSource(this.getCard());
+		enemyDamageAction.setTarget(enemyGeneral);
+		enemyDamageAction.setDamageAmount(this.damageAmount);
+		return this.getGameSession().executeAction(enemyDamageAction);
+	}
+}
+ModifierOpeningGambitDamageBothGenerals.initClass();
 
-	onOpeningGambit: () ->
-		general = @getCard().getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-
-		damageAction = new DamageAction(this.getGameSession())
-		damageAction.setOwnerId(@getCard().getOwnerId())
-		damageAction.setSource(@getCard())
-		damageAction.setTarget(general)
-		damageAction.setDamageAmount(@damageAmount)
-		@getGameSession().executeAction(damageAction)
-
-		enemyGeneral = @getCard().getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-
-		enemyDamageAction = new DamageAction(this.getGameSession())
-		enemyDamageAction.setOwnerId(@getCard().getOwnerId())
-		enemyDamageAction.setSource(@getCard())
-		enemyDamageAction.setTarget(enemyGeneral)
-		enemyDamageAction.setDamageAmount(@damageAmount)
-		@getGameSession().executeAction(enemyDamageAction)
-
-module.exports = ModifierOpeningGambitDamageBothGenerals
+module.exports = ModifierOpeningGambitDamageBothGenerals;

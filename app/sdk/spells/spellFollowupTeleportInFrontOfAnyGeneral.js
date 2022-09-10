@@ -1,24 +1,35 @@
-SpellFollowupTeleport = require './spellFollowupTeleport'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellFollowupTeleport = require('./spellFollowupTeleport');
 
-class SpellFollowupTeleportInFrontOfAnyGeneral extends SpellFollowupTeleport
+class SpellFollowupTeleportInFrontOfAnyGeneral extends SpellFollowupTeleport {
 
-	getFollowupSourcePattern: () ->
-		board = @getGameSession().getBoard()
-		inFrontOfPositions = []
-		for unit in board.getUnits()
-			# apply in front of any General
-			playerOffset = 0
-			if unit.getIsGeneral()
-				if unit.isOwnedByPlayer1() then playerOffset = 1 else playerOffset = -1
-				entity = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-				inFrontOfPosition = {x:unit.getPosition().x+playerOffset, y:unit.getPosition().y}
-				if board.isOnBoard(inFrontOfPosition) and !board.getObstructionAtPositionForEntity(inFrontOfPosition, entity)
-					inFrontOfPositions.push(inFrontOfPosition)
+	getFollowupSourcePattern() {
+		const board = this.getGameSession().getBoard();
+		const inFrontOfPositions = [];
+		for (let unit of Array.from(board.getUnits())) {
+			// apply in front of any General
+			let playerOffset = 0;
+			if (unit.getIsGeneral()) {
+				if (unit.isOwnedByPlayer1()) { playerOffset = 1; } else { playerOffset = -1; }
+				const entity = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+				const inFrontOfPosition = {x:unit.getPosition().x+playerOffset, y:unit.getPosition().y};
+				if (board.isOnBoard(inFrontOfPosition) && !board.getObstructionAtPositionForEntity(inFrontOfPosition, entity)) {
+					inFrontOfPositions.push(inFrontOfPosition);
+				}
+			}
+		}
 
-		paternInFrontOfGenerals = []
-		for position in inFrontOfPositions
-			paternInFrontOfGenerals.push({x: position.x - @getFollowupSourcePosition().x, y: position.y - @getFollowupSourcePosition().y})
+		const paternInFrontOfGenerals = [];
+		for (let position of Array.from(inFrontOfPositions)) {
+			paternInFrontOfGenerals.push({x: position.x - this.getFollowupSourcePosition().x, y: position.y - this.getFollowupSourcePosition().y});
+		}
 
-		return paternInFrontOfGenerals
+		return paternInFrontOfGenerals;
+	}
+}
 
-module.exports = SpellFollowupTeleportInFrontOfAnyGeneral
+module.exports = SpellFollowupTeleportInFrontOfAnyGeneral;

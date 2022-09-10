@@ -1,27 +1,40 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-ModifierDyingWishDagona = require './modifierDyingWishDagona'
-RemoveAction = require 'app/sdk/actions/removeAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const ModifierDyingWishDagona = require('./modifierDyingWishDagona');
+const RemoveAction = require('app/sdk/actions/removeAction');
 
-class ModifierOpeningGambitDagona extends ModifierOpeningGambit
+class ModifierOpeningGambitDagona extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitDagona";
+		this.type ="ModifierOpeningGambitDagona";
+	}
 
-	type:"ModifierOpeningGambitDagona"
-	@type:"ModifierOpeningGambitDagona"
+	onOpeningGambit() {
+		// consume original unit at spawn position (remove it from board)
+		if (!(this.getGameSession().getBoard().getCardAtPosition(this.getCard().getPosition()) === this.getCard())) {
+			const originalCardAtPosition = this.getGameSession().getBoard().getCardAtPosition(this.getCard().getPosition());
+			const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
+			removeOriginalEntityAction.setOwnerId(this.getOwnerId());
+			removeOriginalEntityAction.setTarget(originalCardAtPosition);
 
-	onOpeningGambit: () ->
-		# consume original unit at spawn position (remove it from board)
-		if !(@getGameSession().getBoard().getCardAtPosition(@getCard().getPosition()) == @getCard())
-			originalCardAtPosition = @getGameSession().getBoard().getCardAtPosition(@getCard().getPosition())
-			removeOriginalEntityAction = new RemoveAction(@getGameSession())
-			removeOriginalEntityAction.setOwnerId(@getOwnerId())
-			removeOriginalEntityAction.setTarget(originalCardAtPosition)
+			// store data of the consumed unit
+			if (this.getCard().hasModifierClass(ModifierDyingWishDagona)) {
+				const dyingWishModifier = this.getCard().getModifiersByClass(ModifierDyingWishDagona)[0];
+				dyingWishModifier.setCardDataOrIndexToSpawn(originalCardAtPosition.createNewCardData());
+				dyingWishModifier.setSpawnOwnerId(originalCardAtPosition.getOwnerId());
+			}
 
-			# store data of the consumed unit
-			if @getCard().hasModifierClass(ModifierDyingWishDagona)
-				dyingWishModifier = @getCard().getModifiersByClass(ModifierDyingWishDagona)[0]
-				dyingWishModifier.setCardDataOrIndexToSpawn(originalCardAtPosition.createNewCardData())
-				dyingWishModifier.setSpawnOwnerId(originalCardAtPosition.getOwnerId())
+			// execute remove original unit from board
+			return this.getGameSession().executeAction(removeOriginalEntityAction);
+		}
+	}
+}
+ModifierOpeningGambitDagona.initClass();
 
-			# execute remove original unit from board
-			@getGameSession().executeAction(removeOriginalEntityAction)
-
-module.exports = ModifierOpeningGambitDagona
+module.exports = ModifierOpeningGambitDagona;

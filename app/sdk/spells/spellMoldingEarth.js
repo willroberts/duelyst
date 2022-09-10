@@ -1,30 +1,38 @@
-Logger = require 'app/common/logger'
-SpellSpawnEntity = require './spellSpawnEntity.coffee'
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-UtilsGameSession = require '../../common/utils/utils_game_session.coffee'
-CONFIG = require 'app/common/config'
-ModifierBackstab = require 'app/sdk/modifiers/modifierBackstab'
-ModifierBlastAttack = require 'app/sdk/modifiers/modifierBlastAttack'
-ModifierTranscendance = require 'app/sdk/modifiers/modifierTranscendance'
-ModifierFlying = require 'app/sdk/modifiers/modifierFlying'
-ModifierForcefield = require 'app/sdk/modifiers/modifierForcefield'
-ModifierFrenzy = require 'app/sdk/modifiers/modifierFrenzy'
-ModifierGrow = require 'app/sdk/modifiers/modifierGrow'
-ModifierProvoke = require 'app/sdk/modifiers/modifierProvoke'
-ModifierRanged = require 'app/sdk/modifiers/modifierRanged'
-ModifierRebirth = require 'app/sdk/modifiers/modifierRebirth'
-ModifierFirstBlood = require 'app/sdk/modifiers/modifierFirstBlood'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const SpellSpawnEntity = require('./spellSpawnEntity.coffee');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
+const CONFIG = require('app/common/config');
+const ModifierBackstab = require('app/sdk/modifiers/modifierBackstab');
+const ModifierBlastAttack = require('app/sdk/modifiers/modifierBlastAttack');
+const ModifierTranscendance = require('app/sdk/modifiers/modifierTranscendance');
+const ModifierFlying = require('app/sdk/modifiers/modifierFlying');
+const ModifierForcefield = require('app/sdk/modifiers/modifierForcefield');
+const ModifierFrenzy = require('app/sdk/modifiers/modifierFrenzy');
+const ModifierGrow = require('app/sdk/modifiers/modifierGrow');
+const ModifierProvoke = require('app/sdk/modifiers/modifierProvoke');
+const ModifierRanged = require('app/sdk/modifiers/modifierRanged');
+const ModifierRebirth = require('app/sdk/modifiers/modifierRebirth');
+const ModifierFirstBlood = require('app/sdk/modifiers/modifierFirstBlood');
 
-class SpellMoldingEarth extends SpellSpawnEntity
+class SpellMoldingEarth extends SpellSpawnEntity {
+	static initClass() {
+	
+		this.prototype.spawnSilently = true;
+		this.prototype.numUnits = 3;
+	}
 
-	spawnSilently: true
-	numUnits: 3
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-
-		modifiersToObtain = [
+		const modifiersToObtain = [
 			ModifierFrenzy.createContextObject(),
 			ModifierFlying.createContextObject(),
 			ModifierTranscendance.createContextObject(),
@@ -33,27 +41,34 @@ class SpellMoldingEarth extends SpellSpawnEntity
 			ModifierFirstBlood.createContextObject(),
 			ModifierRebirth.createContextObject(),
 			ModifierForcefield.createContextObject()
-		]
+		];
 
-		modifierContextObject = modifiersToObtain[@getGameSession().getRandomIntegerForExecution(modifiersToObtain.length)]
+		const modifierContextObject = modifiersToObtain[this.getGameSession().getRandomIntegerForExecution(modifiersToObtain.length)];
 
-		@cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = [modifierContextObject]
+		this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = [modifierContextObject];
 
-		super(board,x,y,sourceAction)
+		return super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+	}
 
-	_findApplyEffectPositions: (position, sourceAction) ->
-		card = @getEntityToSpawn()
-		generalPosition = @getGameSession().getGeneralForPlayerId(@ownerId).getPosition()
-		numberOfApplyPositions = @numUnits
+	_findApplyEffectPositions(position, sourceAction) {
+		let applyEffectPositions;
+		const card = this.getEntityToSpawn();
+		const generalPosition = this.getGameSession().getGeneralForPlayerId(this.ownerId).getPosition();
+		const numberOfApplyPositions = this.numUnits;
 
-		if numberOfApplyPositions > 0
-			applyEffectPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), generalPosition, CONFIG.PATTERN_3x3, card, @, numberOfApplyPositions)
-		else
-			applyEffectPositions = []
+		if (numberOfApplyPositions > 0) {
+			applyEffectPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), generalPosition, CONFIG.PATTERN_3x3, card, this, numberOfApplyPositions);
+		} else {
+			applyEffectPositions = [];
+		}
 
-		return applyEffectPositions
+		return applyEffectPositions;
+	}
 
-	_postFilterPlayPositions: (validPositions) ->
-		return validPositions
+	_postFilterPlayPositions(validPositions) {
+		return validPositions;
+	}
+}
+SpellMoldingEarth.initClass();
 
-module.exports = SpellMoldingEarth
+module.exports = SpellMoldingEarth;

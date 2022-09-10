@@ -1,10 +1,15 @@
-Promise = require 'bluebird'
-i18next = require 'i18next'
-XHR = require 'i18next-xhr-backend'
-LngDetector = require 'i18next-browser-languagedetector'
-Storage = require 'app/common/storage'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Promise = require('bluebird');
+const i18next = require('i18next');
+const XHR = require('i18next-xhr-backend');
+const LngDetector = require('i18next-browser-languagedetector');
+const Storage = require('app/common/storage');
 
-options = {
+const options = {
 	whitelist: ['en', 'de'],
 	fallbackLng: 'en',
 	contextSeparator: '$',
@@ -17,23 +22,27 @@ options = {
 		lookupQuerystring: 'lng',
 		lookupLocalStorage: Storage.namespace() + '.i18nextLng',
 	}
-}
+};
 
-p = new Promise (resolve, reject) ->
+const p = new Promise(function(resolve, reject) {
 
-	preferredLanguageKey = Storage.get('preferredLanguageKey')
+	const preferredLanguageKey = Storage.get('preferredLanguageKey');
 
-	if (preferredLanguageKey != null)
-		options.lng = preferredLanguageKey
+	if (preferredLanguageKey !== null) {
+		options.lng = preferredLanguageKey;
+	}
 
-	i18next
+	return i18next
 		.use(LngDetector)
 		.use(XHR)
-		.init options, (err,t)->
-			if (err)
-				reject(err)
-			else
-				resolve(t)
+		.init(options, function(err,t){
+			if (err) {
+				return reject(err);
+			} else {
+				return resolve(t);
+			}
+	});
+});
 
 
-module.exports = p
+module.exports = p;

@@ -1,31 +1,45 @@
-Spell = require './spell'
-CardType = require 'app/sdk/cards/cardType'
-PutCardInDeckAction = require 'app/sdk/actions/putCardInDeckAction'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const PutCardInDeckAction = require('app/sdk/actions/putCardInDeckAction');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class SpellDejaVu extends Spell
+class SpellDejaVu extends Spell {
 
-	onApplyOneEffectToBoard: (board,x,y,sourceAction) ->
+	onApplyOneEffectToBoard(board,x,y,sourceAction) {
 
-		spellsPlayedToBoard = @getGameSession().getSpellsPlayed()
-		ownerId = @getOwnerId()
-		if spellsPlayedToBoard.length > 0
-			for spell in spellsPlayedToBoard by -1
-				if !spell.getIsFollowup() and spell.getOwnerId() == ownerId and !(spell is this) and !(spell.getBaseCardId() is Cards.Spell.DejaVu)
-					spellToCopy = spell
-					break
+		const spellsPlayedToBoard = this.getGameSession().getSpellsPlayed();
+		const ownerId = this.getOwnerId();
+		if (spellsPlayedToBoard.length > 0) {
+			let spellToCopy;
+			for (let i = spellsPlayedToBoard.length - 1; i >= 0; i--) {
+				const spell = spellsPlayedToBoard[i];
+				if (!spell.getIsFollowup() && (spell.getOwnerId() === ownerId) && !(spell === this) && !(spell.getBaseCardId() === Cards.Spell.DejaVu)) {
+					spellToCopy = spell;
+					break;
+				}
+			}
 
-			if spellToCopy?
-				# put fresh copy of spell into deck
-				a = new PutCardInDeckAction(@getGameSession(), ownerId, spellToCopy.createNewCardData())
-				@getGameSession().executeAction(a)
-				b = new PutCardInDeckAction(@getGameSession(), ownerId, spellToCopy.createNewCardData())
-				@getGameSession().executeAction(b)
-				c = new PutCardInDeckAction(@getGameSession(), ownerId, spellToCopy.createNewCardData())
-				@getGameSession().executeAction(c)
-				d = new PutCardInDeckAction(@getGameSession(), ownerId, spellToCopy.createNewCardData())
-				@getGameSession().executeAction(d)
-				e = new PutCardInDeckAction(@getGameSession(), ownerId, spellToCopy.createNewCardData())
-				@getGameSession().executeAction(e)
+			if (spellToCopy != null) {
+				// put fresh copy of spell into deck
+				const a = new PutCardInDeckAction(this.getGameSession(), ownerId, spellToCopy.createNewCardData());
+				this.getGameSession().executeAction(a);
+				const b = new PutCardInDeckAction(this.getGameSession(), ownerId, spellToCopy.createNewCardData());
+				this.getGameSession().executeAction(b);
+				const c = new PutCardInDeckAction(this.getGameSession(), ownerId, spellToCopy.createNewCardData());
+				this.getGameSession().executeAction(c);
+				const d = new PutCardInDeckAction(this.getGameSession(), ownerId, spellToCopy.createNewCardData());
+				this.getGameSession().executeAction(d);
+				const e = new PutCardInDeckAction(this.getGameSession(), ownerId, spellToCopy.createNewCardData());
+				return this.getGameSession().executeAction(e);
+			}
+		}
+	}
+}
 
-module.exports = SpellDejaVu
+module.exports = SpellDejaVu;

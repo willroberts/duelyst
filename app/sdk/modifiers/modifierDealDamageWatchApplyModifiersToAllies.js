@@ -1,31 +1,61 @@
-ModifierDealDamageWatch = require './modifierDealDamageWatch'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
 
-class ModifierDealDamageWatchApplyModifiersToAllies extends ModifierDealDamageWatch
+class ModifierDealDamageWatchApplyModifiersToAllies extends ModifierDealDamageWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDealDamageWatchApplyModifiersToAllies";
+		this.type ="ModifierDealDamageWatchApplyModifiersToAllies";
+	
+		this.prototype.modifierContextObjects = null;
+		this.prototype.includeGeneral = false;
+	}
 
-	type:"ModifierDealDamageWatchApplyModifiersToAllies"
-	@type:"ModifierDealDamageWatchApplyModifiersToAllies"
+	static createContextObject(modifiers, includeGeneral, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifierContextObjects = modifiers;
+		contextObject.includeGeneral = includeGeneral;
+		return contextObject;
+	}
 
-	modifierContextObjects: null
-	includeGeneral: false
+	onAfterDealDamage(action) {
 
-	@createContextObject: (modifiers, includeGeneral, options) ->
-		contextObject = super(options)
-		contextObject.modifierContextObjects = modifiers
-		contextObject.includeGeneral = includeGeneral
-		return contextObject
+		//apply to self if not a General
+		let modifier;
+		if (!this.getCard().getIsGeneral()) {
+			for (modifier of Array.from(this.modifierContextObjects)) {
+				this.getGameSession().applyModifierContextObject(modifier, this.getCard());
+			}
+		}
 
-	onAfterDealDamage: (action) ->
+		//apply to friendly minions and General
+		const friendlyEntities = this.getGameSession().getBoard().getFriendlyEntitiesForEntity(this.getCard());
+		return (() => {
+			const result = [];
+			for (var entity of Array.from(friendlyEntities)) {
+				if (!entity.getIsGeneral() || this.includeGeneral) {
+					result.push((() => {
+						const result1 = [];
+						for (modifier of Array.from(this.modifierContextObjects)) {
+							result1.push(this.getGameSession().applyModifierContextObject(modifier, entity));
+						}
+						return result1;
+					})());
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
+ModifierDealDamageWatchApplyModifiersToAllies.initClass();
 
-		#apply to self if not a General
-		if !@getCard().getIsGeneral()
-			for modifier in @modifierContextObjects
-				@getGameSession().applyModifierContextObject(modifier, @getCard())
-
-		#apply to friendly minions and General
-		friendlyEntities = @getGameSession().getBoard().getFriendlyEntitiesForEntity(@getCard())
-		for entity in friendlyEntities
-			if !entity.getIsGeneral() or @includeGeneral
-				for modifier in @modifierContextObjects
-					@getGameSession().applyModifierContextObject(modifier, entity)
-
-module.exports = ModifierDealDamageWatchApplyModifiersToAllies
+module.exports = ModifierDealDamageWatchApplyModifiersToAllies;

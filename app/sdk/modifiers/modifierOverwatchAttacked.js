@@ -1,21 +1,34 @@
-ModifierOverwatch = require './modifierOverwatch'
-AttackAction = require './../actions/attackAction'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOverwatch = require('./modifierOverwatch');
+const AttackAction = require('./../actions/attackAction');
 
-class ModifierOverwatchAttacked extends ModifierOverwatch
+class ModifierOverwatchAttacked extends ModifierOverwatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOverwatchAttacked";
+		this.type ="ModifierOverwatchAttacked";
+	
+		this.description = "When this minion is attacked, %X";
+	}
 
-	type:"ModifierOverwatchAttacked"
-	@type:"ModifierOverwatchAttacked"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject != null) {
+			return this.description.replace(/%X/, modifierContextObject.description);
+		} else {
+			return super.getDescription();
+		}
+	}
 
-	@description: "When this minion is attacked, %X"
+	getIsActionRelevant(action) {
+		// watch for explicit attacks on this unit
+		return action instanceof AttackAction && !action.getIsImplicit() && (action.getTarget() === this.getCard());
+	}
+}
+ModifierOverwatchAttacked.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject?
-			return @description.replace /%X/, modifierContextObject.description
-		else
-			return super()
-
-	getIsActionRelevant: (action) ->
-		# watch for explicit attacks on this unit
-		return action instanceof AttackAction and !action.getIsImplicit() and action.getTarget() == @getCard()
-
-module.exports = ModifierOverwatchAttacked
+module.exports = ModifierOverwatchAttacked;

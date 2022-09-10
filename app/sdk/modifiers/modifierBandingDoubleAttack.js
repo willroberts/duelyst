@@ -1,24 +1,37 @@
-CONFIG = 			require 'app/common/config'
-ModifierBanding = 	require './modifierBanding'
-ModifierBandedDoubleAttack = 		require './modifierBandedDoubleAttack'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = 			require('app/common/config');
+const ModifierBanding = 	require('./modifierBanding');
+const ModifierBandedDoubleAttack = 		require('./modifierBandedDoubleAttack');
 
-class ModifierBandingDoubleAttack extends ModifierBanding
+class ModifierBandingDoubleAttack extends ModifierBanding {
+	static initClass() {
+	
+		this.prototype.type ="ModifierBandingDoubleAttack";
+		this.type ="ModifierBandingDoubleAttack";
+	
+		this.prototype.maxStacks = 1;
+	
+		this.description = "Double this minion's Attack at the end of your turn";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierZeal", "FX.Modifiers.ModifierZealDoubleAttack"];
+	}
 
-	type:"ModifierBandingDoubleAttack"
-	@type:"ModifierBandingDoubleAttack"
+	static createContextObject(attackBuff, options) {
+		if (attackBuff == null) { attackBuff = 0; }
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		contextObject.appliedName = "Zeal: Lion\'s Growth";
+		const bandedContextObject = ModifierBandedDoubleAttack.createContextObject(attackBuff);
+		bandedContextObject.appliedName = "Zealed: Lion\'s Growth";
+		contextObject.modifiersContextObjects = [bandedContextObject];
+		return contextObject;
+	}
+}
+ModifierBandingDoubleAttack.initClass();
 
-	maxStacks: 1
-
-	@description: "Double this minion's Attack at the end of your turn"
-
-	fxResource: ["FX.Modifiers.ModifierZeal", "FX.Modifiers.ModifierZealDoubleAttack"]
-
-	@createContextObject: (attackBuff=0, options = undefined) ->
-		contextObject = super(options)
-		contextObject.appliedName = "Zeal: Lion\'s Growth"
-		bandedContextObject = ModifierBandedDoubleAttack.createContextObject(attackBuff)
-		bandedContextObject.appliedName = "Zealed: Lion\'s Growth"
-		contextObject.modifiersContextObjects = [bandedContextObject]
-		return contextObject
-
-module.exports = ModifierBandingDoubleAttack
+module.exports = ModifierBandingDoubleAttack;

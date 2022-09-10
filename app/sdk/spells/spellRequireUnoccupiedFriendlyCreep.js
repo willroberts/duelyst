@@ -1,21 +1,31 @@
-Spell = require './spell'
-CardType = require 'app/sdk/cards/cardType'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class SpellRequireUnoccupiedFriendlyCreep extends Spell
+class SpellRequireUnoccupiedFriendlyCreep extends Spell {
 
-	_postFilterPlayPositions: (spellPositions) ->
+	_postFilterPlayPositions(spellPositions) {
 
-		board = @getGameSession().getBoard()
+		const board = this.getGameSession().getBoard();
 
-		for tile in board.getTiles(true, false)
-			if tile.getOwnerId() == @getOwnerId() and tile.getBaseCardId() == Cards.Tile.Shadow
-				tilePosition = {x:tile.getPosition().x, y:tile.getPosition().y}
-				if !board.getCardAtPosition(tilePosition, CardType.Unit)
-					#there is at least 1 unoccupied friendly creep tile
-					return super(spellPositions)
+		for (let tile of Array.from(board.getTiles(true, false))) {
+			if ((tile.getOwnerId() === this.getOwnerId()) && (tile.getBaseCardId() === Cards.Tile.Shadow)) {
+				const tilePosition = {x:tile.getPosition().x, y:tile.getPosition().y};
+				if (!board.getCardAtPosition(tilePosition, CardType.Unit)) {
+					//there is at least 1 unoccupied friendly creep tile
+					return super._postFilterPlayPositions(spellPositions);
+				}
+			}
+		}
 
-		#No unoccupied friendly creep
-		return []
+		//No unoccupied friendly creep
+		return [];
+	}
+}
 
-module.exports = SpellRequireUnoccupiedFriendlyCreep
+module.exports = SpellRequireUnoccupiedFriendlyCreep;

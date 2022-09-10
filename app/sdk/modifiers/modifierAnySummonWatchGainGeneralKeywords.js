@@ -1,122 +1,174 @@
-CardType = require 'app/sdk/cards/cardType'
-Races = require 'app/sdk/cards/racesLookup'
-ModifierAnySummonWatch = require './modifierAnySummonWatch'
-ModifierBackstab = require 'app/sdk/modifiers/modifierBackstab'
-ModifierBlastAttack = require 'app/sdk/modifiers/modifierBlastAttack'
-ModifierTranscendance = require 'app/sdk/modifiers/modifierTranscendance'
-ModifierFlying = require 'app/sdk/modifiers/modifierFlying'
-ModifierForcefield = require 'app/sdk/modifiers/modifierForcefield'
-ModifierFrenzy = require 'app/sdk/modifiers/modifierFrenzy'
-ModifierGrow = require 'app/sdk/modifiers/modifierGrow'
-ModifierProvoke = require 'app/sdk/modifiers/modifierProvoke'
-ModifierRanged = require 'app/sdk/modifiers/modifierRanged'
-ModifierRebirth = require 'app/sdk/modifiers/modifierRebirth'
-ModifierFirstBlood = require 'app/sdk/modifiers/modifierFirstBlood'
-ModifierAirdrop = require 'app/sdk/modifiers/modifierAirdrop'
-# ModifierInvulnerable = require 'app/sdk/modifiers/modifierInvulnerable'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CardType = require('app/sdk/cards/cardType');
+const Races = require('app/sdk/cards/racesLookup');
+const ModifierAnySummonWatch = require('./modifierAnySummonWatch');
+const ModifierBackstab = require('app/sdk/modifiers/modifierBackstab');
+const ModifierBlastAttack = require('app/sdk/modifiers/modifierBlastAttack');
+const ModifierTranscendance = require('app/sdk/modifiers/modifierTranscendance');
+const ModifierFlying = require('app/sdk/modifiers/modifierFlying');
+const ModifierForcefield = require('app/sdk/modifiers/modifierForcefield');
+const ModifierFrenzy = require('app/sdk/modifiers/modifierFrenzy');
+const ModifierGrow = require('app/sdk/modifiers/modifierGrow');
+const ModifierProvoke = require('app/sdk/modifiers/modifierProvoke');
+const ModifierRanged = require('app/sdk/modifiers/modifierRanged');
+const ModifierRebirth = require('app/sdk/modifiers/modifierRebirth');
+const ModifierFirstBlood = require('app/sdk/modifiers/modifierFirstBlood');
+const ModifierAirdrop = require('app/sdk/modifiers/modifierAirdrop');
+// ModifierInvulnerable = require 'app/sdk/modifiers/modifierInvulnerable'
 
-class ModifierAnySummonWatchGainGeneralKeywords extends ModifierAnySummonWatch
+class ModifierAnySummonWatchGainGeneralKeywords extends ModifierAnySummonWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierAnySummonWatchGainGeneralKeywords";
+		this.type ="ModifierAnySummonWatchGainGeneralKeywords";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	}
 
-	type:"ModifierAnySummonWatchGainGeneralKeywords"
-	@type:"ModifierAnySummonWatchGainGeneralKeywords"
+	onSummonWatch(action) {
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		let modifier;
+		let hasBackstab = false;
+		let hasBlast = false;
+		let hasCelerity = false;
+		let hasFlying = false;
+		let hasForcefield = false;
+		let hasFrenzy = false;
+		let hasGrow = false;
+		let hasProvoke = false;
+		let hasRanged = false;
+		let hasRebirth = false;
+		let hasRush = false;
+		let hasAirdrop = false;
+		// hasInvulnerable = false
+		let growAmount = 0;
+		let backstabAmount = 0;
 
-	onSummonWatch: (action) ->
+		const myGeneral = this.getGameSession().getGeneralForPlayerId(action.getCard().getOwnerId());
 
-		hasBackstab = false
-		hasBlast = false
-		hasCelerity = false
-		hasFlying = false
-		hasForcefield = false
-		hasFrenzy = false
-		hasGrow = false
-		hasProvoke = false
-		hasRanged = false
-		hasRebirth = false
-		hasRush = false
-		hasAirdrop = false
-		# hasInvulnerable = false
-		growAmount = 0
-		backstabAmount = 0
+		if (myGeneral != null) {
+			if (myGeneral.hasModifierClass(ModifierBackstab)) {
+				hasBackstab = true;
+				for (modifier of Array.from(myGeneral.getModifiers())) {
+					if (modifier instanceof ModifierBackstab) {
+						backstabAmount += modifier.getBackstabBonus();
+					}
+				}
+			}
+			if (!hasBlast && myGeneral.hasModifierClass(ModifierBlastAttack)) {
+				hasBlast = true;
+			}
+			if (!hasCelerity && myGeneral.hasModifierClass(ModifierTranscendance)) {
+				hasCelerity = true;
+			}
+			if (!hasFlying && myGeneral.hasModifierClass(ModifierFlying)) {
+				hasFlying = true;
+			}
+			if (!hasForcefield && myGeneral.hasModifierClass(ModifierForcefield)) {
+				hasForcefield = true;
+			}
+			if (!hasFrenzy && myGeneral.hasModifierClass(ModifierFrenzy)) {
+				hasFrenzy = true;
+			}
+			if (myGeneral.hasModifierClass(ModifierGrow)) {
+				hasGrow = true;
+				for (modifier of Array.from(myGeneral.getModifiers())) {
+					if (modifier instanceof ModifierGrow) {
+						growAmount += modifier.getGrowBonus();
+					}
+				}
+			}
+			if (!hasProvoke && myGeneral.hasModifierClass(ModifierProvoke)) {
+				hasProvoke = true;
+			}
+			if (!hasRanged && myGeneral.hasModifierClass(ModifierRanged)) {
+				hasRanged = true;
+			}
+			if (!hasRebirth && myGeneral.hasModifierClass(ModifierRebirth)) {
+				hasRebirth = true;
+			}
+			if (!hasRush && myGeneral.hasModifierClass(ModifierFirstBlood)) {
+				hasRush = true;
+			}
+			if (!hasAirdrop && myGeneral.hasModifierClass(ModifierAirdrop)) {
+				hasAirdrop = true;
+			}
+		}
 
-		myGeneral = @getGameSession().getGeneralForPlayerId(action.getCard().getOwnerId())
-
-		if myGeneral?
-			if myGeneral.hasModifierClass(ModifierBackstab)
-				hasBackstab = true
-				for modifier in myGeneral.getModifiers()
-					if modifier instanceof ModifierBackstab
-						backstabAmount += modifier.getBackstabBonus()
-			if !hasBlast and myGeneral.hasModifierClass(ModifierBlastAttack)
-				hasBlast = true
-			if !hasCelerity and myGeneral.hasModifierClass(ModifierTranscendance)
-				hasCelerity = true
-			if !hasFlying and myGeneral.hasModifierClass(ModifierFlying)
-				hasFlying = true
-			if !hasForcefield and myGeneral.hasModifierClass(ModifierForcefield)
-				hasForcefield = true
-			if !hasFrenzy and myGeneral.hasModifierClass(ModifierFrenzy)
-				hasFrenzy = true
-			if myGeneral.hasModifierClass(ModifierGrow)
-				hasGrow = true
-				for modifier in myGeneral.getModifiers()
-					if modifier instanceof ModifierGrow
-						growAmount += modifier.getGrowBonus()
-			if !hasProvoke and myGeneral.hasModifierClass(ModifierProvoke)
-				hasProvoke = true
-			if !hasRanged and myGeneral.hasModifierClass(ModifierRanged)
-				hasRanged = true
-			if !hasRebirth and myGeneral.hasModifierClass(ModifierRebirth)
-				hasRebirth = true
-			if !hasRush and myGeneral.hasModifierClass(ModifierFirstBlood)
-				hasRush = true
-			if !hasAirdrop and myGeneral.hasModifierClass(ModifierAirdrop)
-				hasAirdrop = true
-
-		summonedMinion = action.getCard()
-		if summonedMinion?
-			if hasBackstab
-				currentBackstabAmount = 0
-				if summonedMinion.hasModifierClass(ModifierBackstab)
-					for modifier in summonedMinion.getModifiers()
-						if modifier instanceof ModifierBackstab
-							currentBackstabAmount += modifier.getBackstabBonus()
-				if backstabAmount > currentBackstabAmount
-					@getGameSession().applyModifierContextObject(ModifierBackstab.createContextObject(backstabAmount - currentBackstabAmount), summonedMinion)
-			if hasBlast and !summonedMinion.hasModifierClass(ModifierBlastAttack)
-				@getGameSession().applyModifierContextObject(ModifierBlastAttack.createContextObject(), summonedMinion)
-			if hasCelerity and !summonedMinion.hasModifierClass(ModifierTranscendance)
-				@getGameSession().applyModifierContextObject(ModifierTranscendance.createContextObject(), summonedMinion)
-			if hasFlying and !summonedMinion.hasModifierClass(ModifierFlying)
-				@getGameSession().applyModifierContextObject(ModifierFlying.createContextObject(), summonedMinion)
-			if hasForcefield and !summonedMinion.hasModifierClass(ModifierForcefield)
-				@getGameSession().applyModifierContextObject(ModifierForcefield.createContextObject(), summonedMinion)
-			if hasFrenzy and !summonedMinion.hasModifierClass(ModifierFrenzy)
-				@getGameSession().applyModifierContextObject(ModifierFrenzy.createContextObject(), summonedMinion)
-			if hasGrow
-				currentGrowAmount = 0
-				if summonedMinion.hasModifierClass(ModifierGrow)
-					for modifier in summonedMinion.getModifiers()
-						if modifier instanceof ModifierGrow
-							currentGrowAmount += modifier.getGrowBonus()
-				if growAmount > currentGrowAmount
-					@getGameSession().applyModifierContextObject(ModifierGrow.createContextObject(growAmount - currentGrowAmount), summonedMinion)
-			if hasProvoke and !summonedMinion.hasModifierClass(ModifierProvoke)
-				@getGameSession().applyModifierContextObject(ModifierProvoke.createContextObject(), summonedMinion)
-			if hasRanged and !summonedMinion.hasModifierClass(ModifierRanged)
-				@getGameSession().applyModifierContextObject(ModifierRanged.createContextObject(), summonedMinion)
-			if hasRebirth and !summonedMinion.hasModifierClass(ModifierRebirth)
-				@getGameSession().applyModifierContextObject(ModifierRebirth.createContextObject(), summonedMinion)
-			if hasRush and !summonedMinion.hasModifierClass(ModifierFirstBlood)
-				@getGameSession().applyModifierContextObject(ModifierFirstBlood.createContextObject(), summonedMinion)
-			if hasAirdrop and !summonedMinion.hasModifierClass(ModifierAirdrop)
-				@getGameSession().applyModifierContextObject(ModifierAirdrop.createContextObject(), summonedMinion)
-			# if hasInvulnerable and !mech.hasModifierClass(ModifierInvulnerable)
-			# 	@getGameSession().applyModifierContextObject(ModifierInvulnerable.createContextObject(), mech)
+		const summonedMinion = action.getCard();
+		if (summonedMinion != null) {
+			if (hasBackstab) {
+				let currentBackstabAmount = 0;
+				if (summonedMinion.hasModifierClass(ModifierBackstab)) {
+					for (modifier of Array.from(summonedMinion.getModifiers())) {
+						if (modifier instanceof ModifierBackstab) {
+							currentBackstabAmount += modifier.getBackstabBonus();
+						}
+					}
+				}
+				if (backstabAmount > currentBackstabAmount) {
+					this.getGameSession().applyModifierContextObject(ModifierBackstab.createContextObject(backstabAmount - currentBackstabAmount), summonedMinion);
+				}
+			}
+			if (hasBlast && !summonedMinion.hasModifierClass(ModifierBlastAttack)) {
+				this.getGameSession().applyModifierContextObject(ModifierBlastAttack.createContextObject(), summonedMinion);
+			}
+			if (hasCelerity && !summonedMinion.hasModifierClass(ModifierTranscendance)) {
+				this.getGameSession().applyModifierContextObject(ModifierTranscendance.createContextObject(), summonedMinion);
+			}
+			if (hasFlying && !summonedMinion.hasModifierClass(ModifierFlying)) {
+				this.getGameSession().applyModifierContextObject(ModifierFlying.createContextObject(), summonedMinion);
+			}
+			if (hasForcefield && !summonedMinion.hasModifierClass(ModifierForcefield)) {
+				this.getGameSession().applyModifierContextObject(ModifierForcefield.createContextObject(), summonedMinion);
+			}
+			if (hasFrenzy && !summonedMinion.hasModifierClass(ModifierFrenzy)) {
+				this.getGameSession().applyModifierContextObject(ModifierFrenzy.createContextObject(), summonedMinion);
+			}
+			if (hasGrow) {
+				let currentGrowAmount = 0;
+				if (summonedMinion.hasModifierClass(ModifierGrow)) {
+					for (modifier of Array.from(summonedMinion.getModifiers())) {
+						if (modifier instanceof ModifierGrow) {
+							currentGrowAmount += modifier.getGrowBonus();
+						}
+					}
+				}
+				if (growAmount > currentGrowAmount) {
+					this.getGameSession().applyModifierContextObject(ModifierGrow.createContextObject(growAmount - currentGrowAmount), summonedMinion);
+				}
+			}
+			if (hasProvoke && !summonedMinion.hasModifierClass(ModifierProvoke)) {
+				this.getGameSession().applyModifierContextObject(ModifierProvoke.createContextObject(), summonedMinion);
+			}
+			if (hasRanged && !summonedMinion.hasModifierClass(ModifierRanged)) {
+				this.getGameSession().applyModifierContextObject(ModifierRanged.createContextObject(), summonedMinion);
+			}
+			if (hasRebirth && !summonedMinion.hasModifierClass(ModifierRebirth)) {
+				this.getGameSession().applyModifierContextObject(ModifierRebirth.createContextObject(), summonedMinion);
+			}
+			if (hasRush && !summonedMinion.hasModifierClass(ModifierFirstBlood)) {
+				this.getGameSession().applyModifierContextObject(ModifierFirstBlood.createContextObject(), summonedMinion);
+			}
+			if (hasAirdrop && !summonedMinion.hasModifierClass(ModifierAirdrop)) {
+				return this.getGameSession().applyModifierContextObject(ModifierAirdrop.createContextObject(), summonedMinion);
+			}
+		}
+	}
+}
+ModifierAnySummonWatchGainGeneralKeywords.initClass();
+			// if hasInvulnerable and !mech.hasModifierClass(ModifierInvulnerable)
+			// 	@getGameSession().applyModifierContextObject(ModifierInvulnerable.createContextObject(), mech)
 
 
-module.exports = ModifierAnySummonWatchGainGeneralKeywords
+module.exports = ModifierAnySummonWatchGainGeneralKeywords;

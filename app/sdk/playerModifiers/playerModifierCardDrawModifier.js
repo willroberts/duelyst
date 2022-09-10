@@ -1,21 +1,35 @@
-PlayerModifier = require 'app/sdk/playerModifiers/playerModifier'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const PlayerModifier = require('app/sdk/playerModifiers/playerModifier');
+const CardType = require('app/sdk/cards/cardType');
 
-class PlayerModifierCardDrawModifier extends PlayerModifier
+class PlayerModifierCardDrawModifier extends PlayerModifier {
+	static initClass() {
+	
+		this.prototype.type ="PlayerModifierCardDrawModifier";
+		this.type ="PlayerModifierCardDrawModifier";
+	}
 
-	type:"PlayerModifierCardDrawModifier"
-	@type:"PlayerModifierCardDrawModifier"
+	static createContextObject(cardDrawChange, duration, options) {
+		if (duration == null) { duration = 0; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDrawChange = cardDrawChange;
+		contextObject.durationStartTurn = duration;
+		return contextObject;
+	}
 
-	@createContextObject: (cardDrawChange, duration=0, options) ->
-		contextObject = super(options)
-		contextObject.cardDrawChange = cardDrawChange
-		contextObject.durationStartTurn = duration
-		return contextObject
+	getCardDrawChange() {
+		if (this.getIsActive()) {
+			return this.cardDrawChange;
+		} else {
+			return 0;
+		}
+	}
+}
+PlayerModifierCardDrawModifier.initClass();
 
-	getCardDrawChange: () ->
-		if @getIsActive()
-			return @cardDrawChange
-		else
-			return 0
-
-module.exports = PlayerModifierCardDrawModifier
+module.exports = PlayerModifierCardDrawModifier;

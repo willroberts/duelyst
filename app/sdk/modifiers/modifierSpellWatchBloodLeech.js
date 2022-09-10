@@ -1,46 +1,58 @@
-CONFIG = require 'app/common/config'
-ModifierSpellWatch = require './modifierSpellWatch'
-CardType = require 'app/sdk/cards/cardType'
-Modifier = require './modifier'
-HealAction = require 'app/sdk/actions/healAction'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const ModifierSpellWatch = require('./modifierSpellWatch');
+const CardType = require('app/sdk/cards/cardType');
+const Modifier = require('./modifier');
+const HealAction = require('app/sdk/actions/healAction');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class ModifierSpellWatchBloodLeech extends ModifierSpellWatch
+class ModifierSpellWatchBloodLeech extends ModifierSpellWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSpellWatchBloodLeech";
+		this.type ="ModifierSpellWatchBloodLeech";
+	
+		this.prototype.damageAmount = 0;
+		this.prototype.healAmount = 0;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch", "FX.Modifiers.ModifierGenericChain"];
+	}
 
-	type:"ModifierSpellWatchBloodLeech"
-	@type:"ModifierSpellWatchBloodLeech"
+	static createContextObject(damageAmount, healAmount,options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAmount = damageAmount;
+		contextObject.healAmount = healAmount;
+		return contextObject;
+	}
 
-	damageAmount: 0
-	healAmount: 0
+	onSpellWatch(action) {
+		super.onSpellWatch(action);
 
-	fxResource: ["FX.Modifiers.ModifierSpellWatch", "FX.Modifiers.ModifierGenericChain"]
+		const enemyGeneral = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+		const myGeneral = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
 
-	@createContextObject: (damageAmount, healAmount,options) ->
-		contextObject = super(options)
-		contextObject.damageAmount = damageAmount
-		contextObject.healAmount = healAmount
-		return contextObject
+		//damage enemy general
+		const damageAction = new DamageAction(this.getGameSession());
+		damageAction.setOwnerId(this.getCard().getOwnerId());
+		damageAction.setSource(this.getCard());
+		damageAction.setTarget(enemyGeneral);
+		damageAction.setDamageAmount(this.damageAmount);
+		this.getGameSession().executeAction(damageAction);
 
-	onSpellWatch: (action) ->
-		super(action)
+		//heal my general
+		const healAction = new HealAction(this.getGameSession());
+		healAction.setOwnerId(this.getCard().getOwnerId());
+		healAction.setSource(this.getCard());
+		healAction.setTarget(myGeneral);
+		healAction.setHealAmount(this.healAmount);
+		return this.getCard().getGameSession().executeAction(healAction);
+	}
+}
+ModifierSpellWatchBloodLeech.initClass();
 
-		enemyGeneral = @getCard().getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-		myGeneral = @getCard().getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-
-		#damage enemy general
-		damageAction = new DamageAction(this.getGameSession())
-		damageAction.setOwnerId(@getCard().getOwnerId())
-		damageAction.setSource(@getCard())
-		damageAction.setTarget(enemyGeneral)
-		damageAction.setDamageAmount(@damageAmount)
-		@getGameSession().executeAction(damageAction)
-
-		#heal my general
-		healAction = new HealAction(this.getGameSession())
-		healAction.setOwnerId(@getCard().getOwnerId())
-		healAction.setSource(@getCard())
-		healAction.setTarget(myGeneral)
-		healAction.setHealAmount(@healAmount)
-		@getCard().getGameSession().executeAction(healAction)
-
-module.exports = ModifierSpellWatchBloodLeech
+module.exports = ModifierSpellWatchBloodLeech;

@@ -1,34 +1,49 @@
-Modifier = require './modifier'
-DieAction = require 'app/sdk/actions/dieAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const DieAction = require('app/sdk/actions/dieAction');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierFriendlyDeathWatch extends Modifier
+class ModifierFriendlyDeathWatch extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierFriendlyDeathWatch";
+		this.type ="ModifierFriendlyDeathWatch";
+	
+		this.modifierName ="ModifierFriendlyDeathWatch";
+		this.description = "Whenever a friendly minion dies...";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierFriendlyDeathwatch"];
+	}
 
-	type:"ModifierFriendlyDeathWatch"
-	@type:"ModifierFriendlyDeathWatch"
+	onAfterCleanupAction(e) {
+		super.onAfterCleanupAction(e);
 
-	@modifierName:"ModifierFriendlyDeathWatch"
-	@description: "Whenever a friendly minion dies..."
+		const {
+            action
+        } = e;
+		const target = action.getTarget();
+		const entity = this.getCard();
+		// watch for a friendly unit dying
+		if (action instanceof DieAction && ((target != null ? target.type : undefined) === CardType.Unit) && (target !== entity) && (target.getOwnerId() === entity.getOwnerId())) {
+			return this.onFriendlyDeathWatch(action);
+		}
+	}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
-
-	fxResource: ["FX.Modifiers.ModifierFriendlyDeathwatch"]
-
-	onAfterCleanupAction: (e) ->
-		super(e)
-
-		action = e.action
-		target = action.getTarget()
-		entity = @getCard()
-		# watch for a friendly unit dying
-		if action instanceof DieAction and target?.type is CardType.Unit and target != entity and target.getOwnerId() is entity.getOwnerId()
-			@onFriendlyDeathWatch(action)
-
-	onFriendlyDeathWatch: (action) ->
-		# override me in sub classes to implement special behavior
+	onFriendlyDeathWatch(action) {}
+}
+ModifierFriendlyDeathWatch.initClass();
+		// override me in sub classes to implement special behavior
 
 
-module.exports = ModifierFriendlyDeathWatch
+module.exports = ModifierFriendlyDeathWatch;

@@ -1,33 +1,56 @@
-ModifierEndTurnWatch = require './modifierEndTurnWatch'
-CardType = require 'app/sdk/cards/cardType'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-ApplyCardToBoardAction = require 'app/sdk/actions/applyCardToBoardAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
+const CardType = require('app/sdk/cards/cardType');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const ApplyCardToBoardAction = require('app/sdk/actions/applyCardToBoardAction');
 
-class ModifierEndTurnWatchGainLastSpellPlayedThisTurn extends ModifierEndTurnWatch
+class ModifierEndTurnWatchGainLastSpellPlayedThisTurn extends ModifierEndTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEndTurnWatchGainLastSpellPlayedThisTurn";
+		this.type ="ModifierEndTurnWatchGainLastSpellPlayedThisTurn";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierEndTurnWatch"];
+	}
 
-	type:"ModifierEndTurnWatchGainLastSpellPlayedThisTurn"
-	@type:"ModifierEndTurnWatchGainLastSpellPlayedThisTurn"
+	onTurnWatch(action) {
 
-	fxResource: ["FX.Modifiers.ModifierEndTurnWatch"]
-
-	onTurnWatch: (action) ->
-
-		actions = []
-		lastSpell = null
-		for step in @getGameSession().getCurrentTurn().getSteps()
-			actions = actions.concat(step.getAction().getFlattenedActionTree())
-		for action in actions by -1
-			if action instanceof ApplyCardToBoardAction and
-			action.getCard()?.getRootCard()?.getType() is CardType.Spell and
-			action.getCard().getRootCard() is action.getCard() and
-			!action.getIsImplicit() and
-			action.getOwnerId() is @getOwnerId()
-				lastSpell = action.getCard()
+		let actions = [];
+		let lastSpell = null;
+		for (let step of Array.from(this.getGameSession().getCurrentTurn().getSteps())) {
+			actions = actions.concat(step.getAction().getFlattenedActionTree());
+		}
+		for (let i = actions.length - 1; i >= 0; i--) {
+			action = actions[i];
+			if (action instanceof ApplyCardToBoardAction &&
+			(__guard__(__guard__(action.getCard(), x1 => x1.getRootCard()), x => x.getType()) === CardType.Spell) &&
+			(action.getCard().getRootCard() === action.getCard()) &&
+			!action.getIsImplicit() &&
+			(action.getOwnerId() === this.getOwnerId())) {
+				lastSpell = action.getCard();
 				break;
+			}
+		}
 
-		if lastSpell?
-			# put fresh copy of spell into hand
-			putCardInHandAction = new PutCardInHandAction(@getGameSession(), @getCard().getOwnerId(), lastSpell.createNewCardData())
-			@getGameSession().executeAction(putCardInHandAction)
+		if (lastSpell != null) {
+			// put fresh copy of spell into hand
+			const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), lastSpell.createNewCardData());
+			return this.getGameSession().executeAction(putCardInHandAction);
+		}
+	}
+}
+ModifierEndTurnWatchGainLastSpellPlayedThisTurn.initClass();
 
-module.exports = ModifierEndTurnWatchGainLastSpellPlayedThisTurn
+module.exports = ModifierEndTurnWatchGainLastSpellPlayedThisTurn;
+
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

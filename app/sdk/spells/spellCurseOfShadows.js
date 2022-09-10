@@ -1,21 +1,28 @@
-SpellKillTarget = require './spellKillTarget'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellKillTarget = require('./spellKillTarget');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class SpellCurseOfShadows extends SpellKillTarget
+class SpellCurseOfShadows extends SpellKillTarget {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
 
-		applyEffectPosition = {x: x, y: y}
-		unit = board.getUnitAtPosition(applyEffectPosition)
-		attack = unit.getATK()
+		const applyEffectPosition = {x, y};
+		const unit = board.getUnitAtPosition(applyEffectPosition);
+		const attack = unit.getATK();
 
-		super(board,x,y,sourceAction)
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		enemyGeneral = @getGameSession().getGeneralForOpponentOfPlayerId(@getOwnerId())
-		damageAction = new DamageAction(@getGameSession())
-		damageAction.setOwnerId(@getOwnerId())
-		damageAction.setTarget(enemyGeneral)
-		damageAction.setDamageAmount(attack)
-		@getGameSession().executeAction(damageAction)
+		const enemyGeneral = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId());
+		const damageAction = new DamageAction(this.getGameSession());
+		damageAction.setOwnerId(this.getOwnerId());
+		damageAction.setTarget(enemyGeneral);
+		damageAction.setDamageAmount(attack);
+		return this.getGameSession().executeAction(damageAction);
+	}
+}
 
-module.exports = SpellCurseOfShadows
+module.exports = SpellCurseOfShadows;

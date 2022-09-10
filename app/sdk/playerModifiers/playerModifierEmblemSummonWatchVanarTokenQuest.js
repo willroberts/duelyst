@@ -1,47 +1,100 @@
-PlayerModifierEmblemGainMinionOrLoseControlWatch = require './playerModifierEmblemGainMinionOrLoseControlWatch'
-ModifierQuestBuffVanar = require 'app/sdk/modifiers/modifierQuestBuffVanar'
-CardType = require 'app/sdk/cards/cardType'
-Rarity = require 'app/sdk/cards/rarityLookup'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const PlayerModifierEmblemGainMinionOrLoseControlWatch = require('./playerModifierEmblemGainMinionOrLoseControlWatch');
+const ModifierQuestBuffVanar = require('app/sdk/modifiers/modifierQuestBuffVanar');
+const CardType = require('app/sdk/cards/cardType');
+const Rarity = require('app/sdk/cards/rarityLookup');
 
-class PlayerModifierEmblemSummonWatchVanarTokenQuest extends PlayerModifierEmblemGainMinionOrLoseControlWatch
+class PlayerModifierEmblemSummonWatchVanarTokenQuest extends PlayerModifierEmblemGainMinionOrLoseControlWatch {
+	static initClass() {
+	
+		this.prototype.type ="PlayerModifierEmblemSummonWatchVanarTokenQuest";
+		this.type ="PlayerModifierEmblemSummonWatchVanarTokenQuest";
+	
+		this.prototype.maxStacks = 1;
+	
+		this.prototype.modifiersContextObjects = null;
+	}
 
-	type:"PlayerModifierEmblemSummonWatchVanarTokenQuest"
-	@type:"PlayerModifierEmblemSummonWatchVanarTokenQuest"
+	static createContextObject(modifiersContextObjects, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = modifiersContextObjects;
+		return contextObject;
+	}
 
-	maxStacks: 1
+	onGainMinionWatch(action) {
+		const unit = action.getTarget();
+		if ((unit != null) && (this.modifiersContextObjects != null) && (unit.getRarityId() === Rarity.TokenUnit)) {
+			return (() => {
+				const result = [];
+				for (let modifiersContextObject of Array.from(this.modifiersContextObjects)) {
+					if (modifiersContextObject != null) {
+						modifiersContextObject.isRemovable = false;
+						result.push(this.getGameSession().applyModifierContextObject(modifiersContextObject, unit));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
 
-	modifiersContextObjects: null
+	onLoseControlWatch(action) {
+		const entity = action.getTarget();
+		if (entity != null) {
+			const modifiers = entity.getModifiers();
+			if (modifiers != null) {
+				return (() => {
+					const result = [];
+					for (let modifier of Array.from(modifiers)) {
+						if (modifier instanceof ModifierQuestBuffVanar) {
+							result.push(this.getGameSession().removeModifier(modifier));
+						} else {
+							result.push(undefined);
+						}
+					}
+					return result;
+				})();
+			}
+		}
+	}
 
-	@createContextObject: (modifiersContextObjects, options) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = modifiersContextObjects
-		return contextObject
+	onActivate() {
+		super.onActivate();
+		if (this.modifiersContextObjects != null) {
+			return (() => {
+				const result = [];
+				for (var unit of Array.from(this.getGameSession().getBoard().getFriendlyEntitiesForEntity(this.getCard()))) {
+					if ((unit != null) && !unit.getIsGeneral() && (unit.getType() === CardType.Unit) && (unit.getRarityId() === Rarity.TokenUnit)) {
+						result.push((() => {
+							const result1 = [];
+							for (let modifier of Array.from(this.modifiersContextObjects)) {
+								if (modifier != null) {
+									modifier.isRemovable = false;
+									result1.push(this.getGameSession().applyModifierContextObject(modifier, unit));
+								} else {
+									result1.push(undefined);
+								}
+							}
+							return result1;
+						})());
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+}
+PlayerModifierEmblemSummonWatchVanarTokenQuest.initClass();
 
-	onGainMinionWatch: (action) ->
-		unit = action.getTarget()
-		if unit? and @modifiersContextObjects? and unit.getRarityId() is Rarity.TokenUnit
-			for modifiersContextObject in @modifiersContextObjects
-				if modifiersContextObject?
-					modifiersContextObject.isRemovable = false
-					@getGameSession().applyModifierContextObject(modifiersContextObject, unit)
-
-	onLoseControlWatch: (action) ->
-		entity = action.getTarget()
-		if entity?
-			modifiers = entity.getModifiers()
-			if modifiers?
-				for modifier in modifiers
-					if modifier instanceof ModifierQuestBuffVanar
-						@getGameSession().removeModifier(modifier)
-
-	onActivate: () ->
-		super()
-		if @modifiersContextObjects?
-			for unit in @getGameSession().getBoard().getFriendlyEntitiesForEntity(@getCard())
-				if unit? and !unit.getIsGeneral() and unit.getType() == CardType.Unit and unit.getRarityId() is Rarity.TokenUnit
-					for modifier in @modifiersContextObjects
-						if modifier?
-							modifier.isRemovable = false
-							@getGameSession().applyModifierContextObject(modifier, unit)
-
-module.exports = PlayerModifierEmblemSummonWatchVanarTokenQuest
+module.exports = PlayerModifierEmblemSummonWatchVanarTokenQuest;

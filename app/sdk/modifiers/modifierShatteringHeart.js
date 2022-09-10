@@ -1,71 +1,100 @@
-EVENTS = require 'app/common/event_types'
-Modifier = require './modifier'
-AttackAction = require 'app/sdk/actions/attackAction'
-ModifierStunned = require 'app/sdk/modifiers/modifierStunned'
-KillAction = require 'app/sdk/actions/killAction'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const EVENTS = require('app/common/event_types');
+const Modifier = require('./modifier');
+const AttackAction = require('app/sdk/actions/attackAction');
+const ModifierStunned = require('app/sdk/modifiers/modifierStunned');
+const KillAction = require('app/sdk/actions/killAction');
+const i18next = require('i18next');
 
-class ModifierShatteringHeart extends Modifier
+class ModifierShatteringHeart extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierShatteringHeart";
+		this.type ="ModifierShatteringHeart";
+	
+		this.modifierName =i18next.t("modifiers.shattering_heart_name");
+		this.description =i18next.t("modifiers.shattering_heart_def");
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.maxStacks = 1;
+	}
 
-	type:"ModifierShatteringHeart"
-	@type:"ModifierShatteringHeart"
+	onEvent(event) {
+		super.onEvent(event);
 
-	@modifierName:i18next.t("modifiers.shattering_heart_name")
-	@description:i18next.t("modifiers.shattering_heart_def")
+		if (this._private.listeningToEvents) {
+			if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
+				this.onModifyActionForEntitiesInvolvedInAttack(event);
+			}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+			if (event.type === EVENTS.entities_involved_in_attack) {
+				return this.onEntitiesInvolvedInAttack(event);
+			}
+		}
+	}
 
-	maxStacks: 1
+	getIsActionRelevant(a) {
+		return a instanceof AttackAction && !(__guard__(a.getTarget(), x => x.getIsGeneral())) && (a.getSource() === this.getCard()) && __guard__(a.getTarget(), x1 => x1.hasModifierClass(ModifierStunned));
+	}
 
-	onEvent: (event) ->
-		super(event)
+	_modifyAction(a) {
+		return a.setIsStrikebackAllowed(false);
+	}
 
-		if @_private.listeningToEvents
-			if event.type == EVENTS.modify_action_for_entities_involved_in_attack
-				@onModifyActionForEntitiesInvolvedInAttack(event)
+	onAction(actionEvent) {
+		super.onAction(actionEvent);
+		const a = actionEvent.action;
+		if (this.getIsActionRelevant(a)) {
+			const target = a.getTarget();
+			const killAction = new KillAction(this.getGameSession());
+			killAction.setOwnerId(this.getCard().getOwnerId());
+			killAction.setSource(this.getCard());
+			killAction.setTarget(target);
+			return this.getGameSession().executeAction(killAction);
+		}
+	}
 
-			if event.type == EVENTS.entities_involved_in_attack
-				@onEntitiesInvolvedInAttack(event)
+	onModifyActionForExecution(actionEvent) {
+		super.onModifyActionForExecution(actionEvent);
+		const a = actionEvent.action;
+		if (this.getIsActionRelevant(a)) {
+			return this._modifyAction(a);
+		}
+	}
 
-	getIsActionRelevant: (a) ->
-		return a instanceof AttackAction and !(a.getTarget()?.getIsGeneral()) and a.getSource() is @getCard() and a.getTarget()?.hasModifierClass(ModifierStunned)
+	onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
+		const a = actionEvent.action;
+		if (this.getIsActive() && this.getIsActionRelevant(a)) {
+			return this._modifyAction(a);
+		}
+	}
 
-	_modifyAction: (a) ->
-		a.setIsStrikebackAllowed(false)
+	onEntitiesInvolvedInAttack(actionEvent) {
+		const a = actionEvent.action;
+		if (this.getIsActive() && this.getIsActionRelevant(a)) {
+			const target = a.getTarget();
+			const killAction = new KillAction(this.getGameSession());
+			killAction.setOwnerId(this.getCard().getOwnerId());
+			killAction.setSource(this.getCard());
+			killAction.setTarget(target);
+			return actionEvent.actions.push(killAction);
+		}
+	}
+}
+ModifierShatteringHeart.initClass();
 
-	onAction: (actionEvent) ->
-		super(actionEvent)
-		a = actionEvent.action
-		if @getIsActionRelevant(a)
-			target = a.getTarget()
-			killAction = new KillAction(@getGameSession())
-			killAction.setOwnerId(@getCard().getOwnerId())
-			killAction.setSource(@getCard())
-			killAction.setTarget(target)
-			@getGameSession().executeAction(killAction)
+module.exports = ModifierShatteringHeart;
 
-	onModifyActionForExecution: (actionEvent) ->
-		super(actionEvent)
-		a = actionEvent.action
-		if @getIsActionRelevant(a)
-			@_modifyAction(a)
-
-	onModifyActionForEntitiesInvolvedInAttack: (actionEvent) ->
-		a = actionEvent.action
-		if @getIsActive() and @getIsActionRelevant(a)
-			@_modifyAction(a)
-
-	onEntitiesInvolvedInAttack: (actionEvent) ->
-		a = actionEvent.action
-		if @getIsActive() and @getIsActionRelevant(a)
-			target = a.getTarget()
-			killAction = new KillAction(@getGameSession())
-			killAction.setOwnerId(@getCard().getOwnerId())
-			killAction.setSource(@getCard())
-			killAction.setTarget(target)
-			actionEvent.actions.push(killAction)
-
-module.exports = ModifierShatteringHeart
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

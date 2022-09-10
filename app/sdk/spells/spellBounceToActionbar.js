@@ -1,38 +1,53 @@
-CONFIG = require 'app/common/config'
-Spell = 	require './spell'
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-RemoveAction = require 'app/sdk/actions/removeAction'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-UtilsJavascript = require 'app/common/utils/utils_javascript'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const Spell = 	require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const RemoveAction = require('app/sdk/actions/removeAction');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const UtilsJavascript = require('app/common/utils/utils_javascript');
 
-class SpellBounceToActionbar extends Spell
+class SpellBounceToActionbar extends Spell {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Unit;
+	}
 
-	targetType: CardType.Unit
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		const applyEffectPosition = {x, y};
 
-		applyEffectPosition = {x: x, y: y}
+		// remove the existing unit
+		const removingEntity = board.getCardAtPosition(applyEffectPosition, this.targetType);
+		if (removingEntity != null) {
+			const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
+			removeOriginalEntityAction.setOwnerId(this.getOwnerId());
+			removeOriginalEntityAction.setTarget(removingEntity);
+			this.getGameSession().executeAction(removeOriginalEntityAction);
+		}
 
-		# remove the existing unit
-		removingEntity = board.getCardAtPosition(applyEffectPosition, @targetType)
-		if removingEntity?
-			removeOriginalEntityAction = new RemoveAction(@getGameSession())
-			removeOriginalEntityAction.setOwnerId(@getOwnerId())
-			removeOriginalEntityAction.setTarget(removingEntity)
-			@getGameSession().executeAction(removeOriginalEntityAction)
-
-		# put a fresh card matching the original unit into hand
-		newCardData = removingEntity.createNewCardData()
-		# add additional modifiers as needed
-		if @targetModifiersContextObjects
-			if newCardData.additionalModifiersContextObjects?
-				newCardData.additionalModifiersContextObjects.concat(UtilsJavascript.deepCopy(@targetModifiersContextObjects))
-			else
-				newCardData.additionalModifiersContextObjects = UtilsJavascript.deepCopy(@targetModifiersContextObjects)
-		putCardInHandAction = new PutCardInHandAction(@getGameSession(), removingEntity.getOwnerId(), newCardData)
-		@getGameSession().executeAction(putCardInHandAction)
+		// put a fresh card matching the original unit into hand
+		const newCardData = removingEntity.createNewCardData();
+		// add additional modifiers as needed
+		if (this.targetModifiersContextObjects) {
+			if (newCardData.additionalModifiersContextObjects != null) {
+				newCardData.additionalModifiersContextObjects.concat(UtilsJavascript.deepCopy(this.targetModifiersContextObjects));
+			} else {
+				newCardData.additionalModifiersContextObjects = UtilsJavascript.deepCopy(this.targetModifiersContextObjects);
+			}
+		}
+		const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), removingEntity.getOwnerId(), newCardData);
+		return this.getGameSession().executeAction(putCardInHandAction);
+	}
+}
+SpellBounceToActionbar.initClass();
 
 
-module.exports = SpellBounceToActionbar
+module.exports = SpellBounceToActionbar;

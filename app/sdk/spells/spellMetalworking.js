@@ -1,43 +1,64 @@
-Logger = require 'app/common/logger'
-Spell = 	require('./spell')
-CardType = require 'app/sdk/cards/cardType'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Spell = 	require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
-class SpellMetalworking extends Spell
+class SpellMetalworking extends Spell {
+	static initClass() {
+	
+		this.prototype.numArtifacts = 1;
+	}
 
-	numArtifacts: 1
+	_findApplyEffectPositions(position, sourceAction) {
+		return [this.getGameSession().getGeneralForPlayerId(this.getOwnerId()).getPosition()];
+	}
 
-	_findApplyEffectPositions: (position, sourceAction) ->
-		return [@getGameSession().getGeneralForPlayerId(@getOwnerId()).getPosition()]
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		const potentialArtifacts = [];
+		const artifactsPlayed = this.getGameSession().getArtifactsPlayed(this.getOwnerId());
+		const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+		// check all played artifact cards
+		for (let artifact of Array.from(artifactsPlayed)) {
+			const modifiersGroupedByArtifactCard = myGeneral.getArtifactModifiersGroupedByArtifactCard();
+			// if no artifact modifiers are stil on the general, all played artifacts are valid to retrieve
+			if (modifiersGroupedByArtifactCard.length === 0) {
+				potentialArtifacts.push(artifact);
+			} else {
+				let skipThisArtifact = false;
+				// if general still has any artifacts, do NOT retrieve those exact artifacts
+				for (let artifactMods of Array.from(modifiersGroupedByArtifactCard)) {
+					// skip any played artifacts that are still active on the General
+					if (artifactMods[0].getSourceCard().getIndex() === artifact.getIndex()) {
+						skipThisArtifact = true;
+						break;
+					}
+				}
+				if (!skipThisArtifact) {
+					potentialArtifacts.push(artifact);
+				}
+			}
+		}
+		if (potentialArtifacts.length > 0) {
+			const artifactToPlay = potentialArtifacts[this.getGameSession().getRandomIntegerForExecution(potentialArtifacts.length)];
 
-		potentialArtifacts = []
-		artifactsPlayed = @getGameSession().getArtifactsPlayed(@getOwnerId())
-		myGeneral = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-		# check all played artifact cards
-		for artifact in artifactsPlayed
-			modifiersGroupedByArtifactCard = myGeneral.getArtifactModifiersGroupedByArtifactCard()
-			# if no artifact modifiers are stil on the general, all played artifacts are valid to retrieve
-			if modifiersGroupedByArtifactCard.length == 0
-				potentialArtifacts.push(artifact)
-			else
-				skipThisArtifact = false
-				# if general still has any artifacts, do NOT retrieve those exact artifacts
-				for artifactMods in modifiersGroupedByArtifactCard
-					# skip any played artifacts that are still active on the General
-					if artifactMods[0].getSourceCard().getIndex() == artifact.getIndex()
-						skipThisArtifact = true
-						break
-				if !skipThisArtifact
-					potentialArtifacts.push(artifact)
-		if potentialArtifacts.length > 0
-			artifactToPlay = potentialArtifacts[@getGameSession().getRandomIntegerForExecution(potentialArtifacts.length)]
+			if (artifactToPlay != null) {
+				const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getOwnerId(), x, y, artifactToPlay.createNewCardData());
+				playCardAction.setSource(this);
+				return this.getGameSession().executeAction(playCardAction);
+			}
+		}
+	}
+}
+SpellMetalworking.initClass();
 
-			if artifactToPlay?
-				playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getOwnerId(), x, y, artifactToPlay.createNewCardData())
-				playCardAction.setSource(@)
-				@getGameSession().executeAction(playCardAction)
-
-module.exports = SpellMetalworking
+module.exports = SpellMetalworking;

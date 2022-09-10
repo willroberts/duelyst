@@ -1,39 +1,51 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-HealAction = require 'app/sdk/actions/healAction'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const HealAction = require('app/sdk/actions/healAction');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class ModifierOpeningGambitStealEnemyGeneralHealth extends ModifierOpeningGambit
+class ModifierOpeningGambitStealEnemyGeneralHealth extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitStealEnemyGeneralHealth";
+		this.type ="ModifierOpeningGambitStealEnemyGeneralHealth";
+	
+		this.description = "Your General steals X Health from the enemy General";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	
+		this.prototype.damageAmount = 0;
+	}
 
-	type:"ModifierOpeningGambitStealEnemyGeneralHealth"
-	@type:"ModifierOpeningGambitStealEnemyGeneralHealth"
+	static createContextObject(damageAmount, options) {
+		const contextObject = super.createContextObject();
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	@description: "Your General steals X Health from the enemy General"
+	onOpeningGambit() {
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
+		const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
 
-	damageAmount: 0
+		const healAction = new HealAction(this.getGameSession());
+		healAction.setOwnerId(this.getOwnerId());
+		healAction.setTarget(general);
+		healAction.setHealAmount(this.damageAmount);
+		this.getGameSession().executeAction(healAction);
 
-	@createContextObject: (damageAmount, options) ->
-		contextObject = super()
-		contextObject.damageAmount = damageAmount
-		return contextObject
+		const enemyGeneral = this.getCard().getGameSession().getGeneralForPlayerId(this.getGameSession().getOpponentPlayerIdOfPlayerId(this.getCard().getOwnerId()));
 
-	onOpeningGambit: () ->
+		const damageAction = new DamageAction(this.getGameSession());
+		damageAction.setOwnerId(this.getOwnerId());
+		damageAction.setTarget(enemyGeneral);
+		damageAction.setDamageAmount(this.damageAmount);
+		return this.getGameSession().executeAction(damageAction);
+	}
+}
+ModifierOpeningGambitStealEnemyGeneralHealth.initClass();
 
-		general = @getCard().getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-
-		healAction = new HealAction(this.getGameSession())
-		healAction.setOwnerId(@getOwnerId())
-		healAction.setTarget(general)
-		healAction.setHealAmount(@damageAmount)
-		@getGameSession().executeAction(healAction)
-
-		enemyGeneral = @getCard().getGameSession().getGeneralForPlayerId(@getGameSession().getOpponentPlayerIdOfPlayerId(@getCard().getOwnerId()))
-
-		damageAction = new DamageAction(@getGameSession())
-		damageAction.setOwnerId(@getOwnerId())
-		damageAction.setTarget(enemyGeneral)
-		damageAction.setDamageAmount(@damageAmount)
-		@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierOpeningGambitStealEnemyGeneralHealth
+module.exports = ModifierOpeningGambitStealEnemyGeneralHealth;

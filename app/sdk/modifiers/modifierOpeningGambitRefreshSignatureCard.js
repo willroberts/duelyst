@@ -1,16 +1,27 @@
-ModifierOpeningGambit = require 'app/sdk/modifiers/modifierOpeningGambit'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('app/sdk/modifiers/modifierOpeningGambit');
 
-class ModifierOpeningGambitRefreshSignatureCard extends ModifierOpeningGambit
+class ModifierOpeningGambitRefreshSignatureCard extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitRefreshSignatureCard";
+		this.type = "ModifierOpeningGambitRefreshSignatureCard";
+	
+		this.modifierName = "Opening Gambit";
+		this.description = "Refresh your Bloodbound Spell";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type: "ModifierOpeningGambitRefreshSignatureCard"
-	@type: "ModifierOpeningGambitRefreshSignatureCard"
+	onOpeningGambit() {
+		return this.getGameSession().executeAction(this.getOwner().actionActivateSignatureCard());
+	}
+}
+ModifierOpeningGambitRefreshSignatureCard.initClass();
 
-	@modifierName: "Opening Gambit"
-	@description: "Refresh your Bloodbound Spell"
-
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
-
-	onOpeningGambit: () ->
-		@getGameSession().executeAction(@getOwner().actionActivateSignatureCard())
-
-module.exports = ModifierOpeningGambitRefreshSignatureCard
+module.exports = ModifierOpeningGambitRefreshSignatureCard;

@@ -1,70 +1,102 @@
-Modifier = require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
 
-###
+/*
   Abstract modifier class that counts something in the game.
 	ex: building has (3,2,1) turns until it builds
 	    mechaz0r progress is (20%,40%,100%)
-###
-class ModifierCounter extends Modifier
+*/
+class ModifierCounter extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierCounter";
+		this.type ="ModifierCounter";
+	
+		this.prototype.isHiddenToUI = true;
+		this.prototype.isRemovable = false;
+	}
 
-	type:"ModifierCounter"
-	@type:"ModifierCounter"
+	static getDescription() {
+		return this.description;
+	}
 
-	isHiddenToUI: true
-	isRemovable: false
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	@getDescription: () ->
-		return @description
+		p.currentCount = 0;
+		p.previousCount = 0;
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		return p;
+	}
 
-		p.currentCount = 0
-		p.previousCount = 0
+	onDeactivate() {
+		// reset to default states when deactivated
+		this._private.currentCount = (this._private.previousCount = 0);
+		return this.removeManagedModifiersFromCard(this.getCard());
+	}
 
-		return p
+	updateCachedStateAfterActive() {
+		if (this._private.cachedIsActive) {
+			this.updateCountIfNeeded();
+		}
+		return super.updateCachedStateAfterActive();
+	}
 
-	onDeactivate: () ->
-		# reset to default states when deactivated
-		@_private.currentCount = @_private.previousCount = 0
-		@removeManagedModifiersFromCard(@getCard())
+	updateCountIfNeeded() {
+		this._private.previousCount = this._private.currentCount;
+		this._private.currentCount = this.getCurrentCount();
+		if (this._private.currentCount !== this._private.previousCount) {
+			this.removeSubModifiers();
+			return this.getGameSession().applyModifierContextObject(this.getModifierContextObjectToApply(), this.getCard(), this);
+		}
+	}
 
-	updateCachedStateAfterActive: () ->
-		if @_private.cachedIsActive
-			@updateCountIfNeeded()
-		super()
+	// operates during aura phase, but is not an aura itself
 
-	updateCountIfNeeded: () ->
-		@_private.previousCount = @_private.currentCount
-		@_private.currentCount = @getCurrentCount()
-		if @_private.currentCount != @_private.previousCount
-			@removeSubModifiers()
-			@getGameSession().applyModifierContextObject(@getModifierContextObjectToApply(), @getCard(), @)
+	// remove modifiers during remove aura phase
+	_onRemoveAura(event) {
+		super._onRemoveAura(event);
+		if (this._private.cachedIsActive) {
+			return this.updateCountIfNeeded();
+		}
+	}
 
-	# operates during aura phase, but is not an aura itself
+	removeSubModifiers() {
+		return (() => {
+			const result = [];
+			const iterable = this.getSubModifiers();
+			for (let i = iterable.length - 1; i >= 0; i--) {
+				const subMod = iterable[i];
+				result.push(this.getGameSession().removeModifier(subMod));
+			}
+			return result;
+		})();
+	}
 
-	# remove modifiers during remove aura phase
-	_onRemoveAura: (event) ->
-		super(event)
-		if @_private.cachedIsActive
-			@updateCountIfNeeded()
+	// update count during add aura phase
+	_onAddAura(event) {
+		super._onAddAura(event);
+		if (this._private.cachedIsActive) {
+			return this.updateCountIfNeeded();
+		}
+	}
 
-	removeSubModifiers: () ->
-		for subMod in @getSubModifiers() by -1
-			@getGameSession().removeModifier(subMod)
+	getModifierContextObjectToApply() {
+		// override this method to return correct context object for sub modifier to be displayed in-game
+		return {};
+	}
 
-	# update count during add aura phase
-	_onAddAura: (event) ->
-		super(event)
-		if @_private.cachedIsActive
-			@updateCountIfNeeded()
+	getCurrentCount() {
+		// override this method to calculate change in board state
+		return 0;
+	}
+}
+ModifierCounter.initClass();
 
-	getModifierContextObjectToApply: () ->
-		# override this method to return correct context object for sub modifier to be displayed in-game
-		return {}
-
-	getCurrentCount: () ->
-		# override this method to calculate change in board state
-		return 0
-
-module.exports = ModifierCounter
+module.exports = ModifierCounter;

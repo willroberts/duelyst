@@ -1,40 +1,65 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-ModifierEgg = require './modifierEgg'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const ModifierEgg = require('./modifierEgg');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
-class ModifierOpeningGambitProgenitor extends ModifierOpeningGambit
+class ModifierOpeningGambitProgenitor extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitProgenitor";
+		this.type ="ModifierOpeningGambitProgenitor";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type:"ModifierOpeningGambitProgenitor"
-	@type:"ModifierOpeningGambitProgenitor"
+	onOpeningGambit() {
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
+		const ownerId = this.getOwnerId();
+		const myPosition = this.getCard().getPosition();
 
-	onOpeningGambit: () ->
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
 
-		ownerId = @getOwnerId()
-		myPosition = @getCard().getPosition()
+			const friendlyMinions = [];
+			for (let unit of Array.from(this.getGameSession().getBoard().getUnits())) {
+				if (((unit != null ? unit.getOwnerId() : undefined) === ownerId) && (unit.getBaseCardId() !== Cards.Faction5.Egg) && !unit.getIsGeneral() && !((unit.getPosition().x === myPosition.x) && (unit.getPosition().y === myPosition.y))) {
+					friendlyMinions.push(unit);
+				}
+			}
 
-		if @getGameSession().getIsRunningAsAuthoritative()
+			let playerOffset = 0;
+			if (this.getCard().isOwnedByPlayer1()) { playerOffset = -1; } else { playerOffset = 1; }
 
-			friendlyMinions = []
-			for unit in @getGameSession().getBoard().getUnits()
-				if unit?.getOwnerId() is ownerId and unit.getBaseCardId() isnt Cards.Faction5.Egg and !unit.getIsGeneral() and !(unit.getPosition().x is myPosition.x and unit.getPosition().y is myPosition.y)
-					friendlyMinions.push(unit)
+			return (() => {
+				const result = [];
+				for (let minion of Array.from(friendlyMinions)) {
+					const spawnPosition = {x:minion.getPosition().x+playerOffset, y:minion.getPosition().y};
+					if (!this.getGameSession().getBoard().getObstructionAtPositionForEntity(spawnPosition, minion)) {
 
-			playerOffset = 0
-			if @getCard().isOwnedByPlayer1() then playerOffset = -1 else playerOffset = 1
+						const egg = {id: Cards.Faction5.Egg};
+						if (egg.additionalInherentModifiersContextObjects == null) { egg.additionalInherentModifiersContextObjects = []; }
+						egg.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(minion.createNewCardData(), minion.getName()));
 
-			for minion in friendlyMinions
-				spawnPosition = {x:minion.getPosition().x+playerOffset, y:minion.getPosition().y}
-				if !@getGameSession().getBoard().getObstructionAtPositionForEntity(spawnPosition, minion)
+						const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, egg);
+						spawnAction.setSource(this.getCard());
+						result.push(this.getGameSession().executeAction(spawnAction));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierOpeningGambitProgenitor.initClass();
 
-					egg = {id: Cards.Faction5.Egg}
-					egg.additionalInherentModifiersContextObjects ?= []
-					egg.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(minion.createNewCardData(), minion.getName()))
-
-					spawnAction = new PlayCardSilentlyAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, egg)
-					spawnAction.setSource(@getCard())
-					@getGameSession().executeAction(spawnAction)
-
-module.exports = ModifierOpeningGambitProgenitor
+module.exports = ModifierOpeningGambitProgenitor;

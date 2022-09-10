@@ -1,40 +1,54 @@
-ModifierDealDamageWatch = require './modifierDealDamageWatch'
-CardType = require 'app/sdk/cards/cardType'
-SwapUnitAllegianceAction = require 'app/sdk/actions/swapUnitAllegianceAction.coffee'
-RefreshExhaustionAction =	require 'app/sdk/actions/refreshExhaustionAction.coffee'
-ModifierEndTurnWatchSwapAllegiance = require 'app/sdk/modifiers/modifierEndTurnWatchSwapAllegiance'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
+const CardType = require('app/sdk/cards/cardType');
+const SwapUnitAllegianceAction = require('app/sdk/actions/swapUnitAllegianceAction.coffee');
+const RefreshExhaustionAction =	require('app/sdk/actions/refreshExhaustionAction.coffee');
+const ModifierEndTurnWatchSwapAllegiance = require('app/sdk/modifiers/modifierEndTurnWatchSwapAllegiance');
 
-class ModifierDealDamageWatchControlEnemyMinionUntilEOT extends ModifierDealDamageWatch
+class ModifierDealDamageWatchControlEnemyMinionUntilEOT extends ModifierDealDamageWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDealDamageWatchControlEnemyMinionUntilEOT";
+		this.type ="ModifierDealDamageWatchControlEnemyMinionUntilEOT";
+	
+		this.modifierName ="Deal Damage to a minion and take control of it";
+		this.description ="Whenever this minion deals damage to a minion, take control of it until end of turn";
+	}
 
-	type:"ModifierDealDamageWatchControlEnemyMinionUntilEOT"
-	@type:"ModifierDealDamageWatchControlEnemyMinionUntilEOT"
+	onDealDamage(action) {
 
-	@modifierName:"Deal Damage to a minion and take control of it"
-	@description:"Whenever this minion deals damage to a minion, take control of it until end of turn"
+		const target = action.getTarget();
 
-	onDealDamage: (action) ->
+		if (((target != null ? target.type : undefined) === CardType.Unit) && !target.getIsGeneral()) { 
 
-		target = action.getTarget()
+			let endTurnDuration = 1;
+			if (!this.getCard().isOwnersTurn()) {
+				endTurnDuration = 2;
+			}
 
-		if target?.type == CardType.Unit and !target.getIsGeneral() 
+			const a = new SwapUnitAllegianceAction(this.getGameSession());
+			a.setTarget(target);
+			this.getGameSession().executeAction(a);
 
-			endTurnDuration = 1
-			if !@getCard().isOwnersTurn()
-				endTurnDuration = 2
+			// activate immediately
+			const refreshExhaustionAction = new RefreshExhaustionAction(this.getGameSession());
+			refreshExhaustionAction.setTarget(target);
+			this.getGameSession().executeAction(refreshExhaustionAction);
 
-			a = new SwapUnitAllegianceAction(@getGameSession())
-			a.setTarget(target)
-			@getGameSession().executeAction(a)
+			// give back at end of turn
+			const swapAllegianceContextObject = ModifierEndTurnWatchSwapAllegiance.createContextObject();
+			swapAllegianceContextObject.durationEndTurn = endTurnDuration;
+			swapAllegianceContextObject.isRemovable = false;
+			return this.getGameSession().applyModifierContextObject(swapAllegianceContextObject, target);
+		}
+	}
+}
+ModifierDealDamageWatchControlEnemyMinionUntilEOT.initClass();
 
-			# activate immediately
-			refreshExhaustionAction = new RefreshExhaustionAction(@getGameSession())
-			refreshExhaustionAction.setTarget(target)
-			@getGameSession().executeAction(refreshExhaustionAction)
-
-			# give back at end of turn
-			swapAllegianceContextObject = ModifierEndTurnWatchSwapAllegiance.createContextObject()
-			swapAllegianceContextObject.durationEndTurn = endTurnDuration
-			swapAllegianceContextObject.isRemovable = false
-			@getGameSession().applyModifierContextObject(swapAllegianceContextObject, target)
-
-module.exports = ModifierDealDamageWatchControlEnemyMinionUntilEOT
+module.exports = ModifierDealDamageWatchControlEnemyMinionUntilEOT;

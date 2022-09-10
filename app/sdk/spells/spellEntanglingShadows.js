@@ -1,25 +1,35 @@
-SpellSpawnEntity = 	require './spellSpawnEntity.coffee'
-Factions = require 'app/sdk/cards/factionsLookup.coffee'
-Races = require 'app/sdk/cards/racesLookup.coffee'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellSpawnEntity = 	require('./spellSpawnEntity.coffee');
+const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Races = require('app/sdk/cards/racesLookup.coffee');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class SpellEntanglingShadows extends SpellSpawnEntity
+class SpellEntanglingShadows extends SpellSpawnEntity {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		applyEffectPosition = {x: x, y: y}
+		const applyEffectPosition = {x, y};
 
-		# always spawn a shadow tile at each position
-		if board.isOnBoard(applyEffectPosition)
-			action = new PlayCardAction(@getGameSession(), @getOwnerId(), x, y, {id: Cards.Tile.Shadow})
-			action.setOwnerId(@getOwnerId())
-			@getGameSession().executeAction(action)
+		// always spawn a shadow tile at each position
+		if (board.isOnBoard(applyEffectPosition)) {
+			const action = new PlayCardAction(this.getGameSession(), this.getOwnerId(), x, y, {id: Cards.Tile.Shadow});
+			action.setOwnerId(this.getOwnerId());
+			this.getGameSession().executeAction(action);
+		}
 
-		# spawn random battle pet
-		spawnAction = @getSpawnAction(x, y, @cardDataOrIndexToSpawn)
-		if spawnAction?
-			@getGameSession().executeAction(spawnAction)
+		// spawn random battle pet
+		const spawnAction = this.getSpawnAction(x, y, this.cardDataOrIndexToSpawn);
+		if (spawnAction != null) {
+			return this.getGameSession().executeAction(spawnAction);
+		}
+	}
+}
 
-module.exports = SpellEntanglingShadows
+module.exports = SpellEntanglingShadows;

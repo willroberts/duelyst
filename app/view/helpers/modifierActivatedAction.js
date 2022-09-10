@@ -1,11 +1,20 @@
-ModifierAction = require './modifierAction'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierAction = require('./modifierAction');
 
-###
+/*
   Action used for modifier activation.
-###
-class ModifierActivatedAction extends ModifierAction
+*/
+class ModifierActivatedAction extends ModifierAction {
+	static initClass() {
+	
+		this.type = "ModifierActivatedAction";
+		this.prototype.type = "ModifierActivatedAction";
+}
+}
+ModifierActivatedAction.initClass();
 
-	@type: "ModifierActivatedAction"
-	type: "ModifierActivatedAction"
-
-module.exports = ModifierActivatedAction
+module.exports = ModifierActivatedAction;

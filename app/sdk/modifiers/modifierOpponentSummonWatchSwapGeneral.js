@@ -1,35 +1,49 @@
-CONFIG = require 'app/common/config'
-ModifierSummonWatch = require './modifierSummonWatch'
-ModifierOpponentSummonWatch = require './modifierOpponentSummonWatch'
-SwapGeneralAction = require 'app/sdk/actions/swapGeneralAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const ModifierSummonWatch = require('./modifierSummonWatch');
+const ModifierOpponentSummonWatch = require('./modifierOpponentSummonWatch');
+const SwapGeneralAction = require('app/sdk/actions/swapGeneralAction');
 
-class ModifierOpponentSummonWatchSwapGeneral extends ModifierOpponentSummonWatch
+class ModifierOpponentSummonWatchSwapGeneral extends ModifierOpponentSummonWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpponentSummonWatchSwapGeneral";
+		this.type ="ModifierOpponentSummonWatchSwapGeneral";
+	
+		this.modifierName ="Opponent Summon Watch";
+		this.description ="Whenever an enemy summons a minion, it becomes their new General";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierOpponentSummonWatchSwapGeneral"
-	@type:"ModifierOpponentSummonWatchSwapGeneral"
+	static createContextObject(options) {
+		const contextObject = super.createContextObject(options);
 
-	@modifierName:"Opponent Summon Watch"
-	@description:"Whenever an enemy summons a minion, it becomes their new General"
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericSpawn"]
+	onSummonWatch(action) {
+		super.onSummonWatch(action);
 
-	@createContextObject: (options) ->
-		contextObject = super(options)
+		const general = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+		const newMinion = action.getTarget();
 
-		return contextObject
+		// turn the new unit into your general
+		if (general != null) {
+			const swapGeneralAction = new SwapGeneralAction(this.getGameSession());
+			swapGeneralAction.setIsDepthFirst(false);
+			swapGeneralAction.setSource(general);
+			swapGeneralAction.setTarget(newMinion);
+			return this.getGameSession().executeAction(swapGeneralAction);
+		}
+	}
+}
+ModifierOpponentSummonWatchSwapGeneral.initClass();
 
-	onSummonWatch: (action) ->
-		super(action)
-
-		general = @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-		newMinion = action.getTarget()
-
-		# turn the new unit into your general
-		if general?
-			swapGeneralAction = new SwapGeneralAction(@getGameSession())
-			swapGeneralAction.setIsDepthFirst(false)
-			swapGeneralAction.setSource(general)
-			swapGeneralAction.setTarget(newMinion)
-			@getGameSession().executeAction(swapGeneralAction)
-
-module.exports = ModifierOpponentSummonWatchSwapGeneral
+module.exports = ModifierOpponentSummonWatchSwapGeneral;

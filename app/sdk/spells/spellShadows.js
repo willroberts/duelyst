@@ -1,30 +1,44 @@
-CONFIG = require 'app/common/config'
-SpellSpawnEntity = require './spellSpawnEntity'
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const SpellSpawnEntity = require('./spellSpawnEntity');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class SpellShadows extends SpellSpawnEntity
+class SpellShadows extends SpellSpawnEntity {
+	static initClass() {
+	
+		this.prototype.cardDataOrIndexToSpawn = {id: Cards.Faction4.Wraithling};
+	}
 
-	cardDataOrIndexToSpawn: {id: Cards.Faction4.Wraithling}
+	_findApplyEffectPositions(position, sourceAction) {
+		const applyEffectPositions = [];
+		const board = this.getGameSession().getBoard();
 
-	_findApplyEffectPositions: (position, sourceAction) ->
-		applyEffectPositions = []
-		board = @getGameSession().getBoard()
+		// apply in front of each enemy unit and General
+		let playerOffset = 0;
+		if (this.isOwnedByPlayer1()) { playerOffset = 1; } else { playerOffset = -1; }
+		const entity = this.getEntityToSpawn();
+		for (let unit of Array.from(board.getUnits())) {
+			//look for units owned by the opponent of the player who cast the spell, and with an open space "behind" the enemy unit
+			const behindPosition = {x:unit.getPosition().x+playerOffset, y:unit.getPosition().y};
+			if ((unit.getOwnerId() !== this.getOwnerId()) && board.isOnBoard(behindPosition) && !board.getObstructionAtPositionForEntity(behindPosition, entity)) {
+				applyEffectPositions.push(behindPosition);
+			}
+		}
 
-		# apply in front of each enemy unit and General
-		playerOffset = 0
-		if @isOwnedByPlayer1() then playerOffset = 1 else playerOffset = -1
-		entity = @getEntityToSpawn()
-		for unit in board.getUnits()
-			#look for units owned by the opponent of the player who cast the spell, and with an open space "behind" the enemy unit
-			behindPosition = {x:unit.getPosition().x+playerOffset, y:unit.getPosition().y}
-			if unit.getOwnerId() != @getOwnerId() and board.isOnBoard(behindPosition) and !board.getObstructionAtPositionForEntity(behindPosition, entity)
-				applyEffectPositions.push(behindPosition)
+		return applyEffectPositions;
+	}
 
-		return applyEffectPositions
+	getAppliesSameEffectToMultipleTargets() {
+		return true;
+	}
+}
+SpellShadows.initClass();
 
-	getAppliesSameEffectToMultipleTargets: () ->
-		return true
-
-module.exports = SpellShadows
+module.exports = SpellShadows;

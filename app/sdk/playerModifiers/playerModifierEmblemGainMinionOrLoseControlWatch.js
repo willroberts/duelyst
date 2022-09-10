@@ -1,48 +1,71 @@
-PlayerModifierEmblem = require './playerModifierEmblem'
-CardType = require 'app/sdk/cards/cardType'
-ApplyCardToBoardAction = require 'app/sdk/actions/applyCardToBoardAction'
-PlayCardAsTransformAction = require 'app/sdk/actions/playCardAsTransformAction'
-CloneEntityAsTransformAction = require 'app/sdk/actions/cloneEntityAsTransformAction'
-SwapUnitAllegianceAction = require 'app/sdk/actions/swapUnitAllegianceAction'
-RemoveAction = require 'app/sdk/actions/removeAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const PlayerModifierEmblem = require('./playerModifierEmblem');
+const CardType = require('app/sdk/cards/cardType');
+const ApplyCardToBoardAction = require('app/sdk/actions/applyCardToBoardAction');
+const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
+const CloneEntityAsTransformAction = require('app/sdk/actions/cloneEntityAsTransformAction');
+const SwapUnitAllegianceAction = require('app/sdk/actions/swapUnitAllegianceAction');
+const RemoveAction = require('app/sdk/actions/removeAction');
 
-class PlayerModifierEmblemGainMinionOrLoseControlWatch extends PlayerModifierEmblem
+class PlayerModifierEmblemGainMinionOrLoseControlWatch extends PlayerModifierEmblem {
+	static initClass() {
+	
+		this.prototype.type ="PlayerModifierEmblemGainMinionOrLoseControlWatch";
+		this.type ="PlayerModifierEmblemGainMinionOrLoseControlWatch";
+	}
 
-	type:"PlayerModifierEmblemGainMinionOrLoseControlWatch"
-	@type:"PlayerModifierEmblemGainMinionOrLoseControlWatch"
+	onAction(e) {
+		super.onAction(e);
 
-	onAction: (e) ->
-		super(e)
+		const {
+            action
+        } = e;
 
-		action = e.action
+		if (this.getIsActionRelevantForGainMinion(action)) {
+			return this.onGainMinionWatch(action);
+		} else if (this.getIsActionRelevantForLoseControl(action)) {
+			return this.onLoseControlWatch(action);
+		}
+	}
 
-		if @getIsActionRelevantForGainMinion(action)
-			@onGainMinionWatch(action)
-		else if @getIsActionRelevantForLoseControl(action)
-			@onLoseControlWatch(action)
+	getIsActionRelevantForGainMinion(action) {
 
-	getIsActionRelevantForGainMinion: (action) ->
+		if (action != null) {
+			const target = action.getTarget();
+			if (target != null) {
+				if ((target.type === CardType.Unit) && ((action instanceof ApplyCardToBoardAction && (action.getOwnerId() === this.getCard().getOwnerId())) || (action instanceof SwapUnitAllegianceAction && (target.getOwnerId() === this.getCard().getOwnerId())))) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
-		if action?
-			target = action.getTarget()
-			if target?
-				if target.type is CardType.Unit and ((action instanceof ApplyCardToBoardAction and action.getOwnerId() is @getCard().getOwnerId()) or (action instanceof SwapUnitAllegianceAction and target.getOwnerId() == @getCard().getOwnerId()))
-					return true
-		return false
+	getIsActionRelevantForLoseControl(action) {
 
-	getIsActionRelevantForLoseControl: (action) ->
+		if (action != null) {
+			const target = action.getTarget();
+			if (target != null) {
+				if ((target.type === CardType.Unit) && action instanceof SwapUnitAllegianceAction && (target.getOwnerId() !== this.getCard().getOwnerId())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
-		if action?
-			target = action.getTarget()
-			if target?
-				if target.type is CardType.Unit and action instanceof SwapUnitAllegianceAction and target.getOwnerId() != @getCard().getOwnerId()
-					return true
-		return false
+	onLoseControlWatch(action) {}
+		// override me in sub classes to implement special behavior
 
-	onLoseControlWatch: (action) ->
-		# override me in sub classes to implement special behavior
+	onGainMinionWatch(action) {}
+}
+PlayerModifierEmblemGainMinionOrLoseControlWatch.initClass();
+		// override me in sub classes to implement special behavior
 
-	onGainMinionWatch: (action) ->
-		# override me in sub classes to implement special behavior
-
-module.exports = PlayerModifierEmblemGainMinionOrLoseControlWatch
+module.exports = PlayerModifierEmblemGainMinionOrLoseControlWatch;

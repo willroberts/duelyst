@@ -1,24 +1,48 @@
-ModifierMyAttackWatch = require './modifierMyAttackWatch'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 
-class ModifierMyAttackWatchApplyModifiers extends ModifierMyAttackWatch
+class ModifierMyAttackWatchApplyModifiers extends ModifierMyAttackWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyAttackWatchApplyModifiers";
+		this.type ="ModifierMyAttackWatchApplyModifiers";
+	
+		this.prototype.modifiersContextObjects = null;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierMyAttackWatchApplyModifiers"
-	@type:"ModifierMyAttackWatchApplyModifiers"
+	static createContextObject(modifiersContextObjects, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = modifiersContextObjects;
+		return contextObject;
+	}
 
-	modifiersContextObjects: null
+	onMyAttackWatch(action) {
 
-	fxResource: ["FX.Modifiers.ModifierGenericBuff"]
+		if (this.modifiersContextObjects != null) {
+			return (() => {
+				const result = [];
+				for (let modifier of Array.from(this.modifiersContextObjects)) {
+					if (modifier != null) {
+						result.push(this.getGameSession().applyModifierContextObject(modifier, this.getCard()));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierMyAttackWatchApplyModifiers.initClass();
 
-	@createContextObject: (modifiersContextObjects, options) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = modifiersContextObjects
-		return contextObject
-
-	onMyAttackWatch: (action) ->
-
-		if @modifiersContextObjects?
-			for modifier in @modifiersContextObjects
-				if modifier?
-					@getGameSession().applyModifierContextObject(modifier, @getCard())
-
-module.exports = ModifierMyAttackWatchApplyModifiers
+module.exports = ModifierMyAttackWatchApplyModifiers;

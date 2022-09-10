@@ -1,34 +1,50 @@
-ModifierMyMinionAttackWatch = require './modifierMyMinionAttackWatch'
-HealAction = require 'app/sdk/actions/healAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierMyMinionAttackWatch = require('./modifierMyMinionAttackWatch');
+const HealAction = require('app/sdk/actions/healAction');
 
-class ModifierMyMinionAttackWatchHealGeneral extends ModifierMyMinionAttackWatch
+class ModifierMyMinionAttackWatchHealGeneral extends ModifierMyMinionAttackWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyMinionAttackWatchHealGeneral";
+		this.type ="ModifierMyMinionAttackWatchHealGeneral";
+	
+		this.modifierName ="MyMinionAttackWatch Heal My General";
+		this.description ="Whenever a friendly minion attacks, restore %X Health to your General";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierMyMinionAttackWatch", "FX.Modifiers.ModifierGenericHeal"];
+	}
 
-	type:"ModifierMyMinionAttackWatchHealGeneral"
-	@type:"ModifierMyMinionAttackWatchHealGeneral"
+	static createContextObject(healAmount, options) {
+		if (healAmount == null) { healAmount = 0; }
+		const contextObject = super.createContextObject(options);
+		contextObject.healAmount = healAmount;
+		return contextObject;
+	}
 
-	@modifierName:"MyMinionAttackWatch Heal My General"
-	@description:"Whenever a friendly minion attacks, restore %X Health to your General"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.healAmount);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierMyMinionAttackWatch", "FX.Modifiers.ModifierGenericHeal"]
+	onMyMinionAttackWatch(action) {
+		const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
 
-	@createContextObject: (healAmount=0, options) ->
-		contextObject = super(options)
-		contextObject.healAmount = healAmount
-		return contextObject
+		const healAction = new HealAction(this.getGameSession());
+		healAction.setOwnerId(this.getCard().getOwnerId());
+		healAction.setTarget(general);
+		healAction.setHealAmount(this.healAmount);
+		return this.getGameSession().executeAction(healAction);
+	}
+}
+ModifierMyMinionAttackWatchHealGeneral.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.healAmount
-		else
-			return @description
-
-	onMyMinionAttackWatch: (action) ->
-		general = @getCard().getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-
-		healAction = new HealAction(this.getGameSession())
-		healAction.setOwnerId(@getCard().getOwnerId())
-		healAction.setTarget(general)
-		healAction.setHealAmount(@healAmount)
-		@getGameSession().executeAction(healAction)
-
-module.exports = ModifierMyMinionAttackWatchHealGeneral
+module.exports = ModifierMyMinionAttackWatchHealGeneral;

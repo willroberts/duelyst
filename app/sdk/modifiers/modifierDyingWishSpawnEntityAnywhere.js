@@ -1,45 +1,70 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierDyingWish = require './modifierDyingWish'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
-UtilsPosition = require 'app/common/utils/utils_position'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierDyingWish = require('./modifierDyingWish');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
+const UtilsPosition = require('app/common/utils/utils_position');
+const _ = require('underscore');
 
-class ModifierDyingWishSpawnEntityAnywhere extends ModifierDyingWish
+class ModifierDyingWishSpawnEntityAnywhere extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWishSpawnEntityAnywhere";
+		this.type ="ModifierDyingWishSpawnEntityAnywhere";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn"];
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+		this.prototype.spawnCount = 1;
+		this.prototype.spawnSilently = true;
+	}
 
-	type:"ModifierDyingWishSpawnEntityAnywhere"
-	@type:"ModifierDyingWishSpawnEntityAnywhere"
+	static createContextObject(cardDataOrIndexToSpawn, spawnCount, spawnSilently, options) {
+		if (spawnCount == null) { spawnCount = 1; }
+		if (spawnSilently == null) { spawnSilently = true; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.spawnCount = spawnCount;
+		contextObject.spawnSilently = spawnSilently;
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn"]
+	onDyingWish(action) {
+		super.onDyingWish(action);
 
-	cardDataOrIndexToSpawn: null
-	spawnCount: 1
-	spawnSilently: true
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS;
+			const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+			const thisEntityPosition = this.getCard().getPosition();
+			const validPositions = _.reject(wholeBoardPattern, position => UtilsPosition.getPositionsAreEqual(position, thisEntityPosition));
+			const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, validPositions, card, this.getCard(), this.spawnCount);
 
-	@createContextObject: (cardDataOrIndexToSpawn, spawnCount=1, spawnSilently=true, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.spawnCount = spawnCount
-		contextObject.spawnSilently = spawnSilently
-		return contextObject
+			return (() => {
+				const result = [];
+				for (let position of Array.from(spawnLocations)) {
+					var playCardAction;
+					if (!this.spawnSilently) {
+						playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+					} else {
+						playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+					}
+					playCardAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(playCardAction));
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierDyingWishSpawnEntityAnywhere.initClass();
 
-	onDyingWish: (action) ->
-		super(action)
-
-		if @getGameSession().getIsRunningAsAuthoritative()
-			wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS
-			card = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(@cardDataOrIndexToSpawn)
-			thisEntityPosition = @getCard().getPosition()
-			validPositions = _.reject(wholeBoardPattern, (position) -> UtilsPosition.getPositionsAreEqual(position, thisEntityPosition))
-			spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), {x:0, y:0}, validPositions, card, @getCard(), @spawnCount)
-
-			for position in spawnLocations
-				if !@spawnSilently
-					playCardAction = new PlayCardAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, @cardDataOrIndexToSpawn)
-				else
-					playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, @cardDataOrIndexToSpawn)
-				playCardAction.setSource(@getCard())
-				@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierDyingWishSpawnEntityAnywhere
+module.exports = ModifierDyingWishSpawnEntityAnywhere;

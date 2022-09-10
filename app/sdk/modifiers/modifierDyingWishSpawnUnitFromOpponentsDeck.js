@@ -1,82 +1,125 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-UtilsPosition = require 'app/common/utils/utils_position'
-ModifierDyingWish = require './modifierDyingWish'
-CardType = require 'app/sdk/cards/cardType'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const UtilsPosition = require('app/common/utils/utils_position');
+const ModifierDyingWish = require('./modifierDyingWish');
+const CardType = require('app/sdk/cards/cardType');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
 
-class ModifierDyingWishSpawnUnitFromOpponentsDeck extends ModifierDyingWish
+class ModifierDyingWishSpawnUnitFromOpponentsDeck extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWishSpawnUnitFromOpponentsDeck";
+		this.type ="ModifierDyingWishSpawnUnitFromOpponentsDeck";
+	
+		this.description = "Summon %X";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierDyingWishSpawnUnitFromOpponentsDeck"
-	@type:"ModifierDyingWishSpawnUnitFromOpponentsDeck"
+	static createContextObject(spawnDescription, spawnCount, spawnPattern, spawnSilently,options) {
+		if (spawnDescription == null) { spawnDescription = "random minion"; }
+		if (spawnCount == null) { spawnCount = 1; }
+		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_1x1; }
+		if (spawnSilently == null) { spawnSilently = true; }
+		const contextObject = super.createContextObject(options);
+		contextObject.spawnDescription = spawnDescription;
+		contextObject.spawnCount = spawnCount;
+		contextObject.spawnPattern = spawnPattern;
+		contextObject.spawnSilently = spawnSilently;
+		return contextObject;
+	}
 
-	@description: "Summon %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			let replaceText = "";
+			if (UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)) {
+				replaceText = "a "+modifierContextObject.spawnDescription+" from the opponent\'s deck on this space";
+			} else if (modifierContextObject.spawnCount === 1) {
+				replaceText = "a "+modifierContextObject.spawnDescription+" from the opponent\'s deck in a random nearby space";
+			} else if (modifierContextObject.spawnCount === 8) {
+				replaceText = ""+modifierContextObject.spawnDescription+"s from the opponent\'s deck in all nearby spaces";
+			} else {
+				replaceText = ""+modifierContextObject.spawnDescription+"s from the opponent\'s deck into "+modifierContextObject.spawnCount+" nearby spaces";
+			}
+			return this.description.replace(/%X/, replaceText);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn"]
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	@createContextObject: (spawnDescription = "random minion", spawnCount=1, spawnPattern=CONFIG.PATTERN_1x1, spawnSilently=true,options) ->
-		contextObject = super(options)
-		contextObject.spawnDescription = spawnDescription
-		contextObject.spawnCount = spawnCount
-		contextObject.spawnPattern = spawnPattern
-		contextObject.spawnSilently = spawnSilently
-		return contextObject
+		p.canConvertCardToPrismatic = false; // stealing an actual card, so don't convert to prismatic based on this card
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			replaceText = ""
-			if UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)
-				replaceText = "a "+modifierContextObject.spawnDescription+" from the opponent\'s deck on this space"
-			else if modifierContextObject.spawnCount == 1
-				replaceText = "a "+modifierContextObject.spawnDescription+" from the opponent\'s deck in a random nearby space"
-			else if modifierContextObject.spawnCount == 8
-				replaceText = ""+modifierContextObject.spawnDescription+"s from the opponent\'s deck in all nearby spaces"
-			else
-				replaceText = ""+modifierContextObject.spawnDescription+"s from the opponent\'s deck into "+modifierContextObject.spawnCount+" nearby spaces"
-			return @description.replace /%X/, replaceText
-		else
-			return @description
+		return p;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	onDyingWish(action) {
+		super.onDyingWish(action);
 
-		p.canConvertCardToPrismatic = false # stealing an actual card, so don't convert to prismatic based on this card
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			let card, cardIndex, spawnCount;
+			const opponentsDeck = this.getGameSession().getOpponentPlayerOfPlayerId(this.getCard().getOwnerId()).getDeck();
+			const indexesOfMinions = [];
+			const gameSession = this.getGameSession();
+			const drawPile = opponentsDeck.getDrawPile();
+			for (let i = 0; i < drawPile.length; i++) {
+				cardIndex = drawPile[i];
+				card = gameSession.getCardByIndex(cardIndex);
+				if ((card != null) && (card.getType() === CardType.Unit)) {
+					indexesOfMinions.push(i);
+				}
+			}
 
-		return p
+			if (UtilsPosition.getArraysOfPositionsAreEqual(this.contextObject != null ? this.contextObject.spawnPattern : undefined, CONFIG.PATTERN_1x1)) {
+				spawnCount = 1;
+			} else {
+				({
+                    spawnCount
+                } = this);
+			}
 
-	onDyingWish: (action) ->
-		super(action)
+			let numSpawned = 0;
+			return (() => {
+				const result = [];
+				while ((indexesOfMinions.length > 0) && (numSpawned < spawnCount)) {
+					numSpawned++;
+					const indexOfCardInDeck = indexesOfMinions.splice(this.getGameSession().getRandomIntegerForExecution(indexesOfMinions.length), 1)[0];
+					cardIndex = drawPile[indexOfCardInDeck];
+					card = this.getGameSession().getCardByIndex(cardIndex);
+					var spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), action.getTargetPosition(), this.spawnPattern, card, this.getCard(), 1);
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			opponentsDeck = @getGameSession().getOpponentPlayerOfPlayerId(@getCard().getOwnerId()).getDeck()
-			indexesOfMinions = []
-			gameSession = @getGameSession()
-			drawPile = opponentsDeck.getDrawPile()
-			for cardIndex, i in drawPile
-				card = gameSession.getCardByIndex(cardIndex)
-				if card? and card.getType() == CardType.Unit
-					indexesOfMinions.push(i)
+					result.push((() => {
+						const result1 = [];
+						for (let position of Array.from(spawnLocations)) {
+							var playCardAction;
+							if (!this.spawnSilently) {
+								playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, cardIndex);
+							} else {
+								playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, cardIndex);
+							}
+							playCardAction.setSource(this.getCard());
+							result1.push(this.getGameSession().executeAction(playCardAction));
+						}
+						return result1;
+					})());
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierDyingWishSpawnUnitFromOpponentsDeck.initClass();
 
-			if UtilsPosition.getArraysOfPositionsAreEqual(@contextObject?.spawnPattern, CONFIG.PATTERN_1x1)
-				spawnCount = 1
-			else
-				spawnCount = @spawnCount
-
-			numSpawned = 0
-			while indexesOfMinions.length > 0 and numSpawned < spawnCount
-				numSpawned++
-				indexOfCardInDeck = indexesOfMinions.splice(@getGameSession().getRandomIntegerForExecution(indexesOfMinions.length), 1)[0]
-				cardIndex = drawPile[indexOfCardInDeck]
-				card = @getGameSession().getCardByIndex(cardIndex)
-				spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), action.getTargetPosition(), @spawnPattern, card, @getCard(), 1)
-
-				for position in spawnLocations
-					if !@spawnSilently
-						playCardAction = new PlayCardAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, cardIndex)
-					else
-						playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, cardIndex)
-					playCardAction.setSource(@getCard())
-					@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierDyingWishSpawnUnitFromOpponentsDeck
+module.exports = ModifierDyingWishSpawnUnitFromOpponentsDeck;

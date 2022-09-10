@@ -1,62 +1,95 @@
-ModifierOpeningGambit = 			require './modifierOpeningGambit'
-KillAction = 		require 'app/sdk/actions/killAction'
-CardType = 								require 'app/sdk/cards/cardType'
-Modifier = 								require './modifier'
-Stringifiers = 						require 'app/sdk/helpers/stringifiers'
-Modifier =								require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = 			require('./modifierOpeningGambit');
+const KillAction = 		require('app/sdk/actions/killAction');
+const CardType = 								require('app/sdk/cards/cardType');
+let Modifier = 								require('./modifier');
+const Stringifiers = 						require('app/sdk/helpers/stringifiers');
+Modifier =								require('./modifier');
 
-class ModifierOpeningGambitSacrificeNearbyBuffSelf extends ModifierOpeningGambit
+class ModifierOpeningGambitSacrificeNearbyBuffSelf extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitSacrificeNearbyBuffSelf";
+		this.type = "ModifierOpeningGambitSacrificeNearbyBuffSelf";
+	
+		this.modifierName = "Opening Gambit";
+		this.description = "Destroy friendly minions around it and gain %X for each minion";
+	
+		this.prototype.targetEnemies = false;
+		this.prototype.targetAllies = true;
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericDamageNearbyShadow"];
+	}
 
-	type: "ModifierOpeningGambitSacrificeNearbyBuffSelf"
-	@type: "ModifierOpeningGambitSacrificeNearbyBuffSelf"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	@modifierName: "Opening Gambit"
-	@description: "Destroy friendly minions around it and gain %X for each minion"
+		p.numSacrificed = 0;
 
-	targetEnemies: false
-	targetAllies: true
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericDamageNearbyShadow"]
+		return p;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	static createContextObject(attackBuff, maxHPBuff, options) {
+		if (attackBuff == null) { attackBuff = 0; }
+		if (maxHPBuff == null) { maxHPBuff = 0; }
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		const statBuffContextObject = Modifier.createContextObjectWithAttributeBuffs(attackBuff,maxHPBuff);
+		statBuffContextObject.appliedName = "Consumed Strength";
+		contextObject.modifiersContextObjects = [statBuffContextObject];
+		return contextObject;
+	}
 
-		p.numSacrificed = 0
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			const subContextObject = modifierContextObject.modifiersContextObjects[0];
+			return this.description.replace(/%X/, Stringifiers.stringifyAttackHealthBuff(subContextObject.attributeBuffs.atk,subContextObject.attributeBuffs.maxHP));
+		} else {
+			return this.description;
+		}
+	}
 
-		return p
+	applyManagedModifiersFromModifiersContextObjects(modifiersContextObjects, card) {
+		// apply once per sacrifice
+		return __range__(0, this._private.numSacrificed, false).map((i) =>
+			super.applyManagedModifiersFromModifiersContextObjects(modifiersContextObjects, card));
+	}
 
-	@createContextObject: (attackBuff = 0, maxHPBuff = 0, options = undefined) ->
-		contextObject = super(options)
-		statBuffContextObject = Modifier.createContextObjectWithAttributeBuffs(attackBuff,maxHPBuff)
-		statBuffContextObject.appliedName = "Consumed Strength"
-		contextObject.modifiersContextObjects = [statBuffContextObject]
-		return contextObject
+	onOpeningGambit() {
+		super.onOpeningGambit();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			subContextObject = modifierContextObject.modifiersContextObjects[0]
-			return @description.replace /%X/, Stringifiers.stringifyAttackHealthBuff(subContextObject.attributeBuffs.atk,subContextObject.attributeBuffs.maxHP)
-		else
-			return @description
+		const entities = this.getGameSession().getBoard().getFriendlyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
+		for (let entity of Array.from(entities)) {
+			// don't kill general
+			if (!entity.getIsGeneral()) {
+				const damageAction = new KillAction(this.getGameSession());
+				damageAction.setOwnerId(this.getCard().getOwnerId());
+				damageAction.setSource(this.getCard());
+				damageAction.setTarget(entity);
+				this.getGameSession().executeAction(damageAction);
+				this._private.numSacrificed++;
+			}
+		}
 
-	applyManagedModifiersFromModifiersContextObjects: (modifiersContextObjects, card) ->
-		# apply once per sacrifice
-		for i in [0...@_private.numSacrificed]
-			super(modifiersContextObjects, card)
+		return this.applyManagedModifiersFromModifiersContextObjects(this.modifiersContextObjects, this.getCard());
+	}
+}
+ModifierOpeningGambitSacrificeNearbyBuffSelf.initClass();
 
-	onOpeningGambit: () ->
-		super()
+module.exports = ModifierOpeningGambitSacrificeNearbyBuffSelf;
 
-		entities = @getGameSession().getBoard().getFriendlyEntitiesAroundEntity(@getCard(), CardType.Unit, 1)
-		for entity in entities
-			# don't kill general
-			if !entity.getIsGeneral()
-				damageAction = new KillAction(@getGameSession())
-				damageAction.setOwnerId(@getCard().getOwnerId())
-				damageAction.setSource(@getCard())
-				damageAction.setTarget(entity)
-				@getGameSession().executeAction(damageAction)
-				@_private.numSacrificed++
-
-		@applyManagedModifiersFromModifiersContextObjects(@modifiersContextObjects, @getCard())
-
-module.exports = ModifierOpeningGambitSacrificeNearbyBuffSelf
+function __range__(left, right, inclusive) {
+  let range = [];
+  let ascending = left < right;
+  let end = !inclusive ? right : ascending ? right + 1 : right - 1;
+  for (let i = left; ascending ? i < end : i > end; ascending ? i++ : i--) {
+    range.push(i);
+  }
+  return range;
+}

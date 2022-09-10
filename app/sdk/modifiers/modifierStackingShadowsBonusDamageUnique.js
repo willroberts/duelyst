@@ -1,10 +1,19 @@
-ModifierStackingShadowsBonusDamage = require './modifierStackingShadowsBonusDamage'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierStackingShadowsBonusDamage = require('./modifierStackingShadowsBonusDamage');
 
-class ModifierStackingShadowsBonusDamageUnique extends ModifierStackingShadowsBonusDamage
+class ModifierStackingShadowsBonusDamageUnique extends ModifierStackingShadowsBonusDamage {
+	static initClass() {
+	
+		this.prototype.type = "ModifierStackingShadowsBonusDamageUnique";
+		this.type = "ModifierStackingShadowsBonusDamageUnique";
+	
+		this.prototype.maxStacks = 1;
+	}
+}
+ModifierStackingShadowsBonusDamageUnique.initClass();
 
-	type: "ModifierStackingShadowsBonusDamageUnique"
-	@type: "ModifierStackingShadowsBonusDamageUnique"
-
-	maxStacks: 1
-
-module.exports = ModifierStackingShadowsBonusDamageUnique
+module.exports = ModifierStackingShadowsBonusDamageUnique;

@@ -1,31 +1,45 @@
-CONFIG = require 'app/common/config'
-Modifier = require './modifier'
-ModifierWall = require './modifierWall'
-ModifierOpeningGambitApplyModifiers = require './modifierOpeningGambitApplyModifiers'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-CardType = require 'app/sdk/cards/cardType'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const Modifier = require('./modifier');
+const ModifierWall = require('./modifierWall');
+const ModifierOpeningGambitApplyModifiers = require('./modifierOpeningGambitApplyModifiers');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const CardType = require('app/sdk/cards/cardType');
+const _ = require('underscore');
 
-class ModifierOpeningGambitRazorback extends ModifierOpeningGambitApplyModifiers
+class ModifierOpeningGambitRazorback extends ModifierOpeningGambitApplyModifiers {
+	static initClass() {
+	
+		/*
+		OpeningGambitApplyModifers - but specifically exclude walls minions
+		*/
+	
+		this.prototype.type ="ModifierOpeningGambitRazorback";
+		this.type ="ModifierOpeningGambitRazorback";
+	}
 
-	###
-	OpeningGambitApplyModifers - but specifically exclude walls minions
-	###
+	static createContextObject(modifiersContextObjects, managedByCard, description, options) {
+		const contextObject = super.createContextObject(modifiersContextObjects, managedByCard, false, true, false, false, CONFIG.WHOLE_BOARD_RADIUS, description, options);
+		return contextObject;
+	}
 
-	type:"ModifierOpeningGambitRazorback"
-	@type:"ModifierOpeningGambitRazorback"
-
-	@createContextObject: (modifiersContextObjects, managedByCard, description, options) ->
-		contextObject = super(modifiersContextObjects, managedByCard, false, true, false, false, CONFIG.WHOLE_BOARD_RADIUS, description, options)
-		return contextObject
-
-	getAffectedEntities: () ->
-		entityList = super()
-		affectedEntities = []
-		for entity in entityList
-			if !entity.hasModifierType(ModifierWall.type)
-				affectedEntities.push(entity)
-		return affectedEntities
+	getAffectedEntities() {
+		const entityList = super.getAffectedEntities();
+		const affectedEntities = [];
+		for (let entity of Array.from(entityList)) {
+			if (!entity.hasModifierType(ModifierWall.type)) {
+				affectedEntities.push(entity);
+			}
+		}
+		return affectedEntities;
+	}
+}
+ModifierOpeningGambitRazorback.initClass();
 
 
-module.exports = ModifierOpeningGambitRazorback
+module.exports = ModifierOpeningGambitRazorback;

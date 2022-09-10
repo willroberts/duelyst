@@ -1,21 +1,33 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 
-class ModifierOpeningGambitPutCardInHand extends ModifierOpeningGambit
+class ModifierOpeningGambitPutCardInHand extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitPutCardInHand";
+		this.type ="ModifierOpeningGambitPutCardInHand";
+	
+		this.prototype.cardDataOrIndexToPutInHand = null;
+	}
 
-	type:"ModifierOpeningGambitPutCardInHand"
-	@type:"ModifierOpeningGambitPutCardInHand"
+	static createContextObject(cardDataOrIndexToPutInHand, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToPutInHand = cardDataOrIndexToPutInHand;
+		return contextObject;
+	}
 
-	cardDataOrIndexToPutInHand: null
+	onOpeningGambit(action) {
+		super.onOpeningGambit(action);
+		const a = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), this.cardDataOrIndexToPutInHand);
+		return this.getGameSession().executeAction(a);
+	}
+}
+ModifierOpeningGambitPutCardInHand.initClass();
 
-	@createContextObject: (cardDataOrIndexToPutInHand, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToPutInHand = cardDataOrIndexToPutInHand
-		return contextObject
-
-	onOpeningGambit: (action) ->
-		super(action)
-		a = new PutCardInHandAction(this.getGameSession(), @getCard().getOwnerId(), @cardDataOrIndexToPutInHand)
-		this.getGameSession().executeAction(a)
-
-module.exports = ModifierOpeningGambitPutCardInHand
+module.exports = ModifierOpeningGambitPutCardInHand;

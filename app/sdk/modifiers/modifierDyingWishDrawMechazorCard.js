@@ -1,21 +1,33 @@
-ModifierDyingWish = require './modifierDyingWish'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-Races = require 'app/sdk/cards/racesLookup.coffee'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierDyingWish = require('./modifierDyingWish');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const Races = require('app/sdk/cards/racesLookup.coffee');
 
-class ModifierDyingWishDrawMechazorCard extends ModifierDyingWish
+class ModifierDyingWishDrawMechazorCard extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type = "ModifierDyingWishDrawMechazorCard";
+		this.type = "ModifierDyingWishDrawMechazorCard";
+	
+		this.description = "Put a random MECH minion into your action bar";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type: "ModifierDyingWishDrawMechazorCard"
-	@type: "ModifierDyingWishDrawMechazorCard"
+	onDyingWish() {
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const mechCards = this.getGameSession().getCardCaches().getRace(Races.Mech).getIsPrismatic(false).getIsSkinned(false).getCards();
+			const mechCard = mechCards[this.getGameSession().getRandomIntegerForExecution(mechCards.length)];
+			const a = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), mechCard.createNewCardData() );
+			return this.getGameSession().executeAction(a);
+		}
+	}
+}
+ModifierDyingWishDrawMechazorCard.initClass();
 
-	@description: "Put a random MECH minion into your action bar"
-
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
-
-	onDyingWish: () ->
-		if @getGameSession().getIsRunningAsAuthoritative()
-			mechCards = @getGameSession().getCardCaches().getRace(Races.Mech).getIsPrismatic(false).getIsSkinned(false).getCards()
-			mechCard = mechCards[@getGameSession().getRandomIntegerForExecution(mechCards.length)]
-			a = new PutCardInHandAction(@getGameSession(), @getCard().getOwnerId(), mechCard.createNewCardData() )
-			@getGameSession().executeAction(a)
-
-module.exports = ModifierDyingWishDrawMechazorCard
+module.exports = ModifierDyingWishDrawMechazorCard;

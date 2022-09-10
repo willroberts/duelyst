@@ -1,32 +1,49 @@
-Modifier = require './modifier'
-ModifierMyMinionOrGeneralDamagedWatch = require './modifierMyMinionOrGeneralDamagedWatch'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierMyMinionOrGeneralDamagedWatch = require('./modifierMyMinionOrGeneralDamagedWatch');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
 
-class ModifierMyMinionOrGeneralDamagedWatchBuffSelf extends ModifierMyMinionOrGeneralDamagedWatch
+class ModifierMyMinionOrGeneralDamagedWatchBuffSelf extends ModifierMyMinionOrGeneralDamagedWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyMinionOrGeneralDamagedWatchBuffSelf";
+		this.type ="ModifierMyMinionOrGeneralDamagedWatchBuffSelf";
+	
+		this.modifierName ="My Minion or General Damaged Watch";
+		this.description ="Each time a friendly minion or your General takes damage, gain %X";
+	}
 
-	type:"ModifierMyMinionOrGeneralDamagedWatchBuffSelf"
-	@type:"ModifierMyMinionOrGeneralDamagedWatchBuffSelf"
+	static createContextObject(attackBuff, maxHPBuff,options) {
+		if (attackBuff == null) { attackBuff = 0; }
+		if (maxHPBuff == null) { maxHPBuff = 0; }
+		const contextObject = super.createContextObject(options);
+		const statContextObject = Modifier.createContextObjectWithAttributeBuffs(attackBuff,maxHPBuff);
+		statContextObject.appliedName = "Protector\'s Rage";
+		contextObject.modifiersContextObjects = [statContextObject];
+		return contextObject;
+	}
 
-	@modifierName:"My Minion or General Damaged Watch"
-	@description:"Each time a friendly minion or your General takes damage, gain %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			const subContextObject = modifierContextObject.modifiersContextObjects[0];
+			return this.description.replace(/%X/, Stringifiers.stringifyAttackHealthBuff(subContextObject.attributeBuffs.atk,subContextObject.attributeBuffs.maxHP));
+		} else {
+			return this.description;
+		}
+	}
 
-	@createContextObject: (attackBuff=0, maxHPBuff=0,options) ->
-		contextObject = super(options)
-		statContextObject = Modifier.createContextObjectWithAttributeBuffs(attackBuff,maxHPBuff)
-		statContextObject.appliedName = "Protector\'s Rage"
-		contextObject.modifiersContextObjects = [statContextObject]
-		return contextObject
+	onDamageDealtToMinionOrGeneral(action) {
+		return this.applyManagedModifiersFromModifiersContextObjects(this.modifiersContextObjects, this.getCard());
+	}
+}
+ModifierMyMinionOrGeneralDamagedWatchBuffSelf.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			subContextObject = modifierContextObject.modifiersContextObjects[0]
-			return @description.replace /%X/, Stringifiers.stringifyAttackHealthBuff(subContextObject.attributeBuffs.atk,subContextObject.attributeBuffs.maxHP)
-		else
-			return @description
-
-	onDamageDealtToMinionOrGeneral: (action) ->
-		@applyManagedModifiersFromModifiersContextObjects(@modifiersContextObjects, @getCard())
-
-module.exports = ModifierMyMinionOrGeneralDamagedWatchBuffSelf
+module.exports = ModifierMyMinionOrGeneralDamagedWatchBuffSelf;

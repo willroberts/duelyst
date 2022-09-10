@@ -1,20 +1,27 @@
-Promise = require 'bluebird'
-_ = require 'underscore'
-r = require '../r-client'
-ts = require '../r-timeseries'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Promise = require('bluebird');
+const _ = require('underscore');
+const r = require('../r-client');
+const ts = require('../r-timeseries');
 
-t = new ts(r)
+const t = new ts(r);
 
-hits = []
-for i in [0..999]
-	hits.push(t.hit())
+const hits = [];
+for (let i = 0; i <= 999; i++) {
+	hits.push(t.hit());
+}
 
-Promise.all(hits).then () ->
-	console.log "1000 hits created."
+Promise.all(hits).then(function() {
+	console.log("1000 hits created.");
 	
-	t.query(2).then (scores) ->
-		console.log "Scores:"
-		console.log scores
+	t.query(2).then(function(scores) {
+		console.log("Scores:");
+		return console.log(scores);
+	});
 
-	t.countHits().then (count) ->
-		console.log "Hits: #{count}"
+	return t.countHits().then(count => console.log(`Hits: ${count}`));
+});

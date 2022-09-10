@@ -1,20 +1,31 @@
-SpellKillTarget = require './spellKillTarget'
-CardType = require 'app/sdk/cards/cardType'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellKillTarget = require('./spellKillTarget');
+const CardType = require('app/sdk/cards/cardType');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class SpellKillEnemyOnFriendlyCreep extends SpellKillTarget
+class SpellKillEnemyOnFriendlyCreep extends SpellKillTarget {
 
-	_postFilterPlayPositions: (spellPositions) ->
-		board = @getGameSession().getBoard()
-		possibleTargetPositions = []
+	_postFilterPlayPositions(spellPositions) {
+		const board = this.getGameSession().getBoard();
+		const possibleTargetPositions = [];
 
-		for tile in board.getTiles(true, false)
-			if tile.getOwnerId() == @getOwnerId() and tile.getBaseCardId() == Cards.Tile.Shadow
-				tilePosition = {x:tile.getPosition().x, y:tile.getPosition().y}
-				unitOnCreep = board.getCardAtPosition(tilePosition, CardType.Unit)
-				if unitOnCreep? and unitOnCreep.getOwnerId() != @getOwnerId() and !unitOnCreep.getIsGeneral()
-					possibleTargetPositions.push(tilePosition)
+		for (let tile of Array.from(board.getTiles(true, false))) {
+			if ((tile.getOwnerId() === this.getOwnerId()) && (tile.getBaseCardId() === Cards.Tile.Shadow)) {
+				const tilePosition = {x:tile.getPosition().x, y:tile.getPosition().y};
+				const unitOnCreep = board.getCardAtPosition(tilePosition, CardType.Unit);
+				if ((unitOnCreep != null) && (unitOnCreep.getOwnerId() !== this.getOwnerId()) && !unitOnCreep.getIsGeneral()) {
+					possibleTargetPositions.push(tilePosition);
+				}
+			}
+		}
 
-		return possibleTargetPositions
+		return possibleTargetPositions;
+	}
+}
 
-module.exports = SpellKillEnemyOnFriendlyCreep
+module.exports = SpellKillEnemyOnFriendlyCreep;

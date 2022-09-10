@@ -1,43 +1,60 @@
-ModifierSummonWatchNearbyApplyModifiers = require './modifierSummonWatchApplyModifiers'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierSummonWatchNearbyApplyModifiers = require('./modifierSummonWatchApplyModifiers');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
 
-class ModifierSummonWatchNearbyApplyModifiersOncePerTurn extends ModifierSummonWatchNearbyApplyModifiers
+class ModifierSummonWatchNearbyApplyModifiersOncePerTurn extends ModifierSummonWatchNearbyApplyModifiers {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSummonWatchNearbyApplyModifiersOncePerTurn";
+		this.type ="ModifierSummonWatchNearbyApplyModifiersOncePerTurn";
+	
+		this.description = "The first friendly minion summoned nearby this minion each turn %X";
+	
+		this.prototype.canApplyModifier = true; // can apply modifier once per turn
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierSummonWatchNearbyApplyModifiersOncePerTurn"
-	@type:"ModifierSummonWatchNearbyApplyModifiersOncePerTurn"
+	static createContextObject(modifiersContextObjects, buffDescription, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = modifiersContextObjects;
+		contextObject.buffDescription = buffDescription;
+		return contextObject;
+	}
 
-	@description: "The first friendly minion summoned nearby this minion each turn %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.buffDescription);
+		} else {
+			return this.description;
+		}
+	}
 
-	canApplyModifier: true # can apply modifier once per turn
+	getIsValidBuffPosition(summonedUnitPosition) {
+		if (this.canApplyModifier) {
+			const entityPosition = this.getCard().getPosition();
+			if ((Math.abs(summonedUnitPosition.x - entityPosition.x) <= 1) && (Math.abs(summonedUnitPosition.y - entityPosition.y) <= 1)) {
+				this.canApplyModifier = false;
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return false;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"]
-
-	@createContextObject: (modifiersContextObjects, buffDescription, options) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = modifiersContextObjects
-		contextObject.buffDescription = buffDescription
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.buffDescription
-		else
-			return @description
-
-	getIsValidBuffPosition: (summonedUnitPosition) ->
-		if @canApplyModifier
-			entityPosition = @getCard().getPosition()
-			if (Math.abs(summonedUnitPosition.x - entityPosition.x) <= 1) and (Math.abs(summonedUnitPosition.y - entityPosition.y) <= 1)
-				@canApplyModifier = false
-				return true
-			else
-				return false
-		return false
-
-	onStartTurn: (actionEvent) ->
-		super(actionEvent)
-		@canApplyModifier = true
+	onStartTurn(actionEvent) {
+		super.onStartTurn(actionEvent);
+		return this.canApplyModifier = true;
+	}
+}
+ModifierSummonWatchNearbyApplyModifiersOncePerTurn.initClass();
 
 
-module.exports = ModifierSummonWatchNearbyApplyModifiersOncePerTurn
+module.exports = ModifierSummonWatchNearbyApplyModifiersOncePerTurn;

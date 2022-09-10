@@ -1,14 +1,16 @@
-CONFIG = require '../../common/config'
-SpellCloneSourceEntity = 	require('./spellCloneSourceEntity')
-UtilsGameSession = require '../../common/utils/utils_game_session.coffee'
+const CONFIG = require('../../common/config');
+const SpellCloneSourceEntity = 	require('./spellCloneSourceEntity');
+const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
 
-###
+/*
   Spawns a new entity nearby my general as clone of another entity.
-###
-class SpellCloneSourceEntityNearbyGeneral extends SpellCloneSourceEntity
+*/
+class SpellCloneSourceEntityNearbyGeneral extends SpellCloneSourceEntity {
 
-	_getPrefilteredValidTargetPositions: () ->
-		# get positions around General
-		return UtilsGameSession.getValidBoardPositionsFromPattern(@getGameSession().getBoard(), @getGameSession().getGeneralForPlayerId(@ownerId).getPosition(), CONFIG.PATTERN_3x3)
+	_getPrefilteredValidTargetPositions() {
+		// get positions around General
+		return UtilsGameSession.getValidBoardPositionsFromPattern(this.getGameSession().getBoard(), this.getGameSession().getGeneralForPlayerId(this.ownerId).getPosition(), CONFIG.PATTERN_3x3);
+}
+}
 
-module.exports = SpellCloneSourceEntityNearbyGeneral
+module.exports = SpellCloneSourceEntityNearbyGeneral;

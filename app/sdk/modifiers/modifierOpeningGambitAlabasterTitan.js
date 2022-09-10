@@ -1,44 +1,64 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-CardType = require 'app/sdk/cards/cardType'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const CardType = require('app/sdk/cards/cardType');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class ModifierOpeningGambitAlabasterTitan extends ModifierOpeningGambit
+class ModifierOpeningGambitAlabasterTitan extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitAlabasterTitan";
+		this.type ="ModifierOpeningGambitAlabasterTitan";
+	
+		this.description ="If you have no spells in your deck, equip a full set of armor";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type:"ModifierOpeningGambitAlabasterTitan"
-	@type:"ModifierOpeningGambitAlabasterTitan"
+	onOpeningGambit(action) {
 
-	@description:"If you have no spells in your deck, equip a full set of armor"
+		const gameSession = this.getGameSession();
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
+		let hasSpells = false;
 
-	onOpeningGambit: (action) ->
-
-		gameSession = @getGameSession()
-
-		hasSpells = false
-
-		drawPile = @getCard().getOwner().getDeck().getDrawPile()
-		for cardIndex, i in drawPile
-			if gameSession.getCardByIndex(cardIndex)?.getType() == CardType.Spell
-				hasSpells = true
-				break
+		const drawPile = this.getCard().getOwner().getDeck().getDrawPile();
+		for (let i = 0; i < drawPile.length; i++) {
+			const cardIndex = drawPile[i];
+			if (__guard__(gameSession.getCardByIndex(cardIndex), x => x.getType()) === CardType.Spell) {
+				hasSpells = true;
+				break;
+			}
+		}
 		
-		if !hasSpells
-			artifact1 = {id: Cards.Artifact.ArclyteRegalia}
-			artifact2 = {id: Cards.Artifact.IndomitableWill}
-			artifact3 = {id: Cards.Artifact.HaloBulwark}
+		if (!hasSpells) {
+			const artifact1 = {id: Cards.Artifact.ArclyteRegalia};
+			const artifact2 = {id: Cards.Artifact.IndomitableWill};
+			const artifact3 = {id: Cards.Artifact.HaloBulwark};
 
-			playCardAction1 = new PlayCardSilentlyAction(gameSession, @getCard().getOwnerId(), @getCard().getPosition().x, @getCard().getPosition().y, artifact1)
-			playCardAction2 = new PlayCardSilentlyAction(gameSession, @getCard().getOwnerId(), @getCard().getPosition().x, @getCard().getPosition().y, artifact2)
-			playCardAction3 = new PlayCardSilentlyAction(gameSession, @getCard().getOwnerId(), @getCard().getPosition().x, @getCard().getPosition().y, artifact3)
+			const playCardAction1 = new PlayCardSilentlyAction(gameSession, this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, artifact1);
+			const playCardAction2 = new PlayCardSilentlyAction(gameSession, this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, artifact2);
+			const playCardAction3 = new PlayCardSilentlyAction(gameSession, this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, artifact3);
 
-			playCardAction1.setSource(@getCard())
-			playCardAction2.setSource(@getCard())
-			playCardAction3.setSource(@getCard())
+			playCardAction1.setSource(this.getCard());
+			playCardAction2.setSource(this.getCard());
+			playCardAction3.setSource(this.getCard());
 
-			gameSession.executeAction(playCardAction1)
-			gameSession.executeAction(playCardAction2)
-			gameSession.executeAction(playCardAction3)
+			gameSession.executeAction(playCardAction1);
+			gameSession.executeAction(playCardAction2);
+			return gameSession.executeAction(playCardAction3);
+		}
+	}
+}
+ModifierOpeningGambitAlabasterTitan.initClass();
 
-module.exports = ModifierOpeningGambitAlabasterTitan
+module.exports = ModifierOpeningGambitAlabasterTitan;
+
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

@@ -1,16 +1,30 @@
-SpellAspectBase = require './spellAspectBase.coffee'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellAspectBase = require('./spellAspectBase.coffee');
 
-class SpellEchoingShriek extends SpellAspectBase
+class SpellEchoingShriek extends SpellAspectBase {
+	static initClass() {
+	
+		module.exports = SpellEchoingShriek;
+	}
 
-	_postFilterApplyPositions: (validPositions) ->
-		filteredPositions = []
+	_postFilterApplyPositions(validPositions) {
+		const filteredPositions = [];
 
-		if validPositions.length > 0
-			# spell only applies to minions with 2 or less cost
-			for position in validPositions
-				if @getGameSession().getBoard().getUnitAtPosition(position).getManaCost() <= 2
-					filteredPositions.push(position)
+		if (validPositions.length > 0) {
+			// spell only applies to minions with 2 or less cost
+			for (let position of Array.from(validPositions)) {
+				if (this.getGameSession().getBoard().getUnitAtPosition(position).getManaCost() <= 2) {
+					filteredPositions.push(position);
+				}
+			}
+		}
 
-		return filteredPositions
-
-	module.exports = SpellEchoingShriek
+		return filteredPositions;
+	}
+}
+SpellEchoingShriek.initClass();

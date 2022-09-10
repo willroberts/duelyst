@@ -1,107 +1,139 @@
-Modifier = require './modifier'
-DieAction = require 'app/sdk/actions/dieAction'
-DamageAction = require 'app/sdk/actions/damageAction'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
-KillAction = require 'app/sdk/actions/killAction'
-SwapGeneralAction = require 'app/sdk/actions/swapGeneralAction'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-CONFIG = require 'app/common/config'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const DieAction = require('app/sdk/actions/dieAction');
+const DamageAction = require('app/sdk/actions/damageAction');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
+const KillAction = require('app/sdk/actions/killAction');
+const SwapGeneralAction = require('app/sdk/actions/swapGeneralAction');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const CONFIG = require('app/common/config');
 
-class ModifierDieSpawnNewGeneral extends Modifier
+class ModifierDieSpawnNewGeneral extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDieSpawnNewGeneral";
+		this.type ="ModifierDieSpawnNewGeneral";
+	
+		this.modifierName ="Die Spawn New General";
+		this.description = "When this reaches low HP, watch out!";
+	
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInHand = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.maxStacks = 1;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSecondWind"];
+	}
 
-	type:"ModifierDieSpawnNewGeneral"
-	@type:"ModifierDieSpawnNewGeneral"
+	static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently, options) {
+		if (spawnDescription == null) { spawnDescription = ""; }
+		if (spawnCount == null) { spawnCount = 1; }
+		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
+		if (spawnSilently == null) { spawnSilently = false; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.spawnDescription = spawnDescription;
+		contextObject.spawnCount = spawnCount;
+		contextObject.spawnPattern = spawnPattern;
+		contextObject.spawnSilently = spawnSilently;
+		return contextObject;
+	}
 
-	@modifierName:"Die Spawn New General"
-	@description: "When this reaches low HP, watch out!"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	activeInDeck: false
-	activeInHand: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		p.summonNewGeneralAtActionIndex = -1; // index of action triggering second wind
 
-	maxStacks: 1
+		return p;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierSecondWind"]
+	onAfterCleanupAction(event) {
+		super.onAfterCleanupAction(event);
 
-	@createContextObject: (cardDataOrIndexToSpawn, spawnDescription = "", spawnCount=1, spawnPattern=CONFIG.PATTERN_3x3, spawnSilently=false, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.spawnDescription = spawnDescription
-		contextObject.spawnCount = spawnCount
-		contextObject.spawnPattern = spawnPattern
-		contextObject.spawnSilently = spawnSilently
-		return contextObject
+		const {
+            action
+        } = event;
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		if (this.getGameSession().getIsRunningAsAuthoritative() && (this._private.summonNewGeneralAtActionIndex === action.getIndex())) {
+			// after cleaning up action, trigger second wind
+			return this.onSummonNewGeneral(action);
+		}
+	}
 
-		p.summonNewGeneralAtActionIndex = -1 # index of action triggering second wind
+	onValidateAction(event) {
+		super.onValidateAction(event);
 
-		return p
+		const {
+            action
+        } = event;
 
-	onAfterCleanupAction: (event) ->
-		super(event)
+		// when our entity would die, invalidate the action until second wind executes
+		if (action instanceof DieAction && (action.getTarget() === this.getCard()) && action.getParentAction() instanceof DamageAction) {
+			// record index of parent action of die action, so we know when to trigger second wind
+			this._private.summonNewGeneralAtActionIndex = action.getParentAction().getIndex();
+			return this.invalidateAction(action, this.getCard().getPosition(), this.getCard().getName() + " combines to form D3cepticle!");
+		}
+	}
 
-		action = event.action
+	getCardDataOrIndexToSpawn() {
+		return this.cardDataOrIndexToSpawn;
+	}
 
-		if @getGameSession().getIsRunningAsAuthoritative() and @_private.summonNewGeneralAtActionIndex == action.getIndex()
-			# after cleaning up action, trigger second wind
-			@onSummonNewGeneral(action)
+	onSummonNewGeneral(action) {
+		// silence self to remove all existing buffs/debuffs
+		// set this modifier as not removable until we complete second wind
+		let spawnAction;
+		this.isRemovable = false;
+		this.getCard().silence();
 
-	onValidateAction: (event) ->
-		super(event)
+		const card = this.getCard();
 
-		action = event.action
+		// summon the new unit
+		const ownerId = this.getCard().getOwnerId();
+		const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierDieSpawnNewGeneral);
+		for (let spawnPosition of Array.from(spawnPositions)) {
+			const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
+			if (this.spawnSilently) {
+				spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+			} else {
+				spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+			}
+			spawnAction.setSource(this.getCard());
+			this.getGameSession().executeAction(spawnAction);
+		}
 
-		# when our entity would die, invalidate the action until second wind executes
-		if action instanceof DieAction and action.getTarget() is @getCard() and action.getParentAction() instanceof DamageAction
-			# record index of parent action of die action, so we know when to trigger second wind
-			@_private.summonNewGeneralAtActionIndex = action.getParentAction().getIndex()
-			@invalidateAction(action, @getCard().getPosition(), @getCard().getName() + " combines to form D3cepticle!")
+		// make sure to remove self to prevent triggering this modifier again
+		this.getGameSession().removeModifier(this);
 
-	getCardDataOrIndexToSpawn: () ->
-		return @cardDataOrIndexToSpawn
+		// turn the new unit into your general
+		if ((spawnAction != null) && card.getIsGeneral()) {
+			const oldGeneral = this.getGameSession().getGeneralForPlayerId(card.getOwnerId());
+			const newGeneral = spawnAction.getCard();
+			const swapGeneralAction = new SwapGeneralAction(this.getGameSession());
+			swapGeneralAction.setIsDepthFirst(false);
+			swapGeneralAction.setSource(oldGeneral);
+			swapGeneralAction.setTarget(newGeneral);
+			this.getGameSession().executeAction(swapGeneralAction);
+		}
 
-	onSummonNewGeneral: (action) ->
-		# silence self to remove all existing buffs/debuffs
-		# set this modifier as not removable until we complete second wind
-		@isRemovable = false
-		@getCard().silence()
+		// kill the old unit
+		const dieAction = new DieAction(this.getGameSession());
+		dieAction.setOwnerId(card.getOwnerId());
+		dieAction.setTarget(card);
+		return this.getGameSession().executeAction(dieAction);
+	}
+}
+ModifierDieSpawnNewGeneral.initClass();
 
-		card = @getCard()
-
-		# summon the new unit
-		ownerId = @getCard().getOwnerId()
-		spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(@, ModifierDieSpawnNewGeneral)
-		for spawnPosition in spawnPositions
-			cardDataOrIndexToSpawn = @getCardDataOrIndexToSpawn()
-			if @spawnSilently
-				spawnAction = new PlayCardSilentlyAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-			else
-				spawnAction = new PlayCardAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-			spawnAction.setSource(@getCard())
-			@getGameSession().executeAction(spawnAction)
-
-		# make sure to remove self to prevent triggering this modifier again
-		@getGameSession().removeModifier(@)
-
-		# turn the new unit into your general
-		if spawnAction? and card.getIsGeneral()
-			oldGeneral = @getGameSession().getGeneralForPlayerId(card.getOwnerId())
-			newGeneral = spawnAction.getCard()
-			swapGeneralAction = new SwapGeneralAction(@getGameSession())
-			swapGeneralAction.setIsDepthFirst(false)
-			swapGeneralAction.setSource(oldGeneral)
-			swapGeneralAction.setTarget(newGeneral)
-			@getGameSession().executeAction(swapGeneralAction)
-
-		# kill the old unit
-		dieAction = new DieAction(@getGameSession())
-		dieAction.setOwnerId(card.getOwnerId())
-		dieAction.setTarget(card)
-		@getGameSession().executeAction(dieAction)
-
-module.exports = ModifierDieSpawnNewGeneral
+module.exports = ModifierDieSpawnNewGeneral;

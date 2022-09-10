@@ -1,36 +1,60 @@
-PlayerModifierManaModifier = require 'app/sdk/playerModifiers/playerModifierManaModifier'
-ModifierManaCostChange = require 'app/sdk/modifiers/modifierManaCostChange'
-PlayCardFromHandAction = require 'app/sdk/actions/playCardFromHandAction'
-PlaySignatureCardAction = require 'app/sdk/actions/playSignatureCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const PlayerModifierManaModifier = require('app/sdk/playerModifiers/playerModifierManaModifier');
+const ModifierManaCostChange = require('app/sdk/modifiers/modifierManaCostChange');
+const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
+const PlaySignatureCardAction = require('app/sdk/actions/playSignatureCardAction');
 
-class PlayerModifierManaModifierNextCard extends PlayerModifierManaModifier
+class PlayerModifierManaModifierNextCard extends PlayerModifierManaModifier {
+	static initClass() {
+	
+		// single use mana modifier that stays in play ONLY for NEXT card played
+		// ex usage - if the next card you play is a minion, reduce its cost by 1
+	
+		this.prototype.type ="PlayerModifierManaModifierNextCard";
+		this.type ="PlayerModifierManaModifierNextCard";
+	}
 
-	# single use mana modifier that stays in play ONLY for NEXT card played
-	# ex usage - if the next card you play is a minion, reduce its cost by 1
+	onAction(event) {
+		super.onAction(event);
 
-	type:"PlayerModifierManaModifierNextCard"
-	@type:"PlayerModifierManaModifierNextCard"
+		// when a card is played from hand AFTER this modifier is applied
+		const {
+            action
+        } = event;
+		if ((action.getIndex() > this.getAppliedByActionIndex()) && ((action instanceof PlayCardFromHandAction && this.auraIncludeHand) || (action instanceof PlaySignatureCardAction && this.auraIncludeSignatureCards)) && (action.getOwnerId() === this.getPlayerId())) {
+			const card = action.getCard();
+			if (card != null) {
+				if (action instanceof PlayCardFromHandAction) {
+					if ((action.getOwnerId() === this.getPlayerId()) && (__guard__(action.getCard(), x => x.type) === CardType.Unit)) {
+						// damage the unit IF a unit was played
+						const unitToDamage = action.getTarget();
+						if (unitToDamage != null) {
+							const damageAction = new DamageAction(this.getGameSession());
+							damageAction.setOwnerId(this.getCard().getOwnerId());
+							damageAction.setSource(this.getCard());
+							damageAction.setTarget(unitToDamage);
+							damageAction.setDamageAmount(this.damageAmount);
+							this.getGameSession().executeAction(damageAction);
+						}
+					}
+				}
+				// always remove modifier after any card is played (next card only)
+				return this.getGameSession().removeModifier(this);
+			}
+		}
+	}
+}
+PlayerModifierManaModifierNextCard.initClass();
 
-	onAction: (event) ->
-		super(event)
+module.exports = PlayerModifierManaModifierNextCard;
 
-		# when a card is played from hand AFTER this modifier is applied
-		action = event.action
-		if (action.getIndex() > @getAppliedByActionIndex()) and ((action instanceof PlayCardFromHandAction and @auraIncludeHand) or (action instanceof PlaySignatureCardAction and @auraIncludeSignatureCards)) and action.getOwnerId() == @getPlayerId()
-			card = action.getCard()
-			if card?
-				if action instanceof PlayCardFromHandAction
-					if action.getOwnerId() is @getPlayerId() and action.getCard()?.type is CardType.Unit
-						# damage the unit IF a unit was played
-						unitToDamage = action.getTarget()
-						if unitToDamage?
-							damageAction = new DamageAction(@getGameSession())
-							damageAction.setOwnerId(@getCard().getOwnerId())
-							damageAction.setSource(@getCard())
-							damageAction.setTarget(unitToDamage)
-							damageAction.setDamageAmount(@damageAmount)
-							@getGameSession().executeAction(damageAction)
-				# always remove modifier after any card is played (next card only)
-				@getGameSession().removeModifier(@)
-
-module.exports = PlayerModifierManaModifierNextCard
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

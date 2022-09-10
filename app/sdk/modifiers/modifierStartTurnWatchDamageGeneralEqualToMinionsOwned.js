@@ -1,40 +1,55 @@
-ModifierStartTurnWatch = require './modifierStartTurnWatch'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
-i18next = require 'i18next'
-CONFIG = require 'app/common/config'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
+const i18next = require('i18next');
+const CONFIG = require('app/common/config');
 
-class ModifierStartTurnWatchDamageGeneralEqualToMinionsOwned extends ModifierStartTurnWatch
+class ModifierStartTurnWatchDamageGeneralEqualToMinionsOwned extends ModifierStartTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierStartTurnWatchDamageGeneralEqualToMinionsOwned";
+		this.type ="ModifierStartTurnWatchDamageGeneralEqualToMinionsOwned";
+	
+		this.modifierName ="Turn Watch";
+		this.description =i18next.t("modifiers.start_turn_watch_damage_general_equal_to_minions_owned_def");
+	
+		this.prototype.damageAmount = 0;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericChainLightningRed"];
+	}
 
-	type:"ModifierStartTurnWatchDamageGeneralEqualToMinionsOwned"
-	@type:"ModifierStartTurnWatchDamageGeneralEqualToMinionsOwned"
+	static createContextObject(options) {
+		const contextObject = super.createContextObject(options);
+		return contextObject;
+	}
 
-	@modifierName:"Turn Watch"
-	@description:i18next.t("modifiers.start_turn_watch_damage_general_equal_to_minions_owned_def")
+	static getDescription(modifierContextObject) {
+		return this.description;
+	}
 
-	damageAmount: 0
+	onTurnWatch(action) {
+		super.onTurnWatch(action);
 
-	fxResource: ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericChainLightningRed"]
+		const enemyMinions = this.getGameSession().getBoard().getEnemyEntitiesForEntity(this.getCard(), CardType.Unit);
+		const damageAmount = enemyMinions.length - 1; //removing 1 point of damage since the enemy general is included
+		const general = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+		if (general != null) {
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setOwnerId(this.getCard().getOwnerId());
+			damageAction.setSource(this.getCard());
+			damageAction.setTarget(general);
+			damageAction.setDamageAmount(damageAmount);
+			return this.getGameSession().executeAction(damageAction);
+		}
+	}
+}
+ModifierStartTurnWatchDamageGeneralEqualToMinionsOwned.initClass();
 
-	@createContextObject: (options) ->
-		contextObject = super(options)
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		return @description
-
-	onTurnWatch: (action) ->
-		super(action)
-
-		enemyMinions = @getGameSession().getBoard().getEnemyEntitiesForEntity(@getCard(), CardType.Unit)
-		damageAmount = enemyMinions.length - 1 #removing 1 point of damage since the enemy general is included
-		general = @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-		if general?
-			damageAction = new DamageAction(this.getGameSession())
-			damageAction.setOwnerId(@getCard().getOwnerId())
-			damageAction.setSource(@getCard())
-			damageAction.setTarget(general)
-			damageAction.setDamageAmount(damageAmount)
-			@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierStartTurnWatchDamageGeneralEqualToMinionsOwned
+module.exports = ModifierStartTurnWatchDamageGeneralEqualToMinionsOwned;

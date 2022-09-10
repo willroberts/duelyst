@@ -1,40 +1,62 @@
-ModifierTakeDamageWatch = require './modifierTakeDamageWatch'
-DamageAction = require 'app/sdk/actions/damageAction'
-CONFIG = require 'app/common/config'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierTakeDamageWatch = require('./modifierTakeDamageWatch');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CONFIG = require('app/common/config');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierTakeDamageWatchDamageAttacker extends ModifierTakeDamageWatch
+class ModifierTakeDamageWatchDamageAttacker extends ModifierTakeDamageWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierTakeDamageWatchDamageAttacker";
+		this.type ="ModifierTakeDamageWatchDamageAttacker";
+	
+		this.modifierName ="Take Damage Watch";
+		this.description ="Whenever this takes damage, deal %X damage to the attacker";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierTakeDamageWatch", "FX.Modifiers.ModifierGenericDamage"];
+	}
 
-	type:"ModifierTakeDamageWatchDamageAttacker"
-	@type:"ModifierTakeDamageWatchDamageAttacker"
+	static createContextObject(damageAmount, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	@modifierName:"Take Damage Watch"
-	@description:"Whenever this takes damage, deal %X damage to the attacker"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.damageAmount);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierTakeDamageWatch", "FX.Modifiers.ModifierGenericDamage"]
+	onDamageTaken(action) {
+		let targetToDamage = __guard__(action.getSource(), x => x.getAncestorCardOfType(CardType.Unit));
+		if (!targetToDamage) { // If we couldn't find a unit that dealt the damage, assume the source of damage was spell, in which case damage the general
+			targetToDamage = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+		}
 
-	@createContextObject: (damageAmount, options) ->
-		contextObject = super(options)
-		contextObject.damageAmount = damageAmount
-		return contextObject
+		if (targetToDamage != null) {
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setOwnerId(this.getCard().getOwnerId());
+			damageAction.setSource(this.getCard());
+			damageAction.setTarget(targetToDamage);
+			damageAction.setDamageAmount(this.damageAmount);
+			return this.getGameSession().executeAction(damageAction);
+		}
+	}
+}
+ModifierTakeDamageWatchDamageAttacker.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.damageAmount
-		else
-			return @description
+module.exports = ModifierTakeDamageWatchDamageAttacker;
 
-	onDamageTaken: (action) ->
-		targetToDamage = action.getSource()?.getAncestorCardOfType(CardType.Unit)
-		if !targetToDamage # If we couldn't find a unit that dealt the damage, assume the source of damage was spell, in which case damage the general
-			targetToDamage = @getCard().getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-
-		if targetToDamage?
-			damageAction = new DamageAction(@getGameSession())
-			damageAction.setOwnerId(@getCard().getOwnerId())
-			damageAction.setSource(@getCard())
-			damageAction.setTarget(targetToDamage)
-			damageAction.setDamageAmount(@damageAmount)
-			@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierTakeDamageWatchDamageAttacker
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}
