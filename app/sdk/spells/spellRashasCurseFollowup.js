@@ -1,20 +1,30 @@
-Logger = require 'app/common/logger'
-SpellSpawnEntity =	require './spellSpawnEntity'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-RemoveRandomArtifactAction =	require 'app/sdk/actions/removeRandomArtifactAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const SpellSpawnEntity =	require('./spellSpawnEntity');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const RemoveRandomArtifactAction =	require('app/sdk/actions/removeRandomArtifactAction');
 
-class SpellRashasCurseFollowup extends SpellSpawnEntity
+class SpellRashasCurseFollowup extends SpellSpawnEntity {
 
-	getValidTargetPositions: () ->
-		if !@_private.cachedValidTargetPositions?
-			@_private.cachedValidTargetPositions = @_filterPlayPositions(UtilsGameSession.getValidBoardPositionsFromPattern(@getGameSession().getBoard(), @getFollowupSourcePosition(), @getFollowupSourcePattern()))
-		return @_private.cachedValidTargetPositions
+	getValidTargetPositions() {
+		if ((this._private.cachedValidTargetPositions == null)) {
+			this._private.cachedValidTargetPositions = this._filterPlayPositions(UtilsGameSession.getValidBoardPositionsFromPattern(this.getGameSession().getBoard(), this.getFollowupSourcePosition(), this.getFollowupSourcePattern()));
+		}
+		return this._private.cachedValidTargetPositions;
+	}
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		#Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "RemoveArtifactsAction::onApplyEffectToBoardTile"
-		removeArtifactAction = new RemoveRandomArtifactAction(@getGameSession())
-		removeArtifactAction.setTarget(board.getUnitAtPosition(@getFollowupSourcePosition()))
-		@getGameSession().executeAction(removeArtifactAction)
-		super(board,x,y,sourceAction) #and summon the Dervish
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "RemoveArtifactsAction::onApplyEffectToBoardTile"
+		const removeArtifactAction = new RemoveRandomArtifactAction(this.getGameSession());
+		removeArtifactAction.setTarget(board.getUnitAtPosition(this.getFollowupSourcePosition()));
+		this.getGameSession().executeAction(removeArtifactAction);
+		return super.onApplyEffectToBoardTile(board,x,y,sourceAction); //and summon the Dervish
+	}
+}
 
-module.exports = SpellRashasCurseFollowup
+module.exports = SpellRashasCurseFollowup;

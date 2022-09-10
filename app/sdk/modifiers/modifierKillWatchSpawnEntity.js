@@ -1,47 +1,77 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-UtilsPosition = require 'app/common/utils/utils_position'
-ModifierKillWatch = require './modifierKillWatch'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const UtilsPosition = require('app/common/utils/utils_position');
+const ModifierKillWatch = require('./modifierKillWatch');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
 
-class ModifierKillWatchSpawnEntity extends ModifierKillWatch
+class ModifierKillWatchSpawnEntity extends ModifierKillWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierKillWatchSpawnEntity";
+		this.type ="ModifierKillWatchSpawnEntity";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericSpawn"];
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+	}
 
-	type:"ModifierKillWatchSpawnEntity"
-	@type:"ModifierKillWatchSpawnEntity"
+	static createContextObject(cardDataOrIndexToSpawn, includeAllies, includeGenerals, spawnCount, spawnPattern, spawnSilently, options) {
+		if (includeAllies == null) { includeAllies = true; }
+		if (includeGenerals == null) { includeGenerals = true; }
+		if (spawnCount == null) { spawnCount = 1; }
+		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_1x1; }
+		if (spawnSilently == null) { spawnSilently = true; }
+		const contextObject = super.createContextObject(includeAllies, includeGenerals, options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.spawnCount = spawnCount;
+		contextObject.spawnPattern = spawnPattern;
+		contextObject.spawnSilently = spawnSilently;
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericSpawn"]
+	onKillWatch(action) {
+		super.onKillWatch(action);
 
-	cardDataOrIndexToSpawn: null
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const ownerId = this.getSpawnOwnerId(action);
+			const cardToSpawn = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+			const spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), action.getTargetPosition(), this.spawnPattern, cardToSpawn, this.getCard(), this.spawnCount);
+			return (() => {
+				const result = [];
+				for (let spawnPosition of Array.from(spawnPositions)) {
+					var spawnAction;
+					const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
+					if (this.spawnSilently) {
+						spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					} else {
+						spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+					}
+					spawnAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(spawnAction));
+				}
+				return result;
+			})();
+		}
+	}
 
-	@createContextObject: (cardDataOrIndexToSpawn, includeAllies=true, includeGenerals=true, spawnCount=1, spawnPattern=CONFIG.PATTERN_1x1, spawnSilently=true, options) ->
-		contextObject = super(includeAllies, includeGenerals, options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.spawnCount = spawnCount
-		contextObject.spawnPattern = spawnPattern
-		contextObject.spawnSilently = spawnSilently
-		return contextObject
+	getCardDataOrIndexToSpawn() {
+		return this.cardDataOrIndexToSpawn;
+	}
 
-	onKillWatch: (action) ->
-		super(action)
+	getSpawnOwnerId(action) {
+		return this.getCard().getOwnerId();
+	}
+}
+ModifierKillWatchSpawnEntity.initClass();
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			ownerId = @getSpawnOwnerId(action)
-			cardToSpawn = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(@cardDataOrIndexToSpawn)
-			spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), action.getTargetPosition(), @spawnPattern, cardToSpawn, @getCard(), @spawnCount)
-			for spawnPosition in spawnPositions
-				cardDataOrIndexToSpawn = @getCardDataOrIndexToSpawn()
-				if @spawnSilently
-					spawnAction = new PlayCardSilentlyAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				else
-					spawnAction = new PlayCardAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn)
-				spawnAction.setSource(@getCard())
-				@getGameSession().executeAction(spawnAction)
-
-	getCardDataOrIndexToSpawn: () ->
-		return @cardDataOrIndexToSpawn
-
-	getSpawnOwnerId: (action) ->
-		return @getCard().getOwnerId()
-
-module.exports = ModifierKillWatchSpawnEntity
+module.exports = ModifierKillWatchSpawnEntity;

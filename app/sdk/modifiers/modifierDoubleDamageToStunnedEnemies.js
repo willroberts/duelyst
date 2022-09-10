@@ -1,46 +1,70 @@
-EVENTS = require 'app/common/event_types'
-Modifier = require './modifier'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
-ModifierStunned = require 'app/sdk/modifiers/modifierStunned'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const EVENTS = require('app/common/event_types');
+const Modifier = require('./modifier');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
+const ModifierStunned = require('app/sdk/modifiers/modifierStunned');
 
-class ModifierDoubleDamageToStunnedEnemies extends Modifier
+class ModifierDoubleDamageToStunnedEnemies extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDoubleDamageToStunnedEnemies";
+		this.type ="ModifierDoubleDamageToStunnedEnemies";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.damageBonus = 2;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDoubleDamageToEnemyMinions"];
+	}
 
-	type:"ModifierDoubleDamageToStunnedEnemies"
-	@type:"ModifierDoubleDamageToStunnedEnemies"
+	onEvent(event) {
+		super.onEvent(event);
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		if (this._private.listeningToEvents) {
+			if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
+				return this.onModifyActionForEntitiesInvolvedInAttack(event);
+			}
+		}
+	}
 
-	damageBonus: 2
+	getIsActionRelevant(a) {
+		return a instanceof DamageAction && (a.getSource() === this.getCard()) && __guard__(a.getTarget(), x => x.hasActiveModifierClass(ModifierStunned)) && (__guard__(a.getTarget(), x1 => x1.getOwnerId()) !== this.getCard().getOwnerId());
+	}
 
-	fxResource: ["FX.Modifiers.ModifierDoubleDamageToEnemyMinions"]
+	_modifyAction(a) {
+		a.setChangedByModifier(this);
+		return a.changeDamageMultiplierBy(this.damageBonus);
+	}
 
-	onEvent: (event) ->
-		super(event)
+	onModifyActionForExecution(actionEvent) {
+		super.onModifyActionForExecution(actionEvent);
+		const a = actionEvent.action;
+		if (this.getIsActionRelevant(a)) {
+			return this._modifyAction(a);
+		}
+	}
 
-		if @_private.listeningToEvents
-			if event.type == EVENTS.modify_action_for_entities_involved_in_attack
-				@onModifyActionForEntitiesInvolvedInAttack(event)
+	onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
+		const a = actionEvent.action;
+		if (this.getIsActive() && this.getIsActionRelevant(a)) {
+			return this._modifyAction(a);
+		}
+	}
+}
+ModifierDoubleDamageToStunnedEnemies.initClass();
 
-	getIsActionRelevant: (a) ->
-		return a instanceof DamageAction and a.getSource() == @getCard() and a.getTarget()?.hasActiveModifierClass(ModifierStunned) and a.getTarget()?.getOwnerId() isnt @getCard().getOwnerId()
+module.exports = ModifierDoubleDamageToStunnedEnemies;
 
-	_modifyAction: (a) ->
-		a.setChangedByModifier(@)
-		a.changeDamageMultiplierBy(@damageBonus)
-
-	onModifyActionForExecution: (actionEvent) ->
-		super(actionEvent)
-		a = actionEvent.action
-		if @getIsActionRelevant(a)
-			@_modifyAction(a)
-
-	onModifyActionForEntitiesInvolvedInAttack: (actionEvent) ->
-		a = actionEvent.action
-		if @getIsActive() and @getIsActionRelevant(a)
-			@_modifyAction(a)
-
-module.exports = ModifierDoubleDamageToStunnedEnemies
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

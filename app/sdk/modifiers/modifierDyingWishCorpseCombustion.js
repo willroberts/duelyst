@@ -1,44 +1,58 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-UtilsPosition = require 'app/common/utils/utils_position'
-ModifierDyingWish = require './modifierDyingWish'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const UtilsPosition = require('app/common/utils/utils_position');
+const ModifierDyingWish = require('./modifierDyingWish');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
 
 
-class ModifierDyingWishCorpseCombustion extends ModifierDyingWish
+class ModifierDyingWishCorpseCombustion extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWishCorpseCombustion";
+		this.type ="ModifierDyingWishCorpseCombustion";
+	
+		this.modifierName ="Dying Wish";
+		this.description = "Resummon this minion and deal 3 damage to all nearby enemies";
+	
+		this.prototype.damageAmount = 3;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn", "FX.Modifiers.ModifierGenericDamage"];
+		this.prototype.cardDataOrIndexToSpawn = null;
+	}
 
-	type:"ModifierDyingWishCorpseCombustion"
-	@type:"ModifierDyingWishCorpseCombustion"
+	onDyingWish(action) {
+		super.onDyingWish(action);
 
-	@modifierName:"Dying Wish"
-	@description: "Resummon this minion and deal 3 damage to all nearby enemies"
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			// deal damage to nearby enemies
+			this.getGameSession().executeAction(playCardAction);
+			const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
+			for (let entity of Array.from(entities)) {
+				const damageAction = new DamageAction(this.getGameSession());
+				damageAction.setOwnerId(this.getCard().getOwnerId());
+				damageAction.setSource(this.getCard());
+				damageAction.setTarget(entity);
+				damageAction.setDamageAmount(this.damageAmount);
+				this.getGameSession().executeAction(damageAction);
+			}
 
-	damageAmount: 3
+			// respawn original card
+			const cardData = {id: this.getCard().getId()};
+			var playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, cardData);
+			playCardAction.setSource(this.getCard());
+			return this.getGameSession().executeAction(playCardAction);
+		}
+	}
+}
+ModifierDyingWishCorpseCombustion.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn", "FX.Modifiers.ModifierGenericDamage"]
-	cardDataOrIndexToSpawn: null
-
-	onDyingWish: (action) ->
-		super(action)
-
-		if @getGameSession().getIsRunningAsAuthoritative()
-			# deal damage to nearby enemies
-			@getGameSession().executeAction(playCardAction)
-			entities = @getGameSession().getBoard().getEnemyEntitiesAroundEntity(@getCard(), CardType.Unit, 1)
-			for entity in entities
-				damageAction = new DamageAction(@getGameSession())
-				damageAction.setOwnerId(@getCard().getOwnerId())
-				damageAction.setSource(@getCard())
-				damageAction.setTarget(entity)
-				damageAction.setDamageAmount(@damageAmount)
-				@getGameSession().executeAction(damageAction)
-
-			# respawn original card
-			cardData = {id: @getCard().getId()}
-			playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), @getCard().getPosition().x, @getCard().getPosition().y, cardData)
-			playCardAction.setSource(@getCard())
-			@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierDyingWishCorpseCombustion
+module.exports = ModifierDyingWishCorpseCombustion;

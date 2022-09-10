@@ -1,42 +1,61 @@
-Action = require './action'
-GenerateSignatureCardAction = require './generateSignatureCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Action = require('./action');
+const GenerateSignatureCardAction = require('./generateSignatureCardAction');
 
-###
+/*
 Action that forces signature card data to be refreshed for player
 Generates a new signature card if signature card slot was active when this action executes
-###
+*/
 
-class UpdateSignatureCardAction extends Action
+class UpdateSignatureCardAction extends Action {
+	static initClass() {
+	
+		this.type ="UpdateSignatureCardAction";
+	
+		this.prototype.targetPlayerId = null;
+	}
 
-	@type:"UpdateSignatureCardAction"
+	constructor(gameSession, targetPlayerId) {
+		if (this.type == null) { this.type = UpdateSignatureCardAction.type; }
+		super(gameSession);
+		if (targetPlayerId != null) {
+			this.targetPlayerId = targetPlayerId;
+		} else {
+			this.targetPlayerId = this.getOwnerId();
+		}
+	}
 
-	targetPlayerId: null
+	isRemovableDuringScrubbing() {
+		return false;
+	}
 
-	constructor: (gameSession, targetPlayerId) ->
-		@type ?= UpdateSignatureCardAction.type
-		super(gameSession)
-		if targetPlayerId?
-			@targetPlayerId = targetPlayerId
-		else
-			@targetPlayerId = @getOwnerId()
+	getTargetPlayer() {
+		return this.getGameSession().getPlayerById(this.getTargetPlayerId());
+	}
 
-	isRemovableDuringScrubbing: () ->
-		return false
+	getTargetPlayerId() {
+		return this.targetPlayerId;
+	}
 
-	getTargetPlayer: () ->
-		return @getGameSession().getPlayerById(@getTargetPlayerId())
+	_execute() {
+		super._execute();
 
-	getTargetPlayerId: () ->
-		return @targetPlayerId
+		const activeSignatureCard = this.getTargetPlayer().getCurrentSignatureCard();
+		if (activeSignatureCard) {
+			return this.getGameSession().executeAction(this.getTargetPlayer().actionGenerateSignatureCard());
+		} else {
+			this.getTargetPlayer().flushCachedReferenceSignatureCard();
+			return this.getGameSession().getGeneralForPlayerId(this.getTargetPlayerId()).flushCachedReferenceSignatureCard();
+		}
+	}
+}
+UpdateSignatureCardAction.initClass();
 
-	_execute: () ->
-		super()
-
-		activeSignatureCard = @getTargetPlayer().getCurrentSignatureCard()
-		if activeSignatureCard
-			@getGameSession().executeAction(@getTargetPlayer().actionGenerateSignatureCard())
-		else
-			@getTargetPlayer().flushCachedReferenceSignatureCard()
-			@getGameSession().getGeneralForPlayerId(@getTargetPlayerId()).flushCachedReferenceSignatureCard()
-
-module.exports = UpdateSignatureCardAction
+module.exports = UpdateSignatureCardAction;

@@ -1,357 +1,445 @@
-SDKObject = require 'app/sdk/object'
-Logger = require 'app/common/logger'
-CONFIG = require 'app/common/config'
-UtilsJavascript = require 'app/common/utils/utils_javascript'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-PutCardInDeckAction = require 'app/sdk/actions/putCardInDeckAction'
-DrawCardAction = require 'app/sdk/actions/drawCardAction'
-PlayerModifierCardDrawModifier = require 'app/sdk/playerModifiers/playerModifierCardDrawModifier'
-PlayerModifierReplaceCardModifier = require 'app/sdk/playerModifiers/playerModifierReplaceCardModifier'
-PlayerModifierCannotReplace = require 'app/sdk/playerModifiers/playerModifierCannotReplace'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS202: Simplify dynamic range loops
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SDKObject = require('app/sdk/object');
+const Logger = require('app/common/logger');
+const CONFIG = require('app/common/config');
+const UtilsJavascript = require('app/common/utils/utils_javascript');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const PutCardInDeckAction = require('app/sdk/actions/putCardInDeckAction');
+const DrawCardAction = require('app/sdk/actions/drawCardAction');
+const PlayerModifierCardDrawModifier = require('app/sdk/playerModifiers/playerModifierCardDrawModifier');
+const PlayerModifierReplaceCardModifier = require('app/sdk/playerModifiers/playerModifierReplaceCardModifier');
+const PlayerModifierCannotReplace = require('app/sdk/playerModifiers/playerModifierCannotReplace');
+const _ = require('underscore');
 
-class Deck extends SDKObject
+class Deck extends SDKObject {
+	static initClass() {
+	
+		this.prototype.numCardsReplacedThisTurn = 0; // counter of card replacements player has made, reset each turn
+		this.prototype.drawPile = null; // record of card indices still available to draw
+		this.prototype.hand = null; // record of card indices in hand
+		this.prototype.ownerId = null;
+	}
 
-	numCardsReplacedThisTurn: 0 # counter of card replacements player has made, reset each turn
-	drawPile: null # record of card indices still available to draw
-	hand: null # record of card indices in hand
-	ownerId: null
+	constructor(gameSession, ownerId) {
+		super(gameSession);
 
-	constructor: (gameSession, ownerId) ->
-		super(gameSession)
+		// define public properties here that must be always be serialized
+		// do not define properties here that should only serialize if different from the default
+		this.drawPile = [];
+		this.hand = [];
+		this.hand.length = CONFIG.MAX_HAND_SIZE;
+		this.setOwnerId(ownerId);
+	}
 
-		# define public properties here that must be always be serialized
-		# do not define properties here that should only serialize if different from the default
-		@drawPile = []
-		@hand = []
-		@hand.length = CONFIG.MAX_HAND_SIZE
-		@setOwnerId(ownerId)
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
+		p.cachedCards = null;
+		p.cachedCardsExcludingMissing = null;
+		p.cachedCardsInHand = null;
+		p.cachedCardsInHandExcludingMissing = null;
+		return p;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
-		p.cachedCards = null
-		p.cachedCardsExcludingMissing = null
-		p.cachedCardsInHand = null
-		p.cachedCardsInHandExcludingMissing = null
-		return p
+	// region GETTERS / SETTERS
 
-	# region GETTERS / SETTERS
+	setOwnerId(val) {
+		return this.ownerId = val;
+	}
 
-	setOwnerId: (val) ->
-		@ownerId = val
+	getOwnerId() {
+		return this.ownerId;
+	}
 
-	getOwnerId: () ->
-		return @ownerId
+	getOwner() {
+		return this.getGameSession().getPlayerById(this.ownerId);
+	}
 
-	getOwner: () ->
-		return @getGameSession().getPlayerById(@ownerId)
+	setDrawPile(val) {
+		return this.drawPile = val;
+	}
 
-	setDrawPile: (val) ->
-		@drawPile = val
-
-	###*
+	/**
    * Returns list of card indices remaining in deck, i.e. cards that can still be drawn.
    * @returns {Array}
-   ###
-	getDrawPile: () ->
-		return @drawPile
+   */
+	getDrawPile() {
+		return this.drawPile;
+	}
 
-	###*
+	/**
    * Returns list of card indices remaining in deck, i.e. cards that can still be drawn, excluding missing cards.
    * @returns {Array}
-   ###
-	getDrawPileExcludingMissing: () ->
-		drawPile = []
-		for cardIndex in @drawPile
-			if cardIndex? and @getGameSession().getCardByIndex(cardIndex)?
-				drawPile.push(cardIndex)
-		return drawPile
+   */
+	getDrawPileExcludingMissing() {
+		const drawPile = [];
+		for (let cardIndex of Array.from(this.drawPile)) {
+			if ((cardIndex != null) && (this.getGameSession().getCardByIndex(cardIndex) != null)) {
+				drawPile.push(cardIndex);
+			}
+		}
+		return drawPile;
+	}
 
-	###*
+	/**
    * Returns list of cards remaining in deck, i.e. cards that can still be drawn.
    * @returns {Array}
-   ###
-	getCardsInDrawPile: () ->
-		@_private.cachedCards ?= @getGameSession().getCardsByIndices(@drawPile)
-		return @_private.cachedCards
+   */
+	getCardsInDrawPile() {
+		if (this._private.cachedCards == null) { this._private.cachedCards = this.getGameSession().getCardsByIndices(this.drawPile); }
+		return this._private.cachedCards;
+	}
 
-	###*
+	/**
    * Returns list of cards remaining in deck, i.e. cards that can still be drawn, excluding missing cards.
    * @returns {Array}
-   ###
-	getCardsInDrawPileExcludingMissing: () ->
-		if !@_private.cachedCardsExcludingMissing?
-			cards = @_private.cachedCardsExcludingMissing = []
-			for cardIndex in @drawPile
-				if cardIndex?
-					card = @getGameSession().getCardByIndex(cardIndex)
-					if card?
-						cards.push(card)
-		return @_private.cachedCardsExcludingMissing
+   */
+	getCardsInDrawPileExcludingMissing() {
+		if ((this._private.cachedCardsExcludingMissing == null)) {
+			const cards = (this._private.cachedCardsExcludingMissing = []);
+			for (let cardIndex of Array.from(this.drawPile)) {
+				if (cardIndex != null) {
+					const card = this.getGameSession().getCardByIndex(cardIndex);
+					if (card != null) {
+						cards.push(card);
+					}
+				}
+			}
+		}
+		return this._private.cachedCardsExcludingMissing;
+	}
 
-	getNumCardsInDrawPile: () ->
-		return @drawPile.length
+	getNumCardsInDrawPile() {
+		return this.drawPile.length;
+	}
 
-	flushCachedCards: () ->
-		@_private.cachedCards = null
-		@_private.cachedCardsExcludingMissing = null
-		@getOwner()?.flushCachedEventReceivingCards()
+	flushCachedCards() {
+		this._private.cachedCards = null;
+		this._private.cachedCardsExcludingMissing = null;
+		return __guard__(this.getOwner(), x => x.flushCachedEventReceivingCards());
+	}
 
-	###*
+	/**
    * Returns list of card indices in hand.
    * NOTE: may contain null values for empty slots!
    * @returns {Array}
-   ###
-	getHand: () ->
-		return @hand
+   */
+	getHand() {
+		return this.hand;
+	}
 
-	###*
+	/**
    * Returns list of card indices in hand, excluding empty slots.
    * NOTE: does not retain hand index ordering!
    * @returns {Array}
-   ###
-	getHandExcludingMissing: () ->
-		hand = []
-		for cardIndex in @hand
-			if cardIndex?
-				hand.push(cardIndex)
-		return hand
+   */
+	getHandExcludingMissing() {
+		const hand = [];
+		for (let cardIndex of Array.from(this.hand)) {
+			if (cardIndex != null) {
+				hand.push(cardIndex);
+			}
+		}
+		return hand;
+	}
 
-	###*
+	/**
    * Returns list of cards in hand.
    * NOTE: may contain null values for empty slots!
    * @returns {Array}
-   ###
-	getCardsInHand: () ->
-		@_private.cachedCardsInHand ?= @getGameSession().getCardsByIndices(@hand)
-		return @_private.cachedCardsInHand
+   */
+	getCardsInHand() {
+		if (this._private.cachedCardsInHand == null) { this._private.cachedCardsInHand = this.getGameSession().getCardsByIndices(this.hand); }
+		return this._private.cachedCardsInHand;
+	}
 
-	###*
+	/**
    * Returns list of cards in hand, excluding empty slots or missing cards.
    * NOTE: does not retain hand index ordering!
    * @returns {Array}
-   ###
-	getCardsInHandExcludingMissing: () ->
-		if !@_private.cachedCardsInHandExcludingMissing?
-			cards = @_private.cachedCardsInHandExcludingMissing = []
-			for cardIndex in @hand
-				if cardIndex?
-					card = @getGameSession().getCardByIndex(cardIndex)
-					if card?
-						cards.push(card)
-		return @_private.cachedCardsInHandExcludingMissing
+   */
+	getCardsInHandExcludingMissing() {
+		if ((this._private.cachedCardsInHandExcludingMissing == null)) {
+			const cards = (this._private.cachedCardsInHandExcludingMissing = []);
+			for (let cardIndex of Array.from(this.hand)) {
+				if (cardIndex != null) {
+					const card = this.getGameSession().getCardByIndex(cardIndex);
+					if (card != null) {
+						cards.push(card);
+					}
+				}
+			}
+		}
+		return this._private.cachedCardsInHandExcludingMissing;
+	}
 
-	flushCachedCardsInHand: () ->
-		@_private.cachedCardsInHand = null
-		@_private.cachedCardsInHandExcludingMissing = null
-		@getOwner()?.flushCachedEventReceivingCards()
+	flushCachedCardsInHand() {
+		this._private.cachedCardsInHand = null;
+		this._private.cachedCardsInHandExcludingMissing = null;
+		return __guard__(this.getOwner(), x => x.flushCachedEventReceivingCards());
+	}
 
-	###*
+	/**
    * Returns a card index at an index in hand.
    * NOTE: may contain null values for empty slots!
    * @returns {Number|String}
-   ###
-	getCardIndexInHandAtIndex: (i) ->
-		return @hand[i]
+   */
+	getCardIndexInHandAtIndex(i) {
+		return this.hand[i];
+	}
 
-	###*
+	/**
    * Returns a card at an index in hand.
    * NOTE: may contain null values for empty slots!
    * @returns {Card}
-   ###
-	getCardInHandAtIndex: (i) ->
-		return @getGameSession().getCardByIndex(@getCardIndexInHandAtIndex(i))
+   */
+	getCardInHandAtIndex(i) {
+		return this.getGameSession().getCardByIndex(this.getCardIndexInHandAtIndex(i));
+	}
 
-	###*
+	/**
    * Returns the index of the first empty slot in hand.
    * @returns {Number}
-   ###
-	getFirstEmptySpaceInHand: () ->
-		for i in [0...CONFIG.MAX_HAND_SIZE]
-			if !@hand[i]? then return i
-		return null # if no emtpy space in hand, return null
+   */
+	getFirstEmptySpaceInHand() {
+		for (let i = 0, end = CONFIG.MAX_HAND_SIZE, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+			if ((this.hand[i] == null)) { return i; }
+		}
+		return null; // if no emtpy space in hand, return null
+	}
 
-	###*
+	/**
    * Returns the number of cards in hand.
    * @returns {Number}
-   ###
-	getNumCardsInHand: () ->
-		numCards = 0
-		for i in [0...CONFIG.MAX_HAND_SIZE]
-			if @hand[i]? then numCards++
-		return numCards
+   */
+	getNumCardsInHand() {
+		let numCards = 0;
+		for (let i = 0, end = CONFIG.MAX_HAND_SIZE, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+			if (this.hand[i] != null) { numCards++; }
+		}
+		return numCards;
+	}
 
-	# endregion GETTERS / SETTERS
+	// endregion GETTERS / SETTERS
 
-	# region ACTIONS
+	// region ACTIONS
 
-	# actions that modify state
-	actionDrawCard: (optionalCardIndex=null)->
-		action = @getGameSession().createActionForType(DrawCardAction.type)
-		action.setOwnerId(@getOwnerId())
-		if optionalCardIndex # set when a specific card should be drawn
-			action.setCardIndexFromDeck(optionalCardIndex)
-		return action
+	// actions that modify state
+	actionDrawCard(optionalCardIndex=null){
+		const action = this.getGameSession().createActionForType(DrawCardAction.type);
+		action.setOwnerId(this.getOwnerId());
+		if (optionalCardIndex) { // set when a specific card should be drawn
+			action.setCardIndexFromDeck(optionalCardIndex);
+		}
+		return action;
+	}
 
-	actionsDrawCardsToRefillHand: ()->
-		actions = []
-		# return enough actions to refill hand
-		for i in [0...CONFIG.MAX_HAND_SIZE]
-			# only return an action at hand space if space is empty
-			if !@hand[i]? then actions.push(@actionDrawCard())
-		return actions
+	actionsDrawCardsToRefillHand(){
+		const actions = [];
+		// return enough actions to refill hand
+		for (let i = 0, end = CONFIG.MAX_HAND_SIZE, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+			// only return an action at hand space if space is empty
+			if ((this.hand[i] == null)) { actions.push(this.actionDrawCard()); }
+		}
+		return actions;
+	}
 
-	# returns a number of draw card actions needed for end turn card draw
-	actionsDrawNewCards: ()->
-		actions = []
-		# number of card draw actions we need to create (default set by config value)
-		numRemainingActions = CONFIG.CARD_DRAW_PER_TURN
-		# check player modifiers that change number of cards drawn at end of turn
-		cardDrawChange = 0
-		for cardDrawModifier in @getOwner().getPlayerModifiersByClass(PlayerModifierCardDrawModifier)
-			cardDrawChange += cardDrawModifier.getCardDrawChange()
-		numRemainingActions += cardDrawChange # final number of actions to create after modifiers
+	// returns a number of draw card actions needed for end turn card draw
+	actionsDrawNewCards(){
+		const actions = [];
+		// number of card draw actions we need to create (default set by config value)
+		let numRemainingActions = CONFIG.CARD_DRAW_PER_TURN;
+		// check player modifiers that change number of cards drawn at end of turn
+		let cardDrawChange = 0;
+		for (let cardDrawModifier of Array.from(this.getOwner().getPlayerModifiersByClass(PlayerModifierCardDrawModifier))) {
+			cardDrawChange += cardDrawModifier.getCardDrawChange();
+		}
+		numRemainingActions += cardDrawChange; // final number of actions to create after modifiers
 
-		# first try to re-fill empty slots in action bar with cards
-		for i in [0...CONFIG.MAX_HAND_SIZE]
-			if numRemainingActions is 0 # stop producing draw card actions when per turn limit is reached
-				break
-			# only return an action at hand space if space is empty
-			if !@hand[i]?
-				actions.push(@actionDrawCard())
-				numRemainingActions--
+		// first try to re-fill empty slots in action bar with cards
+		for (let i = 0, end = CONFIG.MAX_HAND_SIZE, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+			if (numRemainingActions === 0) { // stop producing draw card actions when per turn limit is reached
+				break;
+			}
+			// only return an action at hand space if space is empty
+			if ((this.hand[i] == null)) {
+				actions.push(this.actionDrawCard());
+				numRemainingActions--;
+			}
+		}
 
-		# if action bar is already full but we haven't drawn enough cards yet
-		# then burn cards from deck (draw and immediately discard without playing)
-		while numRemainingActions > 0 and !@getGameSession().getIsDeveloperMode()
-			actions.push(@actionDrawCard())
-			numRemainingActions--
+		// if action bar is already full but we haven't drawn enough cards yet
+		// then burn cards from deck (draw and immediately discard without playing)
+		while ((numRemainingActions > 0) && !this.getGameSession().getIsDeveloperMode()) {
+			actions.push(this.actionDrawCard());
+			numRemainingActions--;
+		}
 
-		return actions
+		return actions;
+	}
 
-	actionPutCardInDeck: (cardDataOrIndex)->
-		ownerId = @getOwnerId()
-		action = new PutCardInDeckAction(@getGameSession(), ownerId, cardDataOrIndex)
-		action.setOwnerId(ownerId)
-		return action
+	actionPutCardInDeck(cardDataOrIndex){
+		const ownerId = this.getOwnerId();
+		const action = new PutCardInDeckAction(this.getGameSession(), ownerId, cardDataOrIndex);
+		action.setOwnerId(ownerId);
+		return action;
+	}
 
-	# endregion ACTIONS
+	// endregion ACTIONS
 
-	# region ADD
+	// region ADD
 
-	###*
+	/**
    * Puts card index into the deck.
    * NOTE: use GameSession.applyCardToDeck instead of calling this directly.
    * @param {Number|String} cardIndex
-	 ###
-	putCardIndexIntoDeck: (cardIndex) ->
-		if cardIndex? and !_.contains(@drawPile, cardIndex)
-			@drawPile.push(cardIndex)
-			@flushCachedCards()
+	 */
+	putCardIndexIntoDeck(cardIndex) {
+		if ((cardIndex != null) && !_.contains(this.drawPile, cardIndex)) {
+			this.drawPile.push(cardIndex);
+			return this.flushCachedCards();
+		}
+	}
 
-	###*
+	/**
    * Puts card index into the hand at the first open slot.
    * NOTE: use GameSession.applyCardToHand instead of calling this directly.
    * @param {Number|String} cardIndex
-	 ###
-	putCardIndexInHand: (cardIndex) ->
-		indexOfCardInHand = null
+	 */
+	putCardIndexInHand(cardIndex) {
+		let indexOfCardInHand = null;
 
-		if cardIndex?
-			# find first empty place in hand, and insert card there
-			for i in [0...CONFIG.MAX_HAND_SIZE]
-				if !@hand[i]?
-					@hand[i] = cardIndex
-					indexOfCardInHand = i
-					@flushCachedCardsInHand()
-					break
+		if (cardIndex != null) {
+			// find first empty place in hand, and insert card there
+			for (let i = 0, end = CONFIG.MAX_HAND_SIZE, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+				if ((this.hand[i] == null)) {
+					this.hand[i] = cardIndex;
+					indexOfCardInHand = i;
+					this.flushCachedCardsInHand();
+					break;
+				}
+			}
+		}
 
-		return indexOfCardInHand
+		return indexOfCardInHand;
+	}
 
-	###*
+	/**
    * Puts card index into the hand at a specified index.
    * NOTE: use GameSession.applyCardToHand instead of calling this directly.
    * @param {Number|String} cardIndex
    * @param {Number} indexOfCard
-	 ###
-	putCardIndexInHandAtIndex: (cardIndex, indexOfCard) ->
-		if cardIndex? and indexOfCard?
-			@hand[indexOfCard] = cardIndex
-			@flushCachedCardsInHand()
+	 */
+	putCardIndexInHandAtIndex(cardIndex, indexOfCard) {
+		if ((cardIndex != null) && (indexOfCard != null)) {
+			this.hand[indexOfCard] = cardIndex;
+			return this.flushCachedCardsInHand();
+		}
+	}
 
-	# endregion ADD
+	// endregion ADD
 
-	# region REMOVE
+	// region REMOVE
 
-	###*
+	/**
    * Removes card index from the deck.
    * NOTE: use GameSession.removeCardByIndexFromDeck instead of calling this directly.
    * @param {Number|String} cardIndex
-	 ###
-	removeCardIndexFromDeck: (cardIndex) ->
-		indexOfCard = null
+	 */
+	removeCardIndexFromDeck(cardIndex) {
+		let indexOfCard = null;
 
-		if cardIndex?
-			# find card data by index match
-			for existingCardIndex, i in @drawPile
-				if existingCardIndex? and existingCardIndex == cardIndex
-					indexOfCard = i
-					@drawPile.splice(i, 1)
-					@flushCachedCards()
-					break
+		if (cardIndex != null) {
+			// find card data by index match
+			for (let i = 0; i < this.drawPile.length; i++) {
+				const existingCardIndex = this.drawPile[i];
+				if ((existingCardIndex != null) && (existingCardIndex === cardIndex)) {
+					indexOfCard = i;
+					this.drawPile.splice(i, 1);
+					this.flushCachedCards();
+					break;
+				}
+			}
+		}
 
-		return indexOfCard
+		return indexOfCard;
+	}
 
-	###*
+	/**
    * Removes card index from the hand.
    * NOTE: use GameSession.removeCardByIndexFromHand instead of calling this directly.
    * @param {Number|String} cardIndex
-	 ###
-	removeCardIndexFromHand: (cardIndex) ->
-		indexOfCard = null
+	 */
+	removeCardIndexFromHand(cardIndex) {
+		let indexOfCard = null;
 
-		if cardIndex?
-			# find card data by index match
-			for existingCardIndex, i in @hand
-				if existingCardIndex? and existingCardIndex == cardIndex
-					indexOfCard = i
-					@hand[i] = null
-					@flushCachedCardsInHand()
-					break
+		if (cardIndex != null) {
+			// find card data by index match
+			for (let i = 0; i < this.hand.length; i++) {
+				const existingCardIndex = this.hand[i];
+				if ((existingCardIndex != null) && (existingCardIndex === cardIndex)) {
+					indexOfCard = i;
+					this.hand[i] = null;
+					this.flushCachedCardsInHand();
+					break;
+				}
+			}
+		}
 
-		return indexOfCard
+		return indexOfCard;
+	}
 
-	# endregion REMOVE
+	// endregion REMOVE
 
-	# region REPLACE
+	// region REPLACE
 
-	setNumCardsReplacedThisTurn: (numCardsReplacedThisTurn) ->
-		@numCardsReplacedThisTurn = numCardsReplacedThisTurn
+	setNumCardsReplacedThisTurn(numCardsReplacedThisTurn) {
+		return this.numCardsReplacedThisTurn = numCardsReplacedThisTurn;
+	}
 
-	getNumCardsReplacedThisTurn: () ->
-		return @numCardsReplacedThisTurn
+	getNumCardsReplacedThisTurn() {
+		return this.numCardsReplacedThisTurn;
+	}
 
-	getCanReplaceCardThisTurn: () ->
-		if @getOwner().getPlayerModifiersByClass(PlayerModifierCannotReplace).length > 0
-			return false
-		else
-			replacesAllowedThisTurn = CONFIG.MAX_REPLACE_PER_TURN
-			replaceCardChange = 0
-			for replaceCardModifier in @getOwner().getPlayerModifiersByClass(PlayerModifierReplaceCardModifier)
-				replaceCardChange += replaceCardModifier.getReplaceCardChange()
-			replacesAllowedThisTurn += replaceCardChange # final number of cards allowed to be replaced
-			return @numCardsReplacedThisTurn < replacesAllowedThisTurn and @drawPile.length > 0
+	getCanReplaceCardThisTurn() {
+		if (this.getOwner().getPlayerModifiersByClass(PlayerModifierCannotReplace).length > 0) {
+			return false;
+		} else {
+			let replacesAllowedThisTurn = CONFIG.MAX_REPLACE_PER_TURN;
+			let replaceCardChange = 0;
+			for (let replaceCardModifier of Array.from(this.getOwner().getPlayerModifiersByClass(PlayerModifierReplaceCardModifier))) {
+				replaceCardChange += replaceCardModifier.getReplaceCardChange();
+			}
+			replacesAllowedThisTurn += replaceCardChange; // final number of cards allowed to be replaced
+			return (this.numCardsReplacedThisTurn < replacesAllowedThisTurn) && (this.drawPile.length > 0);
+		}
+	}
 
-	# endregion REPLACE
+	// endregion REPLACE
 
-	# region SERIALIZATION
+	// region SERIALIZATION
 
-	deserialize: (data) ->
-		UtilsJavascript.fastExtend(@, data)
+	deserialize(data) {
+		UtilsJavascript.fastExtend(this, data);
 
-		# ensure hand is correct length
-		@hand.length = CONFIG.MAX_HAND_SIZE
+		// ensure hand is correct length
+		return this.hand.length = CONFIG.MAX_HAND_SIZE;
+	}
+}
+Deck.initClass();
 
-	# endregion SERIALIZATION
+	// endregion SERIALIZATION
 
-module.exports = Deck
+module.exports = Deck;
+
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

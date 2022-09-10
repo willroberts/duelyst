@@ -1,42 +1,61 @@
-Modifier = require './modifier'
-ModifierMyMoveWatch = require './modifierMyMoveWatch'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierMyMoveWatch = require('./modifierMyMoveWatch');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierMyMoveWatchApplyModifiers extends ModifierMyMoveWatch
+class ModifierMyMoveWatchApplyModifiers extends ModifierMyMoveWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyMoveWatchApplyModifiers";
+		this.type ="ModifierMyMoveWatchApplyModifiers";
+	
+		this.description = "";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierMyMoveWatch", "FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierMyMoveWatchApplyModifiers"
-	@type:"ModifierMyMoveWatchApplyModifiers"
+	static createContextObject(modifiersContextObjects, auraIncludeSelf, auraIncludeAlly, auraIncludeEnemy, auraRadius, canTargetGeneral, description, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = modifiersContextObjects;
+		contextObject.auraIncludeAlly = auraIncludeAlly;
+		contextObject.auraIncludeEnemy = auraIncludeEnemy;
+		contextObject.auraIncludeSelf = auraIncludeSelf;
+		contextObject.auraRadius = auraRadius;
+		contextObject.canTargetGeneral = canTargetGeneral;
+		contextObject.description = description;
+		return contextObject;
+	}
 
-	@description: ""
+	onMyMoveWatch(action) {
+		if (this.modifiersContextObjects != null) {
+			return Array.from(this.getAffectedEntities()).map((entity) =>
+				Array.from(this.modifiersContextObjects).map((modifierContextObject) =>
+					this.getGameSession().applyModifierContextObject(modifierContextObject, entity)));
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierMyMoveWatch", "FX.Modifiers.ModifierGenericBuff"]
-
-	@createContextObject: (modifiersContextObjects, auraIncludeSelf, auraIncludeAlly, auraIncludeEnemy, auraRadius, canTargetGeneral, description, options) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = modifiersContextObjects
-		contextObject.auraIncludeAlly = auraIncludeAlly
-		contextObject.auraIncludeEnemy = auraIncludeEnemy
-		contextObject.auraIncludeSelf = auraIncludeSelf
-		contextObject.auraRadius = auraRadius
-		contextObject.canTargetGeneral = canTargetGeneral
-		contextObject.description = description
-		return contextObject
-
-	onMyMoveWatch: (action) ->
-		if @modifiersContextObjects?
-			for entity in @getAffectedEntities()
-				for modifierContextObject in @modifiersContextObjects
-					@getGameSession().applyModifierContextObject(modifierContextObject, entity)
-
-	getAffectedEntities: (action) ->
-		entityList = @getGameSession().getBoard().getCardsWithinRadiusOfPosition(@getCard().position, @auraFilterByCardType, @auraRadius, @auraIncludeSelf)
-		affectedEntities = []
-		for entity in entityList
-			if (@auraIncludeAlly and entity.getIsSameTeamAs(@getCard())) or (@auraIncludeEnemy and !entity.getIsSameTeamAs(@getCard()))
-				if @canTargetGeneral or !entity.getIsGeneral()
-					affectedEntities.push(entity)
-		return affectedEntities
+	getAffectedEntities(action) {
+		const entityList = this.getGameSession().getBoard().getCardsWithinRadiusOfPosition(this.getCard().position, this.auraFilterByCardType, this.auraRadius, this.auraIncludeSelf);
+		const affectedEntities = [];
+		for (let entity of Array.from(entityList)) {
+			if ((this.auraIncludeAlly && entity.getIsSameTeamAs(this.getCard())) || (this.auraIncludeEnemy && !entity.getIsSameTeamAs(this.getCard()))) {
+				if (this.canTargetGeneral || !entity.getIsGeneral()) {
+					affectedEntities.push(entity);
+				}
+			}
+		}
+		return affectedEntities;
+	}
+}
+ModifierMyMoveWatchApplyModifiers.initClass();
 
 
-module.exports = ModifierMyMoveWatchApplyModifiers
+module.exports = ModifierMyMoveWatchApplyModifiers;

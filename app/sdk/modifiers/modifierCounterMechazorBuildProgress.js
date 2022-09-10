@@ -1,40 +1,54 @@
-ModifierCounter = require './modifierCounter'
-ModifierCounterMechazorBuildProgressDescription = require './modifierCounterMechazorBuildProgressDescription'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierCounter = require('./modifierCounter');
+const ModifierCounterMechazorBuildProgressDescription = require('./modifierCounterMechazorBuildProgressDescription');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-###
+/*
   Counts current progress towards mechaz0r build
-###
-class ModifierCounterMechazorBuildProgress extends ModifierCounter
+*/
+class ModifierCounterMechazorBuildProgress extends ModifierCounter {
+	static initClass() {
+	
+		this.prototype.type ="ModifierCounterMechazorBuildProgress";
+		this.type ="ModifierCounterMechazorBuildProgress";
+	
+		this.prototype.maxStacks = 1;
+	}
 
-	type:"ModifierCounterMechazorBuildProgress"
-	@type:"ModifierCounterMechazorBuildProgress"
+	static createContextObject(mechazorProgressType, mechazorsBuiltType) {
+		const contextObject = super.createContextObject();
+		contextObject.mechazorProgressType = mechazorProgressType;
+		contextObject.mechazorsBuiltType = mechazorsBuiltType;
+		return contextObject;
+	}
 
-	maxStacks: 1
+	getModifierContextObjectToApply() {
+		const modContextObject = ModifierCounterMechazorBuildProgressDescription.createContextObject(this.getCurrentCount());
+		modContextObject.appliedName = i18next.t("modifiers.mechazor_counter_applied_name");
 
-	@createContextObject: (mechazorProgressType, mechazorsBuiltType) ->
-		contextObject = super()
-		contextObject.mechazorProgressType = mechazorProgressType
-		contextObject.mechazorsBuiltType = mechazorsBuiltType
-		return contextObject
+		return modContextObject;
+	}
 
-	getModifierContextObjectToApply: () ->
-		modContextObject = ModifierCounterMechazorBuildProgressDescription.createContextObject(@getCurrentCount())
-		modContextObject.appliedName = i18next.t("modifiers.mechazor_counter_applied_name")
+	getCurrentCount() {
+		const modifierMechazorProgress = this.getGameSession().getModifierClassForType(this.mechazorProgressType);
+		const modifierMechazorsSummoned = this.getGameSession().getModifierClassForType(this.mechazorsBuiltType);
 
-		return modContextObject
-
-	getCurrentCount: () ->
-		modifierMechazorProgress = @getGameSession().getModifierClassForType(@mechazorProgressType)
-		modifierMechazorsSummoned = @getGameSession().getModifierClassForType(@mechazorsBuiltType)
-
-		mechazorProgressMods = @getCard().getActiveModifiersByClass(modifierMechazorProgress)
-		numMechazorsSummoned = @getCard().getActiveModifiersByClass(modifierMechazorsSummoned).length
-		mechazorProgress = 0
-		for mod in mechazorProgressMods
-			mechazorProgress += mod.getProgressContribution()
-		return (mechazorProgress - (numMechazorsSummoned * 5)) * 20
+		const mechazorProgressMods = this.getCard().getActiveModifiersByClass(modifierMechazorProgress);
+		const numMechazorsSummoned = this.getCard().getActiveModifiersByClass(modifierMechazorsSummoned).length;
+		let mechazorProgress = 0;
+		for (let mod of Array.from(mechazorProgressMods)) {
+			mechazorProgress += mod.getProgressContribution();
+		}
+		return (mechazorProgress - (numMechazorsSummoned * 5)) * 20;
+	}
+}
+ModifierCounterMechazorBuildProgress.initClass();
 
 
-module.exports = ModifierCounterMechazorBuildProgress
+module.exports = ModifierCounterMechazorBuildProgress;

@@ -1,20 +1,34 @@
-Action = require './action'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Action = require('./action');
+const CardType = require('app/sdk/cards/cardType');
 
-class RemoveAction extends Action
+class RemoveAction extends Action {
+	static initClass() {
+	
+		this.type ="RemoveAction";
+	}
 
-	@type:"RemoveAction"
+	constructor() {
+		if (this.type == null) { this.type = RemoveAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= RemoveAction.type
-		super
+	_execute() {
+		super._execute();
 
-	_execute: () ->
-		super()
+		const target = this.getTarget();
+		const targetPosition = this.getTargetPosition();
 
-		target = @getTarget()
-		targetPosition = @getTargetPosition()
+		return this.getGameSession().removeCardFromBoard(target, targetPosition.x, targetPosition.y, this);
+	}
+}
+RemoveAction.initClass();
 
-		@getGameSession().removeCardFromBoard(target, targetPosition.x, targetPosition.y, @)
-
-module.exports = RemoveAction
+module.exports = RemoveAction;

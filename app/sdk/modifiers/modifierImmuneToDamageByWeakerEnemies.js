@@ -1,20 +1,37 @@
-ModifierImmuneToDamage = 	require './modifierImmuneToDamage'
-DamageAction = 	require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierImmuneToDamage = 	require('./modifierImmuneToDamage');
+const DamageAction = 	require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierImmuneToDamageByWeakerEnemies extends ModifierImmuneToDamage
+class ModifierImmuneToDamageByWeakerEnemies extends ModifierImmuneToDamage {
+	static initClass() {
+	
+		this.prototype.type ="ModifierImmuneToDamageByWeakerEnemies";
+		this.type ="ModifierImmuneToDamageByWeakerEnemies";
+	
+		this.prototype.includeGenerals = false;
+	}
 
-	type:"ModifierImmuneToDamageByWeakerEnemies"
-	@type:"ModifierImmuneToDamageByWeakerEnemies"
+	static createContextObject(includeGenerals, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.includeGenerals = includeGenerals;
+		return contextObject;
+	}
 
-	includeGenerals: false
+	getIsActionRelevant(a) {
+		return (this.getCard() != null) && a instanceof DamageAction && a.getIsValid() && (this.getCard() === a.getTarget()) && (__guard__(a.getSource(), x => x.getType()) === CardType.Unit) && (this.includeGenerals || !a.getSource().getIsGeneral()) && (a.getSource().getATK() < a.getTarget().getATK());
+	}
+}
+ModifierImmuneToDamageByWeakerEnemies.initClass();
 
-	@createContextObject: (includeGenerals, options) ->
-		contextObject = super(options)
-		contextObject.includeGenerals = includeGenerals
-		return contextObject
+module.exports = ModifierImmuneToDamageByWeakerEnemies;
 
-	getIsActionRelevant: (a) ->
-		return @getCard()? and a instanceof DamageAction and a.getIsValid() and @getCard() is a.getTarget() and a.getSource()?.getType() is CardType.Unit and (@includeGenerals or !a.getSource().getIsGeneral()) and (a.getSource().getATK() < a.getTarget().getATK())
-
-module.exports = ModifierImmuneToDamageByWeakerEnemies
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

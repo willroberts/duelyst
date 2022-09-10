@@ -1,34 +1,50 @@
-ModifierReplaceWatch = require './modifierReplaceWatch'
-RandomDamageAction = require 'app/sdk/actions/randomDamageAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierReplaceWatch = require('./modifierReplaceWatch');
+const RandomDamageAction = require('app/sdk/actions/randomDamageAction');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierReplaceWatchDamageEnemy extends ModifierReplaceWatch
+class ModifierReplaceWatchDamageEnemy extends ModifierReplaceWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierReplaceWatchDamageEnemy";
+		this.type ="ModifierReplaceWatchDamageEnemy";
+	
+		this.modifierName ="Replace Watch (damage random enemy)";
+		this.description = "Whenever you replace a card, deal %X damage to a random enemy";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierReplaceWatch", "FX.Modifiers.ModifierGenericDamageSmall"];
+	}
 
-	type:"ModifierReplaceWatchDamageEnemy"
-	@type:"ModifierReplaceWatchDamageEnemy"
+	static createContextObject(damageAmount, options) {
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	@modifierName:"Replace Watch (damage random enemy)"
-	@description: "Whenever you replace a card, deal %X damage to a random enemy"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.damageAmount);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierReplaceWatch", "FX.Modifiers.ModifierGenericDamageSmall"]
+	onReplaceWatch(action) {
+		const randomDamageAction = new RandomDamageAction(this.getGameSession());
+		randomDamageAction.setOwnerId(this.getCard().getOwnerId());
+		randomDamageAction.setSource(this.getCard());
+		randomDamageAction.setDamageAmount(this.damageAmount);
+		randomDamageAction.canTargetGenerals = true;
+		return this.getGameSession().executeAction(randomDamageAction);
+	}
+}
+ModifierReplaceWatchDamageEnemy.initClass();
 
-	@createContextObject: (damageAmount, options=undefined) ->
-		contextObject = super(options)
-		contextObject.damageAmount = damageAmount
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.damageAmount
-		else
-			return @description
-
-	onReplaceWatch: (action) ->
-		randomDamageAction = new RandomDamageAction(@getGameSession())
-		randomDamageAction.setOwnerId(@getCard().getOwnerId())
-		randomDamageAction.setSource(@getCard())
-		randomDamageAction.setDamageAmount(@damageAmount)
-		randomDamageAction.canTargetGenerals = true
-		@getGameSession().executeAction(randomDamageAction)
-
-module.exports = ModifierReplaceWatchDamageEnemy
+module.exports = ModifierReplaceWatchDamageEnemy;

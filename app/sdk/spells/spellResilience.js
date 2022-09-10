@@ -1,36 +1,50 @@
-Spell = require './spell'
-HealAction = require 'app/sdk/actions/healAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const HealAction = require('app/sdk/actions/healAction');
 
-class SpellResilience extends Spell
+class SpellResilience extends Spell {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		position = {x: x, y: y}
-		unit = board.getUnitAtPosition(position)
-		if unit.getDamage() > 0
-			healAction = new HealAction(@getGameSession())
-			healAction.setOwnerId(@getOwnerId())
-			healAction.setTarget(unit)
-			healAction.setHealAmount(unit.getDamage())
-			@getGameSession().executeAction(healAction)
+		const position = {x, y};
+		const unit = board.getUnitAtPosition(position);
+		if (unit.getDamage() > 0) {
+			const healAction = new HealAction(this.getGameSession());
+			healAction.setOwnerId(this.getOwnerId());
+			healAction.setTarget(unit);
+			healAction.setHealAmount(unit.getDamage());
+			this.getGameSession().executeAction(healAction);
+		}
 
-		drawPile = @getOwner().getDeck().getDrawPile()
-		indexOfCard = -1
-		cardFound = false
+		const drawPile = this.getOwner().getDeck().getDrawPile();
+		let indexOfCard = -1;
+		let cardFound = false;
 
-		for cardIndex, i in drawPile
-			cardAtIndex = @getGameSession().getCardByIndex(cardIndex)
-			if cardAtIndex?.getBaseCardId() == unit.getBaseCardId()
-				indexOfCard = i
-				cardFound = true
-				break
+		for (let i = 0; i < drawPile.length; i++) {
+			const cardIndex = drawPile[i];
+			const cardAtIndex = this.getGameSession().getCardByIndex(cardIndex);
+			if ((cardAtIndex != null ? cardAtIndex.getBaseCardId() : undefined) === unit.getBaseCardId()) {
+				indexOfCard = i;
+				cardFound = true;
+				break;
+			}
+		}
 
-		if cardFound
-			cardIndexToDraw = drawPile[indexOfCard]
-			if cardIndexToDraw?
-				card = @getGameSession().getCardByIndex(cardIndexToDraw)
-				drawCardAction = @getGameSession().getPlayerById(@getOwner().getPlayerId()).getDeck().actionDrawCard(cardIndexToDraw)
-				@getGameSession().executeAction(drawCardAction)
+		if (cardFound) {
+			const cardIndexToDraw = drawPile[indexOfCard];
+			if (cardIndexToDraw != null) {
+				const card = this.getGameSession().getCardByIndex(cardIndexToDraw);
+				const drawCardAction = this.getGameSession().getPlayerById(this.getOwner().getPlayerId()).getDeck().actionDrawCard(cardIndexToDraw);
+				return this.getGameSession().executeAction(drawCardAction);
+			}
+		}
+	}
+}
 
-module.exports = SpellResilience
+module.exports = SpellResilience;

@@ -1,20 +1,33 @@
-CONFIG = require 'app/common/config'
-ModifierBanding = require './modifierBanding'
-ModifierBandedFlying = require './modifierBandedFlying'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const ModifierBanding = require('./modifierBanding');
+const ModifierBandedFlying = require('./modifierBandedFlying');
 
-class ModifierBandingFlying extends ModifierBanding
+class ModifierBandingFlying extends ModifierBanding {
+	static initClass() {
+	
+		this.prototype.type ="ModifierBandingFlying";
+		this.type ="ModifierBandingFlying";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierZeal", "FX.Modifiers.ModifierFlying"];
+	}
 
-	type:"ModifierBandingFlying"
-	@type:"ModifierBandingFlying"
+	static createContextObject(options) {
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = [ModifierBandedFlying.createContextObject()];
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierZeal", "FX.Modifiers.ModifierFlying"]
+	static getDescription(modifierContextObject) {
+		return this.description;
+	}
+}
+ModifierBandingFlying.initClass();
 
-	@createContextObject: (options = undefined) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = [ModifierBandedFlying.createContextObject()]
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		return @description
-
-module.exports = ModifierBandingFlying
+module.exports = ModifierBandingFlying;

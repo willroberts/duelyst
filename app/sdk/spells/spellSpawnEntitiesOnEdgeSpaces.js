@@ -1,24 +1,38 @@
-SpellSpawnEntity = require './spellSpawnEntity'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellSpawnEntity = require('./spellSpawnEntity');
 
-class SpellSpawnEntitiesOnEdgeSpaces extends SpellSpawnEntity
+class SpellSpawnEntitiesOnEdgeSpaces extends SpellSpawnEntity {
+	static initClass() {
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+	}
 
-	cardDataOrIndexToSpawn: null
+	_findApplyEffectPositions(position, sourceAction) {
 
-	_findApplyEffectPositions: (position, sourceAction) ->
+		let i;
+		const applyEffectPositions = [];
 
-		applyEffectPositions = []
+		for (i = 0; i <= 8; i++) {
+			applyEffectPositions.push({x: i, y: 0});
+			applyEffectPositions.push({x: i, y: 4});
+		}
 
-		for i in [0..8]
-			applyEffectPositions.push({x: i, y: 0})
-			applyEffectPositions.push({x: i, y: 4})
+		for (i = 1; i <= 3; i++) {
+			applyEffectPositions.push({x: 0, y: i});
+			applyEffectPositions.push({x: 8, y: i});
+		}
 
-		for i in [1..3]
-			applyEffectPositions.push({x: 0, y: i})
-			applyEffectPositions.push({x: 8, y: i})
+		return applyEffectPositions;
+	}
 
-		return applyEffectPositions
+	getAppliesSameEffectToMultipleTargets() {
+		return true;
+	}
+}
+SpellSpawnEntitiesOnEdgeSpaces.initClass();
 
-	getAppliesSameEffectToMultipleTargets: () ->
-		return true
-
-module.exports = SpellSpawnEntitiesOnEdgeSpaces
+module.exports = SpellSpawnEntitiesOnEdgeSpaces;

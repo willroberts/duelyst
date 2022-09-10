@@ -1,16 +1,26 @@
-SpellApplyModifiers = require './spellApplyModifiers'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellApplyModifiers = require('./spellApplyModifiers');
 
-class SpellApplyModifiersToExhaustedMinion extends SpellApplyModifiers
+class SpellApplyModifiersToExhaustedMinion extends SpellApplyModifiers {
 
-	_postFilterPlayPositions: (validPositions) ->
-		exhaustedMinionsPositions = []
+	_postFilterPlayPositions(validPositions) {
+		const exhaustedMinionsPositions = [];
 
-		for position in validPositions
-			unit = @getGameSession().getBoard().getUnitAtPosition(position)
-			if unit? and unit.getIsExhausted() is true
-				exhaustedMinionsPositions.push(position)
+		for (let position of Array.from(validPositions)) {
+			const unit = this.getGameSession().getBoard().getUnitAtPosition(position);
+			if ((unit != null) && (unit.getIsExhausted() === true)) {
+				exhaustedMinionsPositions.push(position);
+			}
+		}
 
-		return exhaustedMinionsPositions
+		return exhaustedMinionsPositions;
+	}
+}
 
 
-module.exports = SpellApplyModifiersToExhaustedMinion
+module.exports = SpellApplyModifiersToExhaustedMinion;

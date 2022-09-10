@@ -1,20 +1,35 @@
-Logger = 		require 'app/common/logger'
-Action = 		require './action'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = 		require('app/common/logger');
+const Action = 		require('./action');
 
-class StopBufferingEventsAction extends Action
+class StopBufferingEventsAction extends Action {
+	static initClass() {
+	
+		this.type ="StopBufferingEventsAction";
+	}
 
-	@type:"StopBufferingEventsAction"
+	constructor() {
+		if (this.type == null) { this.type = StopBufferingEventsAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= StopBufferingEventsAction.type
-		super
+	isRemovableDuringScrubbing() {
+		return false;
+	}
 
-	isRemovableDuringScrubbing: () ->
-		return false
+	_execute() {
+		super._execute();
 
-	_execute: () ->
-		super()
+		return this.getGameSession().p_stopBufferingEvents();
+	}
+}
+StopBufferingEventsAction.initClass();
 
-		@getGameSession().p_stopBufferingEvents()
-
-module.exports = StopBufferingEventsAction
+module.exports = StopBufferingEventsAction;

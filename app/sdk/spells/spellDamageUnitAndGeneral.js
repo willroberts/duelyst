@@ -1,12 +1,14 @@
-SpellDamage = require './spellDamage'
+const SpellDamage = require('./spellDamage');
 
 
-class SpellDamageUnitAndGeneral extends SpellDamage
+class SpellDamageUnitAndGeneral extends SpellDamage {
 
-	_findApplyEffectPositions: (position, sourceAction) ->
-		applyEffectPositions = super(position, sourceAction)
-		general = @getGameSession().getGeneralForPlayerId(@getGameSession().getOpponentPlayerOfPlayerId(@getOwnerId()).getPlayerId())
-		applyEffectPositions.push(general.getPosition())
-		return applyEffectPositions
+	_findApplyEffectPositions(position, sourceAction) {
+		const applyEffectPositions = super._findApplyEffectPositions(position, sourceAction);
+		const general = this.getGameSession().getGeneralForPlayerId(this.getGameSession().getOpponentPlayerOfPlayerId(this.getOwnerId()).getPlayerId());
+		applyEffectPositions.push(general.getPosition());
+		return applyEffectPositions;
+	}
+}
 
-module.exports = SpellDamageUnitAndGeneral
+module.exports = SpellDamageUnitAndGeneral;

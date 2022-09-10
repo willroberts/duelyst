@@ -1,25 +1,37 @@
-ModifierEnemyGeneralAttackedWatch = require './modifierEnemyGeneralAttackedWatch'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEnemyGeneralAttackedWatch = require('./modifierEnemyGeneralAttackedWatch');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
-class ModifierEnemyGeneralAttackedWatchSummonBehindAndDrawCard extends ModifierEnemyGeneralAttackedWatch
+class ModifierEnemyGeneralAttackedWatchSummonBehindAndDrawCard extends ModifierEnemyGeneralAttackedWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEnemyGeneralAttackedWatchSummonBehindAndDrawCard";
+		this.type ="ModifierEnemyGeneralAttackedWatchSummonBehindAndDrawCard";
+	}
 
-	type:"ModifierEnemyGeneralAttackedWatchSummonBehindAndDrawCard"
-	@type:"ModifierEnemyGeneralAttackedWatchSummonBehindAndDrawCard"
+	onEnemyGeneralAttackedWatch(action) {
+		const enemyGeneral = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+		const board = this.getGameSession().getBoard();
 
-	onEnemyGeneralAttackedWatch: (action) ->
-		enemyGeneral = @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-		board = @getGameSession().getBoard()
+		let playerOffset = 0;
+		if (this.getCard().isOwnedByPlayer1()) { playerOffset = 1; } else { playerOffset = -1; }
+		const behindPosition = {x:enemyGeneral.getPosition().x+playerOffset, y:enemyGeneral.getPosition().y};
 
-		playerOffset = 0
-		if @getCard().isOwnedByPlayer1() then playerOffset = 1 else playerOffset = -1
-		behindPosition = {x:enemyGeneral.getPosition().x+playerOffset, y:enemyGeneral.getPosition().y}
+		if (board.isOnBoard(behindPosition) && !board.getObstructionAtPositionForEntity(behindPosition, this.getCard())) {
 
-		if board.isOnBoard(behindPosition) and !board.getObstructionAtPositionForEntity(behindPosition, @getCard())
+			const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), behindPosition.x, behindPosition.y, this.getCard().getIndex());
+			this.getGameSession().executeAction(playCardAction);
 
-			playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), behindPosition.x, behindPosition.y, @getCard().getIndex())
-			@getGameSession().executeAction(playCardAction)
+			const deck = this.getGameSession().getPlayerById(this.getCard().getOwnerId()).getDeck();
+			return this.getCard().getGameSession().executeAction(deck.actionDrawCard());
+		}
+	}
+}
+ModifierEnemyGeneralAttackedWatchSummonBehindAndDrawCard.initClass();
 
-			deck = @getGameSession().getPlayerById(@getCard().getOwnerId()).getDeck()
-			@getCard().getGameSession().executeAction(deck.actionDrawCard())
-
-module.exports = ModifierEnemyGeneralAttackedWatchSummonBehindAndDrawCard
+module.exports = ModifierEnemyGeneralAttackedWatchSummonBehindAndDrawCard;

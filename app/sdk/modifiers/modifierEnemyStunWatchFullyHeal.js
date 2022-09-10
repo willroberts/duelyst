@@ -1,29 +1,42 @@
-ModifierEnemyStunWatch = require './modifierEnemyStunWatch'
-RemoveAction = require 'app/sdk/actions/removeAction'
-PlayCardAsTransformAction = require 'app/sdk/actions/playCardAsTransformAction'
-ModifierTransformed = require 'app/sdk/modifiers/modifierTransformed'
-HealAction = require 'app/sdk/actions/healAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEnemyStunWatch = require('./modifierEnemyStunWatch');
+const RemoveAction = require('app/sdk/actions/removeAction');
+const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
+const ModifierTransformed = require('app/sdk/modifiers/modifierTransformed');
+const HealAction = require('app/sdk/actions/healAction');
 
-class ModifierEnemyStunWatchFullyHeal extends ModifierEnemyStunWatch
+class ModifierEnemyStunWatchFullyHeal extends ModifierEnemyStunWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEnemyStunWatchFullyHeal";
+		this.type ="ModifierEnemyStunWatchFullyHeal";
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch"];
+	}
 
-	type:"ModifierEnemyStunWatchFullyHeal"
-	@type:"ModifierEnemyStunWatchFullyHeal"
+	static createContextObject(options) {
+		const contextObject = super.createContextObject(options);
+		return contextObject;
+	}
 
-	cardDataOrIndexToSpawn: null
+	onEnemyStunWatch(action) {
+		super.onEnemyStunWatch(action);
 
-	fxResource: ["FX.Modifiers.ModifierSummonWatch"]
+		if (this.getCard().getHP() < this.getCard().getMaxHP()) {
+			const healAction = this.getCard().getGameSession().createActionForType(HealAction.type);
+			healAction.setTarget(this.getCard());
+			healAction.setHealAmount(this.getCard().getMaxHP() - this.getCard().getHP());
+			return this.getCard().getGameSession().executeAction(healAction);
+		}
+	}
+}
+ModifierEnemyStunWatchFullyHeal.initClass();
 
-	@createContextObject: (options) ->
-		contextObject = super(options)
-		return contextObject
-
-	onEnemyStunWatch: (action) ->
-		super(action)
-
-		if @getCard().getHP() < @getCard().getMaxHP()
-			healAction = @getCard().getGameSession().createActionForType(HealAction.type)
-			healAction.setTarget(@getCard())
-			healAction.setHealAmount(@getCard().getMaxHP() - @getCard().getHP())
-			@getCard().getGameSession().executeAction(healAction)
-
-module.exports = ModifierEnemyStunWatchFullyHeal
+module.exports = ModifierEnemyStunWatchFullyHeal;

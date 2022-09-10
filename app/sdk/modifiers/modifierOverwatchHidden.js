@@ -1,43 +1,59 @@
-Modifier = require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-###
+/*
   Generic modifier used to hide the true overwatch modifier from an opponent.
-###
-class ModifierOverwatchHidden extends Modifier
+*/
+class ModifierOverwatchHidden extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOverwatchHidden";
+		this.type ="ModifierOverwatchHidden";
+	
+		this.isKeyworded = true;
+		this.keywordDefinition ="A hidden effect which only takes place when a specific event occurs.";
+	
+		this.modifierName ="Overwatch";
+		this.description = "%X";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOverwatch"];
+	}
 
-	type:"ModifierOverwatchHidden"
-	@type:"ModifierOverwatchHidden"
+	static createContextObject(manaCost,options) {
+		if (manaCost == null) { manaCost = 0; }
+		const contextObject = super.createContextObject(options);
+		contextObject.manaCost = manaCost;
+		return contextObject;
+	}
 
-	@isKeyworded: true
-	@keywordDefinition:"A hidden effect which only takes place when a specific event occurs."
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return i18next.t("modifiers.sentinel_watchful");
+		} else {
+			return this.description;
+		}
+	}
 
-	@modifierName:"Overwatch"
-	@description: "%X"
+	onCreatedToHide(source) {
+		super.onCreatedToHide(source);
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		// copy base mana cost of source modifier's source card
+		return this.contextObject.manaCost = source.getSourceCard().getBaseManaCost();
+	}
+}
+ModifierOverwatchHidden.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierOverwatch"]
-
-	@createContextObject: (manaCost=0,options) ->
-		contextObject = super(options)
-		contextObject.manaCost = manaCost
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return i18next.t("modifiers.sentinel_watchful")
-		else
-			return @description
-
-	onCreatedToHide: (source) ->
-		super(source)
-
-		# copy base mana cost of source modifier's source card
-		@contextObject.manaCost = source.getSourceCard().getBaseManaCost()
-
-module.exports = ModifierOverwatchHidden
+module.exports = ModifierOverwatchHidden;

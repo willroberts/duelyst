@@ -1,27 +1,46 @@
-ModifierOnDying = require './modifierOnDying'
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-UtilsPosition = require 'app/common/utils/utils_position'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOnDying = require('./modifierOnDying');
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const UtilsPosition = require('app/common/utils/utils_position');
+const _ = require('underscore');
 
-class ModifierOnDyingResummonAnywhere extends ModifierOnDying
+class ModifierOnDyingResummonAnywhere extends ModifierOnDying {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOnDyingResummonAnywhere";
+		this.type ="ModifierOnDyingResummonAnywhere";
+	}
 
-	type:"ModifierOnDyingResummonAnywhere"
-	@type:"ModifierOnDyingResummonAnywhere"
+	onDying() {
 
-	onDying: () ->
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS;
+			const cardData = this.getCard().createNewCardData();
+			const thisEntityPosition = this.getCard().getPosition();
+			const validPositions = _.reject(wholeBoardPattern, position => UtilsPosition.getPositionsAreEqual(position, thisEntityPosition));
+			const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, validPositions, this.getCard(), this.getCard(), 1);
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS
-			cardData = @getCard().createNewCardData()
-			thisEntityPosition = @getCard().getPosition()
-			validPositions = _.reject(wholeBoardPattern, (position) -> UtilsPosition.getPositionsAreEqual(position, thisEntityPosition))
-			spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), {x:0, y:0}, validPositions, @getCard(), @getCard(), 1)
+			return (() => {
+				const result = [];
+				for (let position of Array.from(spawnLocations)) {
+					const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, cardData);
+					playCardAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(playCardAction));
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierOnDyingResummonAnywhere.initClass();
 
-			for position in spawnLocations
-				playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, cardData)
-				playCardAction.setSource(@getCard())
-				@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierOnDyingResummonAnywhere
+module.exports = ModifierOnDyingResummonAnywhere;

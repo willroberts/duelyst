@@ -1,23 +1,37 @@
-ModifierOverwatch = require './modifierOverwatch'
-EndTurnAction = require 'app/sdk/actions/endTurnAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOverwatch = require('./modifierOverwatch');
+const EndTurnAction = require('app/sdk/actions/endTurnAction');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierOverwatchEndTurn extends ModifierOverwatch
+class ModifierOverwatchEndTurn extends ModifierOverwatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOverwatchEndTurn";
+		this.type ="ModifierOverwatchEndTurn";
+	
+		this.description = "When opponent ends turn, %X";
+	}
 
-	type:"ModifierOverwatchEndTurn"
-	@type:"ModifierOverwatchEndTurn"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject != null) {
+			return this.description.replace(/%X/, modifierContextObject.description);
+		} else {
+			return super.getDescription();
+		}
+	}
 
-	@description: "When opponent ends turn, %X"
+	getIsActionRelevant(action) {
+		if (action instanceof EndTurnAction) {
+			return true;
+		}
+		return false;
+	}
+}
+ModifierOverwatchEndTurn.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject?
-			return @description.replace /%X/, modifierContextObject.description
-		else
-			return super()
-
-	getIsActionRelevant: (action) ->
-		if action instanceof EndTurnAction
-			return true
-		return false
-
-module.exports = ModifierOverwatchEndTurn
+module.exports = ModifierOverwatchEndTurn;

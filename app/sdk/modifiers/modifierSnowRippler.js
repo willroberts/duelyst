@@ -1,27 +1,40 @@
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierDealDamageWatch = require './modifierDealDamageWatch'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-Factions = require 'app/sdk/cards/factionsLookup.coffee'
-Races = require 'app/sdk/cards/racesLookup.coffee'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Races = require('app/sdk/cards/racesLookup.coffee');
+const i18next = require('i18next');
 
-class ModifierSnowRippler extends ModifierDealDamageWatch
+class ModifierSnowRippler extends ModifierDealDamageWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSnowRippler";
+		this.type ="ModifierSnowRippler";
+	
+		this.modifierName =i18next.t("modifiers.snow_rippler_name");
+		this.description =i18next.t("modifiers.snow_rippler_def");
+	}
 
-	type:"ModifierSnowRippler"
-	@type:"ModifierSnowRippler"
+	onDealDamage(action) {
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			if (action.getTarget().getIsGeneral()) { // if damaging a general
+				// pull faction battle pets + neutral token battle pets
+				const factionBattlePetCards = this.getGameSession().getCardCaches().getFaction(Factions.Faction6).getRace(Races.BattlePet).getIsToken(false).getIsPrismatic(false).getIsSkinned(false).getCards();
+				const neutralBattlePetCards = this.getGameSession().getCardCaches().getFaction(Factions.Neutral).getRace(Races.BattlePet).getIsToken(true).getIsPrismatic(false).getIsSkinned(false).getCards();
+				const battlePetCards = [].concat(factionBattlePetCards, neutralBattlePetCards);
+				const battlePetCard = battlePetCards[this.getGameSession().getRandomIntegerForExecution(battlePetCards.length)];
+				const a = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), battlePetCard.createNewCardData() );
+				return this.getGameSession().executeAction(a);
+			}
+		}
+	}
+}
+ModifierSnowRippler.initClass();
 
-	@modifierName:i18next.t("modifiers.snow_rippler_name")
-	@description:i18next.t("modifiers.snow_rippler_def")
-
-	onDealDamage: (action) ->
-		if @getGameSession().getIsRunningAsAuthoritative()
-			if action.getTarget().getIsGeneral() # if damaging a general
-				# pull faction battle pets + neutral token battle pets
-				factionBattlePetCards = @getGameSession().getCardCaches().getFaction(Factions.Faction6).getRace(Races.BattlePet).getIsToken(false).getIsPrismatic(false).getIsSkinned(false).getCards()
-				neutralBattlePetCards = @getGameSession().getCardCaches().getFaction(Factions.Neutral).getRace(Races.BattlePet).getIsToken(true).getIsPrismatic(false).getIsSkinned(false).getCards()
-				battlePetCards = [].concat(factionBattlePetCards, neutralBattlePetCards)
-				battlePetCard = battlePetCards[@getGameSession().getRandomIntegerForExecution(battlePetCards.length)]
-				a = new PutCardInHandAction(@getGameSession(), @getCard().getOwnerId(), battlePetCard.createNewCardData() )
-				@getGameSession().executeAction(a)
-
-module.exports = ModifierSnowRippler
+module.exports = ModifierSnowRippler;

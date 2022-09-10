@@ -1,34 +1,65 @@
-ModifierSummonWatch = require './modifierSummonWatch'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierSummonWatch = require('./modifierSummonWatch');
 
-class ModifierSummonWatchApplyModifiersToBoth extends ModifierSummonWatch
+class ModifierSummonWatchApplyModifiersToBoth extends ModifierSummonWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSummonWatchApplyModifiersToBoth";
+		this.type ="ModifierSummonWatchApplyModifiersToBoth";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierSummonWatchApplyModifiersToBoth"
-	@type:"ModifierSummonWatchApplyModifiersToBoth"
+	static createContextObject(modifiersContextObjects, buffDescription, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = modifiersContextObjects;
+		contextObject.buffDescription = buffDescription;
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"]
+	onSummonWatch(action) {
 
-	@createContextObject: (modifiersContextObjects, buffDescription, options) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = modifiersContextObjects
-		contextObject.buffDescription = buffDescription
-		return contextObject
+		if (this.modifiersContextObjects != null) {
+			const summonedUnitPosition = __guard__(action.getTarget(), x => x.getPosition());
+			if (this.getIsValidBuffPosition(summonedUnitPosition)) {
 
-	onSummonWatch: (action) ->
-
-		if @modifiersContextObjects?
-			summonedUnitPosition = action.getTarget()?.getPosition()
-			if @getIsValidBuffPosition(summonedUnitPosition)
-
-				for modifierContextObject in @modifiersContextObjects
-					@getGameSession().applyModifierContextObject(modifierContextObject, @getCard())
+				let modifierContextObject;
+				for (modifierContextObject of Array.from(this.modifiersContextObjects)) {
+					this.getGameSession().applyModifierContextObject(modifierContextObject, this.getCard());
+				}
 					
-				entity = action.getTarget()
-				if entity?
-					for modifierContextObject in @modifiersContextObjects
-						@getGameSession().applyModifierContextObject(modifierContextObject, entity)
+				const entity = action.getTarget();
+				if (entity != null) {
+					return (() => {
+						const result = [];
+						for (modifierContextObject of Array.from(this.modifiersContextObjects)) {
+							result.push(this.getGameSession().applyModifierContextObject(modifierContextObject, entity));
+						}
+						return result;
+					})();
+				}
+			}
+		}
+	}
 
-	getIsValidBuffPosition: (summonedUnitPosition) ->
-		# override this in subclass to filter by position
-		return true
+	getIsValidBuffPosition(summonedUnitPosition) {
+		// override this in subclass to filter by position
+		return true;
+	}
+}
+ModifierSummonWatchApplyModifiersToBoth.initClass();
 
-module.exports = ModifierSummonWatchApplyModifiersToBoth
+module.exports = ModifierSummonWatchApplyModifiersToBoth;
+
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

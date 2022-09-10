@@ -1,87 +1,126 @@
-EVENTS = require 'app/common/event_types'
-CONFIG = require 'app/common/config'
-Modifier = require './modifier'
-AttackAction = require 'app/sdk/actions/attackAction'
-CardType = require 'app/sdk/cards/cardType'
-_ = require 'underscore'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const EVENTS = require('app/common/event_types');
+const CONFIG = require('app/common/config');
+const Modifier = require('./modifier');
+const AttackAction = require('app/sdk/actions/attackAction');
+const CardType = require('app/sdk/cards/cardType');
+const _ = require('underscore');
+const i18next = require('i18next');
 
-class ModifierBlastAttack extends Modifier
+class ModifierBlastAttack extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierBlastAttack";
+		this.type ="ModifierBlastAttack";
+	
+		this.isKeyworded = true;
+		this.keywordDefinition =i18next.t("modifiers.blast_def");
+	
+		this.modifierName =i18next.t("modifiers.blast_name");
+		this.description =null;
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.maxStacks = 1;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierBlast"];
+		this.prototype.cardFXResource = ["FX.Cards.Faction3.Blast"];
+	}
 
-	type:"ModifierBlastAttack"
-	@type:"ModifierBlastAttack"
+	onEvent(event) {
+		super.onEvent(event);
 
-	@isKeyworded: true
-	@keywordDefinition:i18next.t("modifiers.blast_def")
+		if (this._private.listeningToEvents) {
+			if (event.type === EVENTS.entities_involved_in_attack) {
+				return this.onEntitiesInvolvedInAttack(event);
+			}
+		}
+	}
 
-	@modifierName:i18next.t("modifiers.blast_name")
-	@description:null
+	onActivate() {
+		super.onActivate();
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		// override the attack pattern with blast
+		return this.getCard().setCustomAttackPattern(CONFIG.PATTERN_BLAST);
+	}
 
-	maxStacks: 1
+	onDeactivate() {
+		super.onDeactivate();
 
-	fxResource: ["FX.Modifiers.ModifierBlast"]
-	cardFXResource: ["FX.Cards.Faction3.Blast"]
+		this.getCard().setCustomAttackPattern(null); //entity can no longer attack whole row if blast is dispelled
+		return this.getCard().setReach(CONFIG.REACH_MELEE); //turn it into a plain melee unit
+	}
 
-	onEvent: (event) ->
-		super(event)
+	getIsActionRelevant(a) {
+		// when this unit initially attacks (only blast on explicit initial attacks, not on strike backs or other implicit attacks)
+		return a instanceof AttackAction && (a.getSource() === this.getCard()) && !a.getIsImplicit();
+	}
 
-		if @_private.listeningToEvents
-			if event.type == EVENTS.entities_involved_in_attack
-				@onEntitiesInvolvedInAttack(event)
+	getAttackableEntities(a) {
+		const entities = [];
+		const target = a.getTarget();
 
-	onActivate: () ->
-		super()
+		if (target != null) {
+			// find all other attackable enemy entities
+			for (let entity of Array.from(this.getGameSession().getBoard().getEnemyEntitiesOnCardinalAxisFromEntityToPosition(this.getCard(), target.getPosition(), CardType.Unit, false))) {
+				if (entity !== target) {
+					entities.push(entity);
+				}
+			}
+		}
 
-		# override the attack pattern with blast
-		@getCard().setCustomAttackPattern(CONFIG.PATTERN_BLAST)
+		return entities;
+	}
 
-	onDeactivate: () ->
-		super()
+	onBeforeAction(event) {
+		super.onBeforeAction(event);
+		const a = event.action;
+		if (this.getIsActionRelevant(a)) {
+			return (() => {
+				const result = [];
+				for (let entity of Array.from(this.getAttackableEntities(a))) {
+					const attackAction = this.getCard().actionAttack(entity);
+					result.push(this.getGameSession().executeAction(attackAction));
+				}
+				return result;
+			})();
+		}
+	}
 
-		@getCard().setCustomAttackPattern(null) #entity can no longer attack whole row if blast is dispelled
-		@getCard().setReach(CONFIG.REACH_MELEE) #turn it into a plain melee unit
+	onEntitiesInvolvedInAttack(actionEvent) {
+		const a = actionEvent.action;
+		if (this.getIsActive() && this.getIsActionRelevant(a)) {
+			return (() => {
+				const result = [];
+				for (let entity of Array.from(this.getAttackableEntities(a))) {
+					const attackAction = this.getCard().actionAttack(entity);
+					attackAction.setTriggeringModifier(this);
+					result.push(actionEvent.actions.push(attackAction));
+				}
+				return result;
+			})();
+		}
+	}
 
-	getIsActionRelevant: (a) ->
-		# when this unit initially attacks (only blast on explicit initial attacks, not on strike backs or other implicit attacks)
-		return a instanceof AttackAction and a.getSource() == @getCard() and !a.getIsImplicit()
+	postDeserialize() {
+		super.postDeserialize();
+		if ((this.getCard() != null) && this._private.cachedIsActive) {
+			// override the attack pattern with blast
+			return this.getCard().setCustomAttackPattern(CONFIG.PATTERN_BLAST);
+		}
+	}
+}
+ModifierBlastAttack.initClass();
 
-	getAttackableEntities: (a) ->
-		entities = []
-		target = a.getTarget()
-
-		if target?
-			# find all other attackable enemy entities
-			for entity in @getGameSession().getBoard().getEnemyEntitiesOnCardinalAxisFromEntityToPosition(@getCard(), target.getPosition(), CardType.Unit, false)
-				if entity != target
-					entities.push(entity)
-
-		return entities
-
-	onBeforeAction: (event) ->
-		super(event)
-		a = event.action
-		if @getIsActionRelevant(a)
-			for entity in @getAttackableEntities(a)
-				attackAction = @getCard().actionAttack(entity)
-				@getGameSession().executeAction(attackAction)
-
-	onEntitiesInvolvedInAttack: (actionEvent) ->
-		a = actionEvent.action
-		if @getIsActive() and @getIsActionRelevant(a)
-			for entity in @getAttackableEntities(a)
-				attackAction = @getCard().actionAttack(entity)
-				attackAction.setTriggeringModifier(@)
-				actionEvent.actions.push(attackAction)
-
-	postDeserialize: () ->
-		super()
-		if @getCard()? and @_private.cachedIsActive
-			# override the attack pattern with blast
-			@getCard().setCustomAttackPattern(CONFIG.PATTERN_BLAST)
-
-module.exports = ModifierBlastAttack
+module.exports = ModifierBlastAttack;

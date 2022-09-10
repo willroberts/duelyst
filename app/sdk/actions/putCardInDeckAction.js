@@ -1,98 +1,127 @@
-Logger = require 'app/common/logger'
-UtilsJavascript = 		require 'app/common/utils/utils_javascript'
-Action = require './action'
-CardType = require 'app/sdk/cards/cardType'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const UtilsJavascript = 		require('app/common/utils/utils_javascript');
+const Action = require('./action');
+const CardType = require('app/sdk/cards/cardType');
+const _ = require('underscore');
 
-class PutCardInDeckAction extends Action
+class PutCardInDeckAction extends Action {
+	static initClass() {
+	
+		this.type ="PutCardInDeckAction";
+	
+		this.prototype.targetPlayerId = null;
+		this.prototype.cardDataOrIndex = null;
+	
+		// target should always be the card we've put in deck, so we'll alias getCard
+		this.prototype.getTarget = this.prototype.getCard;
+		 // card data or index for new card
+	}
 
-	@type:"PutCardInDeckAction"
+	constructor(gameSession, targetPlayerId, cardDataOrIndex) {
+		if (this.type == null) { this.type = PutCardInDeckAction.type; }
+		this.targetPlayerId = targetPlayerId;
 
-	targetPlayerId: null
-	cardDataOrIndex: null # card data or index for new card
+		if (cardDataOrIndex != null) {
+			// copy data so we don't modify anything unintentionally
+			if (_.isObject(cardDataOrIndex)) {
+				this.cardDataOrIndex = UtilsJavascript.fastExtend({}, cardDataOrIndex);
+			} else {
+				this.cardDataOrIndex = cardDataOrIndex;
+			}
+		}
 
-	constructor: (gameSession, targetPlayerId, cardDataOrIndex) ->
-		@type ?= PutCardInDeckAction.type
-		@targetPlayerId = targetPlayerId
+		super(gameSession);
+	}
 
-		if cardDataOrIndex?
-			# copy data so we don't modify anything unintentionally
-			if _.isObject(cardDataOrIndex)
-				@cardDataOrIndex = UtilsJavascript.fastExtend({}, cardDataOrIndex)
-			else
-				@cardDataOrIndex = cardDataOrIndex
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-		super(gameSession)
+		p.cachedCard = null;
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		return p;
+	}
 
-		p.cachedCard = null
+	isRemovableDuringScrubbing() {
+		return false;
+	}
 
-		return p
-
-	isRemovableDuringScrubbing: () ->
-		return false
-
-	###*
+	/**
    * Returns the card data or index used to create card that will be applied.
-	 ###
-	getCardDataOrIndex: () ->
-		return @cardDataOrIndex
+	 */
+	getCardDataOrIndex() {
+		return this.cardDataOrIndex;
+	}
 
-	###*
+	/**
    * Returns the card.
    * NOTE: This card may or may not be indexed if this method is called before this action is executed.
    * @returns {Card}
-	 ###
-	getCard: () ->
-		if !@_private.cachedCard?
-			@_private.cachedCard = @getGameSession().getExistingCardFromIndexOrCreateCardFromData(@cardDataOrIndex)
-			if @_private.cachedCard? then @_private.cachedCard.setOwnerId(@getOwnerId())
-		return @_private.cachedCard
+	 */
+	getCard() {
+		if ((this._private.cachedCard == null)) {
+			this._private.cachedCard = this.getGameSession().getExistingCardFromIndexOrCreateCardFromData(this.cardDataOrIndex);
+			if (this._private.cachedCard != null) { this._private.cachedCard.setOwnerId(this.getOwnerId()); }
+		}
+		return this._private.cachedCard;
+	}
 
-	###*
+	/**
    * Explicitly sets the card.
    * NOTE: This card reference is not serialized and will not be preserved through deserialize/rollback.
-	 ###
-	setCard: (card) ->
-		@_private.cachedCard = card
+	 */
+	setCard(card) {
+		return this._private.cachedCard = card;
+	}
 
-	# target should always be the card we've put in deck, so we'll alias getCard
-	getTarget: @::getCard
+	_execute() {
+		super._execute();
 
-	_execute: () ->
-		super()
+		if ((this.targetPlayerId != null) && (this.cardDataOrIndex != null)) {
+			//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "PutCardOnTopOfDeckAction::execute"
+			const card = this.getCard();
+			const deck = this.getGameSession().getPlayerById(this.targetPlayerId).getDeck();
 
-		if @targetPlayerId? and @cardDataOrIndex?
-			#Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "PutCardOnTopOfDeckAction::execute"
-			card = @getCard()
-			deck = @getGameSession().getPlayerById(@targetPlayerId).getDeck()
+			// regenerate card data so we transmit the correct values to the clients
+			if (this.getGameSession().getIsRunningAsAuthoritative()) {
+				if (card.getIsFollowup()) {
+					// followups should ignore incoming card data
+					this.cardDataOrIndex = card.createCardData();
+				} else {
+					// apply incoming card data before regenerating
+					card.applyCardData(this.cardDataOrIndex);
+					this.cardDataOrIndex = card.createCardData(this.cardDataOrIndex);
+				}
 
-			# regenerate card data so we transmit the correct values to the clients
-			if @getGameSession().getIsRunningAsAuthoritative()
-				if card.getIsFollowup()
-					# followups should ignore incoming card data
-					@cardDataOrIndex = card.createCardData()
-				else
-					# apply incoming card data before regenerating
-					card.applyCardData(@cardDataOrIndex)
-					@cardDataOrIndex = card.createCardData(@cardDataOrIndex)
+				// flag card data as applied locally so that we don't reapply regenerated data for clients
+				this.cardDataOrIndex._hasBeenApplied = true;
+			}
 
-				# flag card data as applied locally so that we don't reapply regenerated data for clients
-				@cardDataOrIndex._hasBeenApplied = true
+			// apply the card through the game session
+			this.getGameSession().applyCardToDeck(deck, this.cardDataOrIndex, card, this);
 
-			# apply the card through the game session
-			@getGameSession().applyCardToDeck(deck, @cardDataOrIndex, card, @)
+			// get post apply card data
+			if (this.getGameSession().getIsRunningAsAuthoritative()) { return this.cardDataOrIndex = card.updateCardDataPostApply(this.cardDataOrIndex); }
+		}
+	}
 
-			# get post apply card data
-			if @getGameSession().getIsRunningAsAuthoritative() then @cardDataOrIndex = card.updateCardDataPostApply(@cardDataOrIndex)
+	scrubSensitiveData(actionData,scrubFromPerspectiveOfPlayerId, forSpectator) {
+		// scrub the card id and only retain the card index
+		if (forSpectator || (actionData.ownerId !== scrubFromPerspectiveOfPlayerId)) {
+			if ((actionData.cardDataOrIndex != null) && _.isObject(actionData.cardDataOrIndex)) {
+				actionData.cardDataOrIndex = {id:-1, index: actionData.cardDataOrIndex.index};
+			}
+		}
+		return actionData;
+	}
+}
+PutCardInDeckAction.initClass();
 
-	scrubSensitiveData: (actionData,scrubFromPerspectiveOfPlayerId, forSpectator) ->
-		# scrub the card id and only retain the card index
-		if forSpectator or actionData.ownerId != scrubFromPerspectiveOfPlayerId
-			if actionData.cardDataOrIndex? and _.isObject(actionData.cardDataOrIndex)
-				actionData.cardDataOrIndex = {id:-1, index: actionData.cardDataOrIndex.index}
-		return actionData
-
-module.exports = PutCardInDeckAction
+module.exports = PutCardInDeckAction;

@@ -1,55 +1,74 @@
-Modifier = require './modifier'
-RemoveAction = require 'app/sdk/actions/removeAction'
-PlayCardAsTransformAction = require 'app/sdk/actions/playCardAsTransformAction'
-GameSession = require 'app/sdk/gameSession'
-i18next = require('i18next')
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const RemoveAction = require('app/sdk/actions/removeAction');
+const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
+const GameSession = require('app/sdk/gameSession');
+const i18next = require('i18next');
 
-class ModifierRemoveAndReplaceEntity extends Modifier
+class ModifierRemoveAndReplaceEntity extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierRemoveAndReplaceEntity";
+		this.type ="ModifierRemoveAndReplaceEntity";
+	
+		this.prototype.maxStacks = 1;
+	
+		this.modifierName = "";
+		this.description = "";
+		this.isHiddenToUI = false;
+		this.prototype.isRemovable = false;
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+	}
 
-	type:"ModifierRemoveAndReplaceEntity"
-	@type:"ModifierRemoveAndReplaceEntity"
+	static createContextObject(cardDataOrIndexToSpawn, originalCardId) {
+		if (originalCardId == null) { originalCardId = undefined; }
+		const contextObject = super.createContextObject();
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.originalCardId = originalCardId;
+		return contextObject;
+	}
 
-	maxStacks: 1
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject && modifierContextObject.originalCardId) {
+			const cardName = GameSession.getCardCaches().getCardById(modifierContextObject.originalCardId).getName();
+			return i18next.t("modifiers.temp_transformed",{unit_name: cardName});
+		}
+	}
 
-	@modifierName: ""
-	@description: ""
-	@isHiddenToUI: false
-	isRemovable: false
+	onExpire() {
+		super.onExpire();
+		return this.removeAndReplace();
+	}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	removeAndReplace() {
+		this.remove();
+		return this.replace();
+	}
 
-	cardDataOrIndexToSpawn: null
+	remove() {
+		const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
+		removeOriginalEntityAction.setOwnerId(this.getCard().getOwnerId());
+		removeOriginalEntityAction.setTarget(this.getCard());
+		return this.getGameSession().executeAction(removeOriginalEntityAction);
+	}
 
-	@createContextObject: (cardDataOrIndexToSpawn, originalCardId=undefined) ->
-		contextObject = super()
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.originalCardId = originalCardId
-		return contextObject
+	replace() {
+		const spawnEntityAction = new PlayCardAsTransformAction(this.getCard().getGameSession(), this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, this.cardDataOrIndexToSpawn);
+		return this.getGameSession().executeAction(spawnEntityAction);
+	}
+}
+ModifierRemoveAndReplaceEntity.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject and modifierContextObject.originalCardId
-			cardName = GameSession.getCardCaches().getCardById(modifierContextObject.originalCardId).getName()
-			return i18next.t("modifiers.temp_transformed",{unit_name: cardName})
-
-	onExpire: () ->
-		super()
-		@removeAndReplace()
-
-	removeAndReplace: () ->
-		@remove()
-		@replace()
-
-	remove: () ->
-		removeOriginalEntityAction = new RemoveAction(@getGameSession())
-		removeOriginalEntityAction.setOwnerId(@getCard().getOwnerId())
-		removeOriginalEntityAction.setTarget(@getCard())
-		@getGameSession().executeAction(removeOriginalEntityAction)
-
-	replace: () ->
-		spawnEntityAction = new PlayCardAsTransformAction(@getCard().getGameSession(), @getCard().getOwnerId(), @getCard().getPosition().x, @getCard().getPosition().y, @cardDataOrIndexToSpawn)
-		@getGameSession().executeAction(spawnEntityAction)
-
-module.exports = ModifierRemoveAndReplaceEntity
+module.exports = ModifierRemoveAndReplaceEntity;

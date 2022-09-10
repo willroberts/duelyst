@@ -1,35 +1,53 @@
-Action = require './action'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Action = require('./action');
 
-###
+/*
 Action that activates a player's signature card.
-###
+*/
 
-class ActivateSignatureCardAction extends Action
+class ActivateSignatureCardAction extends Action {
+	static initClass() {
+	
+		this.type ="ActivateSignatureCardAction";
+	
+		this.prototype.targetPlayerId = null;
+	}
 
-	@type:"ActivateSignatureCardAction"
+	constructor(gameSession, targetPlayerId) {
+		if (this.type == null) { this.type = ActivateSignatureCardAction.type; }
+		super(gameSession);
+		if (targetPlayerId != null) {
+			this.targetPlayerId = targetPlayerId;
+		} else {
+			this.targetPlayerId = this.getOwnerId();
+		}
+	}
 
-	targetPlayerId: null
+	isRemovableDuringScrubbing() {
+		return false;
+	}
 
-	constructor: (gameSession, targetPlayerId) ->
-		@type ?= ActivateSignatureCardAction.type
-		super(gameSession)
-		if targetPlayerId?
-			@targetPlayerId = targetPlayerId
-		else
-			@targetPlayerId = @getOwnerId()
+	getTargetPlayer() {
+		return this.getGameSession().getPlayerById(this.getTargetPlayerId());
+	}
 
-	isRemovableDuringScrubbing: () ->
-		return false
+	getTargetPlayerId() {
+		return this.targetPlayerId;
+	}
 
-	getTargetPlayer: () ->
-		return @getGameSession().getPlayerById(@getTargetPlayerId())
+	_execute() {
+		super._execute();
 
-	getTargetPlayerId: () ->
-		return @targetPlayerId
+		return this.getTargetPlayer().setIsSignatureCardActive(true);
+	}
+}
+ActivateSignatureCardAction.initClass();
 
-	_execute: () ->
-		super()
-
-		@getTargetPlayer().setIsSignatureCardActive(true)
-
-module.exports = ActivateSignatureCardAction
+module.exports = ActivateSignatureCardAction;

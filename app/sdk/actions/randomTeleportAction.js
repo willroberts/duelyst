@@ -1,72 +1,103 @@
-Logger = require 'app/common/logger'
-TeleportAction = require './teleportAction'
-CardType = 			require 'app/sdk/cards/cardType'
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const TeleportAction = require('./teleportAction');
+const CardType = 			require('app/sdk/cards/cardType');
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
 
-class RandomTeleportAction extends TeleportAction
+class RandomTeleportAction extends TeleportAction {
+	static initClass() {
+	
+		this.type = "RandomTeleportAction";
+		this.prototype.teleportPattern = null;
+		this.prototype.patternSourceIndex = null; // center the teleport pattern around a specific entity, or the whole board
+		this.prototype.patternSourcePosition = null;
+		 // center the teleport pattern around a specific position, or the whole board
+	}
 
-	@type: "RandomTeleportAction"
-	teleportPattern: null
-	patternSourceIndex: null # center the teleport pattern around a specific entity, or the whole board
-	patternSourcePosition: null # center the teleport pattern around a specific position, or the whole board
+	constructor() {
+		if (this.type == null) { this.type = RandomTeleportAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= RandomTeleportAction.type
-		super
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		p.patternSource = null;
 
-		p.patternSource = null
+		return p;
+	}
 
-		return p
+	getTeleportPattern() {
+		return this.teleportPattern;
+	}
 
-	getTeleportPattern: () ->
-		return @teleportPattern
+	setTeleportPattern(teleportPattern) {
+		return this.teleportPattern = teleportPattern;
+	}
 
-	setTeleportPattern: (teleportPattern) ->
-		@teleportPattern = teleportPattern
+	getPatternSource() {
+		if ((this._private.patternSource == null) && (this.patternSourceIndex != null)) {
+			this._private.patternSource = this.getGameSession().getCardByIndex(this.patternSourceIndex);
+		}
+		return this._private.patternSource;
+	}
 
-	getPatternSource: () ->
-		if !@_private.patternSource? and @patternSourceIndex?
-			@_private.patternSource = @getGameSession().getCardByIndex(@patternSourceIndex)
-		return @_private.patternSource
+	setPatternSource(patternSource) {
+		return this.patternSourceIndex = patternSource.getIndex();
+	}
 
-	setPatternSource: (patternSource) ->
-		@patternSourceIndex = patternSource.getIndex()
+	getPatternSourcePosition() {
+		return this.patternSourcePosition;
+	}
 
-	getPatternSourcePosition: () ->
-		return @patternSourcePosition
+	setPatternSourcePosition(patternSourcePosition) {
+		return this.patternSourcePosition = patternSourcePosition;
+	}
 
-	setPatternSourcePosition: (patternSourcePosition) ->
-		@patternSourcePosition = patternSourcePosition
+	_modifyForExecution() {
+		super._modifyForExecution();
 
-	_modifyForExecution: () ->
-		super()
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const source = this.getSource();
+			if (source != null) {
+				let moveLocations;
+				if (!this.getTeleportPattern()) { // if no teleport pattern defined, use whole board
+					// pick a random "spawn" location - locations that units can spawn are also valid target position for teleporting this unit
+					moveLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, CONFIG.ALL_BOARD_POSITIONS, source, source, 1);
+				} else { // pick target position from teleport pattern
+					let patternSourcePosition;
+					const patternSource = this.getPatternSource();
+					if (patternSource != null) { // around pattern source entity
+						patternSourcePosition = patternSource.getPosition();
+					} else { // around pattern source position
+						patternSourcePosition = this.getPatternSourcePosition();
+					}
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			source = @getSource()
-			if source?
-				if !@getTeleportPattern() # if no teleport pattern defined, use whole board
-					# pick a random "spawn" location - locations that units can spawn are also valid target position for teleporting this unit
-					moveLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), {x:0, y:0}, CONFIG.ALL_BOARD_POSITIONS, source, source, 1)
-				else # pick target position from teleport pattern
-					patternSource = @getPatternSource()
-					if patternSource? # around pattern source entity
-						patternSourcePosition = patternSource.getPosition()
-					else # around pattern source position
-						patternSourcePosition = @getPatternSourcePosition()
+					if (patternSourcePosition != null) {
+						moveLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), patternSourcePosition, this.getTeleportPattern(), source, source, 1);
+					} else { // use whole board
+						moveLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, this.getTeleportPattern(), source, source, 1);
+					}
+				}
 
-					if patternSourcePosition?
-						moveLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), patternSourcePosition, @getTeleportPattern(), source, source, 1)
-					else # use whole board
-						moveLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), {x:0, y:0}, @getTeleportPattern(), source, source, 1)
+				if (moveLocations.length > 0) {
+					const position = moveLocations[0];
+					return this.setTargetPosition(position);
+				} else {
+					return this.setTargetPosition(this.getSourcePosition());
+				}
+			}
+		}
+	}
+}
+RandomTeleportAction.initClass();
 
-				if moveLocations.length > 0
-					position = moveLocations[0]
-					@setTargetPosition(position)
-				else
-					@setTargetPosition(@getSourcePosition())
-
-module.exports = RandomTeleportAction
+module.exports = RandomTeleportAction;

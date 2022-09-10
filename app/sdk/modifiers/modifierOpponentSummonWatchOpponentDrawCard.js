@@ -1,29 +1,43 @@
-ModifierOpponentSummonWatch = require './modifierOpponentSummonWatch'
-DrawCardAction = require 'app/sdk/actions/drawCardAction'
-PlayCardFromHandAction = require 'app/sdk/actions/playCardFromHandAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpponentSummonWatch = require('./modifierOpponentSummonWatch');
+const DrawCardAction = require('app/sdk/actions/drawCardAction');
+const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
 
-class ModifierOpponentSummonWatchOpponentDrawCard extends ModifierOpponentSummonWatch
+class ModifierOpponentSummonWatchOpponentDrawCard extends ModifierOpponentSummonWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpponentSummonWatchOpponentDrawCard";
+		this.type ="ModifierOpponentSummonWatchOpponentDrawCard";
+	
+		this.modifierName ="Opponent Summon Watch";
+		this.description = "Whenever your opponent summons a minion, they draw a card";
+	
+		this.prototype.damageAmount = 0;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpponentSummonWatch", "FX.Modifiers.ModifierGenericDamage"];
+	}
 
-	type:"ModifierOpponentSummonWatchOpponentDrawCard"
-	@type:"ModifierOpponentSummonWatchOpponentDrawCard"
+	static createContextObject(options) {
+		const contextObject = super.createContextObject(options);
+		return contextObject;
+	}
 
-	@modifierName:"Opponent Summon Watch"
-	@description: "Whenever your opponent summons a minion, they draw a card"
+	static getDescription(modifierContextObject) {
+		return this.description;
+	}
 
-	damageAmount: 0
+	onSummonWatch(action) {
+		if (action instanceof PlayCardFromHandAction) {
+			const enemyGeneral = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+			return this.getGameSession().executeAction(new DrawCardAction(this.getGameSession(), enemyGeneral.getOwnerId()));
+		}
+	}
+}
+ModifierOpponentSummonWatchOpponentDrawCard.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierOpponentSummonWatch", "FX.Modifiers.ModifierGenericDamage"]
-
-	@createContextObject: (options) ->
-		contextObject = super(options)
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		return @description
-
-	onSummonWatch: (action) ->
-		if action instanceof PlayCardFromHandAction
-			enemyGeneral = @getCard().getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-			@getGameSession().executeAction(new DrawCardAction(this.getGameSession(), enemyGeneral.getOwnerId()))
-
-module.exports = ModifierOpponentSummonWatchOpponentDrawCard
+module.exports = ModifierOpponentSummonWatchOpponentDrawCard;

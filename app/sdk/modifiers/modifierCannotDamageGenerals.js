@@ -1,41 +1,60 @@
-EVENTS = require 'app/common/event_types'
-ModifierCannot = require './modifierCannot'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const EVENTS = require('app/common/event_types');
+const ModifierCannot = require('./modifierCannot');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class ModifierCannotDamageGenerals extends ModifierCannot
+class ModifierCannotDamageGenerals extends ModifierCannot {
+	static initClass() {
+	
+		this.prototype.type ="ModifierCannotDamageGenerals";
+		this.type ="ModifierCannotDamageGenerals";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	}
 
-	type:"ModifierCannotDamageGenerals"
-	@type:"ModifierCannotDamageGenerals"
+	onEvent(event) {
+		super.onEvent(event);
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		if (this._private.listeningToEvents) {
+			if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
+				return this.onModifyActionForEntitiesInvolvedInAttack(event);
+			}
+		}
+	}
 
-	onEvent: (event) ->
-		super(event)
+	getIsActionRelevant(a) {
+		return a instanceof DamageAction && a.getTarget().getIsGeneral() && (a.getSource() === this.getCard());
+	}
 
-		if @_private.listeningToEvents
-			if event.type == EVENTS.modify_action_for_entities_involved_in_attack
-				@onModifyActionForEntitiesInvolvedInAttack(event)
+	_modifyAction(a) {
+		a.setChangedByModifier(this);
+		return a.setDamageMultiplier(0);
+	}
 
-	getIsActionRelevant: (a) ->
-		return a instanceof DamageAction and a.getTarget().getIsGeneral() and a.getSource() is @getCard()
+	onModifyActionForExecution(actionEvent) {
+		super.onModifyActionForExecution(actionEvent);
 
-	_modifyAction: (a) ->
-		a.setChangedByModifier(@)
-		a.setDamageMultiplier(0)
+		const a = actionEvent.action;
+		if (this.getIsActionRelevant(a)) {
+			return this._modifyAction(a);
+		}
+	}
 
-	onModifyActionForExecution: (actionEvent) ->
-		super(actionEvent)
+	onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
+		const a = actionEvent.action;
+		if (this.getIsActive() && this.getIsActionRelevant(a)) {
+			return this._modifyAction(a);
+		}
+	}
+}
+ModifierCannotDamageGenerals.initClass();
 
-		a = actionEvent.action
-		if @getIsActionRelevant(a)
-			@_modifyAction(a)
-
-	onModifyActionForEntitiesInvolvedInAttack: (actionEvent) ->
-		a = actionEvent.action
-		if @getIsActive() and @getIsActionRelevant(a)
-			@_modifyAction(a)
-
-module.exports = ModifierCannotDamageGenerals
+module.exports = ModifierCannotDamageGenerals;

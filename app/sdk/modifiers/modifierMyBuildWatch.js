@@ -1,13 +1,24 @@
-ModifierBuildWatch = require './modifierBuildWatch'
-PlayCardAsTransformAction = require 'app/sdk/actions/playCardAsTransformAction'
-ModifierBuilding = require 'app/sdk/modifiers/modifierBuilding'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierBuildWatch = require('./modifierBuildWatch');
+const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
+const ModifierBuilding = require('app/sdk/modifiers/modifierBuilding');
 
-class ModifierMyBuildWatch extends ModifierBuildWatch
+class ModifierMyBuildWatch extends ModifierBuildWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyBuildWatch";
+		this.type ="ModifierMyBuildWatch";
+	}
 
-	type:"ModifierMyBuildWatch"
-	@type:"ModifierMyBuildWatch"
+	getIsActionRelevant(action) {
+		return super.getIsActionRelevant(action) && (action.getOwnerId() === this.getCard().getOwnerId());
+	}
+}
+ModifierMyBuildWatch.initClass();
 
-	getIsActionRelevant: (action) ->
-		super(action) and action.getOwnerId() is @getCard().getOwnerId()
-
-module.exports = ModifierMyBuildWatch
+module.exports = ModifierMyBuildWatch;

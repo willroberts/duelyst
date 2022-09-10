@@ -1,34 +1,51 @@
-Logger = require 'app/common/logger'
-Action = require './action'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Action = require('./action');
+const CardType = require('app/sdk/cards/cardType');
 
-class RemoveCardFromHandAction extends Action
+class RemoveCardFromHandAction extends Action {
+	static initClass() {
+	
+		this.type ="RemoveCardFromHandAction";
+	
+		this.prototype.targetPlayerId = null;
+		this.prototype.indexOfCardInHand = null;
+	}
 
-	@type:"RemoveCardFromHandAction"
+	constructor(gameSession, indexOfCardInHand, targetPlayerId) {
+		if (this.type == null) { this.type = RemoveCardFromHandAction.type; }
+		super(gameSession);
 
-	targetPlayerId: null
-	indexOfCardInHand: null
+		this.indexOfCardInHand = indexOfCardInHand;
+		this.targetPlayerId = targetPlayerId;
+	}
 
-	constructor: (gameSession, indexOfCardInHand, targetPlayerId) ->
-		@type ?= RemoveCardFromHandAction.type
-		super(gameSession)
+	_execute() {
+		super._execute();
+		//Logger.module("SDK").debug "RemoveCardFromHandAction::execute"
 
-		@indexOfCardInHand = indexOfCardInHand
-		@targetPlayerId = targetPlayerId
+		if (this.indexOfCardInHand != null) {
+			const deck = this.getGameSession().getPlayerById(this.targetPlayerId).getDeck();
+			const cardIndex = deck.getCardIndexInHandAtIndex(this.indexOfCardInHand);
+			return this.getGameSession().removeCardByIndexFromHand(deck, cardIndex, this.getGameSession().getCardByIndex(cardIndex), this);
+		}
+	}
 
-	_execute: () ->
-		super()
-		#Logger.module("SDK").debug "RemoveCardFromHandAction::execute"
+	getIndexOfCardInHand() {
+		return this.indexOfCardInHand;
+	}
 
-		if @indexOfCardInHand?
-			deck = @getGameSession().getPlayerById(@targetPlayerId).getDeck()
-			cardIndex = deck.getCardIndexInHandAtIndex(@indexOfCardInHand)
-			@getGameSession().removeCardByIndexFromHand(deck, cardIndex, @getGameSession().getCardByIndex(cardIndex), @)
+	getTargetPlayerId() {
+		return this.targetPlayerId;
+	}
+}
+RemoveCardFromHandAction.initClass();
 
-	getIndexOfCardInHand: () ->
-		return @indexOfCardInHand
-
-	getTargetPlayerId: () ->
-		return @targetPlayerId
-
-module.exports = RemoveCardFromHandAction
+module.exports = RemoveCardFromHandAction;

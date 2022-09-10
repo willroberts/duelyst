@@ -1,35 +1,52 @@
-Modifier = require './modifier'
-ModifierHealWatch = require './modifierHealWatch'
-CardType = require 'app/sdk/cards/cardType'
-RandomDamageAction = require 'app/sdk/actions/randomDamageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierHealWatch = require('./modifierHealWatch');
+const CardType = require('app/sdk/cards/cardType');
+const RandomDamageAction = require('app/sdk/actions/randomDamageAction');
 
-class ModifierHealWatchDamageRandomEnemy extends ModifierHealWatch
+class ModifierHealWatchDamageRandomEnemy extends ModifierHealWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierHealWatchDamageRandomEnemy";
+		this.type ="ModifierHealWatchDamageRandomEnemy";
+	
+		this.modifierName ="Heal Watch Damage Random Enemy for X";
+		this.description = "Whenever anything is healed, a random enemy takes damage";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierHealWatch", "FX.Modifiers.ModifierGenericDamageSmall"];
+	}
 
-	type:"ModifierHealWatchDamageRandomEnemy"
-	@type:"ModifierHealWatchDamageRandomEnemy"
+	static createContextObject(damageAmount, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	@modifierName:"Heal Watch Damage Random Enemy for X"
-	@description: "Whenever anything is healed, a random enemy takes damage"
+	onHealWatch(action) {
+		let damageAmount;
+		if (!this.damageAmount) {
+			damageAmount = action.getTotalHealApplied();
+		} else {
+			({
+                damageAmount
+            } = this);
+		}
 
-	fxResource: ["FX.Modifiers.ModifierHealWatch", "FX.Modifiers.ModifierGenericDamageSmall"]
+		if (damageAmount > 0) {
+			const randomDamageAction = new RandomDamageAction(this.getGameSession());
+			randomDamageAction.setOwnerId(this.getCard().getOwnerId());
+			randomDamageAction.setSource(this.getCard());
+			randomDamageAction.setDamageAmount(damageAmount);
+			randomDamageAction.canTargetGenerals = true;
+			return this.getGameSession().executeAction(randomDamageAction);
+		}
+	}
+}
+ModifierHealWatchDamageRandomEnemy.initClass();
 
-	@createContextObject: (damageAmount, options) ->
-		contextObject = super(options)
-		contextObject.damageAmount = damageAmount
-		return contextObject
-
-	onHealWatch: (action) ->
-		if !@damageAmount
-			damageAmount = action.getTotalHealApplied()
-		else
-			damageAmount = @damageAmount
-
-		if damageAmount > 0
-			randomDamageAction = new RandomDamageAction(@getGameSession())
-			randomDamageAction.setOwnerId(@getCard().getOwnerId())
-			randomDamageAction.setSource(@getCard())
-			randomDamageAction.setDamageAmount(damageAmount)
-			randomDamageAction.canTargetGenerals = true
-			@getGameSession().executeAction(randomDamageAction)
-
-module.exports = ModifierHealWatchDamageRandomEnemy
+module.exports = ModifierHealWatchDamageRandomEnemy;

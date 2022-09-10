@@ -1,48 +1,65 @@
-ModifierDyingWish = require './modifierDyingWish'
-DamageAction = require 'app/sdk/actions/damageAction'
-HealAction = require 'app/sdk/actions/healAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierDyingWish = require('./modifierDyingWish');
+const DamageAction = require('app/sdk/actions/damageAction');
+const HealAction = require('app/sdk/actions/healAction');
 
-CONFIG = require 'app/common/config'
+const CONFIG = require('app/common/config');
 
-class ModifierDyingWishDamageEnemyGeneralHealGeneral extends ModifierDyingWish
+class ModifierDyingWishDamageEnemyGeneralHealGeneral extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWishDamageEnemyGeneralHealGeneral";
+		this.type ="ModifierDyingWishDamageEnemyGeneralHealGeneral";
+	
+		this.description = "Deal %X damage to the enemy General. Restore %X Health to your General";
+	
+		this.prototype.healthChangeAmount = 0;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericChain"];
+	}
 
-	type:"ModifierDyingWishDamageEnemyGeneralHealGeneral"
-	@type:"ModifierDyingWishDamageEnemyGeneralHealGeneral"
+	static createContextObject(healthChangeAmount) {
+		if (healthChangeAmount == null) { healthChangeAmount = 0; }
+		const contextObject = super.createContextObject();
+		contextObject.healthChangeAmount = healthChangeAmount;
+		return contextObject;
+	}
 
-	@description: "Deal %X damage to the enemy General. Restore %X Health to your General"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/g, () => modifierContextObject.healthChangeAmount);
+		} else {
+			return this.description;
+		}
+	}
 
-	healthChangeAmount: 0
+	onDyingWish() {
+		const enemyGeneral = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+		const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
 
-	fxResource: ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericChain"]
+		if (enemyGeneral != null) {
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setOwnerId(this.getCard().getOwnerId());
+			damageAction.setTarget(enemyGeneral);
+			damageAction.setDamageAmount(this.healthChangeAmount);
+			this.getGameSession().executeAction(damageAction);
+		}
 
-	@createContextObject: (healthChangeAmount=0) ->
-		contextObject = super()
-		contextObject.healthChangeAmount = healthChangeAmount
-		return contextObject
+		if (myGeneral != null) {
+			const healAction = new HealAction(this.getGameSession());
+			healAction.setOwnerId(this.getCard().getOwnerId());
+			healAction.setTarget(myGeneral);
+			healAction.setHealAmount(this.healthChangeAmount);
+			return this.getGameSession().executeAction(healAction);
+		}
+	}
+}
+ModifierDyingWishDamageEnemyGeneralHealGeneral.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/g, () ->
-				modifierContextObject.healthChangeAmount
-		else
-			return @description
-
-	onDyingWish: () ->
-		enemyGeneral = @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-		myGeneral = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-
-		if enemyGeneral?
-			damageAction = new DamageAction(this.getGameSession())
-			damageAction.setOwnerId(@getCard().getOwnerId())
-			damageAction.setTarget(enemyGeneral)
-			damageAction.setDamageAmount(@healthChangeAmount)
-			@getGameSession().executeAction(damageAction)
-
-		if myGeneral?
-			healAction = new HealAction(this.getGameSession())
-			healAction.setOwnerId(@getCard().getOwnerId())
-			healAction.setTarget(myGeneral)
-			healAction.setHealAmount(@healthChangeAmount)
-			@getGameSession().executeAction(healAction)
-
-module.exports = ModifierDyingWishDamageEnemyGeneralHealGeneral
+module.exports = ModifierDyingWishDamageEnemyGeneralHealGeneral;

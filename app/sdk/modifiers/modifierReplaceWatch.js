@@ -1,31 +1,45 @@
-Modifier = require './modifier'
-ReplaceCardFromHandAction = require 'app/sdk/actions/replaceCardFromHandAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ReplaceCardFromHandAction = require('app/sdk/actions/replaceCardFromHandAction');
 
-class ModifierReplaceWatch extends Modifier
+class ModifierReplaceWatch extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierReplaceWatch";
+		this.type ="ModifierReplaceWatch";
+	
+		this.modifierName ="Replace Watch";
+		this.description = "Replace Watch";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierReplaceWatch"];
+	}
 
-	type:"ModifierReplaceWatch"
-	@type:"ModifierReplaceWatch"
+	onAction(e) {
+		super.onAction(e);
 
-	@modifierName:"Replace Watch"
-	@description: "Replace Watch"
+		const {
+            action
+        } = e;
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		// watch for my player replacing a card
+		if (action instanceof ReplaceCardFromHandAction && (action.getOwnerId() === this.getCard().getOwnerId())) {
+			return this.onReplaceWatch(action);
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierReplaceWatch"]
+	onReplaceWatch(action) {}
+}
+ModifierReplaceWatch.initClass();
+		// override me in sub classes to implement special behavior
 
-	onAction: (e) ->
-		super(e)
-
-		action = e.action
-
-		# watch for my player replacing a card
-		if action instanceof ReplaceCardFromHandAction and action.getOwnerId() is @getCard().getOwnerId()
-			@onReplaceWatch(action)
-
-	onReplaceWatch: (action) ->
-		# override me in sub classes to implement special behavior
-
-module.exports = ModifierReplaceWatch
+module.exports = ModifierReplaceWatch;

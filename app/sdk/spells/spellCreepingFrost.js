@@ -1,31 +1,45 @@
-Spell = require './spell'
-CardType = require 'app/sdk/cards/cardType'
-ModifierStunnedVanar = require 'app/sdk/modifiers/modifierStunnedVanar'
-ModifierStunned = require 'app/sdk/modifiers/modifierStunned'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const ModifierStunnedVanar = require('app/sdk/modifiers/modifierStunnedVanar');
+const ModifierStunned = require('app/sdk/modifiers/modifierStunned');
 
-class SpellCreepingFrost extends Spell
+class SpellCreepingFrost extends Spell {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		applyEffectPosition = {x: x, y: y}
-		entity = board.getUnitAtPosition(applyEffectPosition)
-		if entity?
-			@getGameSession().applyModifierContextObject(ModifierStunnedVanar.createContextObject(), entity)
+		const applyEffectPosition = {x, y};
+		const entity = board.getUnitAtPosition(applyEffectPosition);
+		if (entity != null) {
+			this.getGameSession().applyModifierContextObject(ModifierStunnedVanar.createContextObject(), entity);
+		}
 
-		general = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-		enemyUnits = board.getEnemyEntitiesForEntity(general, CardType.Unit, false, false)
-		additionalUnitsToStun = []
-		for unit in enemyUnits
-			if !unit.getIsGeneral() and (unit.hasActiveModifierClass(ModifierStunnedVanar) or unit.hasActiveModifierClass(ModifierStunned))
-				adjacentEnemies = board.getFriendlyEntitiesAroundEntity(unit, CardType.Unit, 1, true, false)
-				enemyToAdd = []
-				for enemy in adjacentEnemies
-					if !enemy.hasActiveModifierClass(ModifierStunnedVanar) and !enemy.hasActiveModifierClass(ModifierStunned)
-						enemyToAdd.push(enemy)
-				additionalUnitsToStun.push(enemyToAdd[@getGameSession().getRandomIntegerForExecution(enemyToAdd.length)])
+		const general = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+		const enemyUnits = board.getEnemyEntitiesForEntity(general, CardType.Unit, false, false);
+		const additionalUnitsToStun = [];
+		for (let unit of Array.from(enemyUnits)) {
+			if (!unit.getIsGeneral() && (unit.hasActiveModifierClass(ModifierStunnedVanar) || unit.hasActiveModifierClass(ModifierStunned))) {
+				const adjacentEnemies = board.getFriendlyEntitiesAroundEntity(unit, CardType.Unit, 1, true, false);
+				const enemyToAdd = [];
+				for (let enemy of Array.from(adjacentEnemies)) {
+					if (!enemy.hasActiveModifierClass(ModifierStunnedVanar) && !enemy.hasActiveModifierClass(ModifierStunned)) {
+						enemyToAdd.push(enemy);
+					}
+				}
+				additionalUnitsToStun.push(enemyToAdd[this.getGameSession().getRandomIntegerForExecution(enemyToAdd.length)]);
+			}
+		}
 
-		for unitToStun in additionalUnitsToStun
-			@getGameSession().applyModifierContextObject(ModifierStunnedVanar.createContextObject(), unitToStun)
+		return Array.from(additionalUnitsToStun).map((unitToStun) =>
+			this.getGameSession().applyModifierContextObject(ModifierStunnedVanar.createContextObject(), unitToStun));
+	}
+}
 
-module.exports = SpellCreepingFrost
+module.exports = SpellCreepingFrost;

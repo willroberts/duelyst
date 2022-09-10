@@ -1,42 +1,65 @@
-Modifier = require './modifier'
-PlayCardFromHandAction = require 'app/sdk/actions/playCardFromHandAction'
-PlaySignatureCardAction = require 'app/sdk/actions/playSignatureCardAction'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
+const PlaySignatureCardAction = require('app/sdk/actions/playSignatureCardAction');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
 
-class ModifierSpellDamageWatch extends Modifier
+class ModifierSpellDamageWatch extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSpellDamageWatch";
+		this.type ="ModifierSpellDamageWatch";
+	
+		this.modifierName ="Spell Damage Watch";
+		this.description = "Spell Damage Watch";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch"];
+	}
 
-	type:"ModifierSpellDamageWatch"
-	@type:"ModifierSpellDamageWatch"
+	onAction(e) {
+		super.onAction(e);
 
-	@modifierName:"Spell Damage Watch"
-	@description: "Spell Damage Watch"
+		const {
+            action
+        } = e;
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		// watch for a spell (but not a followup) being cast by player who owns this entity
+		if ((action instanceof PlayCardFromHandAction || action instanceof PlaySignatureCardAction) && (action.getOwnerId() === this.getCard().getOwnerId()) && (__guard__(action.getCard(), x => x.type) === CardType.Spell) && this.createdDamageSubaction(action)) {
+			return this.onDamagingSpellcast(action);
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierSpellWatch"]
+	onDamagingSpellcast(action) {}
+		// override me in sub classes to implement special behavior
 
-	onAction: (e) ->
-		super(e)
+	createdDamageSubaction(action) {
+		// did the spell cast action create a damage subaction directly?
+		for (let subAction of Array.from(action.getSubActions())) {
+			if ((subAction.getType() === DamageAction.type) && !subAction.getCreatedByTriggeringModifier()) {
+				return true;
+			}
+		}
+		return false;
+	}
+}
+ModifierSpellDamageWatch.initClass();
 
-		action = e.action
+module.exports = ModifierSpellDamageWatch;
 
-		# watch for a spell (but not a followup) being cast by player who owns this entity
-		if (action instanceof PlayCardFromHandAction or action instanceof PlaySignatureCardAction) and action.getOwnerId() is @getCard().getOwnerId() and action.getCard()?.type is CardType.Spell and @createdDamageSubaction(action)
-			@onDamagingSpellcast(action)
-
-	onDamagingSpellcast: (action) ->
-		# override me in sub classes to implement special behavior
-
-	createdDamageSubaction: (action) ->
-		# did the spell cast action create a damage subaction directly?
-		for subAction in action.getSubActions()
-			if subAction.getType() is DamageAction.type and !subAction.getCreatedByTriggeringModifier()
-				return true
-		return false
-
-module.exports = ModifierSpellDamageWatch
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

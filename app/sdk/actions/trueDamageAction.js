@@ -1,18 +1,31 @@
-DamageAction = 		require './damageAction'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const DamageAction = 		require('./damageAction');
+const _ = require('underscore');
 
-###
+/*
   True damage actions cannot be modified in any way and always deals the exact damage initially set in the action.
-###
-class TrueDamageAction extends DamageAction
+*/
+class TrueDamageAction extends DamageAction {
+	static initClass() {
+	
+		this.type ="TrueDamageAction";
+	}
 
-	@type:"TrueDamageAction"
+	constructor() {
+		if (this.type == null) { this.type = TrueDamageAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= TrueDamageAction.type
-		super
+	getTotalDamageAmount() {
+		return this.getDamageAmount();
+	}
+}
+TrueDamageAction.initClass();
 
-	getTotalDamageAmount: () ->
-		return @getDamageAmount()
-
-module.exports = TrueDamageAction
+module.exports = TrueDamageAction;

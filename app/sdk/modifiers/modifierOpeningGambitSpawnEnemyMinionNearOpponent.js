@@ -1,38 +1,63 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierOpeningGambit = require './modifierOpeningGambit'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
-class ModifierOpeningGambitSpawnEnemyMinionNearOpponent extends ModifierOpeningGambit
+class ModifierOpeningGambitSpawnEnemyMinionNearOpponent extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitSpawnEnemyMinionNearOpponent";
+		this.type ="ModifierOpeningGambitSpawnEnemyMinionNearOpponent";
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierOpeningGambitSpawnEnemyMinionNearOpponent"
-	@type:"ModifierOpeningGambitSpawnEnemyMinionNearOpponent"
+	static createContextObject(cardDataOrIndexToSpawn, spawnCount, options) {
+		if (spawnCount == null) { spawnCount = 1; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.spawnCount = spawnCount;
+		return contextObject;
+	}
 
-	cardDataOrIndexToSpawn: null
+	onOpeningGambit() {
+		super.onOpeningGambit();
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"]
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+			const opponentId = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId()).getOwnerId();
+			const spawnLocations = [];
+			const validSpawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId()).getPosition(), CONFIG.PATTERN_3x3, card, this.getCard(), 8);
+			for (let i = 0, end = this.spawnCount, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+				if (validSpawnLocations.length > 0) {
+					spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+				}
+			}
 
-	@createContextObject: (cardDataOrIndexToSpawn, spawnCount=1, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.spawnCount = spawnCount
-		return contextObject
+			return (() => {
+				const result = [];
+				for (let position of Array.from(spawnLocations)) {
+					const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), opponentId, position.x, position.y, this.cardDataOrIndexToSpawn);
+					playCardAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(playCardAction));
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierOpeningGambitSpawnEnemyMinionNearOpponent.initClass();
 
-	onOpeningGambit: () ->
-		super()
-
-		if @getGameSession().getIsRunningAsAuthoritative()
-			card = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(@cardDataOrIndexToSpawn)
-			opponentId = @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId()).getOwnerId()
-			spawnLocations = []
-			validSpawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId()).getPosition(), CONFIG.PATTERN_3x3, card, @getCard(), 8)
-			for i in [0...@spawnCount]
-				if validSpawnLocations.length > 0
-					spawnLocations.push(validSpawnLocations.splice(@getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0])
-
-			for position in spawnLocations
-				playCardAction = new PlayCardSilentlyAction(@getGameSession(), opponentId, position.x, position.y, @cardDataOrIndexToSpawn)
-				playCardAction.setSource(@getCard())
-				@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierOpeningGambitSpawnEnemyMinionNearOpponent
+module.exports = ModifierOpeningGambitSpawnEnemyMinionNearOpponent;

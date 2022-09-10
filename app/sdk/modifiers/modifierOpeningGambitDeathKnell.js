@@ -1,55 +1,87 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-CardType = require 'app/sdk/cards/cardType'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-ModifierOpeningGambit = require './modifierOpeningGambit'
-Races = require 'app/sdk/cards/racesLookup'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const CardType = require('app/sdk/cards/cardType');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const Races = require('app/sdk/cards/racesLookup');
+const _ = require('underscore');
 
-class ModifierOpeningGambitDeathKnell extends ModifierOpeningGambit
+class ModifierOpeningGambitDeathKnell extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitDeathKnell";
+		this.type ="ModifierOpeningGambitDeathKnell";
+	
+		this.description = "Resummon all friendly Arcanysts destroyed this game nearby";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambitDeathKnell"];
+	}
 
-	type:"ModifierOpeningGambitDeathKnell"
-	@type:"ModifierOpeningGambitDeathKnell"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	@description: "Resummon all friendly Arcanysts destroyed this game nearby"
+		p.deadUnits = null;
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambitDeathKnell"]
+		return p;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	getDeadUnits() {
+		if ((this._private.deadUnits == null)) {
+			this._private.deadUnits = this.getGameSession().getDeadUnits(this.getOwnerId());
+		}
+		return this._private.deadUnits;
+	}
 
-		p.deadUnits = null
+	onOpeningGambit() {
+		super.onOpeningGambit();
 
-		return p
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const deadArcanystIds = [];
+			for (let unit of Array.from(this.getDeadUnits())) {
+				if (unit.getBelongsToTribe(Races.Arcanyst)) {
+					deadArcanystIds.push(unit.getId());
+				}
+			}
 
-	getDeadUnits: () ->
-		if !@_private.deadUnits?
-			@_private.deadUnits = @getGameSession().getDeadUnits(@getOwnerId())
-		return @_private.deadUnits
+			if (deadArcanystIds.length > 0) {
+				let i;
+				let asc, end;
+				const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData({id: this.getCard().getId()});
+				const spawnLocations = [];
+				_.shuffle(deadArcanystIds);
+				const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), CONFIG.PATTERN_3x3, this.getCard());
+				for (i = 0, end = deadArcanystIds.length, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+					if (validSpawnLocations.length > 0) {
+						spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+					} else {
+						break;
+					}
+				}
 
-	onOpeningGambit: () ->
-		super()
+				return (() => {
+					const result = [];
+					for (i = 0; i < spawnLocations.length; i++) {
+						const position = spawnLocations[i];
+						const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, {id: deadArcanystIds[i]});
+						playCardAction.setSource(this.getCard());
+						result.push(this.getGameSession().executeAction(playCardAction));
+					}
+					return result;
+				})();
+			}
+		}
+	}
+}
+ModifierOpeningGambitDeathKnell.initClass();
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			deadArcanystIds = []
-			for unit in @getDeadUnits()
-				if unit.getBelongsToTribe(Races.Arcanyst)
-					deadArcanystIds.push(unit.getId())
-
-			if deadArcanystIds.length > 0
-				card = @getGameSession().getExistingCardFromIndexOrCachedCardFromData({id: @getCard().getId()})
-				spawnLocations = []
-				_.shuffle(deadArcanystIds)
-				validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(@getGameSession(), @getCard().getPosition(), CONFIG.PATTERN_3x3, @getCard())
-				for i in [0...deadArcanystIds.length]
-					if validSpawnLocations.length > 0
-						spawnLocations.push(validSpawnLocations.splice(@getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0])
-					else
-						break
-
-				for position, i in spawnLocations
-					playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, {id: deadArcanystIds[i]})
-					playCardAction.setSource(@getCard())
-					@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierOpeningGambitDeathKnell
+module.exports = ModifierOpeningGambitDeathKnell;

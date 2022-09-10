@@ -1,22 +1,38 @@
-ModifierKillWatch = require './modifierKillWatch'
-HealAction = require 'app/sdk/actions/healAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierKillWatch = require('./modifierKillWatch');
+const HealAction = require('app/sdk/actions/healAction');
 
-class ModifierKillWatchHealSelf extends ModifierKillWatch
+class ModifierKillWatchHealSelf extends ModifierKillWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierKillWatchHealSelf";
+		this.type ="ModifierKillWatchHealSelf";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericHeal"];
+	}
 
-	type:"ModifierKillWatchHealSelf"
-	@type:"ModifierKillWatchHealSelf"
+	static createContextObject(healAmount, includeAllies, includeGenerals, options) {
+		if (healAmount == null) { healAmount = 0; }
+		if (includeAllies == null) { includeAllies = true; }
+		if (includeGenerals == null) { includeGenerals = true; }
+		const contextObject = super.createContextObject(includeAllies, includeGenerals, options);
+		contextObject.healAmount = healAmount;
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericHeal"]
+	onKillWatch(action) {
+		const healAction = this.getCard().getGameSession().createActionForType(HealAction.type);
+		healAction.setTarget(this.getCard());
+		healAction.setHealAmount(this.healAmount);
+		return this.getCard().getGameSession().executeAction(healAction);
+	}
+}
+ModifierKillWatchHealSelf.initClass();
 
-	@createContextObject: (healAmount=0, includeAllies=true, includeGenerals=true, options) ->
-		contextObject = super(includeAllies, includeGenerals, options)
-		contextObject.healAmount = healAmount
-		return contextObject
-
-	onKillWatch: (action) ->
-		healAction = @getCard().getGameSession().createActionForType(HealAction.type)
-		healAction.setTarget(@getCard())
-		healAction.setHealAmount(@healAmount)
-		@getCard().getGameSession().executeAction(healAction)
-
-module.exports = ModifierKillWatchHealSelf
+module.exports = ModifierKillWatchHealSelf;

@@ -1,28 +1,42 @@
-Modifier = require './modifier'
-MoveAction = require 'app/sdk/actions/moveAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const MoveAction = require('app/sdk/actions/moveAction');
 
-class ModifierMyMoveWatch extends Modifier
+class ModifierMyMoveWatch extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyMoveWatch";
+		this.type ="ModifierMyMoveWatch";
+	
+		this.modifierName ="Move Watch: Self";
+		this.description ="Move Watch: Self";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierMyMoveWatch"];
+	}
 
-	type:"ModifierMyMoveWatch"
-	@type:"ModifierMyMoveWatch"
+	onAction(event) {
+		super.onAction(event);
+		const {
+            action
+        } = event;
+		if (action instanceof MoveAction && (action.getSource() === this.getCard())) {
+			return this.onMyMoveWatch(action);
+		}
+	}
 
-	@modifierName:"Move Watch: Self"
-	@description:"Move Watch: Self"
+	onMyMoveWatch(action) {}
+}
+ModifierMyMoveWatch.initClass();
+		// override me in sub classes to implement special behavior
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
-
-	fxResource: ["FX.Modifiers.ModifierMyMoveWatch"]
-
-	onAction: (event) ->
-		super(event)
-		action = event.action
-		if action instanceof MoveAction and action.getSource() == @getCard()
-			@onMyMoveWatch(action)
-
-	onMyMoveWatch: (action) ->
-		# override me in sub classes to implement special behavior
-
-module.exports = ModifierMyMoveWatch
+module.exports = ModifierMyMoveWatch;

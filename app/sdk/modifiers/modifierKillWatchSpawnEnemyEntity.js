@@ -1,11 +1,21 @@
-ModifierKillWatchSpawnEntity = require './modifierKillWatchSpawnEntity'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierKillWatchSpawnEntity = require('./modifierKillWatchSpawnEntity');
 
-class ModifierKillWatchSpawnEnemyEntity extends ModifierKillWatchSpawnEntity
+class ModifierKillWatchSpawnEnemyEntity extends ModifierKillWatchSpawnEntity {
+	static initClass() {
+	
+		this.prototype.type ="ModifierKillWatchSpawnEnemyEntity";
+		this.type ="ModifierKillWatchSpawnEnemyEntity";
+	}
 
-	type:"ModifierKillWatchSpawnEnemyEntity"
-	@type:"ModifierKillWatchSpawnEnemyEntity"
+	getSpawnOwnerId(action) {
+		return action.getTarget().getOwnerId();
+	}
+}
+ModifierKillWatchSpawnEnemyEntity.initClass();
 
-	getSpawnOwnerId: (action) ->
-		return action.getTarget().getOwnerId()
-
-module.exports = ModifierKillWatchSpawnEnemyEntity
+module.exports = ModifierKillWatchSpawnEnemyEntity;

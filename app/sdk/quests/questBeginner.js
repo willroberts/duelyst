@@ -1,18 +1,29 @@
-Quest = require './quest'
-QuestType = require './questTypeLookup'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-GameType = require 'app/sdk/gameType'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Quest = require('./quest');
+const QuestType = require('./questTypeLookup');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const GameType = require('app/sdk/gameType');
 
-class QuestBeginner extends Quest
+class QuestBeginner extends Quest {
+	static initClass() {
+	
+		// TODO: needs documentation
+		this.prototype.isReplaceable =false;
+		this.prototype.isRequired =true;
+		this.prototype.isBeginner =true;
+	}
 
-	# TODO: needs documentation
-	isReplaceable:false
-	isRequired:true
-	isBeginner:true
+	constructor(){
+		super(...arguments);
+		if (Math.floor(this.id / 100) !== 99) {
+			throw new Error("Invalid Beginner Quest ID");
+		}
+	}
+}
+QuestBeginner.initClass();
 
-	constructor:()->
-		super
-		if Math.floor(@id / 100) != 99
-			throw new Error("Invalid Beginner Quest ID")
-
-module.exports = QuestBeginner
+module.exports = QuestBeginner;

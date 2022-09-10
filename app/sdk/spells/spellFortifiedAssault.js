@@ -1,29 +1,41 @@
-Modifier = require 'app/sdk/modifiers/modifier'
-SpellDamage = require 'app/sdk/spells/spellDamage'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('app/sdk/modifiers/modifier');
+const SpellDamage = require('app/sdk/spells/spellDamage');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
-class SpellFortifiedAssault extends SpellDamage
+class SpellFortifiedAssault extends SpellDamage {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
 
-		numTiles = 1
-		for tile in board.getTiles(true, false)
-			if tile?.getOwnerId() == @getOwnerId() and tile.getBaseCardId() == Cards.Tile.Hallowed
-				if !(tile.getPosition().x == x and tile.getPosition().y == y)
-					numTiles++
+		let numTiles = 1;
+		for (let tile of Array.from(board.getTiles(true, false))) {
+			if (((tile != null ? tile.getOwnerId() : undefined) === this.getOwnerId()) && (tile.getBaseCardId() === Cards.Tile.Hallowed)) {
+				if (!((tile.getPosition().x === x) && (tile.getPosition().y === y))) {
+					numTiles++;
+				}
+			}
+		}
 
-		statContextObject = Modifier.createContextObjectWithAttributeBuffs(0, numTiles)
-		statContextObject.appliedName = "Fortification"
+		const statContextObject = Modifier.createContextObjectWithAttributeBuffs(0, numTiles);
+		statContextObject.appliedName = "Fortification";
 		this.setTargetModifiersContextObjects([
 				statContextObject
-		])
+		]);
 
-		this.damageAmount = numTiles
-		super(board,x,y,sourceAction)
+		this.damageAmount = numTiles;
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getOwnerId(), x, y, {id: Cards.Tile.Hallowed})
-		playCardAction.setSource(@)
-		@getGameSession().executeAction(playCardAction)
+		const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getOwnerId(), x, y, {id: Cards.Tile.Hallowed});
+		playCardAction.setSource(this);
+		return this.getGameSession().executeAction(playCardAction);
+	}
+}
 
-module.exports = SpellFortifiedAssault
+module.exports = SpellFortifiedAssault;

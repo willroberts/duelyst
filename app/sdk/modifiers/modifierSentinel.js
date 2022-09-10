@@ -1,64 +1,81 @@
-ModifierOverwatch = require './modifierOverwatch'
-ModifierSentinelHidden = require './modifierSentinelHidden'
-CardType = require 'app/sdk/cards/cardType'
-PlayCardAsTransformAction = require 'app/sdk/actions/playCardAsTransformAction'
-RemoveAction = require 'app/sdk/actions/removeAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOverwatch = require('./modifierOverwatch');
+const ModifierSentinelHidden = require('./modifierSentinelHidden');
+const CardType = require('app/sdk/cards/cardType');
+const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
+const RemoveAction = require('app/sdk/actions/removeAction');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierSentinel extends ModifierOverwatch
+class ModifierSentinel extends ModifierOverwatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSentinel";
+		this.type ="ModifierSentinel";
+	
+		this.isKeyworded = true;
+		this.keywordDefinition =i18next.t("modifiers.sentinel_def");
+	
+		this.modifierName =i18next.t("modifiers.sentinel_name");
+		this.description = null;
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+		this.prototype.isRemovable = false;
+		this.prototype.transformCardData = null;
+		this.prototype.maxStacks = 1;
+	
+		this.prototype.hideAsModifierType = ModifierSentinelHidden.type;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSentinel"];
+	}
 
-	type:"ModifierSentinel"
-	@type:"ModifierSentinel"
+	static createContextObject(description, transformCardData, options) {
+		const contextObject = super.createContextObject(description, options);
+		contextObject.transformCardData = transformCardData;
+		return contextObject;
+	}
 
-	@isKeyworded: true
-	@keywordDefinition:i18next.t("modifiers.sentinel_def")
+	onOverwatch(action) {
+		return this.transformSelf(); // sentinels transform when overwatch triggers
+	}
+		// override me in sub classes to implement special behavior for when overwatch is triggered
 
-	@modifierName:i18next.t("modifiers.sentinel_name")
-	@description: null
+	transformSelf() {
+		// create the action to spawn the new entity before the existing entity is removed
+		// because we may need information about the existing entity being replaced
+		const spawnAction = new PlayCardAsTransformAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPositionX(), this.getCard().getPositionY(), this.transformCardData);
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
-	isRemovable: false
-	transformCardData: null
-	maxStacks: 1
+		// remove the existing entity
+		const removingEntity = this.getGameSession().getBoard().getCardAtPosition(this.getCard().getPosition(), CardType.Unit);
+		if (removingEntity != null) {
+			const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
+			removeOriginalEntityAction.setOwnerId(this.getCard().getOwnerId());
+			removeOriginalEntityAction.setTarget(removingEntity);
+			removeOriginalEntityAction.setIsDepthFirst(true);
+			this.getGameSession().executeAction(removeOriginalEntityAction);
+		}
 
-	hideAsModifierType: ModifierSentinelHidden.type
+		// spawn the new entity
+		if (spawnAction != null) {
+			spawnAction.setIsDepthFirst(true);
+			this.getGameSession().executeAction(spawnAction);
+			return spawnAction.getTarget();
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierSentinel"]
+	getRevealedCardData(){
+		return this.transformCardData;
+	}
+}
+ModifierSentinel.initClass();
 
-	@createContextObject: (description, transformCardData, options) ->
-		contextObject = super(description, options)
-		contextObject.transformCardData = transformCardData
-		return contextObject
-
-	onOverwatch: (action) ->
-		@transformSelf() # sentinels transform when overwatch triggers
-		# override me in sub classes to implement special behavior for when overwatch is triggered
-
-	transformSelf: () ->
-		# create the action to spawn the new entity before the existing entity is removed
-		# because we may need information about the existing entity being replaced
-		spawnAction = new PlayCardAsTransformAction(@getGameSession(), @getCard().getOwnerId(), @getCard().getPositionX(), @getCard().getPositionY(), @transformCardData)
-
-		# remove the existing entity
-		removingEntity = @getGameSession().getBoard().getCardAtPosition(@getCard().getPosition(), CardType.Unit)
-		if removingEntity?
-			removeOriginalEntityAction = new RemoveAction(@getGameSession())
-			removeOriginalEntityAction.setOwnerId(@getCard().getOwnerId())
-			removeOriginalEntityAction.setTarget(removingEntity)
-			removeOriginalEntityAction.setIsDepthFirst(true)
-			@getGameSession().executeAction(removeOriginalEntityAction)
-
-		# spawn the new entity
-		if spawnAction?
-			spawnAction.setIsDepthFirst(true)
-			@getGameSession().executeAction(spawnAction)
-			return spawnAction.getTarget()
-
-	getRevealedCardData: ()->
-		return @transformCardData
-
-module.exports = ModifierSentinel
+module.exports = ModifierSentinel;

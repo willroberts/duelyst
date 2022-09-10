@@ -1,31 +1,43 @@
-ModifierMyGeneralDamagedWatch = require './modifierMyGeneralDamagedWatch'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-DrawCardAction = require 'app/sdk/actions/drawCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierMyGeneralDamagedWatch = require('./modifierMyGeneralDamagedWatch');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const DrawCardAction = require('app/sdk/actions/drawCardAction');
 
-class ModifierMyGeneralDamagedWatchMiniMinion extends ModifierMyGeneralDamagedWatch
+class ModifierMyGeneralDamagedWatchMiniMinion extends ModifierMyGeneralDamagedWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyGeneralDamagedWatchMiniMinion";
+		this.type ="ModifierMyGeneralDamagedWatchMiniMinion";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierMyGeneralDamagedWatch"];
+	
+		this.prototype.activeInHand = true;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = false;
+	}
 
-	type:"ModifierMyGeneralDamagedWatchMiniMinion"
-	@type:"ModifierMyGeneralDamagedWatchMiniMinion"
+	onDamageDealtToGeneral(action) {
 
-	fxResource: ["FX.Modifiers.ModifierMyGeneralDamagedWatch"]
+		const enemyGeneral = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+		const board = this.getGameSession().getBoard();
 
-	activeInHand: true
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: false
+		let playerOffset = 0;
+		if (this.getCard().isOwnedByPlayer1()) { playerOffset = 1; } else { playerOffset = -1; }
+		const behindPosition = {x:enemyGeneral.getPosition().x+playerOffset, y:enemyGeneral.getPosition().y};
 
-	onDamageDealtToGeneral: (action) ->
+		if (board.isOnBoard(behindPosition) && !board.getObstructionAtPositionForEntity(behindPosition, this.getCard())) {
+			const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), behindPosition.x, behindPosition.y, this.getCard().getIndex());
+			this.getGameSession().executeAction(playCardAction);
+			return this.getGameSession().executeAction(new DrawCardAction(this.getGameSession(), this.getCard().getOwnerId()));
+		}
+	}
+}
+ModifierMyGeneralDamagedWatchMiniMinion.initClass();
 
-		enemyGeneral = @getCard().getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-		board = @getGameSession().getBoard()
-
-		playerOffset = 0
-		if @getCard().isOwnedByPlayer1() then playerOffset = 1 else playerOffset = -1
-		behindPosition = {x:enemyGeneral.getPosition().x+playerOffset, y:enemyGeneral.getPosition().y}
-
-		if board.isOnBoard(behindPosition) and !board.getObstructionAtPositionForEntity(behindPosition, @getCard())
-			playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), behindPosition.x, behindPosition.y, @getCard().getIndex())
-			@getGameSession().executeAction(playCardAction)
-			@getGameSession().executeAction(new DrawCardAction(@getGameSession(), @getCard().getOwnerId()))
-
-module.exports = ModifierMyGeneralDamagedWatchMiniMinion
+module.exports = ModifierMyGeneralDamagedWatchMiniMinion;

@@ -1,65 +1,88 @@
-Logger = 		require 'app/common/logger'
-CONFIG = 		require 'app/common/config'
-PutCardInHandAction = require './putCardInHandAction'
-HurtingDamageAction = require './hurtingDamageAction'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = 		require('app/common/logger');
+const CONFIG = 		require('app/common/config');
+const PutCardInHandAction = require('./putCardInHandAction');
+const HurtingDamageAction = require('./hurtingDamageAction');
 
-class DrawCardAction extends PutCardInHandAction
+class DrawCardAction extends PutCardInHandAction {
+	static initClass() {
+	
+		this.type ="DrawCardAction";
+	
+		this.prototype.cardIndexFromDeck = null;
+		 // when set, card draw will not be random but will be a specific card from deck instead
+	}
 
-	@type:"DrawCardAction"
+	constructor() {
+		if (this.type == null) { this.type = DrawCardAction.type; }
+		super(...arguments);
+	}
 
-	cardIndexFromDeck: null # when set, card draw will not be random but will be a specific card from deck instead
+	_execute() {
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			let index;
+			const player = this.getGameSession().getPlayerById(this.getOwnerId());
+			const deck = player.getDeck();
+			const drawPile = deck.getDrawPile();
 
-	constructor: () ->
-		@type ?= DrawCardAction.type
-		super
+			// attempt to draw next card data from the deck.
+			// if card data is still null post execution, indicates that no card was available to draw and player attempted to draw from an empty deck
+			if (this.cardIndexFromDeck != null) {
+				index = this.cardIndexFromDeck;
+			} else if (!this.getGameSession().getAreDecksRandomized()) {
+				index = drawPile.length - 1;
+			} else {
+				index = this.getGameSession().getRandomIntegerForExecution(drawPile.length);
+			}
+			this.cardDataOrIndex = this.cardIndexFromDeck || drawPile[index];
 
-	_execute: () ->
-		if @getGameSession().getIsRunningAsAuthoritative()
-			player = @getGameSession().getPlayerById(@getOwnerId())
-			deck = player.getDeck()
-			drawPile = deck.getDrawPile()
+			/* THE HURTING */
+			if (this.getIsDrawFromEmptyDeck() && !this.burnCard) {
+				// if no card, then deal unavoidable damage to General of player trying to draw a card
+				const damageTarget = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+				const hurtingDamageAction = new HurtingDamageAction(this.getGameSession());
+				hurtingDamageAction.setOwnerId(this.getOwnerId());
+				hurtingDamageAction.setTarget(damageTarget);
+				this.getGameSession().executeAction(hurtingDamageAction);
+			}
+		}
 
-			# attempt to draw next card data from the deck.
-			# if card data is still null post execution, indicates that no card was available to draw and player attempted to draw from an empty deck
-			if @cardIndexFromDeck?
-				index = @cardIndexFromDeck
-			else if !@getGameSession().getAreDecksRandomized()
-				index = drawPile.length - 1
-			else
-				index = @getGameSession().getRandomIntegerForExecution(drawPile.length)
-			@cardDataOrIndex = @cardIndexFromDeck || drawPile[index]
+		// now call the super execute to put the card in hand
+		return super._execute();
+	}
 
-			### THE HURTING ###
-			if @getIsDrawFromEmptyDeck() and !@burnCard
-				# if no card, then deal unavoidable damage to General of player trying to draw a card
-				damageTarget = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-				hurtingDamageAction = new HurtingDamageAction(this.getGameSession())
-				hurtingDamageAction.setOwnerId(@getOwnerId())
-				hurtingDamageAction.setTarget(damageTarget)
-				@getGameSession().executeAction(hurtingDamageAction)
-
-		# now call the super execute to put the card in hand
-		super()
-
-	###*
+	/**
    * Returns true if card was drawn from empty deck, false otherwise
    * NOTE: this will only return reliable values POST EXECUTION
-	 ###
-	getIsDrawFromEmptyDeck: () ->
-		return !@cardDataOrIndex? and @getGameSession().getAreDecksRandomized()
+	 */
+	getIsDrawFromEmptyDeck() {
+		return (this.cardDataOrIndex == null) && this.getGameSession().getAreDecksRandomized();
+	}
 
-	###*
+	/**
    * Set a specific card index to be drawn.
-	 ###
-	setCardIndexFromDeck: (index) ->
-		@cardIndexFromDeck = index
+	 */
+	setCardIndexFromDeck(index) {
+		return this.cardIndexFromDeck = index;
+	}
 
-	###*
+	/**
    * Returns true if card was drawn randomly from deck, false if card index was pre-chosen (draw a specific card)
-	 ###
-	getIsRandomDraw: () ->
-		if !@cardIndexFromDeck
-			return false
-		return true
+	 */
+	getIsRandomDraw() {
+		if (!this.cardIndexFromDeck) {
+			return false;
+		}
+		return true;
+	}
+}
+DrawCardAction.initClass();
 
-module.exports = DrawCardAction
+module.exports = DrawCardAction;

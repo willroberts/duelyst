@@ -1,43 +1,60 @@
-CONFIG = require 'app/common/config'
-UtilsJavascript = require 'app/common/utils/utils_javascript'
-ModifierEndTurnWatchSpawnEntity = require './modifierEndTurnWatchSpawnEntity'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-CardType = require 'app/sdk/cards/cardType'
-ModifierEgg = require 'app/sdk/modifiers/modifierEgg'
-_ = require("underscore")
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsJavascript = require('app/common/utils/utils_javascript');
+const ModifierEndTurnWatchSpawnEntity = require('./modifierEndTurnWatchSpawnEntity');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const CardType = require('app/sdk/cards/cardType');
+const ModifierEgg = require('app/sdk/modifiers/modifierEgg');
+const _ = require("underscore");
 
-class ModifierEndTurnWatchSpawnEgg extends ModifierEndTurnWatchSpawnEntity
+class ModifierEndTurnWatchSpawnEgg extends ModifierEndTurnWatchSpawnEntity {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEndTurnWatchSpawnEgg";
+		this.type ="ModifierEndTurnWatchSpawnEgg";
+	
+		this.modifierName ="ModifierEndTurnWatchSpawnEgg";
+		this.description = "At the end of your turn, summon %X nearby";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierEndTurnWatchSpawnEgg"
-	@type:"ModifierEndTurnWatchSpawnEgg"
+	static createContextObject(eggDescription, options) {
+		let spawnCount, spawnDescription, spawnPattern, spawnSilently;
+		const contextObject = super.createContextObject({id: Cards.Faction5.Egg}, (spawnDescription = ""), (spawnCount=1), (spawnPattern=CONFIG.PATTERN_3x3), (spawnSilently=true),options);
+		contextObject.eggDescription = eggDescription;
+		return contextObject;
+	}
 
-	@modifierName:"ModifierEndTurnWatchSpawnEgg"
-	@description: "At the end of your turn, summon %X nearby"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.eggDescription);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericSpawn"]
+	getCardDataOrIndexToSpawn() {
+		let cardDataOrIndexToSpawn = super.getCardDataOrIndexToSpawn();
+		if (cardDataOrIndexToSpawn != null) {
+			// add modifiers to data
+			if (_.isObject(cardDataOrIndexToSpawn)) {
+				cardDataOrIndexToSpawn = UtilsJavascript.fastExtend({}, cardDataOrIndexToSpawn);
+			} else {
+				cardDataOrIndexToSpawn = this.getGameSession().getCardByIndex(cardDataOrIndexToSpawn).createNewCardData();
+			}
 
-	@createContextObject: (eggDescription, options) ->
-		contextObject = super({id: Cards.Faction5.Egg}, spawnDescription = "", spawnCount=1, spawnPattern=CONFIG.PATTERN_3x3, spawnSilently=true,options)
-		contextObject.eggDescription = eggDescription
-		return contextObject
+			if (cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
+			cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(this.getCard().createNewCardData(), this.getCard().getName()));
+		}
+		return cardDataOrIndexToSpawn;
+	}
+}
+ModifierEndTurnWatchSpawnEgg.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.eggDescription
-		else
-			return @description
-
-	getCardDataOrIndexToSpawn: () ->
-		cardDataOrIndexToSpawn = super()
-		if cardDataOrIndexToSpawn?
-			# add modifiers to data
-			if _.isObject(cardDataOrIndexToSpawn)
-				cardDataOrIndexToSpawn = UtilsJavascript.fastExtend({}, cardDataOrIndexToSpawn)
-			else
-				cardDataOrIndexToSpawn = @getGameSession().getCardByIndex(cardDataOrIndexToSpawn).createNewCardData()
-
-			cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects ?= []
-			cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(@getCard().createNewCardData(), @getCard().getName()))
-		return cardDataOrIndexToSpawn
-
-module.exports = ModifierEndTurnWatchSpawnEgg
+module.exports = ModifierEndTurnWatchSpawnEgg;

@@ -1,41 +1,68 @@
-ModifierEndTurnWatch = require './modifierEndTurnWatch'
-CardType = require 'app/sdk/cards/cardType'
-HealAction = require 'app/sdk/actions/healAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
+const CardType = require('app/sdk/cards/cardType');
+const HealAction = require('app/sdk/actions/healAction');
 
-class ModifierEndTurnWatchHealNearby extends ModifierEndTurnWatch
+class ModifierEndTurnWatchHealNearby extends ModifierEndTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEndTurnWatchHealNearby";
+		this.type ="ModifierEndTurnWatchHealNearby";
+	
+		this.modifierName ="End Watch";
+		this.description ="At the end of your turn, restore %X Health to all nearby friendly minions";
+	
+		this.prototype.healAmount = 0;
+		this.prototype.healGeneral = false;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierEndTurnWatch", "FX.Modifiers.ModifierGenericHeal"];
+	}
 
-	type:"ModifierEndTurnWatchHealNearby"
-	@type:"ModifierEndTurnWatchHealNearby"
+	static createContextObject(healAmount, healGeneral, options) {
+		if (healAmount == null) { healAmount = 1; }
+		if (healGeneral == null) { healGeneral = false; }
+		const contextObject = super.createContextObject(options);
+		contextObject.healAmount = healAmount;
+		contextObject.healGeneral = healGeneral;
+		return contextObject;
+	}
 
-	@modifierName:"End Watch"
-	@description:"At the end of your turn, restore %X Health to all nearby friendly minions"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.healAmount);
+		} else {
+			return this.description;
+		}
+	}
 
-	healAmount: 0
-	healGeneral: false
+	onTurnWatch(action) {
+		const entities = this.getGameSession().getBoard().getFriendlyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
+		return (() => {
+			const result = [];
+			for (let entity of Array.from(entities)) {
+				if (this.healGeneral || !entity.getIsGeneral()) {
+					const healAction = new HealAction(this.getGameSession());
+					healAction.setOwnerId(this.getCard().getOwnerId());
+					healAction.setSource(this.getCard());
+					healAction.setTarget(entity);
+					healAction.setHealAmount(this.healAmount);
+					result.push(this.getGameSession().executeAction(healAction));
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
+ModifierEndTurnWatchHealNearby.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierEndTurnWatch", "FX.Modifiers.ModifierGenericHeal"]
-
-	@createContextObject: (healAmount=1, healGeneral=false, options) ->
-		contextObject = super(options)
-		contextObject.healAmount = healAmount
-		contextObject.healGeneral = healGeneral
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.healAmount
-		else
-			return @description
-
-	onTurnWatch: (action) ->
-		entities = @getGameSession().getBoard().getFriendlyEntitiesAroundEntity(@getCard(), CardType.Unit, 1)
-		for entity in entities
-			if @healGeneral or !entity.getIsGeneral()
-				healAction = new HealAction(@getGameSession())
-				healAction.setOwnerId(@getCard().getOwnerId())
-				healAction.setSource(@getCard())
-				healAction.setTarget(entity)
-				healAction.setHealAmount(@healAmount)
-				@getGameSession().executeAction(healAction)
-
-module.exports = ModifierEndTurnWatchHealNearby
+module.exports = ModifierEndTurnWatchHealNearby;

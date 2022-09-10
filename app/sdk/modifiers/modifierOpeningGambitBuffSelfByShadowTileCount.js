@@ -1,48 +1,78 @@
-ModifierOpeningGambit = 			require './modifierOpeningGambit'
-ModifierStackingShadows =	require './modifierStackingShadows'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
-Modifier = require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = 			require('./modifierOpeningGambit');
+const ModifierStackingShadows =	require('./modifierStackingShadows');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
+const Modifier = require('./modifier');
 
-class ModifierOpeningGambitBuffSelfByShadowTileCount extends ModifierOpeningGambit
+class ModifierOpeningGambitBuffSelfByShadowTileCount extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitBuffSelfByShadowTileCount";
+		this.type = "ModifierOpeningGambitBuffSelfByShadowTileCount";
+	
+		this.modifierName = "Opening Gambit";
+		this.description = "Gains %X for each of your Shadow Creep";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type: "ModifierOpeningGambitBuffSelfByShadowTileCount"
-	@type: "ModifierOpeningGambitBuffSelfByShadowTileCount"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	@modifierName: "Opening Gambit"
-	@description: "Gains %X for each of your Shadow Creep"
+		p.numTilesAtSpawn = 0;
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericBuff"]
+		return p;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	static createContextObject(attackBuff, maxHPBuff, options) {
+		if (attackBuff == null) { attackBuff = 0; }
+		if (maxHPBuff == null) { maxHPBuff = 0; }
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		const perTileStatBuffContextObject = Modifier.createContextObjectWithAttributeBuffs(attackBuff,maxHPBuff);
+		perTileStatBuffContextObject.appliedName = "Drawn Power";
+		contextObject.modifiersContextObjects = [perTileStatBuffContextObject];
+		return contextObject;
+	}
 
-		p.numTilesAtSpawn = 0
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			const subContextObject = modifierContextObject.modifiersContextObjects[0];
+			return this.description.replace(/%X/, Stringifiers.stringifyAttackHealthBuff(subContextObject.attributeBuffs.atk,subContextObject.attributeBuffs.maxHP));
+		} else {
+			return this.description;
+		}
+	}
 
-		return p
+	applyManagedModifiersFromModifiersContextObjects(modifiersContextObjects, card) {
+		// apply once per sacrifice
+		return __range__(0, this._private.numTilesAtSpawn, false).map((i) =>
+			super.applyManagedModifiersFromModifiersContextObjects(modifiersContextObjects, card));
+	}
 
-	@createContextObject: (attackBuff = 0, maxHPBuff = 0, options = undefined) ->
-		contextObject = super(options)
-		perTileStatBuffContextObject = Modifier.createContextObjectWithAttributeBuffs(attackBuff,maxHPBuff)
-		perTileStatBuffContextObject.appliedName = "Drawn Power"
-		contextObject.modifiersContextObjects = [perTileStatBuffContextObject]
-		return contextObject
+	onOpeningGambit() {
+		super.onOpeningGambit();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			subContextObject = modifierContextObject.modifiersContextObjects[0]
-			return @description.replace /%X/, Stringifiers.stringifyAttackHealthBuff(subContextObject.attributeBuffs.atk,subContextObject.attributeBuffs.maxHP)
-		else
-			return @description
+		this._private.numTilesAtSpawn = ModifierStackingShadows.getNumStacksForPlayer(this.getGameSession().getBoard(), this.getCard().getOwner());
+		return this.applyManagedModifiersFromModifiersContextObjects(this.modifiersContextObjects, this.getCard());
+	}
+}
+ModifierOpeningGambitBuffSelfByShadowTileCount.initClass();
 
-	applyManagedModifiersFromModifiersContextObjects: (modifiersContextObjects, card) ->
-		# apply once per sacrifice
-		for i in [0...@_private.numTilesAtSpawn]
-			super(modifiersContextObjects, card)
+module.exports = ModifierOpeningGambitBuffSelfByShadowTileCount;
 
-	onOpeningGambit: () ->
-		super()
-
-		@_private.numTilesAtSpawn = ModifierStackingShadows.getNumStacksForPlayer(this.getGameSession().getBoard(), @getCard().getOwner())
-		@applyManagedModifiersFromModifiersContextObjects(@modifiersContextObjects, @getCard())
-
-module.exports = ModifierOpeningGambitBuffSelfByShadowTileCount
+function __range__(left, right, inclusive) {
+  let range = [];
+  let ascending = left < right;
+  let end = !inclusive ? right : ascending ? right + 1 : right - 1;
+  for (let i = left; ascending ? i < end : i > end; ascending ? i++ : i--) {
+    range.push(i);
+  }
+  return range;
+}

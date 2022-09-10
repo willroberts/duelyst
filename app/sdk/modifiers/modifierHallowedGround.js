@@ -1,56 +1,80 @@
-ModifierEndTurnWatch = require './modifierEndTurnWatch'
-CardType = require 'app/sdk/cards/cardType'
-HealAction = require 'app/sdk/actions/healAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
+const CardType = require('app/sdk/cards/cardType');
+const HealAction = require('app/sdk/actions/healAction');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierHallowedGround extends ModifierEndTurnWatch
+class ModifierHallowedGround extends ModifierEndTurnWatch {
+	static initClass() {
+	
+		this.prototype.type = "ModifierHallowedGround";
+		this.type = "ModifierHallowedGround";
+	
+		this.modifierName = i18next.t("modifiers.hallowed_ground_name");
+		this.keywordDefinition = i18next.t("modifiers.hallowed_ground_def");
+		this.description = i18next.t("modifiers.hallowed_ground_def");
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierHallowedGround"];
+	
+		this.prototype.healAmount = 1;
+		 // hallowed ground heals 1 damage by default
+	}
 
-	type: "ModifierHallowedGround"
-	@type: "ModifierHallowedGround"
+	static getDescription() {
+		return this.description;
+	}
 
-	@modifierName: i18next.t("modifiers.hallowed_ground_name")
-	@keywordDefinition: i18next.t("modifiers.hallowed_ground_def")
-	@description: i18next.t("modifiers.hallowed_ground_def")
+	static getCardsWithHallowedGround(board, player) {
+		// get all cards with hallowed ground modifiers owned by a player
+		let allowUntargetable;
+		const cards = [];
+		for (let card of Array.from(board.getCards(null, (allowUntargetable=true)))) {
+			if (card.isOwnedBy(player) && card.hasModifierClass(ModifierHallowedGround)) {
+				cards.push(card);
+			}
+		}
+		return cards;
+	}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	static getNumStacksForPlayer(board, player) {
+		// get the number of stacking hallowed ground modifiers
+		let allowUntargetable;
+		let numStacks = 0;
+		for (let card of Array.from(board.getCards(null, (allowUntargetable=true)))) {
+			if (card.isOwnedBy(player)) {
+				numStacks += card.getNumModifiersOfClass(ModifierHallowedGround);
+			}
+		}
+		return numStacks;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierHallowedGround"]
+	onTurnWatch(actionEvent) {
+		super.onTurnWatch(actionEvent);
 
-	healAmount: 1 # hallowed ground heals 1 damage by default
+		// at end of my turn, if there is a friendly unit on this hallowed ground
+		const unit = this.getGameSession().getBoard().getUnitAtPosition(this.getCard().getPosition());
+		if ((unit != null) && this.getCard().getIsSameTeamAs(unit)) {
+			const healAction = new HealAction(this.getGameSession());
+			healAction.setSource(this.getCard());
+			healAction.setTarget(unit);
+			healAction.setHealAmount(this.healAmount);
+			return this.getGameSession().executeAction(healAction);
+		}
+	}
+}
+ModifierHallowedGround.initClass();
 
-	@getDescription: () ->
-		return @description
-
-	@getCardsWithHallowedGround: (board, player) ->
-		# get all cards with hallowed ground modifiers owned by a player
-		cards = []
-		for card in board.getCards(null, allowUntargetable=true)
-			if card.isOwnedBy(player) and card.hasModifierClass(ModifierHallowedGround)
-				cards.push(card)
-		return cards
-
-	@getNumStacksForPlayer: (board, player) ->
-		# get the number of stacking hallowed ground modifiers
-		numStacks = 0
-		for card in board.getCards(null, allowUntargetable=true)
-			if card.isOwnedBy(player)
-				numStacks += card.getNumModifiersOfClass(ModifierHallowedGround)
-		return numStacks
-
-	onTurnWatch: (actionEvent) ->
-		super(actionEvent)
-
-		# at end of my turn, if there is a friendly unit on this hallowed ground
-		unit = @getGameSession().getBoard().getUnitAtPosition(@getCard().getPosition())
-		if unit? and @getCard().getIsSameTeamAs(unit)
-			healAction = new HealAction(this.getGameSession())
-			healAction.setSource(@getCard())
-			healAction.setTarget(unit)
-			healAction.setHealAmount(@healAmount)
-			this.getGameSession().executeAction(healAction)
-
-module.exports = ModifierHallowedGround
+module.exports = ModifierHallowedGround;

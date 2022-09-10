@@ -1,91 +1,125 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-UtilsPosition = require 'app/common/utils/utils_position'
-GameSessionModifier = require './gameSessionModifier'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-ApplyCardToBoardAction = require 'app/sdk/actions/applyCardToBoardAction'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-ModifierCollectableCard = require 'app/sdk/modifiers/modifierCollectableCard'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const UtilsPosition = require('app/common/utils/utils_position');
+const GameSessionModifier = require('./gameSessionModifier');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const ApplyCardToBoardAction = require('app/sdk/actions/applyCardToBoardAction');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const ModifierCollectableCard = require('app/sdk/modifiers/modifierCollectableCard');
 
-class GameSessionModifierFestiveSpirit extends GameSessionModifier
+class GameSessionModifierFestiveSpirit extends GameSessionModifier {
+	static initClass() {
+	
+		this.prototype.type ="GameSessionModifierFestiveSpirit";
+		this.type ="GameSessionModifierFestiveSpirit";
+	
+		this.isHiddenToUI = true;
+	
+		this.prototype.helperMinions = [Cards.Boss.FrostfireSnowchaser, Cards.Boss.FrostfireTiger, Cards.Boss.FrostfireImp];
+	}
 
-	type:"GameSessionModifierFestiveSpirit"
-	@type:"GameSessionModifierFestiveSpirit"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	@isHiddenToUI: true
+		p.player1ChestsAhead = 0;
+		p.player2ChestsAhead = 0;
 
-	helperMinions: [Cards.Boss.FrostfireSnowchaser, Cards.Boss.FrostfireTiger, Cards.Boss.FrostfireImp]
+		return p;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	onActivate() {
+		return this.spawnFrostfireChest(true);
+	}
 
-		p.player1ChestsAhead = 0
-		p.player2ChestsAhead = 0
+	spawnFrostfireChest(isAutomatic) {
+		const card = this.getGameSession().getExistingCardFromIndexOrCreateCardFromData({id: Cards.Tile.FrostfireChest});
+		// not on top of a unit already on the board
+		const wholeBoardPattern = [];
+		for (let boardPos of Array.from(CONFIG.ALL_BOARD_POSITIONS)) {
+			wholeBoardPattern.push(boardPos);
+		}
+		const unitPositions = [];
+		for (let unit of Array.from(this.getGameSession().getBoard().getUnits())) {
+			UtilsPosition.removePositionFromPositions(unit.getPosition(), wholeBoardPattern);
+		}
+		const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, wholeBoardPattern, card, this.getCard(), 1);
+		if (spawnLocations.length > 0) {
+			const a = new ApplyCardToBoardAction(this.getGameSession(), this.getOwnerId(), spawnLocations[0].x, spawnLocations[0].y, card.createNewCardData(), true);
+			if (isAutomatic) {
+				a.setIsAutomatic(true); // ignore explicit action rules
+			}
+			return this.getGameSession().executeAction(a);
+		}
+	}
 
-		return p
+	onStartTurn(action) {
+		super.onStartTurn(action);
 
-	onActivate: () ->
-		@spawnFrostfireChest(true)
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			if (Math.random() < .33) {
+				return this.spawnFrostfireChest();
+			}
+		}
+	}
 
-	spawnFrostfireChest: (isAutomatic) ->
-		card = @getGameSession().getExistingCardFromIndexOrCreateCardFromData({id: Cards.Tile.FrostfireChest})
-		# not on top of a unit already on the board
-		wholeBoardPattern = []
-		for boardPos in CONFIG.ALL_BOARD_POSITIONS
-			wholeBoardPattern.push(boardPos)
-		unitPositions = []
-		for unit in @getGameSession().getBoard().getUnits()
-			UtilsPosition.removePositionFromPositions(unit.getPosition(), wholeBoardPattern)
-		spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), {x:0, y:0}, wholeBoardPattern, card, @getCard(), 1)
-		if spawnLocations.length > 0
-			a = new ApplyCardToBoardAction(@getGameSession(), @getOwnerId(), spawnLocations[0].x, spawnLocations[0].y, card.createNewCardData(), true)
-			if isAutomatic
-				a.setIsAutomatic(true) # ignore explicit action rules
-			@getGameSession().executeAction(a)
+	onAction(actionEvent) {
+		super.onAction(actionEvent);
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			let card, cardId, spawnLocations;
+			let a = actionEvent.action;
+			// watch for player getting a frostfire chest reward card
+			if (a instanceof PutCardInHandAction && (__guard__(a.getCard(), x => x.getBaseCardId()) === Cards.BossSpell.HolidayGift) && a.getTriggeringModifier() instanceof ModifierCollectableCard) {
+				if (a.getOwnerId() === this.getGameSession().getPlayer1().getPlayerId()) {
+					this._private.player1ChestsAhead++;
+				} else if (a.getOwnerId() === this.getGameSession().getPlayer2().getPlayerId()) {
+					this._private.player2ChestsAhead++;
+				}
+			}
 
-	onStartTurn: (action) ->
-		super(action)
+			if ((this._private.player1ChestsAhead - this._private.player2ChestsAhead) >= 2) {
+				// spawn a helper for player 2
+				cardId = this.helperMinions[this.getGameSession().getRandomIntegerForExecution(this.helperMinions.length)];
+				card = this.getGameSession().getExistingCardFromIndexOrCreateCardFromData({id: cardId});
+				const player2 = this.getGameSession().getPlayer2();
+				spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), this.getGameSession().getGeneralForPlayerId(player2.getPlayerId()).getPosition(), CONFIG.PATTERN_3x3, card, this.getCard(), 1);
+				if (spawnLocations.length > 0) {
+					a = new PlayCardSilentlyAction(this.getGameSession(), player2.getPlayerId(), spawnLocations[0].x, spawnLocations[0].y, card.createNewCardData());
+					this.getGameSession().executeAction(a);
+				}
+				// reset chests ahead counter
+				this._private.player1ChestsAhead = 0;
+				return this._private.player2ChestsAhead = 0;
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			if Math.random() < .33
-				@spawnFrostfireChest()
+			} else if ((this._private.player2ChestsAhead - this._private.player1ChestsAhead) >= 2) {
+				// spawn a helper for player 1
+				cardId = this.helperMinions[this.getGameSession().getRandomIntegerForExecution(this.helperMinions.length)];
+				card = this.getGameSession().getExistingCardFromIndexOrCreateCardFromData({id: cardId});
+				const player1 = this.getGameSession().getPlayer1();
+				spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), this.getGameSession().getGeneralForPlayerId(player1.getPlayerId()).getPosition(), CONFIG.PATTERN_3x3, card, this.getCard(), 1);
+				if (spawnLocations.length > 0) {
+					a = new PlayCardSilentlyAction(this.getGameSession(), player1.getPlayerId(), spawnLocations[0].x, spawnLocations[0].y, card.createNewCardData());
+					this.getGameSession().executeAction(a);
+				}
+				// reset chests ahead counter
+				this._private.player1ChestsAhead = 0;
+				return this._private.player2ChestsAhead = 0;
+			}
+		}
+	}
+}
+GameSessionModifierFestiveSpirit.initClass();
 
-	onAction: (actionEvent) ->
-		super(actionEvent)
-		if @getGameSession().getIsRunningAsAuthoritative()
-			a = actionEvent.action
-			# watch for player getting a frostfire chest reward card
-			if a instanceof PutCardInHandAction and a.getCard()?.getBaseCardId() is Cards.BossSpell.HolidayGift and a.getTriggeringModifier() instanceof ModifierCollectableCard
-				if a.getOwnerId() is @getGameSession().getPlayer1().getPlayerId()
-					@_private.player1ChestsAhead++
-				else if a.getOwnerId() is @getGameSession().getPlayer2().getPlayerId()
-					@_private.player2ChestsAhead++
+module.exports = GameSessionModifierFestiveSpirit;
 
-			if @_private.player1ChestsAhead - @_private.player2ChestsAhead >= 2
-				# spawn a helper for player 2
-				cardId = @helperMinions[@getGameSession().getRandomIntegerForExecution(@helperMinions.length)]
-				card = @getGameSession().getExistingCardFromIndexOrCreateCardFromData({id: cardId})
-				player2 = @getGameSession().getPlayer2()
-				spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), @getGameSession().getGeneralForPlayerId(player2.getPlayerId()).getPosition(), CONFIG.PATTERN_3x3, card, @getCard(), 1)
-				if spawnLocations.length > 0
-					a = new PlayCardSilentlyAction(@getGameSession(), player2.getPlayerId(), spawnLocations[0].x, spawnLocations[0].y, card.createNewCardData())
-					@getGameSession().executeAction(a)
-				# reset chests ahead counter
-				@_private.player1ChestsAhead = 0
-				@_private.player2ChestsAhead = 0
-
-			else if @_private.player2ChestsAhead - @_private.player1ChestsAhead >= 2
-				# spawn a helper for player 1
-				cardId = @helperMinions[@getGameSession().getRandomIntegerForExecution(@helperMinions.length)]
-				card = @getGameSession().getExistingCardFromIndexOrCreateCardFromData({id: cardId})
-				player1 = @getGameSession().getPlayer1()
-				spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), @getGameSession().getGeneralForPlayerId(player1.getPlayerId()).getPosition(), CONFIG.PATTERN_3x3, card, @getCard(), 1)
-				if spawnLocations.length > 0
-					a = new PlayCardSilentlyAction(@getGameSession(), player1.getPlayerId(), spawnLocations[0].x, spawnLocations[0].y, card.createNewCardData())
-					@getGameSession().executeAction(a)
-				# reset chests ahead counter
-				@_private.player1ChestsAhead = 0
-				@_private.player2ChestsAhead = 0
-
-module.exports = GameSessionModifierFestiveSpirit
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

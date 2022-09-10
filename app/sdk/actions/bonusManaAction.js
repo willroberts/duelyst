@@ -1,37 +1,57 @@
-Logger = require 'app/common/logger'
-Action = require './action'
-CardType = require 'app/sdk/cards/cardType'
-CONFIG = require 'app/common/config'
-PlayerModifierManaModifier = require 'app/sdk/playerModifiers/playerModifierManaModifier'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Action = require('./action');
+const CardType = require('app/sdk/cards/cardType');
+const CONFIG = require('app/common/config');
+const PlayerModifierManaModifier = require('app/sdk/playerModifiers/playerModifierManaModifier');
 
-class BonusManaAction extends Action
+class BonusManaAction extends Action {
+	static initClass() {
+	
+		this.type ="BonusManaAction";
+	
+		this.prototype.bonusMana = 1; // number of bonus mana
+		this.prototype.bonusDuration = 1;
+		 // number of turns to keep the bonus for
+	}
 
-	@type:"BonusManaAction"
+	constructor(gameSession) {
+		if (this.type == null) { this.type = BonusManaAction.type; }
+		super(gameSession);
+	}
 
-	bonusMana: 1 # number of bonus mana
-	bonusDuration: 1 # number of turns to keep the bonus for
+	getBonusMana() {
+		return this.bonusMana;
+	}
 
-	constructor: (gameSession) ->
-		@type ?= BonusManaAction.type
-		super(gameSession)
+	_execute() {
+		super._execute();
 
-	getBonusMana: () ->
-		return @bonusMana
+		const target = this.getTarget();
+		if ((target != null) && !target.isOwnedByGameSession()) {
+			const owner = target.getOwner();
+			const ownerGeneral = this.getGameSession().getGeneralForPlayer(owner);
+			//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "BonusManaAction::execute for #{owner.getPlayerId()} with bonus #{@bonusMana} for #{@bonusDuration} turns"
+			// max sure bonus mana won't take player over max mana
+			let {
+                bonusMana
+            } = this;
+			if ((owner.getRemainingMana() + bonusMana) > CONFIG.MAX_MANA) {
+				bonusMana = CONFIG.MAX_MANA - owner.getRemainingMana();
+			}
+			const manaModifierContextObject = PlayerModifierManaModifier.createBonusManaContextObject(bonusMana);
+			manaModifierContextObject.durationEndTurn = this.bonusDuration;
+			return this.getGameSession().applyModifierContextObject(manaModifierContextObject, ownerGeneral);
+		}
+	}
+}
+BonusManaAction.initClass();
 
-	_execute: () ->
-		super()
-
-		target = @getTarget()
-		if target? and !target.isOwnedByGameSession()
-			owner = target.getOwner()
-			ownerGeneral = @getGameSession().getGeneralForPlayer(owner)
-			#Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "BonusManaAction::execute for #{owner.getPlayerId()} with bonus #{@bonusMana} for #{@bonusDuration} turns"
-			# max sure bonus mana won't take player over max mana
-			bonusMana = @bonusMana
-			if owner.getRemainingMana() + bonusMana > CONFIG.MAX_MANA
-				bonusMana = CONFIG.MAX_MANA - owner.getRemainingMana()
-			manaModifierContextObject = PlayerModifierManaModifier.createBonusManaContextObject(bonusMana)
-			manaModifierContextObject.durationEndTurn = @bonusDuration
-			@getGameSession().applyModifierContextObject(manaModifierContextObject, ownerGeneral)
-
-module.exports = BonusManaAction
+module.exports = BonusManaAction;

@@ -1,23 +1,35 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-Factions = require 'app/sdk/cards/factionsLookup.coffee'
-Races = require 'app/sdk/cards/racesLookup.coffee'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Races = require('app/sdk/cards/racesLookup.coffee');
 
-class ModifierOpeningGambitDrawRandomBattlePet extends ModifierOpeningGambit
+class ModifierOpeningGambitDrawRandomBattlePet extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitDrawRandomBattlePet";
+		this.type = "ModifierOpeningGambitDrawRandomBattlePet";
+	
+		this.modifierName = "Opening Gambit";
+		this.description = "Put a random Battle Pet into your action bar";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type: "ModifierOpeningGambitDrawRandomBattlePet"
-	@type: "ModifierOpeningGambitDrawRandomBattlePet"
+	onOpeningGambit() {
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const neutralBattlePetCards = this.getGameSession().getCardCaches().getFaction(Factions.Neutral).getRace(Races.BattlePet).getIsToken(true).getIsPrismatic(false).getIsSkinned(false).getCards();
+			const card = neutralBattlePetCards[this.getGameSession().getRandomIntegerForExecution(neutralBattlePetCards.length)];
+			const a = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), card.createNewCardData() );
+			return this.getGameSession().executeAction(a);
+		}
+	}
+}
+ModifierOpeningGambitDrawRandomBattlePet.initClass();
 
-	@modifierName: "Opening Gambit"
-	@description: "Put a random Battle Pet into your action bar"
-
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
-
-	onOpeningGambit: () ->
-		if @getGameSession().getIsRunningAsAuthoritative()
-			neutralBattlePetCards = @getGameSession().getCardCaches().getFaction(Factions.Neutral).getRace(Races.BattlePet).getIsToken(true).getIsPrismatic(false).getIsSkinned(false).getCards()
-			card = neutralBattlePetCards[@getGameSession().getRandomIntegerForExecution(neutralBattlePetCards.length)]
-			a = new PutCardInHandAction(@getGameSession(), @getCard().getOwnerId(), card.createNewCardData() )
-			@getGameSession().executeAction(a)
-
-module.exports = ModifierOpeningGambitDrawRandomBattlePet
+module.exports = ModifierOpeningGambitDrawRandomBattlePet;

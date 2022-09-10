@@ -1,50 +1,73 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-Cards = require 'app/sdk/cards/cardsLookup'
-Spell = require './spell'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const Cards = require('app/sdk/cards/cardsLookup');
+const Spell = require('./spell');
 
-class SpellWhisperOfTheSands extends Spell
+class SpellWhisperOfTheSands extends Spell {
 
-	onApplyOneEffectToBoard: (board, x, y, sourceAction) ->
-		super(board, x, y, sourceAction)
+	onApplyOneEffectToBoard(board, x, y, sourceAction) {
+		super.onApplyOneEffectToBoard(board, x, y, sourceAction);
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			ownerId = @getOwnerId()
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const ownerId = this.getOwnerId();
 
-			# find cached copy of card to spawn
-			cardToSpawn = @getGameSession().getCardCaches().getCardById(Cards.Faction3.Dervish)
-			cardDataToSpawn = cardToSpawn.createNewCardData()
+			// find cached copy of card to spawn
+			const cardToSpawn = this.getGameSession().getCardCaches().getCardById(Cards.Faction3.Dervish);
+			const cardDataToSpawn = cardToSpawn.createNewCardData();
 
-			# gather all of player's obelysks
-			obelysks = []
-			obelyskPositions = []
-			for unit in @getGameSession().getBoard().getUnits()
-				if unit.getOwnerId() is ownerId and @isObelysk(unit)
-					obelysks.push(unit)
-					obelyskPositions.push(unit.getPosition())
+			// gather all of player's obelysks
+			const obelysks = [];
+			const obelyskPositions = [];
+			for (let unit of Array.from(this.getGameSession().getBoard().getUnits())) {
+				if ((unit.getOwnerId() === ownerId) && this.isObelysk(unit)) {
+					obelysks.push(unit);
+					obelyskPositions.push(unit.getPosition());
+				}
+			}
 
-			# coordinate spawning near all obelysks
-			# this will generate spawn positions without conflicts whenever possible
-			spawnPositionsWithSource = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsFromPatterns(@getGameSession(), obelyskPositions, CONFIG.PATTERN_3x3, cardToSpawn, obelysks)
+			// coordinate spawning near all obelysks
+			// this will generate spawn positions without conflicts whenever possible
+			const spawnPositionsWithSource = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsFromPatterns(this.getGameSession(), obelyskPositions, CONFIG.PATTERN_3x3, cardToSpawn, obelysks);
 
-			for spawnData in spawnPositionsWithSource
-				spawnPositions = spawnData.spawnPositions
-				if spawnPositions.length > 0
-					spawnPosition = spawnPositions[0]
-					spawnAction = new PlayCardSilentlyAction(@getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataToSpawn)
-					spawnAction.setSource(@)
-					@getGameSession().executeAction(spawnAction)
+			return (() => {
+				const result = [];
+				for (let spawnData of Array.from(spawnPositionsWithSource)) {
+					const {
+                        spawnPositions
+                    } = spawnData;
+					if (spawnPositions.length > 0) {
+						const spawnPosition = spawnPositions[0];
+						const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataToSpawn);
+						spawnAction.setSource(this);
+						result.push(this.getGameSession().executeAction(spawnAction));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
 
-	isObelysk: (unit) ->
-		unitId = unit.getBaseCardId()
-		return unitId is Cards.Faction3.BrazierRedSand or
-				unitId is Cards.Faction3.BrazierGoldenFlame or
-				unitId is Cards.Faction3.BrazierDuskWind or
-				unitId is Cards.Faction3.SoulburnObelysk or
-				unitId is Cards.Faction3.TrygonObelysk or
-				unitId is Cards.Faction3.LavastormObelysk or
-				unitId is Cards.Faction3.DuplicatorObelysk or
-				unitId is Cards.Faction3.SimulacraObelysk
+	isObelysk(unit) {
+		const unitId = unit.getBaseCardId();
+		return (unitId === Cards.Faction3.BrazierRedSand) ||
+				(unitId === Cards.Faction3.BrazierGoldenFlame) ||
+				(unitId === Cards.Faction3.BrazierDuskWind) ||
+				(unitId === Cards.Faction3.SoulburnObelysk) ||
+				(unitId === Cards.Faction3.TrygonObelysk) ||
+				(unitId === Cards.Faction3.LavastormObelysk) ||
+				(unitId === Cards.Faction3.DuplicatorObelysk) ||
+				(unitId === Cards.Faction3.SimulacraObelysk);
+	}
+}
 
-module.exports = SpellWhisperOfTheSands
+module.exports = SpellWhisperOfTheSands;

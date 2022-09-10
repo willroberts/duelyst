@@ -1,17 +1,28 @@
-ModifierKillWatch = require './modifierKillWatch'
-RefreshExhaustionAction =	require 'app/sdk/actions/refreshExhaustionAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierKillWatch = require('./modifierKillWatch');
+const RefreshExhaustionAction =	require('app/sdk/actions/refreshExhaustionAction');
 
-class ModifierKillWatchRefreshExhaustion extends ModifierKillWatch
+class ModifierKillWatchRefreshExhaustion extends ModifierKillWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierKillWatchRefreshExhaustion";
+		this.type ="ModifierKillWatchRefreshExhaustion";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericHeal"];
+	}
 
-	type:"ModifierKillWatchRefreshExhaustion"
-	@type:"ModifierKillWatchRefreshExhaustion"
+	onKillWatch(action) {
+		const refreshExhaustionAction = this.getGameSession().createActionForType(RefreshExhaustionAction.type);
+		refreshExhaustionAction.setSource(this.getCard());
+		refreshExhaustionAction.setTarget(this.getCard());
+		return this.getGameSession().executeAction(refreshExhaustionAction);
+	}
+}
+ModifierKillWatchRefreshExhaustion.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericHeal"]
-
-	onKillWatch: (action) ->
-		refreshExhaustionAction = @getGameSession().createActionForType(RefreshExhaustionAction.type)
-		refreshExhaustionAction.setSource(@getCard())
-		refreshExhaustionAction.setTarget(@getCard())
-		@getGameSession().executeAction(refreshExhaustionAction)
-
-module.exports = ModifierKillWatchRefreshExhaustion
+module.exports = ModifierKillWatchRefreshExhaustion;

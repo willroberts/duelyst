@@ -1,35 +1,60 @@
-CONFIG = require 'app/common/config'
-Spell = 	require './spell'
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-Factions = require 'app/sdk/cards/factionsLookup'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const Spell = 	require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const Factions = require('app/sdk/cards/factionsLookup');
 
-class SpellScionsSecondWish extends Spell
+class SpellScionsSecondWish extends Spell {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Unit;
+		this.prototype.spellFilterType = SpellFilterType.EnemyDirect;
+	}
 
-	targetType: CardType.Unit
-	spellFilterType: SpellFilterType.EnemyDirect
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		let cardIndex, i;
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		// draw 2 Vetruvian cards
+		const deck = this.getOwner().getDeck();
+		const drawPile = deck.getDrawPile();
+		const indexOfCards = [];
+		for (i = 0; i < drawPile.length; i++) {
+			cardIndex = drawPile[i];
+			const card = this.getGameSession().getCardByIndex(cardIndex);
+			if ((card != null) && (card.getFactionId() === Factions.Faction3)) {
+				indexOfCards.push(i);
+			}
+		}
 
-		# draw 2 Vetruvian cards
-		deck = @getOwner().getDeck()
-		drawPile = deck.getDrawPile()
-		indexOfCards = []
-		for cardIndex, i in drawPile
-			card = @getGameSession().getCardByIndex(cardIndex)
-			if card? and card.getFactionId() == Factions.Faction3
-				indexOfCards.push(i)
+		return (() => {
+			const result = [];
+			for (i = 0; i < 2; i++) {
+				if (indexOfCards.length > 0) {
+					const whichCard = this.getGameSession().getRandomIntegerForExecution(indexOfCards.length);
+					const indexOfCardInDeck = indexOfCards[whichCard];
+					cardIndex = drawPile[indexOfCardInDeck];
+					indexOfCards.splice(whichCard,1); // remove this card from the list (don't try to draw same card twice)
+					// put card in hand
+					const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), this.getOwnerId(), cardIndex);
+					result.push(this.getGameSession().executeAction(putCardInHandAction));
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
+SpellScionsSecondWish.initClass();
 
-		for i in [0...2]
-			if indexOfCards.length > 0
-				whichCard = @getGameSession().getRandomIntegerForExecution(indexOfCards.length)
-				indexOfCardInDeck = indexOfCards[whichCard]
-				cardIndex = drawPile[indexOfCardInDeck]
-				indexOfCards.splice(whichCard,1) # remove this card from the list (don't try to draw same card twice)
-				# put card in hand
-				putCardInHandAction = new PutCardInHandAction(@getGameSession(), @getOwnerId(), cardIndex)
-				@getGameSession().executeAction(putCardInHandAction)
-
-module.exports = SpellScionsSecondWish
+module.exports = SpellScionsSecondWish;

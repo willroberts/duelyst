@@ -1,107 +1,145 @@
-Logger = require 'app/common/logger'
-UtilsJavascript = 		require 'app/common/utils/utils_javascript'
-Action = require './action'
-_ = require("underscore")
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const UtilsJavascript = 		require('app/common/utils/utils_javascript');
+const Action = require('./action');
+const _ = require("underscore");
 
-class ApplyModifierAction extends Action
+class ApplyModifierAction extends Action {
+	static initClass() {
+	
+		this.type ="ApplyModifierAction";
+	
+		this.prototype.isDepthFirst = true; // modifier actions should execute immediately
+		this.prototype.modifierContextObject = null; // context object that will create the modifier
+		this.prototype.parentModifierIndex = null; // index of modifier that applied or removed this modifier
+		this.prototype.auraModifierId = null;
+	
+		this.prototype.getCard = this.prototype.getTarget;
+		 // identifier for which modifier in the parentModifier aura this is
+	}
 
-	@type:"ApplyModifierAction"
+	constructor(gameSession, modifierContextObject, card, parentModifier=null, auraModifierId=null) {
+		if (this.type == null) { this.type = ApplyModifierAction.type; }
+		super(gameSession);
+		this.setModifierContextObject(modifierContextObject);
+		this.setTarget(card);
+		this.setParentModifier(parentModifier);
+		this.setAuraModifierId(auraModifierId);
+	}
 
-	isDepthFirst: true # modifier actions should execute immediately
-	modifierContextObject: null # context object that will create the modifier
-	parentModifierIndex: null # index of modifier that applied or removed this modifier
-	auraModifierId: null # identifier for which modifier in the parentModifier aura this is
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	constructor: (gameSession, modifierContextObject, card, parentModifier=null, auraModifierId=null) ->
-		@type ?= ApplyModifierAction.type
-		super(gameSession)
-		@setModifierContextObject(modifierContextObject)
-		@setTarget(card)
-		@setParentModifier(parentModifier)
-		@setAuraModifierId(auraModifierId)
+		// cache
+		p.cachedModifier = null;
+		p.cachedParentModifier = null;
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		return p;
+	}
 
-		# cache
-		p.cachedModifier = null
-		p.cachedParentModifier = null
+	getLogName() {
+		return super.getLogName() + "_" + __guard__(this.getModifier(), x => x.getLogName());
+	}
 
-		return p
+	setModifierContextObject(val) {
+		// copy data so we don't modify anything unintentionally
+		if ((val != null) && _.isObject(val)) {
+			return this.modifierContextObject = UtilsJavascript.fastExtend({}, val);
+		} else {
+			return this.modifierContextObject = val;
+		}
+	}
 
-	getLogName: () ->
-		return super() + "_" + @getModifier()?.getLogName()
+	getModifierContextObject() {
+		return this.modifierContextObject;
+	}
 
-	setModifierContextObject: (val) ->
-		# copy data so we don't modify anything unintentionally
-		if val? and _.isObject(val)
-			@modifierContextObject = UtilsJavascript.fastExtend({}, val)
-		else
-			@modifierContextObject = val
+	getModifier() {
+		if ((this._private.cachedModifier == null)) {
+			this._private.cachedModifier = this.getGameSession().getOrCreateModifierFromContextObjectOrIndex(this.modifierContextObject);
+		}
+		return this._private.cachedModifier;
+	}
 
-	getModifierContextObject: () ->
-		return @modifierContextObject
+	setParentModifierIndex(val) {
+		return this.parentModifierIndex = val;
+	}
 
-	getModifier: () ->
-		if !@_private.cachedModifier?
-			@_private.cachedModifier = @getGameSession().getOrCreateModifierFromContextObjectOrIndex(@modifierContextObject)
-		return @_private.cachedModifier
+	getParentModifierIndex() {
+		return this.parentModifierIndex;
+	}
 
-	setParentModifierIndex: (val) ->
-		@parentModifierIndex = val
+	setParentModifier(parentModifier) {
+		return this.setParentModifierIndex(parentModifier != null ? parentModifier.getIndex() : undefined);
+	}
 
-	getParentModifierIndex: () ->
-		return @parentModifierIndex
+	getParentModifier() {
+		if ((this._private.cachedParentModifier == null) && (this.parentModifierIndex != null)) {
+			this._private.cachedParentModifier = this.getGameSession().getModifierByIndex(this.parentModifierIndex);
+		}
+		return this._private.cachedParentModifier;
+	}
 
-	setParentModifier: (parentModifier) ->
-		@setParentModifierIndex(parentModifier?.getIndex())
+	setAuraModifierId(val) {
+		return this.auraModifierId = val;
+	}
 
-	getParentModifier: () ->
-		if !@_private.cachedParentModifier? and @parentModifierIndex?
-			@_private.cachedParentModifier = @getGameSession().getModifierByIndex(@parentModifierIndex)
-		return @_private.cachedParentModifier
+	getAuraModifierId() {
+		return this.auraModifierId;
+	}
 
-	setAuraModifierId: (val) ->
-		@auraModifierId = val
+	_execute() {
+		super._execute();
 
-	getAuraModifierId: () ->
-		return @auraModifierId
+		const modifier = this.getModifier();
+		const target = this.getTarget();
+		const parentModifier = this.getParentModifier();
 
-	getCard: @::getTarget
+		if (modifier != null) {
+			//Logger.module("SDK").debug("#{@getGameSession().gameId} ApplyModifierAction._execute -> modifier #{modifier?.getLogName()} on #{target?.getLogName()} from parent modifier #{parentModifier?.getLogName()}")
+			// regenerate context object so we transmit the correct values to the clients
+			if (this.getGameSession().getIsRunningAsAuthoritative()) {
+				// apply incoming card data before regenerating
+				modifier.applyContextObject(this.modifierContextObject);
+				this.modifierContextObject = modifier.createContextObject(this.modifierContextObject);
 
-	_execute: () ->
-		super()
+				// flag data as applied locally so that we don't reapply regenerated data on server
+				this.modifierContextObject._hasBeenApplied = true;
+			}
 
-		modifier = @getModifier()
-		target = @getTarget()
-		parentModifier = @getParentModifier()
+			// set modifier as applied by this action
+			modifier.setAppliedByAction(this);
 
-		if modifier?
-			#Logger.module("SDK").debug("#{@getGameSession().gameId} ApplyModifierAction._execute -> modifier #{modifier?.getLogName()} on #{target?.getLogName()} from parent modifier #{parentModifier?.getLogName()}")
-			# regenerate context object so we transmit the correct values to the clients
-			if @getGameSession().getIsRunningAsAuthoritative()
-				# apply incoming card data before regenerating
-				modifier.applyContextObject(@modifierContextObject)
-				@modifierContextObject = modifier.createContextObject(@modifierContextObject)
+			// apply modifier
+			this.getGameSession().p_applyModifier(modifier, target, parentModifier, this.modifierContextObject, this.auraModifierId);
 
-				# flag data as applied locally so that we don't reapply regenerated data on server
-				@modifierContextObject._hasBeenApplied = true
+			// update context object post apply so we transmit the correct values to the clients
+			if (this.getGameSession().getIsRunningAsAuthoritative()) { return this.modifierContextObject = modifier.updateContextObjectPostApply(this.modifierContextObject); }
+		}
+	}
 
-			# set modifier as applied by this action
-			modifier.setAppliedByAction(@)
+	scrubSensitiveData(actionData, scrubFromPerspectiveOfPlayerId, forSpectator) {
+		// transform modifier as needed
+		const modifier = this.getModifier();
+		if ((modifier != null) && modifier.isHideable(scrubFromPerspectiveOfPlayerId, forSpectator)) {
+			const hiddenModifier = modifier.createModifierToHideAs();
+			actionData.modifierContextObject = hiddenModifier.createContextObject();
+		}
+		return actionData;
+	}
+}
+ApplyModifierAction.initClass();
 
-			# apply modifier
-			@getGameSession().p_applyModifier(modifier, target, parentModifier, @modifierContextObject, @auraModifierId)
+module.exports = ApplyModifierAction;
 
-			# update context object post apply so we transmit the correct values to the clients
-			if @getGameSession().getIsRunningAsAuthoritative() then @modifierContextObject = modifier.updateContextObjectPostApply(@modifierContextObject)
-
-	scrubSensitiveData: (actionData, scrubFromPerspectiveOfPlayerId, forSpectator) ->
-		# transform modifier as needed
-		modifier = @getModifier()
-		if modifier? and modifier.isHideable(scrubFromPerspectiveOfPlayerId, forSpectator)
-			hiddenModifier = modifier.createModifierToHideAs()
-			actionData.modifierContextObject = hiddenModifier.createContextObject()
-		return actionData
-
-module.exports = ApplyModifierAction
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

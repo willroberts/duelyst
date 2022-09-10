@@ -1,42 +1,68 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-RemoveCardFromHandAction = require 'app/sdk/actions/removeCardFromHandAction'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-Factions = require 'app/sdk/cards/factionsLookup'
-Rarity = require 'app/sdk/cards/rarityLookup'
-GameFormat = require 'app/sdk/gameFormat'
-ModifierCannotBeRemovedFromHand = require './modifierCannotBeRemovedFromHand'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const RemoveCardFromHandAction = require('app/sdk/actions/removeCardFromHandAction');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const Factions = require('app/sdk/cards/factionsLookup');
+const Rarity = require('app/sdk/cards/rarityLookup');
+const GameFormat = require('app/sdk/gameFormat');
+const ModifierCannotBeRemovedFromHand = require('./modifierCannotBeRemovedFromHand');
 
-class ModifierOpeningGambitTransformHandIntoLegendaries extends ModifierOpeningGambit
+class ModifierOpeningGambitTransformHandIntoLegendaries extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitTransformHandIntoLegendaries";
+		this.type = "ModifierOpeningGambitTransformHandIntoLegendaries";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type: "ModifierOpeningGambitTransformHandIntoLegendaries"
-	@type: "ModifierOpeningGambitTransformHandIntoLegendaries"
+	onOpeningGambit() {
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
 
-	onOpeningGambit: () ->
+			const factionId = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId()).getFactionId();
+			let factionCards = [];
+			let neutralCards = [];
+			if (this.getGameSession().getGameFormat() === GameFormat.Standard) {
+				factionCards = this.getGameSession().getCardCaches().getIsLegacy(false).getFaction(factionId).getRarity(Rarity.Legendary).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(true).getIsSkinned(false).getCards();
+				neutralCards = this.getGameSession().getCardCaches().getIsLegacy(false).getFaction(Factions.Neutral).getRarity(Rarity.Legendary).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(true).getIsSkinned(false).getCards();
+			} else {
+				factionCards = this.getGameSession().getCardCaches().getFaction(factionId).getRarity(Rarity.Legendary).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(true).getIsSkinned(false).getCards();
+				neutralCards = this.getGameSession().getCardCaches().getFaction(Factions.Neutral).getRarity(Rarity.Legendary).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(true).getIsSkinned(false).getCards();
+			}
+			const possibleCards = [].concat(factionCards, neutralCards);
 
-		if @getGameSession().getIsRunningAsAuthoritative()
+			if (possibleCards.length > 0) {
+				return (() => {
+					const result = [];
+					const iterable = this.getOwner().getDeck().getCardsInHand();
+					for (let i = 0; i < iterable.length; i++) {
+						const card = iterable[i];
+						if ((card != null) && !card.hasActiveModifierClass(ModifierCannotBeRemovedFromHand)) {
+							const removeCardFromHandAction = new RemoveCardFromHandAction(this.getGameSession(), i, this.getOwnerId());
+							this.getGameSession().executeAction(removeCardFromHandAction);
 
-			factionId = @getCard().getGameSession().getGeneralForPlayerId(@getCard().getOwnerId()).getFactionId()
-			factionCards = []
-			neutralCards = []
-			if @getGameSession().getGameFormat() is GameFormat.Standard
-				factionCards = @getGameSession().getCardCaches().getIsLegacy(false).getFaction(factionId).getRarity(Rarity.Legendary).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(true).getIsSkinned(false).getCards()
-				neutralCards = @getGameSession().getCardCaches().getIsLegacy(false).getFaction(Factions.Neutral).getRarity(Rarity.Legendary).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(true).getIsSkinned(false).getCards()
-			else
-				factionCards = @getGameSession().getCardCaches().getFaction(factionId).getRarity(Rarity.Legendary).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(true).getIsSkinned(false).getCards()
-				neutralCards = @getGameSession().getCardCaches().getFaction(Factions.Neutral).getRarity(Rarity.Legendary).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(true).getIsSkinned(false).getCards()
-			possibleCards = [].concat(factionCards, neutralCards)
+							const cardToAdd = possibleCards[this.getGameSession().getRandomIntegerForExecution(possibleCards.length)];
 
-			if possibleCards.length > 0
-				for card, i in @getOwner().getDeck().getCardsInHand()
-					if card? and !card.hasActiveModifierClass(ModifierCannotBeRemovedFromHand)
-						removeCardFromHandAction = new RemoveCardFromHandAction(@getGameSession(), i, @getOwnerId())
-						@getGameSession().executeAction(removeCardFromHandAction)
+							const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), this.getOwnerId(), cardToAdd.createNewCardData());
+							result.push(this.getGameSession().executeAction(putCardInHandAction));
+						} else {
+							result.push(undefined);
+						}
+					}
+					return result;
+				})();
+			}
+		}
+	}
+}
+ModifierOpeningGambitTransformHandIntoLegendaries.initClass();
 
-						cardToAdd = possibleCards[@getGameSession().getRandomIntegerForExecution(possibleCards.length)]
-
-						putCardInHandAction = new PutCardInHandAction(@getGameSession(), @getOwnerId(), cardToAdd.createNewCardData())
-						@getGameSession().executeAction(putCardInHandAction)
-
-module.exports = ModifierOpeningGambitTransformHandIntoLegendaries
+module.exports = ModifierOpeningGambitTransformHandIntoLegendaries;

@@ -1,13 +1,15 @@
-SpellApplyModifiers = require './spellApplyModifiers'
+const SpellApplyModifiers = require('./spellApplyModifiers');
 
-class SpellApplyModifiersToUnitAndGeneral extends SpellApplyModifiers
+class SpellApplyModifiersToUnitAndGeneral extends SpellApplyModifiers {
 
-	_findApplyEffectPositions: (position, sourceAction) ->
-		applyEffectPositions = super(position, sourceAction)
+	_findApplyEffectPositions(position, sourceAction) {
+		const applyEffectPositions = super._findApplyEffectPositions(position, sourceAction);
 
-		# also affects General
-		applyEffectPositions.push(@getGameSession().getGeneralForPlayerId(@getOwnerId()).getPosition())
+		// also affects General
+		applyEffectPositions.push(this.getGameSession().getGeneralForPlayerId(this.getOwnerId()).getPosition());
 
-		return applyEffectPositions
+		return applyEffectPositions;
+	}
+}
 
-module.exports = SpellApplyModifiersToUnitAndGeneral
+module.exports = SpellApplyModifiersToUnitAndGeneral;

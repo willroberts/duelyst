@@ -1,30 +1,41 @@
-Logger = require 'app/common/logger'
-SpellKillTarget = require './spellKillTarget'
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const SpellKillTarget = require('./spellKillTarget');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const _ = require('underscore');
 
-class SpellDecimate extends SpellKillTarget
+class SpellDecimate extends SpellKillTarget {
 
-	_postFilterApplyPositions: (validPositions) ->
-		filteredPositions = []
+	_postFilterApplyPositions(validPositions) {
+		const filteredPositions = [];
 
-		if validPositions.length > 0
-			# spell only applies to units not nearby a general
-			board = @getGameSession().getBoard()
-			general1 = @getGameSession().getGeneralForPlayer1()
-			general2 = @getGameSession().getGeneralForPlayer2()
-			unitsAroundGenerals = _.uniq(_.union(board.getEntitiesAroundEntity(general1, @targetType, 1), board.getEntitiesAroundEntity(general2, @targetType, 1)))
+		if (validPositions.length > 0) {
+			// spell only applies to units not nearby a general
+			const board = this.getGameSession().getBoard();
+			const general1 = this.getGameSession().getGeneralForPlayer1();
+			const general2 = this.getGameSession().getGeneralForPlayer2();
+			const unitsAroundGenerals = _.uniq(_.union(board.getEntitiesAroundEntity(general1, this.targetType, 1), board.getEntitiesAroundEntity(general2, this.targetType, 1)));
 
-			for position in validPositions
-				validPosition = true
-				for unit in unitsAroundGenerals
-					if unit.position.x == position.x and unit.position.y == position.y
-						validPosition = false
-						break
+			for (let position of Array.from(validPositions)) {
+				let validPosition = true;
+				for (let unit of Array.from(unitsAroundGenerals)) {
+					if ((unit.position.x === position.x) && (unit.position.y === position.y)) {
+						validPosition = false;
+						break;
+					}
+				}
 
-				if validPosition then filteredPositions.push(position)
+				if (validPosition) { filteredPositions.push(position); }
+			}
+		}
 
-		return filteredPositions
+		return filteredPositions;
+	}
+}
 
-module.exports = SpellDecimate
+module.exports = SpellDecimate;

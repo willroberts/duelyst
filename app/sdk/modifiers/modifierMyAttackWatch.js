@@ -1,32 +1,46 @@
-Logger = require 'app/common/logger'
-Modifier = require './modifier'
-AttackAction = require 'app/sdk/actions/attackAction'
-ForcedAttackAction = require 'app/sdk/actions/forcedAttackAction'
-CardType = require 'app/sdk/cards/cardType'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Modifier = require('./modifier');
+const AttackAction = require('app/sdk/actions/attackAction');
+const ForcedAttackAction = require('app/sdk/actions/forcedAttackAction');
+const CardType = require('app/sdk/cards/cardType');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
 
-class ModifierMyAttackWatch extends Modifier
+class ModifierMyAttackWatch extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyAttackWatch";
+		this.type ="ModifierMyAttackWatch";
+	
+		this.modifierName ="Attack Watch: Self";
+		this.description ="Attack Watch: Self";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierMyAttackWatch"];
+	}
 
-	type:"ModifierMyAttackWatch"
-	@type:"ModifierMyAttackWatch"
+	onAction(event) {
+		super.onAction(event);
+		const {
+            action
+        } = event;
+		if ((action.getSource() === this.getCard()) && ((action instanceof AttackAction && (!action.getIsImplicit() || action.getIsAutomatic())) || action instanceof ForcedAttackAction)) {
+			return this.onMyAttackWatch(action);
+		}
+	}
 
-	@modifierName:"Attack Watch: Self"
-	@description:"Attack Watch: Self"
+	onMyAttackWatch(action) {}
+}
+ModifierMyAttackWatch.initClass();
+		// override me in sub classes to implement special behavior
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
-
-	fxResource: ["FX.Modifiers.ModifierMyAttackWatch"]
-
-	onAction: (event) ->
-		super(event)
-		action = event.action
-		if action.getSource() == @getCard() and ((action instanceof AttackAction and (!action.getIsImplicit() or action.getIsAutomatic())) or action instanceof ForcedAttackAction)
-			@onMyAttackWatch(action)
-
-	onMyAttackWatch: (action) ->
-		# override me in sub classes to implement special behavior
-
-module.exports = ModifierMyAttackWatch
+module.exports = ModifierMyAttackWatch;

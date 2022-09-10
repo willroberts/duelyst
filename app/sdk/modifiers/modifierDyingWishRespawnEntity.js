@@ -1,22 +1,34 @@
-ModifierDyingWish = require './modifierDyingWish'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierDyingWish = require('./modifierDyingWish');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
-class ModifierDyingWishRespawnEntity extends ModifierDyingWish
+class ModifierDyingWishRespawnEntity extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWishRespawnEntity";
+		this.type ="ModifierDyingWishRespawnEntity";
+	
+		this.modifierName ="Dying Wish";
+		this.description = "Dying Wish: Resummon this minion";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierDyingWishRespawnEntity"
-	@type:"ModifierDyingWishRespawnEntity"
+	onDyingWish(action) {
+		super.onDyingWish(action);
 
-	@modifierName:"Dying Wish"
-	@description: "Dying Wish: Resummon this minion"
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, this.getCard().createNewCardData());
+			spawnAction.setSource(this.getCard());
+			return this.getGameSession().executeAction(spawnAction);
+		}
+	}
+}
+ModifierDyingWishRespawnEntity.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn"]
-
-	onDyingWish: (action) ->
-		super(action)
-
-		if @getGameSession().getIsRunningAsAuthoritative()
-			spawnAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), @getCard().getPosition().x, @getCard().getPosition().y, @getCard().createNewCardData())
-			spawnAction.setSource(@getCard())
-			@getGameSession().executeAction(spawnAction)
-
-module.exports = ModifierDyingWishRespawnEntity
+module.exports = ModifierDyingWishRespawnEntity;

@@ -1,38 +1,57 @@
-EVENTS = require 'app/common/event_types'
-ModifierCannot = require './modifierCannot'
-AttackAction = require 'app/sdk/actions/attackAction'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const EVENTS = require('app/common/event_types');
+const ModifierCannot = require('./modifierCannot');
+const AttackAction = require('app/sdk/actions/attackAction');
+const i18next = require('i18next');
 
-class ModifierCannotStrikeback extends ModifierCannot
+class ModifierCannotStrikeback extends ModifierCannot {
+	static initClass() {
+	
+		this.prototype.type ="ModifierCannotStrikeback";
+		this.type ="ModifierCannotStrikeback";
+	
+		this.modifierName =i18next.t("modifiers.cannot_strikeback_name");
+		this.description =i18next.t("modifiers.cannot_strikeback_def");
+	}
 
-	type:"ModifierCannotStrikeback"
-	@type:"ModifierCannotStrikeback"
+	onEvent(event) {
+		super.onEvent(event);
 
-	@modifierName:i18next.t("modifiers.cannot_strikeback_name")
-	@description:i18next.t("modifiers.cannot_strikeback_def")
+		if (this._private.listeningToEvents) {
+			if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
+				return this.onModifyActionForEntitiesInvolvedInAttack(event);
+			}
+		}
+	}
 
-	onEvent: (event) ->
-		super(event)
+	getIsActionRelevant(a) {
+		return a instanceof AttackAction && (a.getTarget() === this.getCard());
+	}
 
-		if @_private.listeningToEvents
-			if event.type == EVENTS.modify_action_for_entities_involved_in_attack
-				@onModifyActionForEntitiesInvolvedInAttack(event)
+	_modifyAction(a) {
+		return a.setIsStrikebackAllowed(false);
+	}
 
-	getIsActionRelevant: (a) ->
-		return a instanceof AttackAction and a.getTarget() == @getCard()
+	onModifyActionForExecution(actionEvent) {
+		super.onModifyActionForExecution(actionEvent);
+		const a = actionEvent.action;
+		if (this.getIsActionRelevant(a)) {
+			return this._modifyAction(a);
+		}
+	}
 
-	_modifyAction: (a) ->
-		a.setIsStrikebackAllowed(false)
+	onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
+		const a = actionEvent.action;
+		if (this.getIsActive() && this.getIsActionRelevant(a)) {
+			return this._modifyAction(a);
+		}
+	}
+}
+ModifierCannotStrikeback.initClass();
 
-	onModifyActionForExecution: (actionEvent) ->
-		super(actionEvent)
-		a = actionEvent.action
-		if @getIsActionRelevant(a)
-			@_modifyAction(a)
-
-	onModifyActionForEntitiesInvolvedInAttack: (actionEvent) ->
-		a = actionEvent.action
-		if @getIsActive() and @getIsActionRelevant(a)
-			@_modifyAction(a)
-
-module.exports = ModifierCannotStrikeback
+module.exports = ModifierCannotStrikeback;

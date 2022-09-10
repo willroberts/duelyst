@@ -1,17 +1,27 @@
-CONFIG = require 'app/common/config'
-Modifier = require './modifier'
-Races = require 'app/sdk/cards/racesLookup'
-ModifierBelongsToAllRaces = require 'app/sdk/modifiers/modifierBelongsToAllRaces'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const Modifier = require('./modifier');
+const Races = require('app/sdk/cards/racesLookup');
+const ModifierBelongsToAllRaces = require('app/sdk/modifiers/modifierBelongsToAllRaces');
 
-class ModifierFeralu extends Modifier
+class ModifierFeralu extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierFeralu";
+		this.type ="ModifierFeralu";
+	
+		this.modifierName ="Feralu";
+		this.description ="";
+	}
 
-	type:"ModifierFeralu"
-	@type:"ModifierFeralu"
+	_filterPotentialCardInAura(card) {
+		return ((card.getRaceId() !== Races.Neutral) || card.hasModifierClass(ModifierBelongsToAllRaces)) && super._filterPotentialCardInAura(card);
+	}
+}
+ModifierFeralu.initClass();
 
-	@modifierName:"Feralu"
-	@description:""
-
-	_filterPotentialCardInAura: (card) ->
-		return (card.getRaceId() isnt Races.Neutral or card.hasModifierClass(ModifierBelongsToAllRaces)) and super(card)
-
-module.exports = ModifierFeralu
+module.exports = ModifierFeralu;

@@ -1,72 +1,113 @@
-Modifier = require './modifier'
-ReplaceCardFromHandAction = require 'app/sdk/actions/replaceCardFromHandAction'
-PlayCardFromHandAction = require 'app/sdk/actions/playCardFromHandAction'
-Action = require 'app/sdk/actions/action'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ReplaceCardFromHandAction = require('app/sdk/actions/replaceCardFromHandAction');
+const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
+const Action = require('app/sdk/actions/action');
 
-i18next = require 'i18next'
+const i18next = require('i18next');
 
-class ModifierFate extends Modifier
+class ModifierFate extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierFate";
+		this.type ="ModifierFate";
+	
+		this.isKeyworded = true;
+		this.modifierName = "Trial";
+		this.description = null;
+		this.keywordDefinition = "Starts locked in your action bar. Complete the Trial to unlock the ability to play this card.";
+	
+		this.prototype.activeInHand = true;
+		this.prototype.activeInDeck = true;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = false;
+	
+		this.prototype.isRemovable = false;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierFate"];
+	}
 
-	type:"ModifierFate"
-	@type:"ModifierFate"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	@isKeyworded: true
-	@modifierName: "Trial"
-	@description: null
-	@keywordDefinition: "Starts locked in your action bar. Complete the Trial to unlock the ability to play this card."
+		p.fateFulfilled = false;
 
-	activeInHand: true
-	activeInDeck: true
-	activeInSignatureCards: false
-	activeOnBoard: false
+		return p;
+	}
 
-	isRemovable: false
+	onValidateAction(actionEvent) {
+		const a = actionEvent.action;
 
-	fxResource: ["FX.Modifiers.ModifierFate"]
+		if (!this.fateConditionFulfilled()) {
+			if (a instanceof PlayCardFromHandAction && a.getIsValid() && this.getCard().getIsLocatedInHand() && (a.getOwner() === this.getCard().getOwner())) {
+				if (__guard__(this.getCard().getOwner().getDeck().getCardInHandAtIndex(a.indexOfCardInHand), x => x.getIndex()) === this.getCard().getIndex()) {
+					return this.invalidateAction(a, this.getCard().getPosition(), "Cannot be played until the Fate condition is met.");
+				}
+			}
+		}
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	onActivate() {
+		// when initially activated, check fate condition across game session
+		// this is done in case the fate card is added mid-game
+		return this.checkFate(this.getGameSession().filterActions(this.getIsActionRelevant.bind(this)));
+	}
 
-		p.fateFulfilled = false
+	onAction(e) {
+		const {
+            action
+        } = e;
+		return this.checkFate([action]);
+	}
 
-		return p
+	checkFate(actions) {
+		if (!this._private.fateFulfilled && (actions != null)) {
+			return (() => {
+				const result = [];
+				for (let action of Array.from(actions)) {
+					if ((action != null) && action instanceof Action) {
+						result.push(this.updateFateCondition(action));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
 
-	onValidateAction:(actionEvent) ->
-		a = actionEvent.action
+	fateConditionFulfilled() {
+		return this._private.fateFulfilled;
+	}
 
-		if !@fateConditionFulfilled()
-			if a instanceof PlayCardFromHandAction and a.getIsValid() and @getCard().getIsLocatedInHand() and a.getOwner() is @getCard().getOwner()
-				if @getCard().getOwner().getDeck().getCardInHandAtIndex(a.indexOfCardInHand)?.getIndex() is @getCard().getIndex()
-					@invalidateAction(a, @getCard().getPosition(), "Cannot be played until the Fate condition is met.")
+	unlockFateCard() {}
+		// override if something needs to happen when fate card is unlocked
 
-	onActivate: () ->
-		# when initially activated, check fate condition across game session
-		# this is done in case the fate card is added mid-game
-		@checkFate(@getGameSession().filterActions(@getIsActionRelevant.bind(@)))
+	getIsActionRelevant(action) {
+		// override in sub class to filter only actions to check for fate condition
+		return true;
+	}
 
-	onAction: (e) ->
-		action = e.action
-		@checkFate([action])
+	updateFateCondition(action) {
+		// override in sub class to check if fate condition has been fulfilled
+		if (this.fateConditionFulfilled()) {
+			return this.unlockFateCard();
+		}
+	}
+}
+ModifierFate.initClass();
 
-	checkFate: (actions) ->
-		if !@_private.fateFulfilled and actions?
-			for action in actions
-				if action? and action instanceof Action
-					@updateFateCondition(action)
+module.exports = ModifierFate;
 
-	fateConditionFulfilled: () ->
-		return @_private.fateFulfilled
-
-	unlockFateCard: () ->
-		# override if something needs to happen when fate card is unlocked
-
-	getIsActionRelevant: (action) ->
-		# override in sub class to filter only actions to check for fate condition
-		return true
-
-	updateFateCondition: (action) ->
-		# override in sub class to check if fate condition has been fulfilled
-		if @fateConditionFulfilled()
-			@unlockFateCard()
-
-module.exports = ModifierFate
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

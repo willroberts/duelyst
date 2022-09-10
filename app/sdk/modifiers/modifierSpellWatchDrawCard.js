@@ -1,15 +1,26 @@
-ModifierSpellWatch = require './modifierSpellWatch'
-DrawCardAction = require 'app/sdk/actions/drawCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierSpellWatch = require('./modifierSpellWatch');
+const DrawCardAction = require('app/sdk/actions/drawCardAction');
 
-class ModifierSpellWatchDrawCard extends ModifierSpellWatch
+class ModifierSpellWatchDrawCard extends ModifierSpellWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSpellWatchDrawCard";
+		this.type ="ModifierSpellWatchDrawCard";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch"];
+	}
 
-	type:"ModifierSpellWatchDrawCard"
-	@type:"ModifierSpellWatchDrawCard"
+	onSpellWatch(action) {
 
-	fxResource: ["FX.Modifiers.ModifierSpellWatch"]
+		return this.getGameSession().executeAction(new DrawCardAction(this.getGameSession(), this.getCard().getOwnerId()));
+	}
+}
+ModifierSpellWatchDrawCard.initClass();
 
-	onSpellWatch: (action) ->
-
-		@getGameSession().executeAction(new DrawCardAction(@getGameSession(), @getCard().getOwnerId()))
-
-module.exports = ModifierSpellWatchDrawCard
+module.exports = ModifierSpellWatchDrawCard;

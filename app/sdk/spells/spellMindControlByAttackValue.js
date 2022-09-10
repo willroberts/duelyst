@@ -1,19 +1,34 @@
-Logger = require 'app/common/logger'
-SpellEnslave = require './spellEnslave'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const SpellEnslave = require('./spellEnslave');
 
-class SpellMindControlByAttackValue extends SpellEnslave
+class SpellMindControlByAttackValue extends SpellEnslave {
+	static initClass() {
+	
+		this.prototype.maxAttack = -1;
+	}
 
-	maxAttack: -1
+	_postFilterPlayPositions(validPositions) {
+		const validTargetPositions = [];
 
-	_postFilterPlayPositions: (validPositions) ->
-		validTargetPositions = []
+		if (this.maxAttack >= 0) { // if maxAttack < 0, then don't any enemy unit is a valid target
+			for (let position of Array.from(validPositions)) {
+				const unit = this.getGameSession().getBoard().getUnitAtPosition(position);
+				if ((unit != null) && (unit.getATK() <= this.maxAttack)) {
+					validTargetPositions.push(position);
+				}
+			}
+		}
 
-		if @maxAttack >= 0 # if maxAttack < 0, then don't any enemy unit is a valid target
-			for position in validPositions
-				unit = @getGameSession().getBoard().getUnitAtPosition(position)
-				if unit? and unit.getATK() <= @maxAttack
-					validTargetPositions.push(position)
+		return validTargetPositions;
+	}
+}
+SpellMindControlByAttackValue.initClass();
 
-		return validTargetPositions
-
-module.exports = SpellMindControlByAttackValue
+module.exports = SpellMindControlByAttackValue;

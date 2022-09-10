@@ -1,19 +1,31 @@
-Logger = 		require 'app/common/logger'
-UtilsJavascript = 		require 'app/common/utils/utils_javascript'
-CloneEntityAction = 		require './cloneEntityAction'
-CardType = require 'app/sdk/cards/cardType'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = 		require('app/common/logger');
+const UtilsJavascript = 		require('app/common/utils/utils_javascript');
+const CloneEntityAction = 		require('./cloneEntityAction');
+const CardType = require('app/sdk/cards/cardType');
+const _ = require('underscore');
 
-###
+/*
 Clone an entity on the board silently as a transform.
-###
+*/
 
-class CloneEntityAsTransformAction extends CloneEntityAction
+class CloneEntityAsTransformAction extends CloneEntityAction {
+	static initClass() {
+	
+		this.type ="CloneEntityAsTransformAction";
+	}
 
-	@type:"CloneEntityAsTransformAction"
+	constructor() {
+		if (this.type == null) { this.type = CloneEntityAsTransformAction.type; }
+		super(...arguments);
+	}
+}
+CloneEntityAsTransformAction.initClass();
 
-	constructor: () ->
-		@type ?= CloneEntityAsTransformAction.type
-		super
-
-module.exports = CloneEntityAsTransformAction
+module.exports = CloneEntityAsTransformAction;

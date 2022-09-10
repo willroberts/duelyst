@@ -1,24 +1,49 @@
-Action = require './action'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Action = require('./action');
 
-class RestoreChargeToAllArtifactsAction extends Action
+class RestoreChargeToAllArtifactsAction extends Action {
+	static initClass() {
+	
+		this.type ="RestoreChargeToAllArtifactsAction";
+		this.prototype.fxResource = ["FX.Actions.RefreshArtifacts"];
+	}
 
-	@type:"RestoreChargeToAllArtifactsAction"
-	fxResource: ["FX.Actions.RefreshArtifacts"]
+	constructor() {
+		if (this.type == null) { this.type = RestoreChargeToAllArtifactsAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= RestoreChargeToAllArtifactsAction.type
-		super
+	_execute() {
+		super._execute();
+		const target = this.getTarget();
 
-	_execute: () ->
-		super()
-		target = @getTarget()
+		if ((target != null) && target.getIsGeneral()) {
+			//iterate over all modifiers, and if any have durabilty < maxDurablity, add 1 durability
+			//(only artifacts have durability, regular modifiers do not)
+			const allModifiers = target.getModifiers();
+			return (() => {
+				const result = [];
+				for (let modifier of Array.from(allModifiers)) {
+					if ((modifier != null) && (modifier.getDurability() < modifier.getMaxDurability())) {
+						result.push(modifier.setDurability(modifier.getDurability()+1));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+}
+RestoreChargeToAllArtifactsAction.initClass();
 
-		if target? and target.getIsGeneral()
-			#iterate over all modifiers, and if any have durabilty < maxDurablity, add 1 durability
-			#(only artifacts have durability, regular modifiers do not)
-			allModifiers = target.getModifiers()
-			for modifier in allModifiers
-				if modifier? and modifier.getDurability() < modifier.getMaxDurability()
-					modifier.setDurability(modifier.getDurability()+1)
-
-module.exports = RestoreChargeToAllArtifactsAction
+module.exports = RestoreChargeToAllArtifactsAction;

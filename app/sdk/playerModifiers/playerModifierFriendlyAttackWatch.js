@@ -1,23 +1,37 @@
-PlayerModifier = require './playerModifier'
-AttackAction = require 'app/sdk/actions/attackAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const PlayerModifier = require('./playerModifier');
+const AttackAction = require('app/sdk/actions/attackAction');
 
-class PlayerModifierFriendlyAttackWatch extends PlayerModifier
+class PlayerModifierFriendlyAttackWatch extends PlayerModifier {
+	static initClass() {
+	
+		this.prototype.type ="PlayerModifierFriendlyAttackWatch";
+		this.type ="PlayerModifierFriendlyAttackWatch";
+	
+		this.modifierName ="PlayerModifierFriendlyAttackWatch";
+		this.description ="Whenever you attack with a friendly entity...";
+	}
 
-	type:"PlayerModifierFriendlyAttackWatch"
-	@type:"PlayerModifierFriendlyAttackWatch"
+	onAction(event) {
+		super.onAction(event);
+		const {
+            action
+        } = event;
+		const source = action.getSource();
 
-	@modifierName:"PlayerModifierFriendlyAttackWatch"
-	@description:"Whenever you attack with a friendly entity..."
+		if (action instanceof AttackAction && (source.getOwnerId() === this.getOwnerId()) && !action.getIsImplicit()) {
+			return this.onFriendlyAttackWatch(action);
+		}
+	}
 
-	onAction: (event) ->
-		super(event)
-		action = event.action
-		source = action.getSource()
+	onFriendlyAttackWatch(action) {}
+}
+PlayerModifierFriendlyAttackWatch.initClass();
+		// override me in sub classes to implement special behavior
 
-		if action instanceof AttackAction and source.getOwnerId() is @getOwnerId() and !action.getIsImplicit()
-			@onFriendlyAttackWatch(action)
-
-	onFriendlyAttackWatch: (action) ->
-		# override me in sub classes to implement special behavior
-
-module.exports = PlayerModifierFriendlyAttackWatch
+module.exports = PlayerModifierFriendlyAttackWatch;

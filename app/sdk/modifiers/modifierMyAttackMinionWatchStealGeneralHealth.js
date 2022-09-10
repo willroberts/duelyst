@@ -1,36 +1,50 @@
-ModifierMyAttackMinionWatch = require './modifierMyAttackMinionWatch'
-HealAction = require 'app/sdk/actions/healAction'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierMyAttackMinionWatch = require('./modifierMyAttackMinionWatch');
+const HealAction = require('app/sdk/actions/healAction');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class ModifierMyAttackMinionWatchStealGeneralHealth extends ModifierMyAttackMinionWatch
+class ModifierMyAttackMinionWatchStealGeneralHealth extends ModifierMyAttackMinionWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyAttackMinionWatchStealGeneralHealth";
+		this.type ="ModifierMyAttackMinionWatchStealGeneralHealth";
+	
+		this.prototype.stealAmount = 0;
+	}
 
-	type:"ModifierMyAttackMinionWatchStealGeneralHealth"
-	@type:"ModifierMyAttackMinionWatchStealGeneralHealth"
+	static createContextObject(stealAmount, options) {
+		if (stealAmount == null) { stealAmount = 0; }
+		const contextObject = super.createContextObject(options);
+		contextObject.stealAmount = stealAmount;
+		return contextObject;
+	}
 
-	stealAmount: 0
+	onMyAttackMinionWatch(action) {
 
-	@createContextObject: (stealAmount=0, options) ->
-		contextObject = super(options)
-		contextObject.stealAmount = stealAmount
-		return contextObject
+		const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
 
-	onMyAttackMinionWatch: (action) ->
+		const healAction = new HealAction(this.getGameSession());
+		healAction.setOwnerId(this.getOwnerId());
+		healAction.setTarget(general);
+		healAction.setHealAmount(this.stealAmount);
+		this.getGameSession().executeAction(healAction);
 
-		general = @getCard().getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
+		const enemyGeneral = this.getCard().getGameSession().getGeneralForPlayerId(this.getGameSession().getOpponentPlayerIdOfPlayerId(this.getCard().getOwnerId()));
 
-		healAction = new HealAction(this.getGameSession())
-		healAction.setOwnerId(@getOwnerId())
-		healAction.setTarget(general)
-		healAction.setHealAmount(@stealAmount)
-		@getGameSession().executeAction(healAction)
-
-		enemyGeneral = @getCard().getGameSession().getGeneralForPlayerId(@getGameSession().getOpponentPlayerIdOfPlayerId(@getCard().getOwnerId()))
-
-		damageAction = new DamageAction(@getGameSession())
-		damageAction.setOwnerId(@getOwnerId())
-		damageAction.setTarget(enemyGeneral)
-		damageAction.setDamageAmount(@stealAmount)
-		@getGameSession().executeAction(damageAction)
+		const damageAction = new DamageAction(this.getGameSession());
+		damageAction.setOwnerId(this.getOwnerId());
+		damageAction.setTarget(enemyGeneral);
+		damageAction.setDamageAmount(this.stealAmount);
+		return this.getGameSession().executeAction(damageAction);
+	}
+}
+ModifierMyAttackMinionWatchStealGeneralHealth.initClass();
 
 
-module.exports = ModifierMyAttackMinionWatchStealGeneralHealth
+module.exports = ModifierMyAttackMinionWatchStealGeneralHealth;

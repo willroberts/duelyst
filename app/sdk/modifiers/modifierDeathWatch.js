@@ -1,41 +1,57 @@
-Modifier = 					require './modifier'
-DieAction = 				require 'app/sdk/actions/dieAction'
-CardType = 					require 'app/sdk/cards/cardType'
-Stringifiers = 			require 'app/sdk/helpers/stringifiers'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = 					require('./modifier');
+const DieAction = 				require('app/sdk/actions/dieAction');
+const CardType = 					require('app/sdk/cards/cardType');
+const Stringifiers = 			require('app/sdk/helpers/stringifiers');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierDeathWatch extends Modifier
+class ModifierDeathWatch extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDeathWatch";
+		this.type ="ModifierDeathWatch";
+	
+		this.isKeyworded = true;
+		this.keywordDefinition = i18next.t("modifiers.deathwatch_def");
+	
+		this.modifierName =i18next.t("modifiers.deathwatch_name");
+		this.description = "Deathwatch";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDeathwatch"];
+	}
 
-	type:"ModifierDeathWatch"
-	@type:"ModifierDeathWatch"
+	onAfterCleanupAction(e) {
+		super.onAfterCleanupAction(e);
 
-	@isKeyworded: true
-	@keywordDefinition: i18next.t("modifiers.deathwatch_def")
+		const {
+            action
+        } = e;
+		// watch for a unit dying
+		if (this.getIsActionRelevant(action)) {
+			return this.onDeathWatch(action);
+		}
+	}
 
-	@modifierName:i18next.t("modifiers.deathwatch_name")
-	@description: "Deathwatch"
+	onDeathWatch(action) {}
+		// override me in sub classes to implement special behavior
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
-
-	fxResource: ["FX.Modifiers.ModifierDeathwatch"]
-
-	onAfterCleanupAction: (e) ->
-		super(e)
-
-		action = e.action
-		# watch for a unit dying
-		if @getIsActionRelevant(action)
-			@onDeathWatch(action)
-
-	onDeathWatch: (action) ->
-		# override me in sub classes to implement special behavior
-
-	getIsActionRelevant: (action) ->
-		return action instanceof DieAction and action.getTarget()? and action.getTarget().getType() is CardType.Unit and action.getTarget() != @getCard()
+	getIsActionRelevant(action) {
+		return action instanceof DieAction && (action.getTarget() != null) && (action.getTarget().getType() === CardType.Unit) && (action.getTarget() !== this.getCard());
+	}
+}
+ModifierDeathWatch.initClass();
 
 
-module.exports = ModifierDeathWatch
+module.exports = ModifierDeathWatch;

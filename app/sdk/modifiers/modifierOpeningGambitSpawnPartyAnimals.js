@@ -1,51 +1,73 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierOpeningGambit = require './modifierOpeningGambit'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class ModifierOpeningGambitSpawnPartyAnimals extends ModifierOpeningGambit
+class ModifierOpeningGambitSpawnPartyAnimals extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitSpawnPartyAnimals";
+		this.type ="ModifierOpeningGambitSpawnPartyAnimals";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierOpeningGambitSpawnPartyAnimals"
-	@type:"ModifierOpeningGambitSpawnPartyAnimals"
+	onOpeningGambit() {
+		super.onOpeningGambit();
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"]
-
-	onOpeningGambit: () ->
-		super()
-
-		possibleAnimals = [
+		const possibleAnimals = [
 			{id: Cards.Neutral.PartyAnimal1},
 			{id: Cards.Neutral.PartyAnimal2},
 			{id: Cards.Neutral.PartyAnimal3},
 			{id: Cards.Neutral.PartyAnimal4}
-		]
+		];
 
-		if @getGameSession().getIsRunningAsAuthoritative()
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
 
-			animalToSpawn = possibleAnimals.splice(@getGameSession().getRandomIntegerForExecution(possibleAnimals.length), 1)[0]
-			animalCard = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(animalToSpawn)
-			ownerId = @getOwnerId()
-			validSpawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), @getGameSession().getGeneralForPlayerId(ownerId).getPosition(), CONFIG.PATTERN_3x3, animalCard, @getCard(), 8)
-			@summonAnimals(animalToSpawn, ownerId, validSpawnLocations)
+			const animalToSpawn = possibleAnimals.splice(this.getGameSession().getRandomIntegerForExecution(possibleAnimals.length), 1)[0];
+			const animalCard = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(animalToSpawn);
+			const ownerId = this.getOwnerId();
+			const validSpawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), this.getGameSession().getGeneralForPlayerId(ownerId).getPosition(), CONFIG.PATTERN_3x3, animalCard, this.getCard(), 8);
+			this.summonAnimals(animalToSpawn, ownerId, validSpawnLocations);
 
-			enemyAnimalToSpawn = possibleAnimals.splice(@getGameSession().getRandomIntegerForExecution(possibleAnimals.length), 1)[0]
-			enemyAnimalCard = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(enemyAnimalToSpawn)
-			opponentId = @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId()).getOwnerId()
-			enemyValidSpawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId()).getPosition(), CONFIG.PATTERN_3x3, enemyAnimalCard, @getCard(), 8)
-			@summonAnimals(enemyAnimalToSpawn, opponentId, enemyValidSpawnLocations)
+			const enemyAnimalToSpawn = possibleAnimals.splice(this.getGameSession().getRandomIntegerForExecution(possibleAnimals.length), 1)[0];
+			const enemyAnimalCard = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(enemyAnimalToSpawn);
+			const opponentId = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId()).getOwnerId();
+			const enemyValidSpawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId()).getPosition(), CONFIG.PATTERN_3x3, enemyAnimalCard, this.getCard(), 8);
+			return this.summonAnimals(enemyAnimalToSpawn, opponentId, enemyValidSpawnLocations);
+		}
+	}
 
-	summonAnimals: (animal, playerId, validSpawnLocations) ->
+	summonAnimals(animal, playerId, validSpawnLocations) {
 
-		spawnLocations = []
+		const spawnLocations = [];
 
-		for i in [0...3]
-			if validSpawnLocations.length > 0
-				spawnLocations.push(validSpawnLocations.splice(@getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0])
+		for (let i = 0; i < 3; i++) {
+			if (validSpawnLocations.length > 0) {
+				spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+			}
+		}
 
-		for position in spawnLocations
-			playCardAction = new PlayCardSilentlyAction(@getGameSession(), playerId, position.x, position.y, animal)
-			playCardAction.setSource(@getCard())
-			@getGameSession().executeAction(playCardAction)
+		return (() => {
+			const result = [];
+			for (let position of Array.from(spawnLocations)) {
+				const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), playerId, position.x, position.y, animal);
+				playCardAction.setSource(this.getCard());
+				result.push(this.getGameSession().executeAction(playCardAction));
+			}
+			return result;
+		})();
+	}
+}
+ModifierOpeningGambitSpawnPartyAnimals.initClass();
 
-module.exports = ModifierOpeningGambitSpawnPartyAnimals
+module.exports = ModifierOpeningGambitSpawnPartyAnimals;

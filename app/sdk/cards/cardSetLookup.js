@@ -1,14 +1,23 @@
-class CardSet
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+class CardSet {
+	static initClass() {
+	
+		this.GauntletSpecial = -1;
+	
+		this.Core = 1;
+		this.Shimzar = 2;
+		this.Bloodborn = 3;
+		this.Unity = 4;
+		this.FirstWatch = 5;
+		this.Wartech = 6;
+		this.CombinedUnlockables = 7;
+		this.Coreshatter = 8;
+	}
+}
+CardSet.initClass();
 
-	@GauntletSpecial: -1
-
-	@Core: 1
-	@Shimzar: 2
-	@Bloodborn: 3
-	@Unity: 4
-	@FirstWatch: 5
-	@Wartech: 6
-	@CombinedUnlockables: 7
-	@Coreshatter: 8
-
-module.exports = CardSet
+module.exports = CardSet;

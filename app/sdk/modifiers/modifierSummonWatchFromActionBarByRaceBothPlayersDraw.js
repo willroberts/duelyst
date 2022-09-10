@@ -1,30 +1,50 @@
-ModifierSummonWatchFromActionBar = require './modifierSummonWatchFromActionBar'
-DrawCardAction = require 'app/sdk/actions/drawCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierSummonWatchFromActionBar = require('./modifierSummonWatchFromActionBar');
+const DrawCardAction = require('app/sdk/actions/drawCardAction');
 
-class ModifierSummonWatchFromActionBarByRaceBothPlayersDraw extends ModifierSummonWatchFromActionBar
+class ModifierSummonWatchFromActionBarByRaceBothPlayersDraw extends ModifierSummonWatchFromActionBar {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSummonWatchFromActionBarByRaceBothPlayersDraw";
+		this.type ="ModifierSummonWatchFromActionBarByRaceBothPlayersDraw";
+	
+		this.prototype.targetRaceId = null;
+		this.prototype.drawAmount = 1;
+	}
 
-	type:"ModifierSummonWatchFromActionBarByRaceBothPlayersDraw"
-	@type:"ModifierSummonWatchFromActionBarByRaceBothPlayersDraw"
+	static createContextObject(targetRaceId, drawAmount, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.targetRaceId = targetRaceId;
+		contextObject.drawAmount = drawAmount;
+		return contextObject;
+	}
 
-	targetRaceId: null
-	drawAmount: 1
+	onSummonWatch(action) {
 
-	@createContextObject: (targetRaceId, drawAmount, options) ->
-		contextObject = super(options)
-		contextObject.targetRaceId = targetRaceId
-		contextObject.drawAmount = drawAmount
-		return contextObject
+		return (() => {
+			const result = [];
+			for (let x = 1, end = this.drawAmount, asc = 1 <= end; asc ? x <= end : x >= end; asc ? x++ : x--) {
+				const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+				this.getGameSession().executeAction(new DrawCardAction(this.getGameSession(), general.getOwnerId()));
 
-	onSummonWatch: (action) ->
+				const enemyGeneral = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+				result.push(this.getGameSession().executeAction(new DrawCardAction(this.getGameSession(), enemyGeneral.getOwnerId())));
+			}
+			return result;
+		})();
+	}
 
-		for x in [1..@drawAmount]
-			general = @getCard().getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-			@getGameSession().executeAction(new DrawCardAction(this.getGameSession(), general.getOwnerId()))
+	getIsCardRelevantToWatcher(card) {
+		return card.getBelongsToTribe(this.targetRaceId);
+	}
+}
+ModifierSummonWatchFromActionBarByRaceBothPlayersDraw.initClass();
 
-			enemyGeneral = @getCard().getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-			@getGameSession().executeAction(new DrawCardAction(this.getGameSession(), enemyGeneral.getOwnerId()))
-
-	getIsCardRelevantToWatcher: (card) ->
-		return card.getBelongsToTribe(@targetRaceId)
-
-module.exports = ModifierSummonWatchFromActionBarByRaceBothPlayersDraw
+module.exports = ModifierSummonWatchFromActionBarByRaceBothPlayersDraw;

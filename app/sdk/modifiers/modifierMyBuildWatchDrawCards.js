@@ -1,22 +1,44 @@
-ModifierMyBuildWatch = require './modifierMyBuildWatch'
-DrawCardAction = require 'app/sdk/actions/drawCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierMyBuildWatch = require('./modifierMyBuildWatch');
+const DrawCardAction = require('app/sdk/actions/drawCardAction');
 
-class ModifierMyBuildWatchDrawCards extends ModifierMyBuildWatch
+class ModifierMyBuildWatchDrawCards extends ModifierMyBuildWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyBuildWatchDrawCards";
+		this.type ="ModifierMyBuildWatchDrawCards";
+	
+		this.prototype.drawAmount = 0;
+	}
 
-	type:"ModifierMyBuildWatchDrawCards"
-	@type:"ModifierMyBuildWatchDrawCards"
+	static createContextObject(drawAmount, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.drawAmount = drawAmount;
+		return contextObject;
+	}
 
-	drawAmount: 0
+	onBuildWatch(action) {
+		super.onBuildWatch();
 
-	@createContextObject: (drawAmount, options) ->
-		contextObject = super(options)
-		contextObject.drawAmount = drawAmount
-		return contextObject
+		return __range__(0, this.drawAmount, false).map((i) =>
+			this.getGameSession().executeAction(new DrawCardAction(this.getGameSession(), this.getCard().getOwnerId())));
+	}
+}
+ModifierMyBuildWatchDrawCards.initClass();
 
-	onBuildWatch: (action) ->
-		super()
+module.exports = ModifierMyBuildWatchDrawCards;
 
-		for i in [0...@drawAmount]
-			@getGameSession().executeAction(new DrawCardAction(@getGameSession(), @getCard().getOwnerId()))
-
-module.exports = ModifierMyBuildWatchDrawCards
+function __range__(left, right, inclusive) {
+  let range = [];
+  let ascending = left < right;
+  let end = !inclusive ? right : ascending ? right + 1 : right - 1;
+  for (let i = left; ascending ? i < end : i > end; ascending ? i++ : i--) {
+    range.push(i);
+  }
+  return range;
+}

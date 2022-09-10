@@ -1,56 +1,85 @@
-ModifierKillWatchAndSurvive = require './modifierKillWatchAndSurvive'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-RemoveAction = require 'app/sdk/actions/removeAction'
-PlayCardAsTransformAction = require 'app/sdk/actions/playCardAsTransformAction'
-ModifierTransformed = require 'app/sdk/modifiers/modifierTransformed'
-RemoveCardFromHandAction = require 'app/sdk/actions/removeCardFromHandAction'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-RemoveCardFromDeckAction = require 'app/sdk/actions/removeCardFromDeckAction'
-PutCardInDeckAction = require 'app/sdk/actions/putCardInDeckAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierKillWatchAndSurvive = require('./modifierKillWatchAndSurvive');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const RemoveAction = require('app/sdk/actions/removeAction');
+const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
+const ModifierTransformed = require('app/sdk/modifiers/modifierTransformed');
+const RemoveCardFromHandAction = require('app/sdk/actions/removeCardFromHandAction');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const RemoveCardFromDeckAction = require('app/sdk/actions/removeCardFromDeckAction');
+const PutCardInDeckAction = require('app/sdk/actions/putCardInDeckAction');
 
-class ModifierKillWatchAndSurviveScarzig extends ModifierKillWatchAndSurvive
+class ModifierKillWatchAndSurviveScarzig extends ModifierKillWatchAndSurvive {
+	static initClass() {
+	
+		this.prototype.type ="ModifierKillWatchAndSurviveScarzig";
+		this.type ="ModifierKillWatchAndSurviveScarzig";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch"];
+	}
 
-	type:"ModifierKillWatchAndSurviveScarzig"
-	@type:"ModifierKillWatchAndSurviveScarzig"
+	static createContextObject(options) {
+		const contextObject = super.createContextObject(false, true, options);
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierKillWatch"]
+	onKillWatchAndSurvive(action) {
+		super.onKillWatchAndSurvive(action);
 
-	@createContextObject: (options) ->
-		contextObject = super(false, true, options)
-		return contextObject
+		const deck = this.getCard().getOwner().getDeck();
+		const iterable = deck.getCardsInHand();
+		for (let i = 0; i < iterable.length; i++) {
+			const cardInHand = iterable[i];
+			if ((cardInHand != null) && (cardInHand.getBaseCardId() === Cards.Neutral.Scarzig)) {
+				const removeCardFromHandAction = new RemoveCardFromHandAction(this.getGameSession(), i, this.getOwnerId());
+				this.getGameSession().executeAction(removeCardFromHandAction);
 
-	onKillWatchAndSurvive: (action) ->
-		super(action)
+				const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), this.getOwnerId(), {id: Cards.Neutral.BigScarzig});
+				this.getGameSession().executeAction(putCardInHandAction);
+			}
+		}
 
-		deck = @getCard().getOwner().getDeck()
-		for cardInHand, i in deck.getCardsInHand()
-			if cardInHand? and cardInHand.getBaseCardId() == Cards.Neutral.Scarzig
-				removeCardFromHandAction = new RemoveCardFromHandAction(@getGameSession(), i, @getOwnerId())
-				@getGameSession().executeAction(removeCardFromHandAction)
+		for (let cardInDeck of Array.from(deck.getCardsInDrawPile())) {
+			if ((cardInDeck != null) && (cardInDeck.getBaseCardId() === Cards.Neutral.Scarzig)) {
+				const removeCardFromDeckAction = new RemoveCardFromDeckAction(this.getGameSession(), cardInDeck.getIndex(), this.getOwnerId());
+				this.getGameSession().executeAction(removeCardFromDeckAction);
 
-				putCardInHandAction = new PutCardInHandAction(@getGameSession(), @getOwnerId(), {id: Cards.Neutral.BigScarzig})
-				@getGameSession().executeAction(putCardInHandAction)
+				const putCardInDeckAction = new PutCardInDeckAction(this.getGameSession(), this.getOwnerId(), {id: Cards.Neutral.BigScarzig});
+				this.getGameSession().executeAction(putCardInDeckAction);
+			}
+		}
 
-		for cardInDeck in deck.getCardsInDrawPile()
-			if cardInDeck? and cardInDeck.getBaseCardId() == Cards.Neutral.Scarzig
-				removeCardFromDeckAction = new RemoveCardFromDeckAction(@getGameSession(), cardInDeck.getIndex(), @getOwnerId())
-				@getGameSession().executeAction(removeCardFromDeckAction)
+		return (() => {
+			const result = [];
+			for (let unit of Array.from(this.getGameSession().getBoard().getUnits())) {
+				if ((unit != null) && unit.getIsSameTeamAs(this.getCard()) && !unit.getIsGeneral() && this.getGameSession().getCanCardBeScheduledForRemoval(unit) && (unit.getBaseCardId() === Cards.Neutral.Scarzig)) {
 
-				putCardInDeckAction = new PutCardInDeckAction(@getGameSession(), @getOwnerId(), {id: Cards.Neutral.BigScarzig})
-				@getGameSession().executeAction(putCardInDeckAction)
+					const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
+					removeOriginalEntityAction.setOwnerId(this.getCard().getOwnerId());
+					removeOriginalEntityAction.setTarget(unit);
+					this.getGameSession().executeAction(removeOriginalEntityAction);
 
-		for unit in @getGameSession().getBoard().getUnits()
-			if unit? and unit.getIsSameTeamAs(@getCard()) and !unit.getIsGeneral() and @getGameSession().getCanCardBeScheduledForRemoval(unit) and unit.getBaseCardId() == Cards.Neutral.Scarzig
+					const cardData = {id: Cards.Neutral.BigScarzig};
+					if (cardData.additionalInherentModifiersContextObjects == null) { cardData.additionalInherentModifiersContextObjects = []; }
+					cardData.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(unit.getExhausted(), unit.getMovesMade(), unit.getAttacksMade()));
+					const spawnEntityAction = new PlayCardAsTransformAction(this.getCard().getGameSession(), this.getCard().getOwnerId(), unit.getPosition().x, unit.getPosition().y, cardData);
+					result.push(this.getGameSession().executeAction(spawnEntityAction));
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
+ModifierKillWatchAndSurviveScarzig.initClass();
 
-				removeOriginalEntityAction = new RemoveAction(@getGameSession())
-				removeOriginalEntityAction.setOwnerId(@getCard().getOwnerId())
-				removeOriginalEntityAction.setTarget(unit)
-				@getGameSession().executeAction(removeOriginalEntityAction)
-
-				cardData = {id: Cards.Neutral.BigScarzig}
-				cardData.additionalInherentModifiersContextObjects ?= []
-				cardData.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(unit.getExhausted(), unit.getMovesMade(), unit.getAttacksMade()))
-				spawnEntityAction = new PlayCardAsTransformAction(@getCard().getGameSession(), @getCard().getOwnerId(), unit.getPosition().x, unit.getPosition().y, cardData)
-				@getGameSession().executeAction(spawnEntityAction)
-
-module.exports = ModifierKillWatchAndSurviveScarzig
+module.exports = ModifierKillWatchAndSurviveScarzig;

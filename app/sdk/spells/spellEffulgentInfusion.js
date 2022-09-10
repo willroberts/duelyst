@@ -1,19 +1,33 @@
-SpellApplyModifiers = require './spellApplyModifiers'
-Modifier = require 'app/sdk/modifiers/modifier'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellApplyModifiers = require('./spellApplyModifiers');
+const Modifier = require('app/sdk/modifiers/modifier');
 
-class SpellEffulgentInfusion extends SpellApplyModifiers
+class SpellEffulgentInfusion extends SpellApplyModifiers {
+	static initClass() {
+	
+		this.prototype.appliedName = null;
+	}
 
-	appliedName: null
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
+		const general = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+		if (general != null) {
+			const attack = general.getATK();
+			if (attack > 0) {
+				const atkBuff = Modifier.createContextObjectWithAttributeBuffs(attack,0);
+				atkBuff.appliedName = this.appliedName;
+				this.targetModifiersContextObjects = [atkBuff];
+				return super.onApplyEffectToBoardTile(board, x, y, sourceAction);
+			}
+		}
+	}
+}
+SpellEffulgentInfusion.initClass();
 
-		general = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-		if general?
-			attack = general.getATK()
-			if attack > 0
-				atkBuff = Modifier.createContextObjectWithAttributeBuffs(attack,0)
-				atkBuff.appliedName = @appliedName
-				@targetModifiersContextObjects = [atkBuff]
-				super(board, x, y, sourceAction)
-
-module.exports = SpellEffulgentInfusion
+module.exports = SpellEffulgentInfusion;

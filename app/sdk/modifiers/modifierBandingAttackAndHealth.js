@@ -1,30 +1,47 @@
-ModifierBanding = 				require './modifierBanding'
-ModifierBanded = 			require './modifierBanded'
-Stringifiers = 				require 'app/sdk/helpers/stringifiers'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierBanding = 				require('./modifierBanding');
+const ModifierBanded = 			require('./modifierBanded');
+const Stringifiers = 				require('app/sdk/helpers/stringifiers');
 
-class ModifierBandingAttackAndHealth extends ModifierBanding
+class ModifierBandingAttackAndHealth extends ModifierBanding {
+	static initClass() {
+	
+		this.prototype.type ="ModifierBandingAttackAndHealth";
+		this.type ="ModifierBandingAttackAndHealth";
+	
+		this.description = "Gains %X / %Y";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierZeal", "FX.Modifiers.ModifierZealAttackAndHealth"];
+	}
 
-	type:"ModifierBandingAttackAndHealth"
-	@type:"ModifierBandingAttackAndHealth"
+	static createContextObject(attackBuff, healthBuff, options) {
+		if (attackBuff == null) { attackBuff = 0; }
+		if (healthBuff == null) { healthBuff = 0; }
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		contextObject.appliedName = "Zeal: Lion\'s Fortitude";
+		const buffContextObject = ModifierBanded.createContextObject(attackBuff, healthBuff);
+		buffContextObject.appliedName = "Zealed: Lion's Fortitude";
+		contextObject.modifiersContextObjects = [buffContextObject];
+		return contextObject;
+	}
 
-	@description: "Gains %X / %Y"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			const subContextObject = modifierContextObject.modifiersContextObjects[0];
+			let replaceText = this.description.replace(/%X/, Stringifiers.stringifyStatBuff(subContextObject.attributeBuffs.atk));
+			return replaceText = replaceText.replace(/%Y/, Stringifiers.stringifyStatBuff(subContextObject.attributeBuffs.maxHP));
+		} else {
+			return this.description;
+		}
+	}
+}
+ModifierBandingAttackAndHealth.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierZeal", "FX.Modifiers.ModifierZealAttackAndHealth"]
-
-	@createContextObject: (attackBuff=0, healthBuff=0, options = undefined) ->
-		contextObject = super(options)
-		contextObject.appliedName = "Zeal: Lion\'s Fortitude"
-		buffContextObject = ModifierBanded.createContextObject(attackBuff, healthBuff)
-		buffContextObject.appliedName = "Zealed: Lion's Fortitude"
-		contextObject.modifiersContextObjects = [buffContextObject]
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			subContextObject = modifierContextObject.modifiersContextObjects[0]
-			replaceText = @description.replace /%X/, Stringifiers.stringifyStatBuff(subContextObject.attributeBuffs.atk)
-			replaceText = replaceText.replace /%Y/, Stringifiers.stringifyStatBuff(subContextObject.attributeBuffs.maxHP)
-		else
-			return @description
-
-module.exports = ModifierBandingAttackAndHealth
+module.exports = ModifierBandingAttackAndHealth;

@@ -1,30 +1,47 @@
-Action = require './action'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Action = require('./action');
 
-class RemoveCardFromDeckAction extends Action
+class RemoveCardFromDeckAction extends Action {
+	static initClass() {
+	
+		this.type ="RemoveCardFromDeckAction";
+	
+		this.prototype.targetPlayerId = null;
+		this.prototype.cardIndex = null;
+	}
 
-	@type:"RemoveCardFromDeckAction"
+	constructor(gameSession, cardIndex, targetPlayerId) {
+		if (this.type == null) { this.type = RemoveCardFromDeckAction.type; }
+		super(gameSession);
 
-	targetPlayerId: null
-	cardIndex: null
+		this.cardIndex = cardIndex;
+		this.targetPlayerId = targetPlayerId;
+	}
 
-	constructor: (gameSession, cardIndex, targetPlayerId) ->
-		@type ?= RemoveCardFromDeckAction.type
-		super(gameSession)
+	_execute() {
+		super._execute();
 
-		@cardIndex = cardIndex
-		@targetPlayerId = targetPlayerId
+		if (this.cardIndex != null) {
+			const deck = this.getGameSession().getPlayerById(this.targetPlayerId).getDeck();
+			return this.getGameSession().removeCardByIndexFromDeck(deck, this.cardIndex, this.getGameSession().getCardByIndex(this.cardIndex), this);
+		}
+	}
 
-	_execute: () ->
-		super()
+	getCardIndex() {
+		return this.cardIndex;
+	}
 
-		if @cardIndex?
-			deck = @getGameSession().getPlayerById(@targetPlayerId).getDeck()
-			@getGameSession().removeCardByIndexFromDeck(deck, @cardIndex, @getGameSession().getCardByIndex(@cardIndex), @)
+	getTargetPlayerId() {
+		return this.targetPlayerId;
+	}
+}
+RemoveCardFromDeckAction.initClass();
 
-	getCardIndex: () ->
-		return @cardIndex
-
-	getTargetPlayerId: () ->
-		return @targetPlayerId
-
-module.exports = RemoveCardFromDeckAction
+module.exports = RemoveCardFromDeckAction;

@@ -1,80 +1,110 @@
-Modifier = require './modifier'
-DieAction = require 'app/sdk/actions/dieAction'
-DamageAction = require 'app/sdk/actions/damageAction'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const DieAction = require('app/sdk/actions/dieAction');
+const DamageAction = require('app/sdk/actions/damageAction');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
+const i18next = require('i18next');
 
-class ModifierSecondWind extends Modifier
+class ModifierSecondWind extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSecondWind";
+		this.type ="ModifierSecondWind";
+	
+		this.modifierName =i18next.t("modifiers.second_wind_name");
+		this.description =i18next.t("modifiers.second_wind_def");
+	
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInHand = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.maxStacks = 1;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSecondWind"];
+	}
 
-	type:"ModifierSecondWind"
-	@type:"ModifierSecondWind"
-
-	@modifierName:i18next.t("modifiers.second_wind_name")
-	@description:i18next.t("modifiers.second_wind_def")
-
-	activeInDeck: false
-	activeInHand: false
-	activeInSignatureCards: false
-	activeOnBoard: true
-
-	maxStacks: 1
-
-	fxResource: ["FX.Modifiers.ModifierSecondWind"]
-
-	@createContextObject: (attackBuff=0, maxHPBuff=0, buffsAreRemovable=true, buffAppliedName=undefined, buffAppliedDescription=null, options) ->
-		contextObject = super(options)
-		buffAppliedDescription ?= Stringifiers.stringifyAttackHealthBuff(attackBuff,maxHPBuff)
+	static createContextObject(attackBuff, maxHPBuff, buffsAreRemovable, buffAppliedName, buffAppliedDescription=null, options) {
+		if (attackBuff == null) { attackBuff = 0; }
+		if (maxHPBuff == null) { maxHPBuff = 0; }
+		if (buffsAreRemovable == null) { buffsAreRemovable = true; }
+		if (buffAppliedName == null) { buffAppliedName = undefined; }
+		const contextObject = super.createContextObject(options);
+		if (buffAppliedDescription == null) { buffAppliedDescription = Stringifiers.stringifyAttackHealthBuff(attackBuff,maxHPBuff); }
 		contextObject.modifiersContextObjects = [
 			Modifier.createContextObjectWithAttributeBuffs(attackBuff,maxHPBuff,{
-				modifierName:@modifierName,
+				modifierName:this.modifierName,
 				appliedName:buffAppliedName,
 				appliedDescription:buffAppliedDescription,
 				resetsDamage: true,
 				isRemovable:buffsAreRemovable
 			})
-		]
-		return contextObject
+		];
+		return contextObject;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-		p.secondWindAtActionIndex = -1 # index of action triggering second wind
+		p.secondWindAtActionIndex = -1; // index of action triggering second wind
 
-		return p
+		return p;
+	}
 
-	onAfterCleanupAction: (event) ->
-		super(event)
+	onAfterCleanupAction(event) {
+		super.onAfterCleanupAction(event);
 
-		action = event.action
+		const {
+            action
+        } = event;
 
-		if @getGameSession().getIsRunningAsAuthoritative() and @_private.secondWindAtActionIndex == action.getIndex()
-			# after cleaning up action, trigger second wind
-			@onSecondWind(action)
+		if (this.getGameSession().getIsRunningAsAuthoritative() && (this._private.secondWindAtActionIndex === action.getIndex())) {
+			// after cleaning up action, trigger second wind
+			this.onSecondWind(action);
 
-			# make sure to remove self to prevent triggering second wind again
-			@getGameSession().removeModifier(@)
+			// make sure to remove self to prevent triggering second wind again
+			return this.getGameSession().removeModifier(this);
+		}
+	}
 
-	onValidateAction: (event) ->
-		super(event)
+	onValidateAction(event) {
+		super.onValidateAction(event);
 
-		action = event.action
+		const {
+            action
+        } = event;
 
-		# when our entity would die, invalidate the action until second wind executes
-		if action instanceof DieAction and action.getTarget() is @getCard() and action.getParentAction() instanceof DamageAction
-			# record index of parent action of die action, so we know when to trigger second wind
-			@_private.secondWindAtActionIndex = action.getParentAction().getIndex()
-			@invalidateAction(action, @getCard().getPosition(), @getCard().getName() + " finds a second wind and avoids death!")
+		// when our entity would die, invalidate the action until second wind executes
+		if (action instanceof DieAction && (action.getTarget() === this.getCard()) && action.getParentAction() instanceof DamageAction) {
+			// record index of parent action of die action, so we know when to trigger second wind
+			this._private.secondWindAtActionIndex = action.getParentAction().getIndex();
+			return this.invalidateAction(action, this.getCard().getPosition(), this.getCard().getName() + " finds a second wind and avoids death!");
+		}
+	}
 
-	onSecondWind: (action) ->
-		# silence self to remove all existing buffs/debuffs
-		# set this modifier as not removable until we complete second wind
-		@isRemovable = false
-		@getCard().silence()
+	onSecondWind(action) {
+		// silence self to remove all existing buffs/debuffs
+		// set this modifier as not removable until we complete second wind
+		this.isRemovable = false;
+		this.getCard().silence();
 
-		# apply buffs
-		modifiersContextObjects = @modifiersContextObjects
-		if modifiersContextObjects? and modifiersContextObjects.length > 0
-			for modifierContextObject in modifiersContextObjects
-				@getGameSession().applyModifierContextObject(modifierContextObject, @getCard())
+		// apply buffs
+		const {
+            modifiersContextObjects
+        } = this;
+		if ((modifiersContextObjects != null) && (modifiersContextObjects.length > 0)) {
+			return Array.from(modifiersContextObjects).map((modifierContextObject) =>
+				this.getGameSession().applyModifierContextObject(modifierContextObject, this.getCard()));
+		}
+	}
+}
+ModifierSecondWind.initClass();
 
-module.exports = ModifierSecondWind
+module.exports = ModifierSecondWind;

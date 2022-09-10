@@ -1,52 +1,70 @@
-Logger = require 'app/common/logger'
-CONFIG = require 'app/common/config'
-Spell = 	require('./spell')
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-KillAction = require 'app/sdk/actions/killAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const CONFIG = require('app/common/config');
+const Spell = 	require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const KillAction = require('app/sdk/actions/killAction');
 
-class SpellKillRandomTarget extends Spell
+class SpellKillRandomTarget extends Spell {
+	static initClass() {
+	
+		this.prototype.spellFilterType = SpellFilterType.None;
+		this.prototype.targetType = CardType.Unit;
+		this.prototype.numberToKill = 1;
+	}
 
-	spellFilterType: SpellFilterType.None
-	targetType: CardType.Unit
-	numberToKill: 1
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		const applyEffectPosition = {x, y};
 
-		applyEffectPosition = {x: x, y: y}
+		// only execute the damage on reapply
+		// we'll find the random positions during reapply
+		const entity = board.getCardAtPosition(applyEffectPosition, this.targetType);
+		const killAction = new KillAction(this.getGameSession());
+		killAction.setOwnerId(this.getOwnerId());
+		killAction.setTarget(entity);
+		return this.getGameSession().executeAction(killAction);
+	}
 
-		# only execute the damage on reapply
-		# we'll find the random positions during reapply
-		entity = board.getCardAtPosition(applyEffectPosition, @targetType)
-		killAction = new KillAction(@getGameSession())
-		killAction.setOwnerId(@getOwnerId())
-		killAction.setTarget(entity)
-		@getGameSession().executeAction(killAction)
+	_findApplyEffectPositions(position, sourceAction) {
+		const randomApplyEffectPositions = [];
+		const board = this.getGameSession().getBoard();
 
-	_findApplyEffectPositions: (position, sourceAction) ->
-		randomApplyEffectPositions = []
-		board = @getGameSession().getBoard()
+		if (sourceAction != null) {
+			const applyEffectPositionsBase = super._findApplyEffectPositions(position, sourceAction);
+			const applyEffectPositionsWithEntity = [];
 
-		if sourceAction?
-			applyEffectPositionsBase = super(position, sourceAction)
-			applyEffectPositionsWithEntity = []
+			// include position this was cast at
+			applyEffectPositionsBase.push(position);
 
-			# include position this was cast at
-			applyEffectPositionsBase.push(position)
+			// pick up to number to kill random positions from reapply positions
+			for (let applyEffectPosition of Array.from(applyEffectPositionsBase)) {
+				const entity = board.getCardAtPosition(applyEffectPosition, this.targetType);
+				if ((entity != null) && (!entity.getIsGeneral() || this.canTargetGeneral) && (this.getTargetsNeutral() || (this.getTargetsAllies() && (entity.getOwnerId() === this.getOwnerId())) || (this.getTargetsEnemies() && (entity.getOwnerId() !== this.getOwnerId())))) {
+					applyEffectPositionsWithEntity.push(applyEffectPosition);
+				}
+			}
 
-			# pick up to number to kill random positions from reapply positions
-			for applyEffectPosition in applyEffectPositionsBase
-				entity = board.getCardAtPosition(applyEffectPosition, @targetType)
-				if entity? and (!entity.getIsGeneral() or @canTargetGeneral) and (@getTargetsNeutral() or (@getTargetsAllies() and entity.getOwnerId() == @getOwnerId()) or (@getTargetsEnemies() and entity.getOwnerId() != @getOwnerId()))
-					applyEffectPositionsWithEntity.push(applyEffectPosition)
+			let killCount = 0;
+			while (applyEffectPositionsWithEntity.length > 0) {
+				const index = this.getGameSession().getRandomIntegerForExecution(applyEffectPositionsWithEntity.length);
+				randomApplyEffectPositions.push(applyEffectPositionsWithEntity.splice(index, 1)[0]);
+				if (++killCount >= this.numberToKill) { break; }
+			}
+		}
 
-			killCount = 0
-			while applyEffectPositionsWithEntity.length > 0
-				index = @getGameSession().getRandomIntegerForExecution(applyEffectPositionsWithEntity.length)
-				randomApplyEffectPositions.push(applyEffectPositionsWithEntity.splice(index, 1)[0])
-				if ++killCount >= @numberToKill then break
+		return randomApplyEffectPositions;
+	}
+}
+SpellKillRandomTarget.initClass();
 
-		return randomApplyEffectPositions
-
-module.exports = SpellKillRandomTarget
+module.exports = SpellKillRandomTarget;

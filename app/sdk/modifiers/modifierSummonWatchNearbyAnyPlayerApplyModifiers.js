@@ -1,34 +1,48 @@
-ModifierSummonWatchAnyPlayerApplyModifiers = require './modifierSummonWatchAnyPlayerApplyModifiers'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierSummonWatchAnyPlayerApplyModifiers = require('./modifierSummonWatchAnyPlayerApplyModifiers');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
 
-class ModifierSummonWatchNearbyAnyPlayerApplyModifiers extends ModifierSummonWatchAnyPlayerApplyModifiers
+class ModifierSummonWatchNearbyAnyPlayerApplyModifiers extends ModifierSummonWatchAnyPlayerApplyModifiers {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSummonWatchNearbyAnyPlayerApplyModifiers";
+		this.type ="ModifierSummonWatchNearbyAnyPlayerApplyModifiers";
+	
+		this.description = "ANY minion summoned nearby this minion %X";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierSummonWatchNearbyAnyPlayerApplyModifiers"
-	@type:"ModifierSummonWatchNearbyAnyPlayerApplyModifiers"
+	static createContextObject(modifiersContextObjects, buffDescription, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = modifiersContextObjects;
+		contextObject.buffDescription = buffDescription;
+		return contextObject;
+	}
 
-	@description: "ANY minion summoned nearby this minion %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.buffDescription);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"]
-
-	@createContextObject: (modifiersContextObjects, buffDescription, options) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = modifiersContextObjects
-		contextObject.buffDescription = buffDescription
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.buffDescription
-		else
-			return @description
-
-	getIsValidBuffPosition: (summonedUnitPosition) ->
-		entityPosition = @getCard().getPosition()
-		if (Math.abs(summonedUnitPosition.x - entityPosition.x) <= 1) and (Math.abs(summonedUnitPosition.y - entityPosition.y) <= 1)
-			return true
-		else
-			return false
+	getIsValidBuffPosition(summonedUnitPosition) {
+		const entityPosition = this.getCard().getPosition();
+		if ((Math.abs(summonedUnitPosition.x - entityPosition.x) <= 1) && (Math.abs(summonedUnitPosition.y - entityPosition.y) <= 1)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
+ModifierSummonWatchNearbyAnyPlayerApplyModifiers.initClass();
 
 
-module.exports = ModifierSummonWatchNearbyAnyPlayerApplyModifiers
+module.exports = ModifierSummonWatchNearbyAnyPlayerApplyModifiers;

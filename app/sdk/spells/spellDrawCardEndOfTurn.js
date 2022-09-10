@@ -1,12 +1,19 @@
-Spell = require './spell'
-PlayerModifierCardDrawModifier = require 'app/sdk/playerModifiers/playerModifierCardDrawModifier'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const PlayerModifierCardDrawModifier = require('app/sdk/playerModifiers/playerModifierCardDrawModifier');
 
-class SpellDrawCardEndOfTurn extends Spell
+class SpellDrawCardEndOfTurn extends Spell {
 
-	onApplyOneEffectToBoard: (board,x,y,sourceAction) ->
+	onApplyOneEffectToBoard(board,x,y,sourceAction) {
 
-		ownerId = @getOwnerId()
-		general = @getGameSession().getGeneralForPlayerId(ownerId)
-		@getGameSession().applyModifierContextObject(PlayerModifierCardDrawModifier.createContextObject(1,1), general)
+		const ownerId = this.getOwnerId();
+		const general = this.getGameSession().getGeneralForPlayerId(ownerId);
+		return this.getGameSession().applyModifierContextObject(PlayerModifierCardDrawModifier.createContextObject(1,1), general);
+	}
+}
 
-module.exports = SpellDrawCardEndOfTurn
+module.exports = SpellDrawCardEndOfTurn;

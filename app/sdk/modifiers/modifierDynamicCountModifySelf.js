@@ -1,77 +1,123 @@
-Modifier = require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
 
-###
+/*
   Abstract modifier class that checks for a change in count of specific board state and stacks a count of sub modifiers based on that board state
 	ex: has +1/+1 for each Shadow Creep tile on the board
 	    costs 1 less for each Battle Pet on the board
-###
-class ModifierDynamicCountModifySelf extends Modifier
+*/
+class ModifierDynamicCountModifySelf extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDynamicCountModifySelf";
+		this.type ="ModifierDynamicCountModifySelf";
+	
+		this.description ="Change stats based on count of something on board";
+	}
 
-	type:"ModifierDynamicCountModifySelf"
-	@type:"ModifierDynamicCountModifySelf"
+	static getDescription() {
+		return this.description;
+	}
 
-	@description:"Change stats based on count of something on board"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	@getDescription: () ->
-		return @description
+		p.currentCount = 0;
+		p.previousCount = 0;
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		return p;
+	}
 
-		p.currentCount = 0
-		p.previousCount = 0
+	onDeactivate() {
+		// reset to default states when deactivated
+		this._private.currentCount = (this._private.previousCount = 0);
+		return this.removeManagedModifiersFromCard(this.getCard());
+	}
 
-		return p
+	updateCachedStateAfterActive() {
+		if (this._private.cachedIsActive) {
+			this._private.previousCount = this._private.currentCount;
+			this._private.currentCount = this.getCurrentCount();
+		}
+		return super.updateCachedStateAfterActive();
+	}
 
-	onDeactivate: () ->
-		# reset to default states when deactivated
-		@_private.currentCount = @_private.previousCount = 0
-		@removeManagedModifiersFromCard(@getCard())
+	// operates during aura phase, but is not an aura itself
 
-	updateCachedStateAfterActive: () ->
-		if @_private.cachedIsActive
-			@_private.previousCount = @_private.currentCount
-			@_private.currentCount = @getCurrentCount()
-		super()
+	// remove modifiers during remove aura phase
+	_onRemoveAura(event) {
+		super._onRemoveAura(event);
+		if (this._private.cachedIsActive) {
+			const countChange = this._private.currentCount - this._private.previousCount;
+			if (countChange < 0) {
+				return this.removeSubModifiers(Math.abs(countChange));
+			}
+		}
+	}
 
-	# operates during aura phase, but is not an aura itself
+	removeSubModifiers(numModifiers) {
+		const subMods = this.getSubModifiers();
+		let removeCount = 0;
+		if (subMods.length < numModifiers) {
+			removeCount = subMods.length;
+		} else {
+			removeCount = numModifiers;
+		}
+		if (removeCount > 0) {
+			return (() => {
+				const result = [];
+				for (let i = subMods.length - 1; i >= 0; i--) {
+					const subMod = subMods[i];
+					this.getGameSession().removeModifier(subMod);
+					removeCount--;
+					if (removeCount === 0) {
+						break;
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
 
-	# remove modifiers during remove aura phase
-	_onRemoveAura: (event) ->
-		super(event)
-		if @_private.cachedIsActive
-			countChange = @_private.currentCount - @_private.previousCount
-			if countChange < 0
-				@removeSubModifiers(Math.abs(countChange))
+	// add modifiers during add modifier phase
+	_onAddAura(event) {
+		super._onAddAura(event);
+		if (this._private.cachedIsActive) {
+			const countChange = this._private.currentCount - this._private.previousCount;
+			if (countChange > 0) {
+				return this.addSubModifiers(countChange);
+			}
+		}
+	}
 
-	removeSubModifiers: (numModifiers) ->
-		subMods = @getSubModifiers()
-		removeCount = 0
-		if subMods.length < numModifiers
-			removeCount = subMods.length
-		else
-			removeCount = numModifiers
-		if removeCount > 0
-			for subMod in subMods by -1
-				@getGameSession().removeModifier(subMod)
-				removeCount--
-				if removeCount == 0
-					break
+	addSubModifiers(numModifiers) {
+		return __range__(0, numModifiers-1, true).map((i) =>
+			this.applyManagedModifiersFromModifiersContextObjects(this.modifiersContextObjects, this.getCard()));
+	}
 
-	# add modifiers during add modifier phase
-	_onAddAura: (event) ->
-		super(event)
-		if @_private.cachedIsActive
-			countChange = @_private.currentCount - @_private.previousCount
-			if countChange > 0
-				@addSubModifiers(countChange)
+	getCurrentCount() {
+		// override this method to calculate change in board state
+		return 0;
+	}
+}
+ModifierDynamicCountModifySelf.initClass();
 
-	addSubModifiers: (numModifiers) ->
-		for i in [0..numModifiers-1]
-			@applyManagedModifiersFromModifiersContextObjects(@modifiersContextObjects, @getCard())
+module.exports = ModifierDynamicCountModifySelf;
 
-	getCurrentCount: () ->
-		# override this method to calculate change in board state
-		return 0
-
-module.exports = ModifierDynamicCountModifySelf
+function __range__(left, right, inclusive) {
+  let range = [];
+  let ascending = left < right;
+  let end = !inclusive ? right : ascending ? right + 1 : right - 1;
+  for (let i = left; ascending ? i < end : i > end; ascending ? i++ : i--) {
+    range.push(i);
+  }
+  return range;
+}

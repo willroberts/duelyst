@@ -1,27 +1,49 @@
-ModifierMyAttackWatch = require './modifierMyAttackWatch'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 
-class ModifierMyAttackWatchApplyModifiersToAllies extends ModifierMyAttackWatch
+class ModifierMyAttackWatchApplyModifiersToAllies extends ModifierMyAttackWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyAttackWatchApplyModifiersToAllies";
+		this.type ="ModifierMyAttackWatchApplyModifiersToAllies";
+	
+		this.prototype.modifierContextObjects = null;
+		this.prototype.includeGeneral = false;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierMyAttackWatchApplyModifiersToAllies"
-	@type:"ModifierMyAttackWatchApplyModifiersToAllies"
+	static createContextObject(modifiers, includeGeneral, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifierContextObjects = modifiers;
+		contextObject.includeGeneral = includeGeneral;
+		return contextObject;
+	}
 
-	modifierContextObjects: null
-	includeGeneral: false
+	onMyAttackWatch(action) {
 
-	fxResource: ["FX.Modifiers.ModifierGenericBuff"]
+		const friendlyEntities = this.getGameSession().getBoard().getFriendlyEntitiesForEntity(this.getCard());
+		return (() => {
+			const result = [];
+			for (var entity of Array.from(friendlyEntities)) {
+				if (!entity.getIsGeneral() || this.includeGeneral) {
+					result.push(Array.from(this.modifierContextObjects).map((modifier) =>
+						this.getGameSession().applyModifierContextObject(modifier, entity)));
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
+ModifierMyAttackWatchApplyModifiersToAllies.initClass();
 
-	@createContextObject: (modifiers, includeGeneral, options) ->
-		contextObject = super(options)
-		contextObject.modifierContextObjects = modifiers
-		contextObject.includeGeneral = includeGeneral
-		return contextObject
-
-	onMyAttackWatch: (action) ->
-
-		friendlyEntities = @getGameSession().getBoard().getFriendlyEntitiesForEntity(@getCard())
-		for entity in friendlyEntities
-			if !entity.getIsGeneral() or @includeGeneral
-				for modifier in @modifierContextObjects
-					@getGameSession().applyModifierContextObject(modifier, entity)
-
-module.exports = ModifierMyAttackWatchApplyModifiersToAllies
+module.exports = ModifierMyAttackWatchApplyModifiersToAllies;

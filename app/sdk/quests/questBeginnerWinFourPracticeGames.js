@@ -1,27 +1,43 @@
-QuestBeginner = require './questBeginner'
-QuestType = require './questTypeLookup'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-GameType = require 'app/sdk/gameType'
-Logger = require 'app/common/logger'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const QuestBeginner = require('./questBeginner');
+const QuestType = require('./questTypeLookup');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const GameType = require('app/sdk/gameType');
+const Logger = require('app/common/logger');
 
-class QuestBeginnerWinFourPracticeGames extends QuestBeginner
+class QuestBeginnerWinFourPracticeGames extends QuestBeginner {
+	static initClass() {
+	
+		this.Identifier = 9905;
+		this.prototype.goldReward = 100;
+	}
 
-	@Identifier: 9905
-	goldReward: 100
+	constructor(){
+		super(QuestBeginnerWinFourPracticeGames.Identifier,"Win 4 Practice Games",[QuestType.Beginner],this.goldReward);
+		this.params["completionProgress"] = 4;
+	}
 
-	constructor:()->
-		super(QuestBeginnerWinFourPracticeGames.Identifier,"Win 4 Practice Games",[QuestType.Beginner],@.goldReward)
-		@params["completionProgress"] = 4
+	_progressForGameDataForPlayerId(gameData,playerId){
+		for (let player of Array.from(gameData.players)) {
+			const playerSetupData = UtilsGameSession.getPlayerSetupDataForPlayerId(gameData, player.playerId);
+			Logger.module("Quests").debug(`QuestBeginnerWinFourPracticeGames checking ${player.playerId} game type ${playerSetupData.gameType} winner: ${player.isWinner}`);
+			if ((player.playerId === playerId) && player.isWinner && (gameData.gameType === GameType.SinglePlayer)) {
+				return 1;
+			}
+		}
+		return 0;
+	}
 
-	_progressForGameDataForPlayerId:(gameData,playerId)->
-		for player in gameData.players
-			playerSetupData = UtilsGameSession.getPlayerSetupDataForPlayerId(gameData, player.playerId)
-			Logger.module("Quests").debug "QuestBeginnerWinFourPracticeGames checking #{player.playerId} game type #{playerSetupData.gameType} winner: #{player.isWinner}"
-			if player.playerId == playerId and player.isWinner and gameData.gameType == GameType.SinglePlayer
-				return 1
-		return 0
+	getDescription(){
+		return `Win ${this.params["completionProgress"]} game in practice mode.`;
+	}
+}
+QuestBeginnerWinFourPracticeGames.initClass();
 
-	getDescription:()->
-		return "Win #{@params["completionProgress"]} game in practice mode."
-
-module.exports = QuestBeginnerWinFourPracticeGames
+module.exports = QuestBeginnerWinFourPracticeGames;

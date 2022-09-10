@@ -1,31 +1,59 @@
-Action = require './action'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Action = require('./action');
 
-class RemoveManaCoreAction extends Action
-
-	# Removes a mana core
-
-	@type:"RemoveManaCoreAction"
-
-	manaAmount: 0
-
-	constructor: (gameSession, manaAmount=0) ->
-		@type ?= RemoveManaCoreAction.type
-		@manaAmount = manaAmount
-		super(gameSession)
-
-	_execute: () ->
-		super()
-
-		owner = @getOwner()
-		if owner?
-			for i in [0...@manaAmount]
-				if owner.getMaximumMana() > 0
-					owner.maximumMana--
+class RemoveManaCoreAction extends Action {
+	static initClass() {
 	
-	getManaAmount: () ->
-		return @manaAmount
+		// Removes a mana core
+	
+		this.type ="RemoveManaCoreAction";
+	
+		this.prototype.manaAmount = 0;
+	}
 
-	setManaAmount: (manaAmount) ->
-		@manaAmount = Math.max(manaAmount, 0)
+	constructor(gameSession, manaAmount) {
+		if (manaAmount == null) { manaAmount = 0; }
+		if (this.type == null) { this.type = RemoveManaCoreAction.type; }
+		this.manaAmount = manaAmount;
+		super(gameSession);
+	}
 
-module.exports = RemoveManaCoreAction
+	_execute() {
+		super._execute();
+
+		const owner = this.getOwner();
+		if (owner != null) {
+			return (() => {
+				const result = [];
+				for (let i = 0, end = this.manaAmount, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+					if (owner.getMaximumMana() > 0) {
+						result.push(owner.maximumMana--);
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+	
+	getManaAmount() {
+		return this.manaAmount;
+	}
+
+	setManaAmount(manaAmount) {
+		return this.manaAmount = Math.max(manaAmount, 0);
+	}
+}
+RemoveManaCoreAction.initClass();
+
+module.exports = RemoveManaCoreAction;

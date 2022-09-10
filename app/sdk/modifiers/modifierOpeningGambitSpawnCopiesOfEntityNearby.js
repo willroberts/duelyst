@@ -1,52 +1,81 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierOpeningGambit = require './modifierOpeningGambit'
-DieAction = require 'app/sdk/actions/dieAction'
-CloneEntityAction = require 'app/sdk/actions/cloneEntityAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const DieAction = require('app/sdk/actions/dieAction');
+const CloneEntityAction = require('app/sdk/actions/cloneEntityAction');
 
-class ModifierOpeningGambitSpawnCopiesOfEntityNearby extends ModifierOpeningGambit
+class ModifierOpeningGambitSpawnCopiesOfEntityNearby extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitSpawnCopiesOfEntityNearby";
+		this.type ="ModifierOpeningGambitSpawnCopiesOfEntityNearby";
+	
+		this.modifierName ="Opening Gambit";
+		this.description = "Summon %X";
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierOpeningGambitSpawnCopiesOfEntityNearby"
-	@type:"ModifierOpeningGambitSpawnCopiesOfEntityNearby"
+	static createContextObject(spawnDescription, spawnCount, options) {
+		if (spawnDescription == null) { spawnDescription = ""; }
+		if (spawnCount == null) { spawnCount = 1; }
+		const contextObject = super.createContextObject(options);
+		contextObject.spawnDescription = spawnDescription;
+		contextObject.spawnCount = spawnCount;
+		return contextObject;
+	}
 
-	@modifierName:"Opening Gambit"
-	@description: "Summon %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			let replaceText = "";
+			if (modifierContextObject.spawnCount === 1) {
+				replaceText = ""+modifierContextObject.spawnDescription+" on a random nearby space";
+				return this.description.replace(/%X/, replaceText);
+			} else if (modifierContextObject.spawnCount > 1) {
+				replaceText = ""+modifierContextObject.spawnDescription+" on random nearby spaces";
+				return this.description.replace(/%X/, replaceText);
+			}
+		} else {
+			return this.description;
+		}
+	}
 
-	cardDataOrIndexToSpawn: null
+	onOpeningGambit() {
+		super.onOpeningGambit();
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"]
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const spawnLocations = [];
+			const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), CONFIG.PATTERN_3x3, this.getCard());
+			for (let i = 0, end = this.spawnCount, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+				if (validSpawnLocations.length > 0) {
+					spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+				}
+			}
 
-	@createContextObject: (spawnDescription = "", spawnCount=1, options) ->
-		contextObject = super(options)
-		contextObject.spawnDescription = spawnDescription
-		contextObject.spawnCount = spawnCount
-		return contextObject
+			return (() => {
+				const result = [];
+				for (let position of Array.from(spawnLocations)) {
+					const playCardAction = new CloneEntityAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y);
+					playCardAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(playCardAction));
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierOpeningGambitSpawnCopiesOfEntityNearby.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			replaceText = ""
-			if modifierContextObject.spawnCount == 1
-				replaceText = ""+modifierContextObject.spawnDescription+" on a random nearby space"
-				return @description.replace /%X/, replaceText
-			else if modifierContextObject.spawnCount > 1
-				replaceText = ""+modifierContextObject.spawnDescription+" on random nearby spaces"
-				return @description.replace /%X/, replaceText
-		else
-			return @description
-
-	onOpeningGambit: () ->
-		super()
-
-		if @getGameSession().getIsRunningAsAuthoritative()
-			spawnLocations = []
-			validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(@getGameSession(), @getCard().getPosition(), CONFIG.PATTERN_3x3, @getCard())
-			for i in [0...@spawnCount]
-				if validSpawnLocations.length > 0
-					spawnLocations.push(validSpawnLocations.splice(@getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0])
-
-			for position in spawnLocations
-				playCardAction = new CloneEntityAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y)
-				playCardAction.setSource(@getCard())
-				@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierOpeningGambitSpawnCopiesOfEntityNearby
+module.exports = ModifierOpeningGambitSpawnCopiesOfEntityNearby;

@@ -1,29 +1,41 @@
-ModifierIntensify = require './modifierIntensify'
-Modifier = require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierIntensify = require('./modifierIntensify');
+const Modifier = require('./modifier');
 
-class ModifierIntensifyBuffSelf extends ModifierIntensify
+class ModifierIntensifyBuffSelf extends ModifierIntensify {
+	static initClass() {
+	
+		this.prototype.type ="ModifierIntensifyBuffSelf";
+		this.type ="ModifierIntensifyBuffSelf";
+	
+		this.prototype.attackBuff = 0;
+		this.prototype.healthBuff = 0;
+		this.prototype.modifierName = null;
+	}
 
-	type:"ModifierIntensifyBuffSelf"
-	@type:"ModifierIntensifyBuffSelf"
+	static createContextObject(attackBuff, healthBuff, modifierName, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.attackBuff = attackBuff;
+		contextObject.healthBuff = healthBuff;
+		contextObject.modifierName = modifierName;
+		return contextObject;
+	}
 
-	attackBuff: 0
-	healthBuff: 0
-	modifierName: null
+	onIntensify() {
 
-	@createContextObject: (attackBuff, healthBuff, modifierName, options) ->
-		contextObject = super(options)
-		contextObject.attackBuff = attackBuff
-		contextObject.healthBuff = healthBuff
-		contextObject.modifierName = modifierName
-		return contextObject
+		const totalAttackBuff = this.getIntensifyAmount() * this.attackBuff;
+		const totalHealthBuff = this.getIntensifyAmount() * this.healthBuff;
 
-	onIntensify: () ->
+		const statContextObject = Modifier.createContextObjectWithAttributeBuffs(totalAttackBuff, totalHealthBuff);
+		statContextObject.appliedName = this.modifierName;
+		return this.getGameSession().applyModifierContextObject(statContextObject, this.getCard());
+	}
+}
+ModifierIntensifyBuffSelf.initClass();
 
-		totalAttackBuff = @getIntensifyAmount() * @attackBuff
-		totalHealthBuff = @getIntensifyAmount() * @healthBuff
-
-		statContextObject = Modifier.createContextObjectWithAttributeBuffs(totalAttackBuff, totalHealthBuff)
-		statContextObject.appliedName = @modifierName
-		@getGameSession().applyModifierContextObject(statContextObject, @getCard())
-
-module.exports = ModifierIntensifyBuffSelf
+module.exports = ModifierIntensifyBuffSelf;

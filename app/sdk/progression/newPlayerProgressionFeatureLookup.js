@@ -1,29 +1,38 @@
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
 
-class Features
+class Features {
+	static initClass() {
+	
+		this.MainMenuCollection = 100;
+		this.MainMenuCodex = 101;
+		this.MainMenuCrates = 102;
+		this.MainMenuSpiritOrbs = 103;
+		this.MainMenuWatch = 104;
+	
+		this.UtilityMenuFriends = 200;
+		this.UtilityMenuQuests = 201;
+		this.UtilityMenuProfile = 202;
+		this.UtilityMenuShop = 203;
+		this.UtilityMenuDailyChallenge = 204;
+		this.UtilityMenuFreeCardOfTheDay = 205;
+	
+		this.PlayModeFriendly = 300;
+		this.PlayModePractice = 301;
+		this.PlayModeSoloChallenges = 302;
+		this.PlayModeCasual = 303;
+		this.PlayModeRanked = 304;
+		this.PlayModeGauntlet = 305;
+		this.PlayModeBossBattle = 306;
+		this.PlayModeSandbox = 399;
+	
+		this.Announcements = 400;
+		this.FirstWinOfTheDay = 401;
+	}
+}
+Features.initClass();
 
-	@MainMenuCollection: 100
-	@MainMenuCodex: 101
-	@MainMenuCrates: 102
-	@MainMenuSpiritOrbs: 103
-	@MainMenuWatch: 104
-
-	@UtilityMenuFriends: 200
-	@UtilityMenuQuests: 201
-	@UtilityMenuProfile: 202
-	@UtilityMenuShop: 203
-	@UtilityMenuDailyChallenge: 204
-	@UtilityMenuFreeCardOfTheDay: 205
-
-	@PlayModeFriendly: 300
-	@PlayModePractice: 301
-	@PlayModeSoloChallenges: 302
-	@PlayModeCasual: 303
-	@PlayModeRanked: 304
-	@PlayModeGauntlet: 305
-	@PlayModeBossBattle: 306
-	@PlayModeSandbox: 399
-
-	@Announcements: 400
-	@FirstWinOfTheDay: 401
-
-module.exports = Features
+module.exports = Features;

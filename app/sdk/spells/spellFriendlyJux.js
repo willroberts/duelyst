@@ -1,21 +1,28 @@
-Spell = require './spell'
-SwapUnitsAction = require 'app/sdk/actions/swapUnitsAction'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const SwapUnitsAction = require('app/sdk/actions/swapUnitsAction');
+const _ = require('underscore');
 
-class SpellFriendlyJux extends Spell
+class SpellFriendlyJux extends Spell {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-		applyEffectPosition = {x: x, y: y}
-		general = @getGameSession().getGeneralForPlayerId(@getOwnerId())
-		target = board.getUnitAtPosition(applyEffectPosition)
+		const applyEffectPosition = {x, y};
+		const general = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+		const target = board.getUnitAtPosition(applyEffectPosition);
 
-		swapAction = new SwapUnitsAction(@getGameSession())
-		swapAction.setOwnerId(@getOwnerId())
-		swapAction.setSource(general)
-		swapAction.setTarget(target)
-		swapAction.setFXResource(_.union(swapAction.getFXResource(), @getFXResource()))
-		@getGameSession().executeAction(swapAction)
+		const swapAction = new SwapUnitsAction(this.getGameSession());
+		swapAction.setOwnerId(this.getOwnerId());
+		swapAction.setSource(general);
+		swapAction.setTarget(target);
+		swapAction.setFXResource(_.union(swapAction.getFXResource(), this.getFXResource()));
+		return this.getGameSession().executeAction(swapAction);
+	}
+}
 
-module.exports = SpellFriendlyJux
+module.exports = SpellFriendlyJux;

@@ -1,20 +1,34 @@
-ModifierSynergize = require './modifierSynergize'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierSynergize = require('./modifierSynergize');
 
-class ModifierSynergizeBuffSelf extends ModifierSynergize
+class ModifierSynergizeBuffSelf extends ModifierSynergize {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSynergizeBuffSelf";
+		this.type ="ModifierSynergizeBuffSelf";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSynergize"];
+	
+		this.prototype.modifiers = null;
+	}
 
-	type:"ModifierSynergizeBuffSelf"
-	@type:"ModifierSynergizeBuffSelf"
+	static createContextObject(modifiers, options) {
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiers = modifiers;
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierSynergize"]
+	onSynergize(action) {
+		return this.applyManagedModifiersFromModifiersContextObjects(this.modifiers, this.getCard());
+	}
+}
+ModifierSynergizeBuffSelf.initClass();
 
-	modifiers: null
-
-	@createContextObject: (modifiers, options=undefined) ->
-		contextObject = super(options)
-		contextObject.modifiers = modifiers
-		return contextObject
-
-	onSynergize: (action) ->
-		@applyManagedModifiersFromModifiersContextObjects(@modifiers, @getCard())
-
-module.exports = ModifierSynergizeBuffSelf
+module.exports = ModifierSynergizeBuffSelf;

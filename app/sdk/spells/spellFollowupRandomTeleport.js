@@ -1,32 +1,44 @@
-Logger = require 'app/common/logger'
-Spell =	require './spell'
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-RandomTeleportAction = require 'app/sdk/actions/randomTeleportAction'
-_ = require("underscore")
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Spell =	require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const RandomTeleportAction = require('app/sdk/actions/randomTeleportAction');
+const _ = require("underscore");
 
-class SpellFollowupRandomTeleport extends Spell
+class SpellFollowupRandomTeleport extends Spell {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Unit;
+		this.prototype.spellFilterType = SpellFilterType.None;
+		this.prototype.teleportPattern = null;
+		this.prototype.patternSourceIsTarget = false;
+	}
 
-	targetType: CardType.Unit
-	spellFilterType: SpellFilterType.None
-	teleportPattern: null
-	patternSourceIsTarget: false
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+		const applyEffectPosition = {x, y};
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
-		applyEffectPosition = {x: x, y: y}
+		const target = board.getCardAtPosition(applyEffectPosition, this.targetType);
 
-		target = board.getCardAtPosition(applyEffectPosition, @targetType)
+		//can be set within the card definition if we want the source index to be the target of the followup (only really to be used when teleportPattern is set)
 
-		#can be set within the card definition if we want the source index to be the target of the followup (only really to be used when teleportPattern is set)
+		const randomTeleportAction = new RandomTeleportAction(this.getGameSession());
+		randomTeleportAction.setOwnerId(this.getOwnerId());
+		randomTeleportAction.setSource(target);
+		randomTeleportAction.setTeleportPattern(this.teleportPattern);
+		if (this.patternSourceIsTarget) {
+			randomTeleportAction.setPatternSource(target);
+		}
+		randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), this.getFXResource()));
+		return this.getGameSession().executeAction(randomTeleportAction);
+	}
+}
+SpellFollowupRandomTeleport.initClass();
 
-		randomTeleportAction = new RandomTeleportAction(@getGameSession())
-		randomTeleportAction.setOwnerId(@getOwnerId())
-		randomTeleportAction.setSource(target)
-		randomTeleportAction.setTeleportPattern(@teleportPattern)
-		if @patternSourceIsTarget
-			randomTeleportAction.setPatternSource(target)
-		randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), @getFXResource()))
-		@getGameSession().executeAction(randomTeleportAction)
-
-module.exports = SpellFollowupRandomTeleport
+module.exports = SpellFollowupRandomTeleport;

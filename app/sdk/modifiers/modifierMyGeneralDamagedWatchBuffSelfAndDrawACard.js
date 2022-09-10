@@ -1,29 +1,43 @@
-Modifier = require './modifier.coffee'
-ModifierMyGeneralDamagedWatch = require './modifierMyGeneralDamagedWatch.coffee'
-DamageAction = require 'app/sdk/actions/damageAction.coffee'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier.coffee');
+const ModifierMyGeneralDamagedWatch = require('./modifierMyGeneralDamagedWatch.coffee');
+const DamageAction = require('app/sdk/actions/damageAction.coffee');
 
-class ModifierMyGeneralDamagedWatchBuffSelfAndDrawACard extends ModifierMyGeneralDamagedWatch
+class ModifierMyGeneralDamagedWatchBuffSelfAndDrawACard extends ModifierMyGeneralDamagedWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyGeneralDamagedWatchBuffSelfAndDrawACard";
+		this.type ="ModifierMyGeneralDamagedWatchBuffSelfAndDrawACard";
+	
+		this.modifierName ="My General Damaged Watch";
+		this.description ="Whenever your General takes damage, give this minion %X and draw a card";
+	}
 
-	type:"ModifierMyGeneralDamagedWatchBuffSelfAndDrawACard"
-	@type:"ModifierMyGeneralDamagedWatchBuffSelfAndDrawACard"
+	static createContextObject(statContextObject, description, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.description = description;
+		contextObject.modifiersContextObjects = statContextObject;
+		return contextObject;
+	}
 
-	@modifierName:"My General Damaged Watch"
-	@description:"Whenever your General takes damage, give this minion %X and draw a card"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.description);
+		} else {
+			return this.description;
+		}
+	}
 
-	@createContextObject: (statContextObject, description, options) ->
-		contextObject = super(options)
-		contextObject.description = description
-		contextObject.modifiersContextObjects = statContextObject
-		return contextObject
+	onDamageDealtToGeneral(action) {
+		this.applyManagedModifiersFromModifiersContextObjects(this.modifiersContextObjects, this.getCard());
+		return this.getGameSession().executeAction(this.getCard().getOwner().getDeck().actionDrawCard());
+	}
+}
+ModifierMyGeneralDamagedWatchBuffSelfAndDrawACard.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.description
-		else
-			return @description
-
-	onDamageDealtToGeneral: (action) ->
-		@applyManagedModifiersFromModifiersContextObjects(@modifiersContextObjects, @getCard())
-		@getGameSession().executeAction(@getCard().getOwner().getDeck().actionDrawCard())
-
-module.exports = ModifierMyGeneralDamagedWatchBuffSelfAndDrawACard
+module.exports = ModifierMyGeneralDamagedWatchBuffSelfAndDrawACard;

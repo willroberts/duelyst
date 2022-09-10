@@ -1,20 +1,30 @@
-CONFIG = require 'app/common/config'
-SpellDamage = require './spellDamage'
+/*
+ * decaffeinate suggestions:
+ * DS202: Simplify dynamic range loops
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const SpellDamage = require('./spellDamage');
 
-class SpellWarbird extends SpellDamage
+class SpellWarbird extends SpellDamage {
 
-	_findApplyEffectPositions: (position, sourceAction) ->
-		applyEffectPositions = []
-		board = @getGameSession().getBoard()
-		general = @getGameSession().getGeneralForOpponentOfPlayerId( @getOwnerId())
-		generalPosition = general.getPosition()
+	_findApplyEffectPositions(position, sourceAction) {
+		const applyEffectPositions = [];
+		const board = this.getGameSession().getBoard();
+		const general = this.getGameSession().getGeneralForOpponentOfPlayerId( this.getOwnerId());
+		const generalPosition = general.getPosition();
 
-		for i in [0..CONFIG.BOARDROW-1]
-			testPosition = {x: generalPosition.x, y: i}
-			entity = board.getUnitAtPosition(testPosition)
-			if entity? and entity.getIsSameTeamAs(general)
-				applyEffectPositions.push(entity.getPosition())
+		for (let i = 0, end = CONFIG.BOARDROW-1, asc = 0 <= end; asc ? i <= end : i >= end; asc ? i++ : i--) {
+			const testPosition = {x: generalPosition.x, y: i};
+			const entity = board.getUnitAtPosition(testPosition);
+			if ((entity != null) && entity.getIsSameTeamAs(general)) {
+				applyEffectPositions.push(entity.getPosition());
+			}
+		}
 
-		return applyEffectPositions
+		return applyEffectPositions;
+	}
+}
 
-module.exports = SpellWarbird
+module.exports = SpellWarbird;

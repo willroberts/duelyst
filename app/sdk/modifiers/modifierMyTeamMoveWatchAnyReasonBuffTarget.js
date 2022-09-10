@@ -1,31 +1,49 @@
-ModifierMyTeamMoveWatchAnyReason = require './modifierMyTeamMoveWatchAnyReason'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierMyTeamMoveWatchAnyReason = require('./modifierMyTeamMoveWatchAnyReason');
 
-class ModifierMyTeamMoveWatchAnyReasonBuffTarget extends ModifierMyTeamMoveWatchAnyReason
+class ModifierMyTeamMoveWatchAnyReasonBuffTarget extends ModifierMyTeamMoveWatchAnyReason {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyTeamMoveWatchAnyReasonBuffTarget";
+		this.type ="ModifierMyTeamMoveWatchAnyReasonBuffTarget";
+	
+		this.modifierName ="My Team Move Watch Any Reason Buff Target";
+		this.description = "Whenever a friendly minion is moved for any reason, %Y";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierMyTeamMoveWatch", "FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierMyTeamMoveWatchAnyReasonBuffTarget"
-	@type:"ModifierMyTeamMoveWatchAnyReasonBuffTarget"
+	static createContextObject(modContextObject, description, options) {
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = modContextObject;
+		contextObject.modDescription = description;
+		return contextObject;
+	}
 
-	@modifierName:"My Team Move Watch Any Reason Buff Target"
-	@description: "Whenever a friendly minion is moved for any reason, %Y"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%Y/, modifierContextObject.modDescription);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierMyTeamMoveWatch", "FX.Modifiers.ModifierGenericBuff"]
+	onMyTeamMoveWatch(action, buffTarget) {
+		// apply modifiers to card being summoned
+		if (buffTarget != null) {
+			return Array.from(this.modifiersContextObjects).map((modifierContextObject) =>
+				this.getGameSession().applyModifierContextObject(modifierContextObject, buffTarget));
+		}
+	}
+}
+ModifierMyTeamMoveWatchAnyReasonBuffTarget.initClass();
 
-	@createContextObject: (modContextObject, description, options=undefined) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = modContextObject
-		contextObject.modDescription = description
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%Y/, modifierContextObject.modDescription
-		else
-			return @description
-
-	onMyTeamMoveWatch: (action, buffTarget) ->
-		# apply modifiers to card being summoned
-		if buffTarget?
-			for modifierContextObject in @modifiersContextObjects
-				@getGameSession().applyModifierContextObject(modifierContextObject, buffTarget)
-
-module.exports = ModifierMyTeamMoveWatchAnyReasonBuffTarget
+module.exports = ModifierMyTeamMoveWatchAnyReasonBuffTarget;

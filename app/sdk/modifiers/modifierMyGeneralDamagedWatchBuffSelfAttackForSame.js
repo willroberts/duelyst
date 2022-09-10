@@ -1,23 +1,35 @@
-Modifier = require './modifier.coffee'
-ModifierMyGeneralDamagedWatch = require './modifierMyGeneralDamagedWatch.coffee'
-DamageAction = require 'app/sdk/actions/damageAction.coffee'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier.coffee');
+const ModifierMyGeneralDamagedWatch = require('./modifierMyGeneralDamagedWatch.coffee');
+const DamageAction = require('app/sdk/actions/damageAction.coffee');
 
-class ModifierMyGeneralDamagedWatchBuffSelfAttackForSame extends ModifierMyGeneralDamagedWatch
+class ModifierMyGeneralDamagedWatchBuffSelfAttackForSame extends ModifierMyGeneralDamagedWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyGeneralDamagedWatchBuffSelfAttackForSame";
+		this.type ="ModifierMyGeneralDamagedWatchBuffSelfAttackForSame";
+	
+		this.modifierName ="My General Damaged Watch";
+		this.description ="Whenever your General takes damage, this minion gains that much Attack";
+	}
 
-	type:"ModifierMyGeneralDamagedWatchBuffSelfAttackForSame"
-	@type:"ModifierMyGeneralDamagedWatchBuffSelfAttackForSame"
+	static createContextObject(modifierAppliedName,options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifierAppliedName = modifierAppliedName;
+		return contextObject;
+	}
 
-	@modifierName:"My General Damaged Watch"
-	@description:"Whenever your General takes damage, this minion gains that much Attack"
+	onDamageDealtToGeneral(action) {
+		const modifierContextObject = Modifier.createContextObjectWithAttributeBuffs(action.getTotalDamageAmount());
+		modifierContextObject.appliedName = this.modifierAppliedName;
+		return this.getGameSession().applyModifierContextObject(modifierContextObject, this.getCard(), this);
+	}
+}
+ModifierMyGeneralDamagedWatchBuffSelfAttackForSame.initClass();
 
-	@createContextObject: (modifierAppliedName,options) ->
-		contextObject = super(options)
-		contextObject.modifierAppliedName = modifierAppliedName
-		return contextObject
-
-	onDamageDealtToGeneral: (action) ->
-		modifierContextObject = Modifier.createContextObjectWithAttributeBuffs(action.getTotalDamageAmount())
-		modifierContextObject.appliedName = @modifierAppliedName
-		@getGameSession().applyModifierContextObject(modifierContextObject, @getCard(), @)
-
-module.exports = ModifierMyGeneralDamagedWatchBuffSelfAttackForSame
+module.exports = ModifierMyGeneralDamagedWatchBuffSelfAttackForSame;

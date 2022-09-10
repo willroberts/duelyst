@@ -1,29 +1,41 @@
-ModifierIntensify = require './modifierIntensify'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierIntensify = require('./modifierIntensify');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class ModifierIntensifyDamageEnemyGeneral extends ModifierIntensify
+class ModifierIntensifyDamageEnemyGeneral extends ModifierIntensify {
+	static initClass() {
+	
+		this.prototype.type ="ModifierIntensifyDamageEnemyGeneral";
+		this.type ="ModifierIntensifyDamageEnemyGeneral";
+	
+		this.prototype.damageAmount = 0;
+	}
 
-	type:"ModifierIntensifyDamageEnemyGeneral"
-	@type:"ModifierIntensifyDamageEnemyGeneral"
+	static createContextObject(damageAmount, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	damageAmount: 0
+	onIntensify() {
 
-	@createContextObject: (damageAmount, options) ->
-		contextObject = super(options)
-		contextObject.damageAmount = damageAmount
-		return contextObject
+		const totalDamageAmount = this.getIntensifyAmount() * this.damageAmount;
 
-	onIntensify: () ->
+		const enemyGeneral = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
 
-		totalDamageAmount = @getIntensifyAmount() * @damageAmount
+		const enemyDamageAction = new DamageAction(this.getGameSession());
+		enemyDamageAction.setOwnerId(this.getCard().getOwnerId());
+		enemyDamageAction.setSource(this.getCard());
+		enemyDamageAction.setTarget(enemyGeneral);
+		enemyDamageAction.setDamageAmount(totalDamageAmount);
+		return this.getGameSession().executeAction(enemyDamageAction);
+	}
+}
+ModifierIntensifyDamageEnemyGeneral.initClass();
 
-		enemyGeneral = @getCard().getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-
-		enemyDamageAction = new DamageAction(@getGameSession())
-		enemyDamageAction.setOwnerId(@getCard().getOwnerId())
-		enemyDamageAction.setSource(@getCard())
-		enemyDamageAction.setTarget(enemyGeneral)
-		enemyDamageAction.setDamageAmount(totalDamageAmount)
-		@getGameSession().executeAction(enemyDamageAction)
-
-module.exports = ModifierIntensifyDamageEnemyGeneral
+module.exports = ModifierIntensifyDamageEnemyGeneral;

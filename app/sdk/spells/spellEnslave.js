@@ -1,24 +1,35 @@
-Logger = require 'app/common/logger'
-Spell = 						require('./spell')
-IntentType = 					require('app/sdk/intentType')
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-SwapUnitAllegianceAction = 		require('app/sdk/actions/swapUnitAllegianceAction')
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Spell = 						require('./spell');
+const IntentType = 					require('app/sdk/intentType');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const SwapUnitAllegianceAction = 		require('app/sdk/actions/swapUnitAllegianceAction');
 
-class SpellEnslave extends Spell
+class SpellEnslave extends Spell {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Unit;
+		this.prototype.spellFilterType = SpellFilterType.EnemyDirect;
+	}
 
-	targetType: CardType.Unit
-	spellFilterType: SpellFilterType.EnemyDirect
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "SpellEnslave::onApplyEffectToBoardTile"
 
-		#Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "SpellEnslave::onApplyEffectToBoardTile"
+		const applyEffectPosition = {x, y};
+		const entity = board.getCardAtPosition(applyEffectPosition, this.targetType);
+		const a = new SwapUnitAllegianceAction(this.getGameSession());
+		a.setTarget(entity);
+		return this.getGameSession().executeAction(a);
+	}
+}
+SpellEnslave.initClass();
 
-		applyEffectPosition = {x: x, y: y}
-		entity = board.getCardAtPosition(applyEffectPosition, @targetType)
-		a = new SwapUnitAllegianceAction(@getGameSession())
-		a.setTarget(entity)
-		@getGameSession().executeAction(a)
-
-module.exports = SpellEnslave
+module.exports = SpellEnslave;

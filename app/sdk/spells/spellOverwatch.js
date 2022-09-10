@@ -1,39 +1,53 @@
-Spell = require './spell'
-ModifierOverwatch = require 'app/sdk/modifiers/modifierOverwatch'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const ModifierOverwatch = require('app/sdk/modifiers/modifierOverwatch');
 
-###
+/*
   Generic spell used to hide the true overwatch spell from an opponent.
-###
-class SpellOverwatch extends Spell
+*/
+class SpellOverwatch extends Spell {
+	static initClass() {
+	
+		this.prototype.name = "Overwatch";
+	}
 
-	name: "Overwatch"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		p.description = "Give a minion Overwatch: A hidden effect that costs %X mana.";
+		p.keywordClassesToInclude.push(ModifierOverwatch);
 
-		p.description = "Give a minion Overwatch: A hidden effect that costs %X mana."
-		p.keywordClassesToInclude.push(ModifierOverwatch)
+		return p;
+	}
 
-		return p
+	getDescription(options) {
+		let description = super.getDescription(options);
 
-	getDescription: (options) ->
-		description = super(options)
+		description = description.replace(/%X/, this.manaCost);
 
-		description = description.replace /%X/, @manaCost
+		return description;
+	}
 
-		return description
+	createCardData(cardData) {
+		cardData = super.createCardData(cardData);
 
-	createCardData: (cardData) ->
-		cardData = super(cardData)
+		cardData.manaCost = this.getBaseManaCost();
 
-		cardData.manaCost = @getBaseManaCost()
+		return cardData;
+	}
 
-		return cardData
+	onCreatedToHide(source) {
+		super.onCreatedToHide(source);
 
-	onCreatedToHide: (source) ->
-		super(source)
+		// copy mana cost
+		return this.setBaseManaCost(source.getBaseManaCost());
+	}
+}
+SpellOverwatch.initClass();
 
-		# copy mana cost
-		@setBaseManaCost(source.getBaseManaCost())
-
-module.exports = SpellOverwatch
+module.exports = SpellOverwatch;

@@ -1,42 +1,58 @@
-Modifier = require './modifier'
-PlayCardAction = require 'app/sdk/actions/playCardAction'
-ApplyModifierAction = require 'app/sdk/actions/applyModifierAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const PlayCardAction = require('app/sdk/actions/playCardAction');
+const ApplyModifierAction = require('app/sdk/actions/applyModifierAction');
 
 
-class ModifierOnSummonFromHand extends Modifier
+class ModifierOnSummonFromHand extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOnSummonFromHand";
+		this.type ="ModifierOnSummonFromHand";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.triggered = false;
+	}
 
-	type:"ModifierOnSummonFromHand"
-	@type:"ModifierOnSummonFromHand"
+	onActivate() {
+		super.onActivate();
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		if (!this.triggered && this.getCard().getIsPlayed()) {
+			// always flag self as triggered when card becomes played
+			this.triggered = true;
+			let executingAction = this.getGameSession().getExecutingAction();
 
-	triggered: false
+			// account for modifier activated by being applied
+			if ((executingAction != null) && executingAction instanceof ApplyModifierAction) {
+				const parentAction = executingAction.getParentAction();
+				if (parentAction instanceof PlayCardAction) { executingAction = parentAction; }
+			}
 
-	onActivate: () ->
-		super()
+			if ((executingAction == null) || (executingAction instanceof PlayCardAction && (executingAction.getCard() === this.getCard()))) {
+				// only trigger when played PlayCardAction or no action (i.e. during game setup)
+				this.getGameSession().p_startBufferingEvents();
+				return this.onSummonFromHand();
+			}
+		}
+	}
 
-		if !@triggered and @getCard().getIsPlayed()
-			# always flag self as triggered when card becomes played
-			@triggered = true
-			executingAction = @getGameSession().getExecutingAction()
+	getIsActiveForCache() {
+		return !this.triggered && super.getIsActiveForCache();
+	}
 
-			# account for modifier activated by being applied
-			if executingAction? and executingAction instanceof ApplyModifierAction
-				parentAction = executingAction.getParentAction()
-				if parentAction instanceof PlayCardAction then executingAction = parentAction
+	onSummonFromHand() {}
+}
+ModifierOnSummonFromHand.initClass();
+		// override me in sub classes to implement special behavior
 
-			if !executingAction? or (executingAction instanceof PlayCardAction and executingAction.getCard() == @getCard())
-				# only trigger when played PlayCardAction or no action (i.e. during game setup)
-				@getGameSession().p_startBufferingEvents()
-				@onSummonFromHand()
-
-	getIsActiveForCache: () ->
-		return !@triggered and super()
-
-	onSummonFromHand: () ->
-		# override me in sub classes to implement special behavior
-
-module.exports = ModifierOnSummonFromHand
+module.exports = ModifierOnSummonFromHand;

@@ -1,47 +1,66 @@
-CONFIG = 'app/common/config'
-UtilsJavascript = require 'app/common/utils/utils_javascript'
-ModifierOnDyingSpawnEntity = require './modifierOnDyingSpawnEntity'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-CardType = require 'app/sdk/cards/cardType'
-ModifierEgg = require 'app/sdk/modifiers/modifierEgg'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-_ = require("underscore")
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = 'app/common/config';
+const UtilsJavascript = require('app/common/utils/utils_javascript');
+const ModifierOnDyingSpawnEntity = require('./modifierOnDyingSpawnEntity');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const CardType = require('app/sdk/cards/cardType');
+const ModifierEgg = require('app/sdk/modifiers/modifierEgg');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const _ = require("underscore");
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierRebirth extends ModifierOnDyingSpawnEntity
+class ModifierRebirth extends ModifierOnDyingSpawnEntity {
+	static initClass() {
+	
+		this.prototype.type ="ModifierRebirth";
+		this.type ="ModifierRebirth";
+	
+		this.isKeyworded = true;
+		this.keywordDefinition = i18next.t("modifiers.rebirth_def");
+	
+		this.modifierName =i18next.t("modifiers.rebirth_name");
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierRebirth"];
+	}
 
-	type:"ModifierRebirth"
-	@type:"ModifierRebirth"
+	static createContextObject(options) {
+		let spawnCount, spawnPattern, spawnSilently;
+		const contextObject = super.createContextObject({id: Cards.Faction5.Egg}, (spawnCount=1), (spawnPattern=CONFIG.PATTERN_1x1), (spawnSilently=true),options);
+		return contextObject;
+	}
 
-	@isKeyworded: true
-	@keywordDefinition: i18next.t("modifiers.rebirth_def")
+	onDying(action) {
+		//when this unit dies, if there isn't already a new unit queued to be spawned on the same tile where this unit died
+		if (!this.getGameSession().getBoard().getCardAtPosition(this.getCard().getPosition(), CardType.Unit, false, true)) {
+			// add modifier so egg will hatch correct unit
+			let {
+                cardDataOrIndexToSpawn
+            } = this;
+			if (cardDataOrIndexToSpawn != null) {
+				if (_.isObject(cardDataOrIndexToSpawn)) {
+					cardDataOrIndexToSpawn = UtilsJavascript.fastExtend({}, cardDataOrIndexToSpawn);
+				} else {
+					cardDataOrIndexToSpawn = this.getGameSession().getCardByIndex(cardDataOrIndexToSpawn).createNewCardData();
+				}
 
-	@modifierName:i18next.t("modifiers.rebirth_name")
+				if (cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
+				cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(this.getCard().createNewCardData(), null));
 
-	fxResource: ["FX.Modifiers.ModifierRebirth"]
-
-	@createContextObject: (options) ->
-		contextObject = super({id: Cards.Faction5.Egg}, spawnCount=1, spawnPattern=CONFIG.PATTERN_1x1, spawnSilently=true,options)
-		return contextObject
-
-	onDying: (action) ->
-		#when this unit dies, if there isn't already a new unit queued to be spawned on the same tile where this unit died
-		if !@getGameSession().getBoard().getCardAtPosition(@getCard().getPosition(), CardType.Unit, false, true)
-			# add modifier so egg will hatch correct unit
-			cardDataOrIndexToSpawn = @cardDataOrIndexToSpawn
-			if cardDataOrIndexToSpawn?
-				if _.isObject(cardDataOrIndexToSpawn)
-					cardDataOrIndexToSpawn = UtilsJavascript.fastExtend({}, cardDataOrIndexToSpawn)
-				else
-					cardDataOrIndexToSpawn = @getGameSession().getCardByIndex(cardDataOrIndexToSpawn).createNewCardData()
-
-				cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects ?= []
-				cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(@getCard().createNewCardData(), null))
-
-				# spawn an egg
-				playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), @getCard().getPosition().x, @getCard().getPosition().y, cardDataOrIndexToSpawn)
-				@getGameSession().executeAction(playCardAction)
+				// spawn an egg
+				const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, cardDataOrIndexToSpawn);
+				return this.getGameSession().executeAction(playCardAction);
+			}
+		}
+	}
+}
+ModifierRebirth.initClass();
 
 
-module.exports = ModifierRebirth
+module.exports = ModifierRebirth;

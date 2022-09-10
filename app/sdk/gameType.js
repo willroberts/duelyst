@@ -1,37 +1,57 @@
-class GameType
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+var GameType = (function() {
+	let GameFormat = undefined;
+	GameType = class GameType {
+		static initClass() {
+	
+			this.Ranked = "ranked";
+			this.Casual = "casual";
+			this.Gauntlet = "gauntlet";
+			this.Friendly = "friendly";
+			this.Challenge = "challenge";
+			this.Sandbox = "sandbox";
+			this.SinglePlayer = "single_player";
+			this.Rift = "rift";
+			this.BossBattle = "boss_battle";
+			this.FriendlyLegacy = "friendly_legacy";
+	
+			GameFormat = require('./gameFormat');
+		}
 
-	@Ranked: "ranked"
-	@Casual: "casual"
-	@Gauntlet: "gauntlet"
-	@Friendly: "friendly"
-	@Challenge: "challenge"
-	@Sandbox: "sandbox"
-	@SinglePlayer: "single_player"
-	@Rift: "rift"
-	@BossBattle: "boss_battle"
-	@FriendlyLegacy: "friendly_legacy"
+		static isNetworkGameType(type) {
+			return (type === GameType.Ranked) || (type === GameType.Casual) || (type === GameType.Gauntlet) || (type === GameType.Friendly) || (type === GameType.SinglePlayer) || (type === GameType.BossBattle) || (type === GameType.Rift) || (type === GameType.FriendlyLegacy);
+		}
 
-	GameFormat = require './gameFormat'
+		static isMultiplayerGameType(type) {
+			return (type === GameType.Ranked) || (type === GameType.Casual) || (type === GameType.Gauntlet) || (type === GameType.Friendly) || (type === GameType.Rift) || (type === GameType.FriendlyLegacy);
+		}
 
-	@isNetworkGameType: (type) ->
-		return type == GameType.Ranked or type == GameType.Casual or type == GameType.Gauntlet or type == GameType.Friendly or type == GameType.SinglePlayer or type == GameType.BossBattle or type == GameType.Rift or type == GameType.FriendlyLegacy
+		static isSinglePlayerGameType(type) {
+			return (type === GameType.SinglePlayer) || (type === GameType.BossBattle) || (type === GameType.Challenge) || (type === GameType.Sandbox);
+		}
 
-	@isMultiplayerGameType: (type) ->
-		return type == GameType.Ranked or type == GameType.Casual or type == GameType.Gauntlet or type == GameType.Friendly or type == GameType.Rift or type == GameType.FriendlyLegacy
+		static isLocalGameType(type) {
+			return (type === GameType.Challenge) || (type === GameType.Sandbox);
+		}
 
-	@isSinglePlayerGameType: (type) ->
-		return type == GameType.SinglePlayer or type == GameType.BossBattle or type == GameType.Challenge or type == GameType.Sandbox
+		static isCompetitiveGameType(type) {
+			return (type === GameType.Ranked) || (type === GameType.Casual) || (type === GameType.Gauntlet) || (type === GameType.Rift);
+		}
 
-	@isLocalGameType: (type) ->
-		return type == GameType.Challenge or type == GameType.Sandbox
+		static isFactionXPGameType(type) {
+			return (type === GameType.Ranked) || (type === GameType.Casual) || (type === GameType.Gauntlet) || (type === GameType.SinglePlayer) || (type === GameType.Friendly) || (type === GameType.BossBattle) || (type === GameType.Rift) || (type === GameType.FriendlyLegacy);
+		}
 
-	@isCompetitiveGameType: (type) ->
-		return type == GameType.Ranked or type == GameType.Casual or type == GameType.Gauntlet or type == GameType.Rift
+		static getGameFormatForGameType(type) {
+			return GameFormat.Legacy;
+		}
+	};
+	GameType.initClass();
+	return GameType;
+})();
 
-	@isFactionXPGameType: (type) ->
-		return type == GameType.Ranked or type == GameType.Casual or type == GameType.Gauntlet or type == GameType.SinglePlayer or type == GameType.Friendly or type == GameType.BossBattle or type == GameType.Rift or type == GameType.FriendlyLegacy
-
-	@getGameFormatForGameType: (type) ->
-		return GameFormat.Legacy
-
-module.exports = GameType
+module.exports = GameType;

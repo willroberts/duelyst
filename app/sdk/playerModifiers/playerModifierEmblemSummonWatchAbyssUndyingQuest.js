@@ -1,46 +1,99 @@
-PlayerModifierEmblemGainMinionOrLoseControlWatch = require './playerModifierEmblemGainMinionOrLoseControlWatch'
-ModifierQuestBuffAbyssian = require 'app/sdk/modifiers/modifierQuestBuffAbyssian'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const PlayerModifierEmblemGainMinionOrLoseControlWatch = require('./playerModifierEmblemGainMinionOrLoseControlWatch');
+const ModifierQuestBuffAbyssian = require('app/sdk/modifiers/modifierQuestBuffAbyssian');
+const CardType = require('app/sdk/cards/cardType');
 
-class PlayerModifierEmblemSummonWatchAbyssUndyingQuest extends PlayerModifierEmblemGainMinionOrLoseControlWatch
+class PlayerModifierEmblemSummonWatchAbyssUndyingQuest extends PlayerModifierEmblemGainMinionOrLoseControlWatch {
+	static initClass() {
+	
+		this.prototype.type ="PlayerModifierEmblemSummonWatchAbyssUndyingQuest";
+		this.type ="PlayerModifierEmblemSummonWatchAbyssUndyingQuest";
+	
+		this.prototype.maxStacks = 1;
+	
+		this.prototype.modifiersContextObjects = null;
+	}
 
-	type:"PlayerModifierEmblemSummonWatchAbyssUndyingQuest"
-	@type:"PlayerModifierEmblemSummonWatchAbyssUndyingQuest"
+	static createContextObject(modifiersContextObjects, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = modifiersContextObjects;
+		return contextObject;
+	}
 
-	maxStacks: 1
+	onGainMinionWatch(action) {
+		const entity = action.getTarget();
+		if ((entity != null) && (this.modifiersContextObjects != null)) {
+			return (() => {
+				const result = [];
+				for (let modifiersContextObject of Array.from(this.modifiersContextObjects)) {
+					if (modifiersContextObject != null) {
+						modifiersContextObject.isRemovable = false;
+						result.push(this.getGameSession().applyModifierContextObject(modifiersContextObject, entity));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
 
-	modifiersContextObjects: null
+	onLoseControlWatch(action) {
+		const entity = action.getTarget();
+		if (entity != null) {
+			const modifiers = entity.getModifiers();
+			if (modifiers != null) {
+				return (() => {
+					const result = [];
+					for (let modifier of Array.from(modifiers)) {
+						if (modifier instanceof ModifierQuestBuffAbyssian) {
+							result.push(this.getGameSession().removeModifier(modifier));
+						} else {
+							result.push(undefined);
+						}
+					}
+					return result;
+				})();
+			}
+		}
+	}
 
-	@createContextObject: (modifiersContextObjects, options) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = modifiersContextObjects
-		return contextObject
+	onActivate() {
+		super.onActivate();
+		if (this.modifiersContextObjects != null) {
+			return (() => {
+				const result = [];
+				for (var unit of Array.from(this.getGameSession().getBoard().getFriendlyEntitiesForEntity(this.getCard()))) {
+					if ((unit != null) && !unit.getIsGeneral() && (unit.getType() === CardType.Unit) && (unit !== this.getSourceCard())) {
+						result.push((() => {
+							const result1 = [];
+							for (let modifier of Array.from(this.modifiersContextObjects)) {
+								if (modifier != null) {
+									modifier.isRemovable = false;
+									result1.push(this.getGameSession().applyModifierContextObject(modifier, unit));
+								} else {
+									result1.push(undefined);
+								}
+							}
+							return result1;
+						})());
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+}
+PlayerModifierEmblemSummonWatchAbyssUndyingQuest.initClass();
 
-	onGainMinionWatch: (action) ->
-		entity = action.getTarget()
-		if entity? and @modifiersContextObjects?
-			for modifiersContextObject in @modifiersContextObjects
-				if modifiersContextObject?
-					modifiersContextObject.isRemovable = false
-					@getGameSession().applyModifierContextObject(modifiersContextObject, entity)
-
-	onLoseControlWatch: (action) ->
-		entity = action.getTarget()
-		if entity?
-			modifiers = entity.getModifiers()
-			if modifiers?
-				for modifier in modifiers
-					if modifier instanceof ModifierQuestBuffAbyssian
-						@getGameSession().removeModifier(modifier)
-
-	onActivate: () ->
-		super()
-		if @modifiersContextObjects?
-			for unit in @getGameSession().getBoard().getFriendlyEntitiesForEntity(@getCard())
-				if unit? and !unit.getIsGeneral() and unit.getType() == CardType.Unit and unit != @getSourceCard()
-					for modifier in @modifiersContextObjects
-						if modifier?
-							modifier.isRemovable = false
-							@getGameSession().applyModifierContextObject(modifier, unit)
-
-module.exports = PlayerModifierEmblemSummonWatchAbyssUndyingQuest
+module.exports = PlayerModifierEmblemSummonWatchAbyssUndyingQuest;

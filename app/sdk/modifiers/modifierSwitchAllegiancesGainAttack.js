@@ -1,49 +1,66 @@
-Modifier = require './modifier'
-SwapUnitAllegianceAction = 		require('app/sdk/actions/swapUnitAllegianceAction')
-i18next = require('i18next')
-CardType = require 'app/sdk/cards/cardType'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const SwapUnitAllegianceAction = 		require('app/sdk/actions/swapUnitAllegianceAction');
+const i18next = require('i18next');
+const CardType = require('app/sdk/cards/cardType');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
 
-class ModifierSwitchAllegiancesGainAttack extends Modifier
+class ModifierSwitchAllegiancesGainAttack extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSwitchAllegiancesGainAttack";
+		this.type ="ModifierSwitchAllegiancesGainAttack";
+	
+		this.modifierName ="ModifierSwitchAllegiancesGainAttack";
+		this.description = "ModifierSwitchAllegiancesGainAttack";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierBond"];
+	}
 
-	type:"ModifierSwitchAllegiancesGainAttack"
-	@type:"ModifierSwitchAllegiancesGainAttack"
+	static createContextObject(options) {
+		const contextObject = super.createContextObject(options);
+		return contextObject;
+	}
 
-	@modifierName:"ModifierSwitchAllegiancesGainAttack"
-	@description: "ModifierSwitchAllegiancesGainAttack"
+	onActivate() {
+		let allowUntargetable;
+		super.onActivate();
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+		const allUnits = this.getGameSession().getBoard().getCards(CardType.Unit, (allowUntargetable=true));
+		let friendlyUnitCounter = 0;
 
-	fxResource: ["FX.Modifiers.ModifierBond"]
+		for (let unit of Array.from(allUnits)) {
+			if (!unit.getIsGeneral() && (unit !== this.getCard())) {
+				if (unit.getOwnerId() === this.getCard().getOwnerId()) {
+					friendlyUnitCounter++;
+				}
+				const a = new SwapUnitAllegianceAction(this.getGameSession());
+				a.setTarget(unit);
+				this.getGameSession().executeAction(a);
+			}
+		}
 
-	@createContextObject: (options) ->
-		contextObject = super(options)
-		return contextObject
-
-	onActivate: () ->
-		super()
-
-		allUnits = @getGameSession().getBoard().getCards(CardType.Unit, allowUntargetable=true)
-		friendlyUnitCounter = 0
-
-		for unit in allUnits
-			if !unit.getIsGeneral() and unit != @getCard()
-				if unit.getOwnerId() is @getCard().getOwnerId()
-					friendlyUnitCounter++
-				a = new SwapUnitAllegianceAction(@getGameSession())
-				a.setTarget(unit)
-				@getGameSession().executeAction(a)
-
-		#apply the buff
-		friendlyUnitCounter = friendlyUnitCounter * 3
-		attackBuff = [Modifier.createContextObjectWithAttributeBuffs(friendlyUnitCounter,friendlyUnitCounter,{
+		//apply the buff
+		friendlyUnitCounter = friendlyUnitCounter * 3;
+		const attackBuff = [Modifier.createContextObjectWithAttributeBuffs(friendlyUnitCounter,friendlyUnitCounter,{
 			modifierName:"Discordant Spirit",
 			description:Stringifiers.stringifyAttackHealthBuff(friendlyUnitCounter,friendlyUnitCounter),
-		})]
-		@applyManagedModifiersFromModifiersContextObjects(attackBuff, @getCard())
+		})];
+		return this.applyManagedModifiersFromModifiersContextObjects(attackBuff, this.getCard());
+	}
+}
+ModifierSwitchAllegiancesGainAttack.initClass();
 
 
-module.exports = ModifierSwitchAllegiancesGainAttack
+module.exports = ModifierSwitchAllegiancesGainAttack;

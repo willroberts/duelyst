@@ -1,23 +1,35 @@
-ModifierStartTurnWatch = require './modifierStartTurnWatch'
-KillAction = require 'app/sdk/actions/killAction'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
+const KillAction = require('app/sdk/actions/killAction');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 
-class ModifierStartTurnWatchPutCardInHand extends ModifierStartTurnWatch
+class ModifierStartTurnWatchPutCardInHand extends ModifierStartTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierStartTurnWatchPutCardInHand";
+		this.type ="ModifierStartTurnWatchPutCardInHand";
+	
+		this.prototype.cardData = null;
+	
+		this.description = "Add a card to your hand at start of turn";
+	}
 
-	type:"ModifierStartTurnWatchPutCardInHand"
-	@type:"ModifierStartTurnWatchPutCardInHand"
+	static createContextObject(cardData, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.cardData = cardData;
+		return contextObject;
+	}
 
-	cardData: null
+	onTurnWatch(action) {
+		const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), this.cardData);
+		return this.getGameSession().executeAction(putCardInHandAction);
+	}
+}
+ModifierStartTurnWatchPutCardInHand.initClass();
 
-	@description: "Add a card to your hand at start of turn"
-
-	@createContextObject: (cardData, options) ->
-		contextObject = super(options)
-		contextObject.cardData = cardData
-		return contextObject
-
-	onTurnWatch: (action) ->
-		putCardInHandAction = new PutCardInHandAction(@getGameSession(), @getCard().getOwnerId(), @cardData)
-		@getGameSession().executeAction(putCardInHandAction)
-
-module.exports = ModifierStartTurnWatchPutCardInHand
+module.exports = ModifierStartTurnWatchPutCardInHand;

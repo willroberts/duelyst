@@ -1,21 +1,30 @@
-class Modules
-	@Core: "core"
-	@Quest: "quest"
-	@Matchmaking: "matchmaking"
-	@Collection: "collection"
-	@BoosterUnlock: "booster_unlock"
-	@GameGoldTips: "game_gold_tips"
-	@StarterDeckTab: "starter_decks_tab"
-	@AiDecksTab: "ai_decks_tab"
-	@SinglePlayerPlayed: "single_player_played"
-	@SpiritOrbOpened: "spirit_orb_opened"
-	@CraftedCard: "crafted_card"
-	@Monetized: "monetized"
-	@BloodbornSpellInfo: "bloodborn_spell_info"
-	@BattlePetInfo: "battle_pet_info"
-	@BattlePetReminder: "battle_pet_reminder"
-	@BattlePetActionNotification: "battle_pet_action_notification"
-	@ReceivedCrate: "received_crate"
-	@RiftUpgradeUsed: "rift_upgrade_used"
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+class Modules {
+	static initClass() {
+		this.Core = "core";
+		this.Quest = "quest";
+		this.Matchmaking = "matchmaking";
+		this.Collection = "collection";
+		this.BoosterUnlock = "booster_unlock";
+		this.GameGoldTips = "game_gold_tips";
+		this.StarterDeckTab = "starter_decks_tab";
+		this.AiDecksTab = "ai_decks_tab";
+		this.SinglePlayerPlayed = "single_player_played";
+		this.SpiritOrbOpened = "spirit_orb_opened";
+		this.CraftedCard = "crafted_card";
+		this.Monetized = "monetized";
+		this.BloodbornSpellInfo = "bloodborn_spell_info";
+		this.BattlePetInfo = "battle_pet_info";
+		this.BattlePetReminder = "battle_pet_reminder";
+		this.BattlePetActionNotification = "battle_pet_action_notification";
+		this.ReceivedCrate = "received_crate";
+		this.RiftUpgradeUsed = "rift_upgrade_used";
+	}
+}
+Modules.initClass();
 
-module.exports = Modules
+module.exports = Modules;

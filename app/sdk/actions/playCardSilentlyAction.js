@@ -1,29 +1,44 @@
-Logger = 		require 'app/common/logger'
-ApplyCardToBoardAction = 		require './applyCardToBoardAction'
-ModifierOpeningGambit = 		require 'app/sdk/modifiers/modifierOpeningGambit'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = 		require('app/common/logger');
+const ApplyCardToBoardAction = 		require('./applyCardToBoardAction');
+const ModifierOpeningGambit = 		require('app/sdk/modifiers/modifierOpeningGambit');
+const _ = require('underscore');
 
-###
+/*
 Play a card on the board and bypass the active card flow (i.e. followups and opening gambits are disabled)
-###
+*/
 
-class PlayCardSilentlyAction extends ApplyCardToBoardAction
+class PlayCardSilentlyAction extends ApplyCardToBoardAction {
+	static initClass() {
+	
+		this.type ="PlayCardSilentlyAction";
+	}
 
-	@type:"PlayCardSilentlyAction"
+	constructor() {
+		if (this.type == null) { this.type = PlayCardSilentlyAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= PlayCardSilentlyAction.type
-		super
+	getCard() {
+		if ((this._private.cachedCard == null)) {
+			// create and cache card
+			super.getCard();
 
-	getCard: () ->
-		if !@_private.cachedCard?
-			# create and cache card
-			super()
+			if (this._private.cachedCard != null) {
+				// clear the card's followups
+				this._private.cachedCard.clearFollowups();
+			}
+		}
 
-			if @_private.cachedCard?
-				# clear the card's followups
-				@_private.cachedCard.clearFollowups()
+		return this._private.cachedCard;
+	}
+}
+PlayCardSilentlyAction.initClass();
 
-		return @_private.cachedCard
-
-module.exports = PlayCardSilentlyAction
+module.exports = PlayCardSilentlyAction;

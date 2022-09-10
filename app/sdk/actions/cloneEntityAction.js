@@ -1,30 +1,46 @@
-Logger = 		require 'app/common/logger'
-PlayCardSilentlyAction = 		require './playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = 		require('app/common/logger');
+const PlayCardSilentlyAction = 		require('./playCardSilentlyAction');
 
-###
+/*
 Clone an entity on the board silently.
-###
+*/
 
-class CloneEntityAction extends PlayCardSilentlyAction
+class CloneEntityAction extends PlayCardSilentlyAction {
+	static initClass() {
+	
+		this.type ="CloneEntityAction";
+	}
 
-	@type:"CloneEntityAction"
+	constructor() {
+		if (this.type == null) { this.type = CloneEntityAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= CloneEntityAction.type
-		super
+	getCard() {
+		if ((this._private.cachedCard == null)) {
+			if (this.getGameSession().getIsRunningAsAuthoritative()) {
+				// get source entity and create clone card data from it
+				// this way when card is created it'll be an exact copy of the source
+				const source = this.getSource();
+				if (source != null) {
+					this.cardDataOrIndex = source.createCloneCardData();
+				}
+			}
 
-	getCard: () ->
-		if !@_private.cachedCard?
-			if @getGameSession().getIsRunningAsAuthoritative()
-				# get source entity and create clone card data from it
-				# this way when card is created it'll be an exact copy of the source
-				source = @getSource()
-				if source?
-					@cardDataOrIndex = source.createCloneCardData()
+			// create the card
+			super.getCard();
+		}
 
-			# create the card
-			super()
+		return this._private.cachedCard;
+	}
+}
+CloneEntityAction.initClass();
 
-		return @_private.cachedCard
-
-module.exports = CloneEntityAction
+module.exports = CloneEntityAction;

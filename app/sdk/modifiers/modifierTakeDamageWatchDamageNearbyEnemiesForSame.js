@@ -1,26 +1,44 @@
-ModifierTakeDamageWatch = require './modifierTakeDamageWatch'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierTakeDamageWatch = require('./modifierTakeDamageWatch');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierTakeDamageWatchDamageNearbyEnemiesForSame extends ModifierTakeDamageWatch
+class ModifierTakeDamageWatchDamageNearbyEnemiesForSame extends ModifierTakeDamageWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierTakeDamageWatchDamageNearbyEnemiesForSame";
+		this.type ="ModifierTakeDamageWatchDamageNearbyEnemiesForSame";
+	
+		this.modifierName ="Take Damage Watch Damage Enemy For Same";
+		this.description ="Whenever this minion takes damage, deal that much damage to all nearby enemies";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierTakeDamageWatch", "FX.Modifiers.ModifierGenericDamage"];
+	}
 
-	type:"ModifierTakeDamageWatchDamageNearbyEnemiesForSame"
-	@type:"ModifierTakeDamageWatchDamageNearbyEnemiesForSame"
+	onDamageTaken(action) {
+		const damageAmount = action.getTotalDamageAmount();
+		// deal same damage taken to all enemies
+		return (() => {
+			const result = [];
+			for (let unit of Array.from(this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1))) {
+				const damageAction = new DamageAction(this.getGameSession());
+				damageAction.setOwnerId(this.getCard().getOwnerId());
+				damageAction.setSource(this.getCard());
+				damageAction.setTarget(unit);
+				damageAction.setDamageAmount(damageAmount);
+				result.push(this.getGameSession().executeAction(damageAction));
+			}
+			return result;
+		})();
+	}
+}
+ModifierTakeDamageWatchDamageNearbyEnemiesForSame.initClass();
 
-	@modifierName:"Take Damage Watch Damage Enemy For Same"
-	@description:"Whenever this minion takes damage, deal that much damage to all nearby enemies"
-
-	fxResource: ["FX.Modifiers.ModifierTakeDamageWatch", "FX.Modifiers.ModifierGenericDamage"]
-
-	onDamageTaken: (action) ->
-		damageAmount = action.getTotalDamageAmount()
-		# deal same damage taken to all enemies
-		for unit in @getGameSession().getBoard().getEnemyEntitiesAroundEntity(@getCard(), CardType.Unit, 1)
-			damageAction = new DamageAction(@getGameSession())
-			damageAction.setOwnerId(@getCard().getOwnerId())
-			damageAction.setSource(@getCard())
-			damageAction.setTarget(unit)
-			damageAction.setDamageAmount(damageAmount)
-			@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierTakeDamageWatchDamageNearbyEnemiesForSame
+module.exports = ModifierTakeDamageWatchDamageNearbyEnemiesForSame;

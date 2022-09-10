@@ -1,19 +1,34 @@
-CONFIG = 		require 'app/common/config'
-Action = 		require './action'
-Logger = 		require 'app/common/logger'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = 		require('app/common/config');
+const Action = 		require('./action');
+const Logger = 		require('app/common/logger');
 
-class EndTurnAction extends Action
+class EndTurnAction extends Action {
+	static initClass() {
+	
+		this.type ="EndTurnAction";
+	}
 
-	@type:"EndTurnAction"
+	constructor() {
+		if (this.type == null) { this.type = EndTurnAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= EndTurnAction.type
-		super
+	isRemovableDuringScrubbing() {
+		return false;
+	}
 
-	isRemovableDuringScrubbing: () ->
-		return false
+	_execute() {
+		return this.getGameSession().p_endTurn();
+	}
+}
+EndTurnAction.initClass();
 
-	_execute: () ->
-		@getGameSession().p_endTurn()
-
-module.exports = EndTurnAction
+module.exports = EndTurnAction;

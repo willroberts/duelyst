@@ -1,39 +1,60 @@
-Quest = require './quest'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-GameType = require 'app/sdk/gameType'
-FactionsLookup = require 'app/sdk/cards/factionsLookup'
-FactionFactory = require 'app/sdk/cards/factionFactory'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Quest = require('./quest');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const GameType = require('app/sdk/gameType');
+const FactionsLookup = require('app/sdk/cards/factionsLookup');
+const FactionFactory = require('app/sdk/cards/factionFactory');
+const i18next = require('i18next');
 
-class QuestParticipationWithFaction extends Quest
+class QuestParticipationWithFaction extends Quest {
+	static initClass() {
+	
+		this.prototype.factionId =null;
+	}
 
-	factionId:null
+	constructor(id,typesIn,reward,factionId){
+		this.getFactionId = this.getFactionId.bind(this);
+		this.factionId = factionId;
+		const faction = FactionFactory.factionForIdentifier(this.factionId);
+		const name = i18next.t("quests.quest_faction_games_title", { faction_name: faction.short_name });
+		super(id,name,typesIn,reward);
+		this.params["factionId"] = this.factionId;
+		this.params["completionProgress"] = 4;
+	}
 
-	constructor:(id,typesIn,reward,@factionId)->
-		faction = FactionFactory.factionForIdentifier(@.factionId)
-		name = i18next.t("quests.quest_faction_games_title", { faction_name: faction.short_name })
-		super(id,name,typesIn,reward)
-		@params["factionId"] = @factionId
-		@params["completionProgress"] = 4
+	_progressForGameDataForPlayerId(gameData,playerId){
+		for (let player of Array.from(gameData.players)) {
+			const playerSetupData = UtilsGameSession.getPlayerSetupDataForPlayerId(gameData, player.playerId);
+			if ((player.playerId === playerId) && (playerSetupData.factionId === this.getFactionId()) && GameType.isCompetitiveGameType(gameData.gameType)) {
+				return 1;
+			}
+		}
+		return 0;
+	}
 
-	_progressForGameDataForPlayerId:(gameData,playerId)->
-		for player in gameData.players
-			playerSetupData = UtilsGameSession.getPlayerSetupDataForPlayerId(gameData, player.playerId)
-			if player.playerId == playerId and playerSetupData.factionId == this.getFactionId() and GameType.isCompetitiveGameType(gameData.gameType)
-				return 1
-		return 0
+	getFactionId(){
+		return this.factionId;
+	}
 
-	getFactionId:()=>
-		@factionId
+	getDescription(){
+		const faction = FactionFactory.factionForIdentifier(this.factionId);
+		if (this.getFactionId() === FactionsLookup.Abyssian) {
+			//TODO: Localization issue?
+			//return "Play #{@params["completionProgress"]} online games with an #{@factionName} Deck."
+			return i18next.t("quests.quest_faction_abyss_games_desc",{count:this.params["completionProgress"],faction:faction.short_name});
+		} else {
+			return i18next.t("quests.quest_faction_games_desc",{count:this.params["completionProgress"],faction:faction.short_name});
+		}
+	}
+}
+QuestParticipationWithFaction.initClass();
+			//return "Play #{@params["completionProgress"]} online games with a #{@factionName} Deck."
 
-	getDescription:()->
-		faction = FactionFactory.factionForIdentifier(@.factionId)
-		if @.getFactionId() == FactionsLookup.Abyssian
-			#TODO: Localization issue?
-			#return "Play #{@params["completionProgress"]} online games with an #{@factionName} Deck."
-			return i18next.t("quests.quest_faction_abyss_games_desc",{count:@params["completionProgress"],faction:faction.short_name})
-		else
-			return i18next.t("quests.quest_faction_games_desc",{count:@params["completionProgress"],faction:faction.short_name})
-			#return "Play #{@params["completionProgress"]} online games with a #{@factionName} Deck."
-
-module.exports = QuestParticipationWithFaction
+module.exports = QuestParticipationWithFaction;

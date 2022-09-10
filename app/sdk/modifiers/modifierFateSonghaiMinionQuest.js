@@ -1,81 +1,114 @@
-ModifierFate = require './modifierFate'
-CardType = require 'app/sdk/cards/cardType'
-PlayCardFromHandAction = require 'app/sdk/actions/playCardFromHandAction'
-ModifierQuestStatusSonghai = require './modifierQuestStatusSonghai'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierFate = require('./modifierFate');
+const CardType = require('app/sdk/cards/cardType');
+const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
+const ModifierQuestStatusSonghai = require('./modifierQuestStatusSonghai');
+const _ = require('underscore');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierFateSonghaiMinionQuest extends ModifierFate
+class ModifierFateSonghaiMinionQuest extends ModifierFate {
+	static initClass() {
+	
+		this.prototype.type ="ModifierFateSonghaiMinionQuest";
+		this.type ="ModifierFateSonghaiMinionQuest";
+	
+		this.prototype.numDifferentCostsRequired = 1;
+	}
 
-	type:"ModifierFateSonghaiMinionQuest"
-	@type:"ModifierFateSonghaiMinionQuest"
+	static createContextObject(numDifferentCostsRequired, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.numDifferentCostsRequired = numDifferentCostsRequired;
+		return contextObject;
+	}
 
-	numDifferentCostsRequired: 1
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
+		p.minionCostsSummoned = null;
+		return p;
+	}
 
-	@createContextObject: (numDifferentCostsRequired, options) ->
-		contextObject = super(options)
-		contextObject.numDifferentCostsRequired = numDifferentCostsRequired
-		return contextObject
+	getMinionCostsSummoned() {
+		if ((this._private.minionCostsSummoned == null)) {
+			this._private.minionCostsSummoned = [];
+			this.checkFate(this.getGameSession().filterActions(this.getIsActionRelevant.bind(this)));
+		}
+		return this._private.minionCostsSummoned;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
-		p.minionCostsSummoned = null
-		return p
+	updateFateCondition(action) {
+		if (this.getIsActionRelevant(action)) {
+			const target = action.getTarget();
+			if (target != null) {
+				const manaCost = target.getBaseManaCost();
+				let costAlreadyPlayed = false;
+				for (let cost of Array.from(this.getMinionCostsSummoned())) {
+					if ((manaCost != null) && (manaCost === cost)) {
+						costAlreadyPlayed = true;
+						break;
+					}
+				}
+				if (!costAlreadyPlayed) {
+					this.getMinionCostsSummoned().push(manaCost);
+					if (this.getMinionCostsSummoned().length < this.numDifferentCostsRequired) {
+						this.removeQuestStatusModifier();
+						this.applyQuestStatusModifier(false);
+					}
+				}
+			}
+		}
 
-	getMinionCostsSummoned: () ->
-		if !@_private.minionCostsSummoned?
-			@_private.minionCostsSummoned = []
-			@checkFate(@getGameSession().filterActions(@getIsActionRelevant.bind(@)))
-		return @_private.minionCostsSummoned
+		if (this.getMinionCostsSummoned().length >= this.numDifferentCostsRequired) {
+			this._private.fateFulfilled = true;
+			super.updateFateCondition(); // unlock the card
+			this.removeQuestStatusModifier();
+			return this.applyQuestStatusModifier(true);
+		}
+	}
 
-	updateFateCondition: (action) ->
-		if @getIsActionRelevant(action)
-			target = action.getTarget()
-			if target?
-				manaCost = target.getBaseManaCost()
-				costAlreadyPlayed = false
-				for cost in @getMinionCostsSummoned()
-					if manaCost? and manaCost == cost
-						costAlreadyPlayed = true
-						break
-				if !costAlreadyPlayed
-					@getMinionCostsSummoned().push(manaCost)
-					if @getMinionCostsSummoned().length < @numDifferentCostsRequired
-						@removeQuestStatusModifier()
-						@applyQuestStatusModifier(false)
+	getIsActionRelevant(action) {
+		if (action.getOwnerId() === this.getOwnerId()) {
+			const target = action.getTarget();
+			if (action instanceof PlayCardFromHandAction && ((target != null ? target.getType() : undefined) === CardType.Unit)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-		if @getMinionCostsSummoned().length >= @numDifferentCostsRequired
-			@_private.fateFulfilled = true
-			super() # unlock the card
-			@removeQuestStatusModifier()
-			@applyQuestStatusModifier(true)
+	onActivate() {
+		super.onActivate();
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		if (!general.hasActiveModifierClass(ModifierQuestStatusSonghai)) {
+			return this.applyQuestStatusModifier(false);
+		}
+	}
 
-	getIsActionRelevant: (action) ->
-		if action.getOwnerId() == @getOwnerId()
-			target = action.getTarget()
-			if action instanceof PlayCardFromHandAction and target?.getType() is CardType.Unit
-				return true
-		return false
+	removeQuestStatusModifier() {
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		if (general.hasActiveModifierClass(ModifierQuestStatusSonghai)) {
+				return Array.from(general.getModifiersByClass(ModifierQuestStatusSonghai)).map((mod) =>
+					this.getGameSession().removeModifier(mod));
+			}
+	}
 
-	onActivate: () ->
-		super()
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		if !general.hasActiveModifierClass(ModifierQuestStatusSonghai)
-			@applyQuestStatusModifier(false)
+	applyQuestStatusModifier(questCompleted) {
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		const countModifier = ModifierQuestStatusSonghai.createContextObject(questCompleted, this.getMinionCostsSummoned());
+		return this.getGameSession().applyModifierContextObject(countModifier, general);
+	}
 
-	removeQuestStatusModifier: () ->
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		if general.hasActiveModifierClass(ModifierQuestStatusSonghai)
-				for mod in general.getModifiersByClass(ModifierQuestStatusSonghai)
-					@getGameSession().removeModifier(mod)
+	ascendingSort(num) {
+		return num;
+	}
+}
+ModifierFateSonghaiMinionQuest.initClass();
 
-	applyQuestStatusModifier: (questCompleted) ->
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		countModifier = ModifierQuestStatusSonghai.createContextObject(questCompleted, @getMinionCostsSummoned())
-		@getGameSession().applyModifierContextObject(countModifier, general)
-
-	ascendingSort: (num) ->
-		return num
-
-module.exports = ModifierFateSonghaiMinionQuest
+module.exports = ModifierFateSonghaiMinionQuest;

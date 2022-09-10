@@ -1,39 +1,55 @@
-ModifierMyAttackWatch = require './modifierMyAttackWatch'
-ForcedAttackAction = require 'app/sdk/actions/forcedAttackAction'
-CONFIG = require 'app/common/config'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
+const ForcedAttackAction = require('app/sdk/actions/forcedAttackAction');
+const CONFIG = require('app/common/config');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierMyAttackWatchGamble extends ModifierMyAttackWatch
+class ModifierMyAttackWatchGamble extends ModifierMyAttackWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyAttackWatchGamble";
+		this.type ="ModifierMyAttackWatchGamble";
+	
+		this.modifierName ="Attack Watch: Gamble";
+		this.description ="Whenever this minion attacks, it has a 50% chance to attack again";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierMyAttackWatchGamble"];
+	}
 
-	type:"ModifierMyAttackWatchGamble"
-	@type:"ModifierMyAttackWatchGamble"
+	onMyAttackWatch(action) {
+		// 50% chance to attack again
+		if (this.getGameSession().getIsRunningAsAuthoritative() && (Math.random() > .5)) {
+			const attackAction = new ForcedAttackAction(this.getGameSession());
+			attackAction.setOwnerId(this.getCard().getOwnerId());
+			attackAction.setSource(this.getCard());
+			attackAction.setDamageAmount(this.getCard().getATK());
+			const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, CONFIG.WHOLE_BOARD_RADIUS);
+			const validEntities = [];
+			for (let entity of Array.from(entities)) {
+				validEntities.push(entity);
+			}
 
-	@modifierName:"Attack Watch: Gamble"
-	@description:"Whenever this minion attacks, it has a 50% chance to attack again"
+			if (validEntities.length > 0) {
+				const unitToDamage = validEntities[this.getGameSession().getRandomIntegerForExecution(validEntities.length)];
 
-	fxResource: ["FX.Modifiers.ModifierMyAttackWatchGamble"]
+				attackAction.setTarget(unitToDamage);
+				attackAction.setIsAutomatic(true); // act like an explict attack even though this is auto generated
+				return this.getGameSession().executeAction(attackAction); // execute attack
+			}
+		}
+	}
 
-	onMyAttackWatch: (action) ->
-		# 50% chance to attack again
-		if @getGameSession().getIsRunningAsAuthoritative() and Math.random() > .5
-			attackAction = new ForcedAttackAction(@getGameSession())
-			attackAction.setOwnerId(@getCard().getOwnerId())
-			attackAction.setSource(@getCard())
-			attackAction.setDamageAmount(@getCard().getATK())
-			entities = @getGameSession().getBoard().getEnemyEntitiesAroundEntity(@getCard(), CardType.Unit, CONFIG.WHOLE_BOARD_RADIUS)
-			validEntities = []
-			for entity in entities
-				validEntities.push(entity)
+	// special case - this needs to be able to react to attack actions that it creates (so it can keep chaining attacks)
+	getCanReactToAction(action) {
+		return super.getCanReactToAction() || (action instanceof ForcedAttackAction && this.getIsAncestorForAction(action));
+	}
+}
+ModifierMyAttackWatchGamble.initClass();
 
-			if validEntities.length > 0
-				unitToDamage = validEntities[@getGameSession().getRandomIntegerForExecution(validEntities.length)]
-
-				attackAction.setTarget(unitToDamage)
-				attackAction.setIsAutomatic(true) # act like an explict attack even though this is auto generated
-				@getGameSession().executeAction(attackAction) # execute attack
-
-	# special case - this needs to be able to react to attack actions that it creates (so it can keep chaining attacks)
-	getCanReactToAction: (action) ->
-		return super() or action instanceof ForcedAttackAction and @getIsAncestorForAction(action)
-
-module.exports = ModifierMyAttackWatchGamble
+module.exports = ModifierMyAttackWatchGamble;

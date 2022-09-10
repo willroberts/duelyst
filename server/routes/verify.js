@@ -1,48 +1,53 @@
-express = require 'express'
-router = express.Router()
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const express = require('express');
+const router = express.Router();
 
-util = require 'util'
-Logger = require '../../app/common/logger.coffee'
-Promise = require 'bluebird'
-moment = require 'moment'
-hashHelpers = require '../lib/hash_helpers.coffee'
-knex = require '../lib/data_access/knex'
-t = require 'tcomb-validation'
-types = require '../validators/types'
-UsersModule = require '../lib/data_access/users'
+const util = require('util');
+const Logger = require('../../app/common/logger.coffee');
+const Promise = require('bluebird');
+const moment = require('moment');
+const hashHelpers = require('../lib/hash_helpers.coffee');
+const knex = require('../lib/data_access/knex');
+const t = require('tcomb-validation');
+const types = require('../validators/types');
+const UsersModule = require('../lib/data_access/users');
 
-# our modules
-mail = require '../mailer'
-Promise.promisifyAll(mail)
-Errors = require '../lib/custom_errors.coffee'
+// our modules
+const mail = require('../mailer');
+Promise.promisifyAll(mail);
+const Errors = require('../lib/custom_errors.coffee');
 
-# Configuration object
-config = require '../../config/config.js'
+// Configuration object
+const config = require('../../config/config.js');
 
-###
+/*
 GET Reset Token
-###
-router.get "/verify/:verify_token", (req, res, next) ->
-	result = t.validate(req.params.verify_token, types.UUID)
-	if not result.isValid()
-		return next()
+*/
+router.get("/verify/:verify_token", function(req, res, next) {
+	const result = t.validate(req.params.verify_token, types.UUID);
+	if (!result.isValid()) {
+		return next();
+	}
 
-	verify_token = result.value
+	const verify_token = result.value;
 
-	UsersModule.verifyEmailUsingToken(verify_token)
-	.then ()->
-		# Render the verified template
-		return res.format({
-			'text/html': () ->
-				res.render(__dirname + "/../templates/verified.hbs",{
-					title: "Account Verified"
-				})
-			'application/json': () ->
-				res.status(204).end()
-		})
-	.catch Errors.NotFoundError, () ->
-		# 404 it
-		return next()
-	.catch (e) -> next(e)
+	return UsersModule.verifyEmailUsingToken(verify_token)
+	.then(() => // Render the verified template
+    res.format({
+        'text/html'() {
+            return res.render(__dirname + "/../templates/verified.hbs",{
+                title: "Account Verified"
+            });
+        },
+        'application/json'() {
+            return res.status(204).end();
+        }
+    })).catch(Errors.NotFoundError, () => // 404 it
+    next()).catch(e => next(e));
+});
 
-module.exports = router
+module.exports = router;

@@ -1,24 +1,39 @@
-SpellSpawnEntity = require './spellSpawnEntity'
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
+/*
+ * decaffeinate suggestions:
+ * DS202: Simplify dynamic range loops
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellSpawnEntity = require('./spellSpawnEntity');
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
 
-class SpellSpawnTilesInCenterColumn extends SpellSpawnEntity
+class SpellSpawnTilesInCenterColumn extends SpellSpawnEntity {
+	static initClass() {
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+	}
 
-	cardDataOrIndexToSpawn: null
+	_findApplyEffectPositions(position, sourceAction) {
 
-	_findApplyEffectPositions: (position, sourceAction) ->
+		const board = this.getGameSession().getBoard();
+		const centerPosition = {x: 4, y: 2};
+		const applyEffectPositions = [];
+		const validSpawnLocations = UtilsGameSession.getValidBoardPositionsFromPattern(board, centerPosition, CONFIG.PATTERN_WHOLE_COLUMN, true);
+		if ((validSpawnLocations != null ? validSpawnLocations.length : undefined) > 0) {
+			for (let i = 0, end = validSpawnLocations.length, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+				applyEffectPositions.push(validSpawnLocations[i]);
+			}
+		}
 
-		board = @getGameSession().getBoard()
-		centerPosition = {x: 4, y: 2}
-		applyEffectPositions = []
-		validSpawnLocations = UtilsGameSession.getValidBoardPositionsFromPattern(board, centerPosition, CONFIG.PATTERN_WHOLE_COLUMN, true)
-		if validSpawnLocations?.length > 0
-			for i in [0...validSpawnLocations.length]
-				applyEffectPositions.push(validSpawnLocations[i])
+		return applyEffectPositions;
+	}
 
-		return applyEffectPositions
+	getAppliesSameEffectToMultipleTargets() {
+		return true;
+	}
+}
+SpellSpawnTilesInCenterColumn.initClass();
 
-	getAppliesSameEffectToMultipleTargets: () ->
-		return true
-
-module.exports = SpellSpawnTilesInCenterColumn
+module.exports = SpellSpawnTilesInCenterColumn;

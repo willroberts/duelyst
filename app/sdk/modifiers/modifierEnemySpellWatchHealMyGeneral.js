@@ -1,27 +1,41 @@
-ModifierEnemySpellWatch = require './modifierEnemySpellWatch'
-HealAction = require 'app/sdk/actions/healAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEnemySpellWatch = require('./modifierEnemySpellWatch');
+const HealAction = require('app/sdk/actions/healAction');
 
-class ModifierEnemySpellWatchHealMyGeneral extends ModifierEnemySpellWatch
+class ModifierEnemySpellWatchHealMyGeneral extends ModifierEnemySpellWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEnemySpellWatchHealMyGeneral";
+		this.type ="ModifierEnemySpellWatchHealMyGeneral";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch", "FX.Modifiers.ModifierGenericHeal"];
+	
+		this.prototype.healAmount = 0;
+	}
 
-	type:"ModifierEnemySpellWatchHealMyGeneral"
-	@type:"ModifierEnemySpellWatchHealMyGeneral"
+	static createContextObject(healAmount, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.healAmount = healAmount;
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierSpellWatch", "FX.Modifiers.ModifierGenericHeal"]
+	onEnemySpellWatch(action) {
+		const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		if (myGeneral != null) {
+			const healAction = new HealAction(this.getGameSession());
+			healAction.setOwnerId(this.getCard().getOwnerId());
+			healAction.setTarget(myGeneral);
+			healAction.setHealAmount(this.healAmount);
+			return this.getGameSession().executeAction(healAction);
+		}
+	}
+}
+ModifierEnemySpellWatchHealMyGeneral.initClass();
 
-	healAmount: 0
-
-	@createContextObject: (healAmount, options) ->
-		contextObject = super(options)
-		contextObject.healAmount = healAmount
-		return contextObject
-
-	onEnemySpellWatch: (action) ->
-		myGeneral = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		if myGeneral?
-			healAction = new HealAction(@getGameSession())
-			healAction.setOwnerId(@getCard().getOwnerId())
-			healAction.setTarget(myGeneral)
-			healAction.setHealAmount(@healAmount)
-			@getGameSession().executeAction(healAction)
-
-module.exports = ModifierEnemySpellWatchHealMyGeneral
+module.exports = ModifierEnemySpellWatchHealMyGeneral;

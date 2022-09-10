@@ -1,42 +1,63 @@
-ModifierImmuneToDamage = require './modifierImmuneToDamage'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierImmuneToDamage = require('./modifierImmuneToDamage');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierForcefieldAbsorb extends ModifierImmuneToDamage
+class ModifierForcefieldAbsorb extends ModifierImmuneToDamage {
+	static initClass() {
+	
+		this.prototype.type ="ModifierForcefieldAbsorb";
+		this.type ="ModifierForcefieldAbsorb";
+	
+		this.modifierName = "Forcefield Active";
+		this.description = "This minion takes no damage";
+	
+		this.isHiddenToUI = true;
+	
+		this.prototype.isCloneable = false;
+		this.prototype.maxStacks = 1;
+	
+		this.prototype.absorbedActionIndex = -1; // index of action this triggered an absorb for, when -1 no damage has been absorbed
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierForcefieldAbsorb"];
+	}
 
-	type:"ModifierForcefieldAbsorb"
-	@type:"ModifierForcefieldAbsorb"
+	onModifyActionForExecution(event) {
+		super.onModifyActionForExecution(event);
 
-	@modifierName: "Forcefield Active"
-	@description: "This minion takes no damage"
+		const {
+            action
+        } = event;
+		if (this.getIsActionRelevant(action)) {
+			return this.absorbedActionIndex = action.getIndex();
+		}
+	}
 
-	@isHiddenToUI: true
+	onAfterCleanupAction(event) {
+		super.onAfterCleanupAction(event);
 
-	isCloneable: false
-	maxStacks: 1
+		// when cleaning up an action, check if this modifier absorbed damage and remove
+		const {
+            action
+        } = event;
+		if (!this.getCanAbsorb() && ((action != null ? action.getIndex() : undefined) === this.absorbedActionIndex)) {
+			return this.getGameSession().removeModifier(this);
+		}
+	}
 
-	absorbedActionIndex: -1 # index of action this triggered an absorb for, when -1 no damage has been absorbed
+	getIsActionRelevant(action) {
+		return this.getCanAbsorb() && super.getIsActionRelevant(action);
+	}
 
-	fxResource: ["FX.Modifiers.ModifierForcefieldAbsorb"]
+	getCanAbsorb() {
+		return this.absorbedActionIndex === -1;
+	}
+}
+ModifierForcefieldAbsorb.initClass();
 
-	onModifyActionForExecution: (event) ->
-		super(event)
-
-		action = event.action
-		if @getIsActionRelevant(action)
-			@absorbedActionIndex = action.getIndex()
-
-	onAfterCleanupAction: (event) ->
-		super(event)
-
-		# when cleaning up an action, check if this modifier absorbed damage and remove
-		action = event.action
-		if !@getCanAbsorb() and action?.getIndex() == @absorbedActionIndex
-			@getGameSession().removeModifier(@)
-
-	getIsActionRelevant: (action) ->
-		return @getCanAbsorb() and super(action)
-
-	getCanAbsorb: () ->
-		return @absorbedActionIndex == -1
-
-module.exports = ModifierForcefieldAbsorb
+module.exports = ModifierForcefieldAbsorb;

@@ -1,20 +1,31 @@
-ModifierEnemyAttackWatch = require './modifierEnemyAttackWatch'
-Modifier = require './modifier'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEnemyAttackWatch = require('./modifierEnemyAttackWatch');
+const Modifier = require('./modifier');
+const i18next = require('i18next');
 
-class  ModifierWildTahr extends ModifierEnemyAttackWatch
+class  ModifierWildTahr extends ModifierEnemyAttackWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierWildTahr";
+		this.type ="ModifierWildTahr";
+	
+		this.modifierName ="ModifierWildTahr";
+		this.description =i18next.t("modifiers.wild_tahr_def");
+	}
 
-	type:"ModifierWildTahr"
-	@type:"ModifierWildTahr"
+	onEnemyAttackWatch(action) {
 
-	@modifierName:"ModifierWildTahr"
-	@description:i18next.t("modifiers.wild_tahr_def")
+		const statContextObject = Modifier.createContextObjectWithAttributeBuffs(3);
+		statContextObject.appliedName = i18next.t("modifiers.wild_tahr_name");
+		statContextObject.durationEndTurn = 2;
+		return this.getGameSession().applyModifierContextObject(statContextObject, this.getCard());
+	}
+}
+ModifierWildTahr.initClass();
 
-	onEnemyAttackWatch: (action) ->
-
-		statContextObject = Modifier.createContextObjectWithAttributeBuffs(3)
-		statContextObject.appliedName = i18next.t("modifiers.wild_tahr_name")
-		statContextObject.durationEndTurn = 2
-		@getGameSession().applyModifierContextObject(statContextObject, @getCard())
-
-module.exports = ModifierWildTahr
+module.exports = ModifierWildTahr;

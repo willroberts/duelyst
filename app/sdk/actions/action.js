@@ -1,911 +1,1097 @@
-SDKObject = require 'app/sdk/object'
-CONFIG = 			require 'app/common/config'
-UtilsJavascript = require 'app/common/utils/utils_javascript'
-CardType = 			require 'app/sdk/cards/cardType'
-Logger = 			require 'app/common/logger'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SDKObject = require('app/sdk/object');
+const CONFIG = 			require('app/common/config');
+const UtilsJavascript = require('app/common/utils/utils_javascript');
+const CardType = 			require('app/sdk/cards/cardType');
+const Logger = 			require('app/common/logger');
+const _ = require('underscore');
 
-class Action extends SDKObject
+class Action extends SDKObject {
+	static initClass() {
+	
+		this.type ="Action";
+	
+		this.prototype.changedByModifierIndices = null;
+		this.prototype.isDepthFirst = false;
+		this.prototype.fxResource = null; // array of strings that map to fx data, ex: ["Actions.Teleport"]
+		this.prototype.index = null; // unique index of action, set automatically by game session
+		this.prototype.isAutomatic = false; // actions that act as explicit actions even though they are not player generated (example - battle pets)
+		this.prototype.manaCost = 0;
+		this.prototype.ownerId = null;
+		this.prototype.parentActionIndex = null; // index of action this should be executed as a result of
+		this.prototype.resolveParentActionIndex = null; // index of action this was actually resolved after
+		this.prototype.resolveSubActionIndices = null; // action indices resolved after this action
+		this.prototype.sourceIndex = null;
+		this.prototype.sourcePosition = null;
+		this.prototype.subActionsOrderedByEventType = null; // actions executed by event type
+		this.prototype.targetIndex = null;
+		this.prototype.targetPosition = null;
+		this.prototype.timestamp = null;
+		this.prototype.triggeringModifierIndex = null;
+	}
 
-	@type:"Action"
+	constructor(gameSession) {
+		super(gameSession);
 
-	changedByModifierIndices: null
-	isDepthFirst: false
-	fxResource: null # array of strings that map to fx data, ex: ["Actions.Teleport"]
-	index: null # unique index of action, set automatically by game session
-	isAutomatic: false # actions that act as explicit actions even though they are not player generated (example - battle pets)
-	manaCost: 0
-	ownerId: null
-	parentActionIndex: null # index of action this should be executed as a result of
-	resolveParentActionIndex: null # index of action this was actually resolved after
-	resolveSubActionIndices: null # action indices resolved after this action
-	sourceIndex: null
-	sourcePosition: null
-	subActionsOrderedByEventType: null # actions executed by event type
-	targetIndex: null
-	targetPosition: null
-	timestamp: null
-	triggeringModifierIndex: null
+		// define public properties here that must be always be serialized
+		// do not define properties here that should only serialize if different from the default
+		if (this.type == null) { this.type = Action.type; }
+		this.setOwnerId(this.getGameSession().getCurrentPlayer().getPlayerId());
+	}
 
-	constructor: (gameSession) ->
-		super(gameSession)
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-		# define public properties here that must be always be serialized
-		# do not define properties here that should only serialize if different from the default
-		@type ?= Action.type
-		@setOwnerId(@getGameSession().getCurrentPlayer().getPlayerId())
+		// cache
+		p.cachedRootAction = null;
+		p.cachedResolveSubActions = null;
+		p.cachedSubActions = null; // cached list of actions executed after this action
+		p.cachedSubActionsQueue = null;
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		// targeting
+		p.source = null; // where the action is coming from
+		p.target = null; // where the action is being applied
+		p.includedRandomness = false; // whether action included randomness during execution
 
-		# cache
-		p.cachedRootAction = null
-		p.cachedResolveSubActions = null
-		p.cachedSubActions = null # cached list of actions executed after this action
-		p.cachedSubActionsQueue = null
+		// modifiers data
+		p.activatedModifiersData = null;
+		p.deactivatedModifiersData = null;
+		p.triggeredModifiersData = null;
 
-		# targeting
-		p.source = null # where the action is coming from
-		p.target = null # where the action is being applied
-		p.includedRandomness = false # whether action included randomness during execution
+		// validity
+		p.isValid = true; // validators can check if this action can be executed after it is generated. EXAMPLE: a unit has provoke/taunt and can say that attacking anything nearby is invalid
+		p.validationMessage = null;
+		p.validationMessagePosition = null;
+		p.validatorType = null;
 
-		# modifiers data
-		p.activatedModifiersData = null
-		p.deactivatedModifiersData = null
-		p.triggeredModifiersData = null
+		return p;
+	}
 
-		# validity
-		p.isValid = true # validators can check if this action can be executed after it is generated. EXAMPLE: a unit has provoke/taunt and can say that attacking anything nearby is invalid
-		p.validationMessage = null
-		p.validationMessagePosition = null
-		p.validatorType = null
+	getType() {
+		return this.type;
+	}
 
-		return p
+	getLogName(){
+		let logName = `${this.getType().replace(' ','_')}[${this.getIndex()}]`;
+		if (this.sourceIndex != null) {
+			logName += `_s(${this.sourceIndex})`;
+		} else if (this.sourcePosition != null) {
+			logName += `_s(x:${this.sourcePosition.x},y:${this.sourcePosition.y})`;
+		} else {
+			logName += "_s()";
+		}
+		if (this.targetIndex != null) {
+			logName += `_t(${this.targetIndex})`;
+		} else if (this.targetPosition != null) {
+			logName += `_t(x:${this.targetPosition.x},y:${this.targetPosition.y})`;
+		} else {
+			logName += "_t()";
+		}
+		return logName;
+	}
 
-	getType: () ->
-		return @type
+	setOwnerId(ownerId) {
+		return this.ownerId = ownerId;
+	}
 
-	getLogName: ()->
-		logName = "#{@getType().replace(' ','_')}[#{@getIndex()}]"
-		if @sourceIndex?
-			logName += "_s(#{@sourceIndex})"
-		else if @sourcePosition?
-			logName += "_s(x:#{@sourcePosition.x},y:#{@sourcePosition.y})"
-		else
-			logName += "_s()"
-		if @targetIndex?
-			logName += "_t(#{@targetIndex})"
-		else if @targetPosition?
-			logName += "_t(x:#{@targetPosition.x},y:#{@targetPosition.y})"
-		else
-			logName += "_t()"
-		return logName
+	getOwnerId() {
+		return this.ownerId;
+	}
 
-	setOwnerId: (ownerId) ->
-		@ownerId = ownerId
+	getOwner() {
+		return this.getGameSession().getPlayerById(this.ownerId);
+	}
 
-	getOwnerId: () ->
-		return @ownerId
-
-	getOwner: () ->
-		return @getGameSession().getPlayerById(@ownerId)
-
-	###*
+	/**
 	 * Returns whether this action has been executed yet. This is not a safe way to check if this action is executing on the server, use GameSession.getIsRunningAsAuthoritative instead.
 	 * @returns {Boolean}
-	 ###
-	isFirstTime: () ->
-		return !@timestamp?
+	 */
+	isFirstTime() {
+		return (this.timestamp == null);
+	}
 
-	###*
+	/**
 	 * Signs the action by setting its execution timestamp.
-	 ###
-	addSignature: () ->
-		if @isFirstTime()
-			@timestamp = Date.now()
+	 */
+	addSignature() {
+		if (this.isFirstTime()) {
+			return this.timestamp = Date.now();
+		}
+	}
 
-	###*
+	/**
 	 * Sets an index of order executed.
 	 * @param {Number|String}
-	 ###
-	setIndex: (val) ->
-		@index = val
+	 */
+	setIndex(val) {
+		return this.index = val;
+	}
 
-	###*
+	/**
 	 * Returns an index of order executed.
 	 * @returns {Number}
-	 ###
-	getIndex: () ->
-		return @index
+	 */
+	getIndex() {
+		return this.index;
+	}
 
-	###*
+	/**
 	 * Returns the mana cost of an action.
 	 * @returns {Number}
-	 ###
-	getManaCost: () ->
-		return @manaCost
+	 */
+	getManaCost() {
+		return this.manaCost;
+	}
 
-	getIsValid: () ->
-		return @_private.isValid
+	getIsValid() {
+		return this._private.isValid;
+	}
 
-	setIsValid: (val) ->
-		@_private.isValid = val
+	setIsValid(val) {
+		return this._private.isValid = val;
+	}
 
-	setValidationMessage: (val) ->
-		@_private.validationMessage = val
+	setValidationMessage(val) {
+		return this._private.validationMessage = val;
+	}
 
-	getValidationMessage: () ->
-		return @_private.validationMessage
+	getValidationMessage() {
+		return this._private.validationMessage;
+	}
 
-	setValidationMessagePosition: (val) ->
-		@_private.validationMessagePosition = val
+	setValidationMessagePosition(val) {
+		return this._private.validationMessagePosition = val;
+	}
 
-	getValidationMessagePosition: () ->
-		return @_private.validationMessagePosition
+	getValidationMessagePosition() {
+		return this._private.validationMessagePosition;
+	}
 
-	setValidatorType: (val) ->
-		@_private.validatorType = val
+	setValidatorType(val) {
+		return this._private.validatorType = val;
+	}
 
-	getValidatorType: () ->
-		return @_private.validatorType
+	getValidatorType() {
+		return this._private.validatorType;
+	}
 
-	getIsDepthFirst: () ->
-		return @isDepthFirst
+	getIsDepthFirst() {
+		return this.isDepthFirst;
+	}
 
-	setIsDepthFirst: (val) ->
-		@isDepthFirst = val
+	setIsDepthFirst(val) {
+		return this.isDepthFirst = val;
+	}
 
-	setIsAutomatic: (val) ->
-		@isAutomatic = val
+	setIsAutomatic(val) {
+		return this.isAutomatic = val;
+	}
 
-	getIsAutomatic: () ->
-		return @isAutomatic
+	getIsAutomatic() {
+		return this.isAutomatic;
+	}
 
-	getIncludedRandomness: () ->
-		return @_private.includedRandomness
+	getIncludedRandomness() {
+		return this._private.includedRandomness;
+	}
 
-	setIncludedRandomness: (val) ->
-		@_private.includedRandomness = val
+	setIncludedRandomness(val) {
+		return this._private.includedRandomness = val;
+	}
 
-	###*
+	/**
    * Returns the source card of the action, if any. Source cards are found by source card.
    * NOTE: only valid if sourceIndex is set or after the action is executed!
    * @returns {Card}
-   ###
-	getSource:() ->
-		if !@_private.source?
-			if @sourceIndex?
-				@_private.source = @getGameSession().getCardByIndex(@sourceIndex)
-			else
-				# check for a modifier that triggered and created this action
-				triggeringModifier = @getTriggeringModifier()
-				if triggeringModifier?
-					@_private.source = triggeringModifier.getCardAffected()
-		return @_private.source
+   */
+	getSource() {
+		if ((this._private.source == null)) {
+			if (this.sourceIndex != null) {
+				this._private.source = this.getGameSession().getCardByIndex(this.sourceIndex);
+			} else {
+				// check for a modifier that triggered and created this action
+				const triggeringModifier = this.getTriggeringModifier();
+				if (triggeringModifier != null) {
+					this._private.source = triggeringModifier.getCardAffected();
+				}
+			}
+		}
+		return this._private.source;
+	}
 
-	###*
+	/**
    * Sets the immediate source card of the action by setting its index and position. If possible, this should ALWAYS be set before executing the action.
    * @param {Card}
-   ###
-	setSource:(source) ->
-		@_private.source = source
-		@setSourceIndex(source?.getIndex())
-		@setSourcePosition(source?.getPosition())
+   */
+	setSource(source) {
+		this._private.source = source;
+		this.setSourceIndex(source != null ? source.getIndex() : undefined);
+		return this.setSourcePosition(source != null ? source.getPosition() : undefined);
+	}
 
-	###*
+	/**
    * Sets the position of the immediate source card of the action. If possible, this should ALWAYS be set before executing the action.
    * @param {Vec2|Object}
-   ###
-	setSourcePosition: (sourcePosition) ->
-		@sourcePosition = sourcePosition
+   */
+	setSourcePosition(sourcePosition) {
+		return this.sourcePosition = sourcePosition;
+	}
 
-	###*
+	/**
    * Returns the source position of the action, if any.
    * @returns {Vec2|Object}
-   ###
-	getSourcePosition: () ->
-		if !@sourcePosition?
-			source = @getSource()
-			if source?
-				@sourcePosition = source.getPosition()
-		return @sourcePosition
+   */
+	getSourcePosition() {
+		if ((this.sourcePosition == null)) {
+			const source = this.getSource();
+			if (source != null) {
+				this.sourcePosition = source.getPosition();
+			}
+		}
+		return this.sourcePosition;
+	}
 
-	###*
+	/**
    * Sets the index of the immediate source card of the action. If possible, this should ALWAYS be set before executing the action.
    * @param {Number}
-   ###
-	setSourceIndex:(sourceIndex) ->
-		@sourceIndex = sourceIndex
+   */
+	setSourceIndex(sourceIndex) {
+		return this.sourceIndex = sourceIndex;
+	}
 
-	###*
+	/**
    * Returns the index of the immediate source card of the action.
    * NOTE: only valid if set when action created or always after the action is executed!
    * @returns {Number}
-   ###
-	getSourceIndex:() ->
-		if !@sourceIndex?
-			source = @getSource()
-			if source?
-				@sourceIndex = source.getIndex()
-		return @sourceIndex
+   */
+	getSourceIndex() {
+		if ((this.sourceIndex == null)) {
+			const source = this.getSource();
+			if (source != null) {
+				this.sourceIndex = source.getIndex();
+			}
+		}
+		return this.sourceIndex;
+	}
 
-	###*
+	/**
    * Returns the target of the action, if any. Target cards are found by target card index.
    * NOTE: only valid if targetIndex is set or after the action is executed!
    * @returns {Card}
-   ###
-	getTarget:() ->
-		if !@_private.target? and @targetIndex?
-			@_private.target = @getGameSession().getCardByIndex(@targetIndex)
-		return @_private.target
+   */
+	getTarget() {
+		if ((this._private.target == null) && (this.targetIndex != null)) {
+			this._private.target = this.getGameSession().getCardByIndex(this.targetIndex);
+		}
+		return this._private.target;
+	}
 
-	###*
+	/**
    * Sets the target card of the action by setting its index and position. If possible, this should ALWAYS be set before executing the action.
    * @param {Card}
-   ###
-	setTarget:(target) ->
-		@_private.target = target
-		@setTargetIndex(target?.getIndex())
-		@setTargetPosition(target?.getPosition())
+   */
+	setTarget(target) {
+		this._private.target = target;
+		this.setTargetIndex(target != null ? target.getIndex() : undefined);
+		return this.setTargetPosition(target != null ? target.getPosition() : undefined);
+	}
 
-	###*
+	/**
    * Sets the position of the target card of the action. If possible, this should ALWAYS be set before executing the action.
    * @param {Vec2|Object}
-   ###
-	setTargetPosition: (targetPosition) ->
-		@targetPosition = targetPosition
+   */
+	setTargetPosition(targetPosition) {
+		return this.targetPosition = targetPosition;
+	}
 
-	###*
+	/**
    * Returns the target position of the action, if any.
    * @returns {Vec2|Object}
-   ###
-	getTargetPosition: () ->
-		if !@targetPosition?
-			target = @getTarget()
-			if target?
-				@targetPosition = target.getPosition()
-		return @targetPosition
+   */
+	getTargetPosition() {
+		if ((this.targetPosition == null)) {
+			const target = this.getTarget();
+			if (target != null) {
+				this.targetPosition = target.getPosition();
+			}
+		}
+		return this.targetPosition;
+	}
 
-	###*
+	/**
    * Sets the index of the target card of the action. If possible, this should ALWAYS be set before executing the action.
    * @param {Number}
-   ###
-	setTargetIndex:(targetIndex) ->
-		@targetIndex = targetIndex
+   */
+	setTargetIndex(targetIndex) {
+		return this.targetIndex = targetIndex;
+	}
 
-	###*
+	/**
    * Returns the index of the target card of the action.
    * NOTE: only valid if set when action created or always after the action is executed!
    * @returns {Number}
-   ###
-	getTargetIndex:() ->
-		if !@targetIndex? and @_private.target?
-			target = @getTarget()
-			if target?
-				@targetIndex = @_private.target.getIndex()
-		return @targetIndex
+   */
+	getTargetIndex() {
+		if ((this.targetIndex == null) && (this._private.target != null)) {
+			const target = this.getTarget();
+			if (target != null) {
+				this.targetIndex = this._private.target.getIndex();
+			}
+		}
+		return this.targetIndex;
+	}
 
-	###*
+	/**
    * Returns whether this action is a sub action (i.e. created by another action and not the user)
    * @returns {Boolean}
-   ###
-	getIsImplicit: () ->
-		return @parentActionIndex?
+   */
+	getIsImplicit() {
+		return (this.parentActionIndex != null);
+	}
 
-	setFXResource: (fxResource) ->
-		if !fxResource? or fxResource.length == 0
-			@fxResource = null
-		else
-			@fxResource = fxResource
+	setFXResource(fxResource) {
+		if ((fxResource == null) || (fxResource.length === 0)) {
+			return this.fxResource = null;
+		} else {
+			return this.fxResource = fxResource;
+		}
+	}
 
-	getFXResource: () ->
-		return @fxResource or []
+	getFXResource() {
+		return this.fxResource || [];
+	}
 
-	###*
+	/**
    * Modifies the action for execution. Useful for things like finding targets at execution time, before modifiers have modified this action.
-   ###
-	_modifyForExecution: () ->
-		# override in sub class to add pre-execution behavior
+   */
+	_modifyForExecution() {}
+		// override in sub class to add pre-execution behavior
 
-	###*
+	/**
    * Executes the action.
-   ###
-	_execute: () ->
-		# override in sub class to add execution behavior
+   */
+	_execute() {}
+		// override in sub class to add execution behavior
 
-	###*
+	/**
    * Sets the execution parent action of an action.
    * @param {Action} action
-   ###
-	setParentAction: (action) ->
-		if action?
-			# record parent's index
-			@parentActionIndex = action.getIndex()
+   */
+	setParentAction(action) {
+		if (action != null) {
+			// record parent's index
+			return this.parentActionIndex = action.getIndex();
+		}
+	}
 
-	###*
+	/**
    * Returns the execution parent action.
    * @returns {Action}
-   ###
-	getParentAction: () ->
-		if @parentActionIndex? then @getGameSession().getActionByIndex(@parentActionIndex)
+   */
+	getParentAction() {
+		if (this.parentActionIndex != null) { return this.getGameSession().getActionByIndex(this.parentActionIndex); }
+	}
 
-	###*
+	/**
    * Returns the index of the execution parent action.
    * @returns {Number}
-   ###
-	getParentActionIndex: () ->
-		return @parentActionIndex
+   */
+	getParentActionIndex() {
+		return this.parentActionIndex;
+	}
 
-	###*
+	/**
    * Returns the execution root action.
    * @returns {Action}
-   ###
-	getRootAction: () ->
-		if !@_private.cachedRootAction?
-			if @parentActionIndex?
-				# parent or higher is root
-				parentAction = @getGameSession().getActionByIndex(@parentActionIndex)
-				if parentAction?
-					@_private.cachedRootAction = parentAction.getRootAction()
-				else
-					@_private.cachedRootAction = @
-			else
-				# this action is root
-				@_private.cachedRootAction = @
-		return @_private.cachedRootAction
+   */
+	getRootAction() {
+		if ((this._private.cachedRootAction == null)) {
+			if (this.parentActionIndex != null) {
+				// parent or higher is root
+				const parentAction = this.getGameSession().getActionByIndex(this.parentActionIndex);
+				if (parentAction != null) {
+					this._private.cachedRootAction = parentAction.getRootAction();
+				} else {
+					this._private.cachedRootAction = this;
+				}
+			} else {
+				// this action is root
+				this._private.cachedRootAction = this;
+			}
+		}
+		return this._private.cachedRootAction;
+	}
 
-	###*
+	/**
    * Returns an execution ancestor action that matches the parameters.
    * @param {Action|String} classOrType action class or action type
    * @param {Card} [source=null] action source
    * @param {Card} [target=null] action target
    * @returns {Action}
-   ###
-	getMatchingAncestorAction: (classOrType, source, target) ->
-		# walk up parent action chain to find the first ancestor of action
-		# that optionally matches an action class, source, and/or target
-		if @parentActionIndex?
-			parentAction = @getGameSession().getActionByIndex(@parentActionIndex)
-			if parentAction?
-				if (!classOrType? or (_.isString(classOrType) and parentAction.getType() == classOrType) or parentAction instanceof classOrType) and (!source? or parentAction.getSource() == source) and (!target? or parentAction.getTarget() == target)
-					return parentAction
-				else
-					return parentAction.getMatchingAncestorAction(classOrType, source, target)
-		else
-			return null
+   */
+	getMatchingAncestorAction(classOrType, source, target) {
+		// walk up parent action chain to find the first ancestor of action
+		// that optionally matches an action class, source, and/or target
+		if (this.parentActionIndex != null) {
+			const parentAction = this.getGameSession().getActionByIndex(this.parentActionIndex);
+			if (parentAction != null) {
+				if (((classOrType == null) || (_.isString(classOrType) && (parentAction.getType() === classOrType)) || parentAction instanceof classOrType) && ((source == null) || (parentAction.getSource() === source)) && ((target == null) || (parentAction.getTarget() === target))) {
+					return parentAction;
+				} else {
+					return parentAction.getMatchingAncestorAction(classOrType, source, target);
+				}
+			}
+		} else {
+			return null;
+		}
+	}
 
-	###*
+	/**
    * Returns a resolve ancestor action that matches the parameters.
    * @param {Action|String} classOrType action class or action type
    * @param {Card} [source=null] action source
    * @param {Card} [target=null] action target
    * @returns {Action}
-   ###
-	getMatchingResolveAncestorAction: (classOrType, source, target) ->
-		# walk up parent action chain to find the first ancestor of action
-		# that optionally matches an action class, source, and/or target
-		if @resolveParentActionIndex?
-			resolveParentAction = @getGameSession().getActionByIndex(@resolveParentActionIndex)
-			if resolveParentAction?
-				if (!classOrType? or (_.isString(classOrType) and resolveParentAction.getType() == classOrType) or resolveParentAction instanceof classOrType) and (!source? or resolveParentAction.getSource() == source) and (!target? or resolveParentAction.getTarget() == target)
-					return resolveParentAction
-				else
-					return resolveParentAction.getMatchingResolveAncestorAction(classOrType, source, target)
-		else
-			return null
+   */
+	getMatchingResolveAncestorAction(classOrType, source, target) {
+		// walk up parent action chain to find the first ancestor of action
+		// that optionally matches an action class, source, and/or target
+		if (this.resolveParentActionIndex != null) {
+			const resolveParentAction = this.getGameSession().getActionByIndex(this.resolveParentActionIndex);
+			if (resolveParentAction != null) {
+				if (((classOrType == null) || (_.isString(classOrType) && (resolveParentAction.getType() === classOrType)) || resolveParentAction instanceof classOrType) && ((source == null) || (resolveParentAction.getSource() === source)) && ((target == null) || (resolveParentAction.getTarget() === target))) {
+					return resolveParentAction;
+				} else {
+					return resolveParentAction.getMatchingResolveAncestorAction(classOrType, source, target);
+				}
+			}
+		} else {
+			return null;
+		}
+	}
 
-	###*
+	/**
    * Returns whether an action is the ancestor of this action.
    * @returns {Boolean}
-   ###
-	getIsActionMyAncestor: (action) ->
-		parentAction = @getParentAction()
-		return parentAction? or parentAction is action or parentAction.getIsActionMyAncestor(action)
+   */
+	getIsActionMyAncestor(action) {
+		const parentAction = this.getParentAction();
+		return (parentAction != null) || (parentAction === action) || parentAction.getIsActionMyAncestor(action);
+	}
 
-	###*
+	/**
    * Adds an action as an execution sub action.
    * @param {Action} action
-   ###
-	addSubAction: (action) ->
-		if action?
-			# add action to list sub actions data objects
-			# each data object retains the event type and a list of events executed during that event
-			# sub action data objects are always in order of execution
-			@subActionsOrderedByEventType ?= []
-			subActionsData = @subActionsOrderedByEventType[@subActionsOrderedByEventType.length - 1]
-			eventType = @getGameSession().getActionExecutionEventType()
-			if !subActionsData? or subActionsData.eventType != eventType
-				# add new sub actions map
-				@subActionsOrderedByEventType.push({eventType: eventType, actions: [action]})
-			else
-				# add action to current event type map
-				subActionsData.actions.push(action)
+   */
+	addSubAction(action) {
+		if (action != null) {
+			// add action to list sub actions data objects
+			// each data object retains the event type and a list of events executed during that event
+			// sub action data objects are always in order of execution
+			if (this.subActionsOrderedByEventType == null) { this.subActionsOrderedByEventType = []; }
+			const subActionsData = this.subActionsOrderedByEventType[this.subActionsOrderedByEventType.length - 1];
+			const eventType = this.getGameSession().getActionExecutionEventType();
+			if ((subActionsData == null) || (subActionsData.eventType !== eventType)) {
+				// add new sub actions map
+				this.subActionsOrderedByEventType.push({eventType, actions: [action]});
+			} else {
+				// add action to current event type map
+				subActionsData.actions.push(action);
+			}
 
-			# flush cache
-			@_private.cachedSubActions = null
+			// flush cache
+			this._private.cachedSubActions = null;
 
-			# ensure parent is set correctly
-			action.setParentAction(@)
+			// ensure parent is set correctly
+			return action.setParentAction(this);
+		}
+	}
 
-	###*
+	/**
    * Returns an array of sub action data objects, each containing an eventType and actions executed for that eventType
    * @returns {Array}
-   ###
-	getSubActionsOrderedByEventType: () ->
-		return @subActionsOrderedByEventType or []
+   */
+	getSubActionsOrderedByEventType() {
+		return this.subActionsOrderedByEventType || [];
+	}
 
-	###*
+	/**
    * Returns an array of ordered execution sub actions.
    * @returns {Array}
-   ###
-	getSubActions: () ->
-		if !@_private.cachedSubActions?
-			@_private.cachedSubActions = []
-			if @subActionsOrderedByEventType?
-				for subActionsData in @subActionsOrderedByEventType
-					@_private.cachedSubActions = @_private.cachedSubActions.concat(subActionsData.actions)
-		return @_private.cachedSubActions
+   */
+	getSubActions() {
+		if ((this._private.cachedSubActions == null)) {
+			this._private.cachedSubActions = [];
+			if (this.subActionsOrderedByEventType != null) {
+				for (let subActionsData of Array.from(this.subActionsOrderedByEventType)) {
+					this._private.cachedSubActions = this._private.cachedSubActions.concat(subActionsData.actions);
+				}
+			}
+		}
+		return this._private.cachedSubActions;
+	}
 
-	getSubActionsQueue: () ->
-		return @_private.cachedSubActionsQueue
+	getSubActionsQueue() {
+		return this._private.cachedSubActionsQueue;
+	}
 
-	###*
+	/**
    * Executes all sub actions from the authoritative sub action queue if next event type matches current session event type.
    * @param {String} eventType
-   ###
-	executeNextOfEventTypeFromAuthoritativeSubActionQueue: (eventType) ->
-		if @subActionsOrderedByEventType?
-			# make a copy of the sub actions ordered by event type
-			@_private.cachedSubActionsQueue ?= @subActionsOrderedByEventType.slice(0)
+   */
+	executeNextOfEventTypeFromAuthoritativeSubActionQueue(eventType) {
+		if (this.subActionsOrderedByEventType != null) {
+			// make a copy of the sub actions ordered by event type
+			if (this._private.cachedSubActionsQueue == null) { this._private.cachedSubActionsQueue = this.subActionsOrderedByEventType.slice(0); }
 
-			# check next sub actions data
-			if @_private.cachedSubActionsQueue.length > 0
-				subActionsData = @_private.cachedSubActionsQueue[0]
-				if subActionsData.eventType == eventType
-					# event types match, remove from queue
-					@_private.cachedSubActionsQueue.shift()
+			// check next sub actions data
+			if (this._private.cachedSubActionsQueue.length > 0) {
+				const subActionsData = this._private.cachedSubActionsQueue[0];
+				if (subActionsData.eventType === eventType) {
+					// event types match, remove from queue
+					this._private.cachedSubActionsQueue.shift();
 
-					# execute all sub actions for this eventType
-					for action in subActionsData.actions
-						@getGameSession().executeAction(action)
+					// execute all sub actions for this eventType
+					return Array.from(subActionsData.actions).map((action) =>
+						this.getGameSession().executeAction(action));
+				}
+			}
+		}
+	}
 
-	###*
+	/**
    * Returns a recursive array of ordered execution actions.
    * @returns {Array}
-   ###
-	getFlattenedActionTree: () ->
-		actions = [@]
-		subActions = @getSubActions()
-		if subActions.length > 0
-			actionsProcessing = subActions.slice(0)
-			actionsToProcess = []
-			while actionsProcessing.length > 0
-				subAction = actionsProcessing.shift()
-				actions.push(subAction)
-				subSubActions = subAction.getSubActions()
-				if subSubActions.length > 0
-					if subAction.getIsDepthFirst()
-						actionsProcessing = actionsProcessing.concat(subSubActions)
-					else
-						actionsToProcess = actionsToProcess.concat(subSubActions)
+   */
+	getFlattenedActionTree() {
+		const actions = [this];
+		const subActions = this.getSubActions();
+		if (subActions.length > 0) {
+			let actionsProcessing = subActions.slice(0);
+			let actionsToProcess = [];
+			while (actionsProcessing.length > 0) {
+				const subAction = actionsProcessing.shift();
+				actions.push(subAction);
+				const subSubActions = subAction.getSubActions();
+				if (subSubActions.length > 0) {
+					if (subAction.getIsDepthFirst()) {
+						actionsProcessing = actionsProcessing.concat(subSubActions);
+					} else {
+						actionsToProcess = actionsToProcess.concat(subSubActions);
+					}
+				}
 
-				if actionsProcessing.length == 0 and actionsToProcess.length > 0
-					actionsProcessing = actionsToProcess
-					actionsToProcess = []
-		return actions
+				if ((actionsProcessing.length === 0) && (actionsToProcess.length > 0)) {
+					actionsProcessing = actionsToProcess;
+					actionsToProcess = [];
+				}
+			}
+		}
+		return actions;
+	}
 
-	###*
+	/**
    * Returns an array of execution sibling actions
    * @returns {Array}
-   ###
-	getSiblingActions: () ->
-		parentAction = @getParentAction()
-		if parentAction?
-			return parentAction.getSubActions()
-		else
-			return []
+   */
+	getSiblingActions() {
+		const parentAction = this.getParentAction();
+		if (parentAction != null) {
+			return parentAction.getSubActions();
+		} else {
+			return [];
+		}
+	}
 
-	###*
+	/**
    * Sets the resolve parent action of an action.
    * NOTE: Resolve sub actions are created as a result of this action executing and resolving.
    * @param {Action} action
-   ###
-	setResolveParentAction: (action) ->
-		if action?
-			# record parent's index
-			@resolveParentActionIndex = action.getIndex()
+   */
+	setResolveParentAction(action) {
+		if (action != null) {
+			// record parent's index
+			return this.resolveParentActionIndex = action.getIndex();
+		}
+	}
 
-	###*
+	/**
    * Returns the resolve parent action.
    * NOTE: Resolve sub actions are created as a result of this action executing and resolving.
    * @returns {Action}
-   ###
-	getResolveParentAction: () ->
-		if @resolveParentActionIndex? then @getGameSession().getActionByIndex(@resolveParentActionIndex)
+   */
+	getResolveParentAction() {
+		if (this.resolveParentActionIndex != null) { return this.getGameSession().getActionByIndex(this.resolveParentActionIndex); }
+	}
 
-	###*
+	/**
    * Returns the index of the resolve parent action.
    * NOTE: Resolve sub actions are created as a result of this action executing and resolving.
    * @returns {Number}
-   ###
-	getResolveParentActionIndex: () ->
-		return @resolveParentActionIndex
+   */
+	getResolveParentActionIndex() {
+		return this.resolveParentActionIndex;
+	}
 
-	###*
+	/**
    * Adds an action as a resolve sub action of this action.
    * NOTE: Resolve sub actions are created as a result of this action executing and resolving.
    * @param {Action} action
-   ###
-	addResolveSubAction: (action) ->
-		if action?
-			# add action index to list of sub actions
-			index = action.getIndex()
-			if _.indexOf(@resolveSubActionIndices, index) == -1
-				@resolveSubActionIndices ?= []
-				@resolveSubActionIndices.push(index)
-				@_private.cachedResolveSubActions ?= []
-				@_private.cachedResolveSubActions.push(action)
+   */
+	addResolveSubAction(action) {
+		if (action != null) {
+			// add action index to list of sub actions
+			const index = action.getIndex();
+			if (_.indexOf(this.resolveSubActionIndices, index) === -1) {
+				if (this.resolveSubActionIndices == null) { this.resolveSubActionIndices = []; }
+				this.resolveSubActionIndices.push(index);
+				if (this._private.cachedResolveSubActions == null) { this._private.cachedResolveSubActions = []; }
+				return this._private.cachedResolveSubActions.push(action);
+			}
+		}
+	}
 
-	###*
+	/**
    * Returns an array of resolve sub action indices.
    * NOTE: Resolve sub actions are created as a result of this action executing and resolving.
    * @returns {Array}
-   ###
-	getResolveSubActionsIndices: () ->
-		return @resolveSubActionIndices or []
+   */
+	getResolveSubActionsIndices() {
+		return this.resolveSubActionIndices || [];
+	}
 
-	###*
+	/**
    * Returns an array of resolve sub actions.
    * NOTE: Resolve sub actions are created as a result of this action executing and resolving.
    * @returns {Array}
-   ###
-	getResolveSubActions: () ->
-		if @resolveSubActionIndices? and (!@_private.cachedResolveSubActions? or @_private.cachedResolveSubActions.length != @resolveSubActionIndices.length)
-			@_private.cachedResolveSubActions = @getGameSession().getActionsByIndices(@resolveSubActionIndices)
-		return @_private.cachedResolveSubActions or []
+   */
+	getResolveSubActions() {
+		if ((this.resolveSubActionIndices != null) && ((this._private.cachedResolveSubActions == null) || (this._private.cachedResolveSubActions.length !== this.resolveSubActionIndices.length))) {
+			this._private.cachedResolveSubActions = this.getGameSession().getActionsByIndices(this.resolveSubActionIndices);
+		}
+		return this._private.cachedResolveSubActions || [];
+	}
 
-	###*
+	/**
    * Returns an array of resolve sibling actions, including this action.
    * @returns {Array}
-   ###
-	getResolveSiblingActions: () ->
-		resolveParentAction = @getResolveParentAction()
-		if resolveParentAction?
-			return resolveParentAction.getResolveSubActions()
-		else
-			return []
+   */
+	getResolveSiblingActions() {
+		const resolveParentAction = this.getResolveParentAction();
+		if (resolveParentAction != null) {
+			return resolveParentAction.getResolveSubActions();
+		} else {
+			return [];
+		}
+	}
 
-	###*
+	/**
    * Records the modifier that triggered to create this action.
    * @param {Modifier} modifier
-   ###
-	setTriggeringModifier: (modifier) ->
-		if modifier?
-			# record parent's index
-			@triggeringModifierIndex = modifier.getIndex()
+   */
+	setTriggeringModifier(modifier) {
+		if (modifier != null) {
+			// record parent's index
+			return this.triggeringModifierIndex = modifier.getIndex();
+		}
+	}
 
-	###*
+	/**
    * Returns the modifier that triggered to create this action.
    * @returns {Modifier}
-   ###
-	getTriggeringModifier: () ->
-		if @triggeringModifierIndex? then @getGameSession().getModifierByIndex(@triggeringModifierIndex)
+   */
+	getTriggeringModifier() {
+		if (this.triggeringModifierIndex != null) { return this.getGameSession().getModifierByIndex(this.triggeringModifierIndex); }
+	}
 
-	###*
+	/**
    * Returns the index of the modifier that triggered to create this action.
    * @returns {Number}
-   ###
-	getTriggeringModifierIndex: () ->
-		return @triggeringModifierIndex
+   */
+	getTriggeringModifierIndex() {
+		return this.triggeringModifierIndex;
+	}
 
-	###*
+	/**
    * Returns whether this action was created by a triggering modifier at any point up the parent chain.
    * @returns {Boolean}
-   ###
-	getCreatedByTriggeringModifier: () ->
-		return @getTriggeringModifierIndex()? or @getResolveParentAction()?.getCreatedByTriggeringModifier()
+   */
+	getCreatedByTriggeringModifier() {
+		return (this.getTriggeringModifierIndex() != null) || __guard__(this.getResolveParentAction(), x => x.getCreatedByTriggeringModifier());
+	}
 
-	_getModifierIndices: (indicesData) ->
-		modifierIndices = []
-		if indicesData?
-			actionIndex = @getIndex()
-			for dataModifierIndex, i in indicesData by 3
-				dataActionIndex = indicesData[i+1]
-				dataResolveActionIndex = indicesData[i+2]
-				if dataActionIndex == actionIndex and (dataActionIndex != dataResolveActionIndex || dataModifierIndex != lastDataModifierIndex)
-					modifierIndices.push(dataModifierIndex)
-				lastDataModifierIndex = dataModifierIndex
-		return modifierIndices
+	_getModifierIndices(indicesData) {
+		const modifierIndices = [];
+		if (indicesData != null) {
+			const actionIndex = this.getIndex();
+			for (let i = 0; i < indicesData.length; i += 3) {
+				const dataModifierIndex = indicesData[i];
+				const dataActionIndex = indicesData[i+1];
+				const dataResolveActionIndex = indicesData[i+2];
+				if ((dataActionIndex === actionIndex) && ((dataActionIndex !== dataResolveActionIndex) || (dataModifierIndex !== lastDataModifierIndex))) {
+					modifierIndices.push(dataModifierIndex);
+				}
+				var lastDataModifierIndex = dataModifierIndex;
+			}
+		}
+		return modifierIndices;
+	}
 
-	_getResolveModifierIndices: (indicesData) ->
-		modifierIndices = []
-		if indicesData?
-			actionIndex = @getIndex()
-			for dataModifierIndex, i in indicesData by 3
-				dataActionIndex = indicesData[i+1]
-				dataResolveActionIndex = indicesData[i+2]
-				if dataResolveActionIndex == actionIndex and (dataResolveActionIndex != dataActionIndex || dataModifierIndex != lastDataModifierIndex)
-					modifierIndices.push(dataModifierIndex)
-				lastDataModifierIndex = dataModifierIndex
-		return modifierIndices
+	_getResolveModifierIndices(indicesData) {
+		const modifierIndices = [];
+		if (indicesData != null) {
+			const actionIndex = this.getIndex();
+			for (let i = 0; i < indicesData.length; i += 3) {
+				const dataModifierIndex = indicesData[i];
+				const dataActionIndex = indicesData[i+1];
+				const dataResolveActionIndex = indicesData[i+2];
+				if ((dataResolveActionIndex === actionIndex) && ((dataResolveActionIndex !== dataActionIndex) || (dataModifierIndex !== lastDataModifierIndex))) {
+					modifierIndices.push(dataModifierIndex);
+				}
+				var lastDataModifierIndex = dataModifierIndex;
+			}
+		}
+		return modifierIndices;
+	}
 
-	###*
+	/**
    * Stores a modifier as triggered by this action.
    * @param {Modifier} modifier
    * @param {Action} resolveAction
-   ###
-	onTriggeredModifier: (modifier, resolveAction) ->
-		if modifier?
-			# record modifier index
-			modifierIndex = modifier.getIndex()
-			actionIndex = @getIndex()
-			resolveActionIndex = resolveAction.getIndex()
-			@_private.triggeredModifiersData ?= []
-			@_private.triggeredModifiersData.push(modifierIndex, actionIndex, resolveActionIndex)
+   */
+	onTriggeredModifier(modifier, resolveAction) {
+		if (modifier != null) {
+			// record modifier index
+			const modifierIndex = modifier.getIndex();
+			const actionIndex = this.getIndex();
+			const resolveActionIndex = resolveAction.getIndex();
+			if (this._private.triggeredModifiersData == null) { this._private.triggeredModifiersData = []; }
+			return this._private.triggeredModifiersData.push(modifierIndex, actionIndex, resolveActionIndex);
+		}
+	}
 
-	###*
+	/**
    * Returns a list of data for modifiers triggered by this action.
    * - n+0 = modifierIndex
    * - n+1 = actionIndex
    * - n+2 = resolveActionIndex
    * @returns {Array}
-   ###
-	getTriggeredModifiersData: () ->
-		return @_private.triggeredModifiersData or []
+   */
+	getTriggeredModifiersData() {
+		return this._private.triggeredModifiersData || [];
+	}
 
-	###*
+	/**
    * Returns a list of modifier indices triggered by this action.
    * @returns {Array}
-   ###
-	getTriggeredModifierIndices: () ->
-		return @_getModifierIndices(@_private.triggeredModifiersData)
+   */
+	getTriggeredModifierIndices() {
+		return this._getModifierIndices(this._private.triggeredModifiersData);
+	}
 
-	###*
+	/**
    * Returns a list of modifiers triggered by this action.
    * @returns {Array}
-   ###
-	getTriggeredModifiers: () ->
-		return @getGameSession().getModifiersByIndices(@getTriggeredModifierIndices())
+   */
+	getTriggeredModifiers() {
+		return this.getGameSession().getModifiersByIndices(this.getTriggeredModifierIndices());
+	}
 
-	###*
+	/**
    * Stores a modifier as triggered by this action during resolve.
    * @param {Modifier} modifier
    * @param {Action} action
-   ###
-	onResolveTriggeredModifier: (modifier, action) ->
-		if modifier?
-			# record modifier index
-			modifierIndex = modifier.getIndex()
-			actionIndex = action.getIndex()
-			resolveActionIndex = @getIndex()
-			@_private.triggeredModifiersData ?= []
-			@_private.triggeredModifiersData.push(modifierIndex, actionIndex, resolveActionIndex)
+   */
+	onResolveTriggeredModifier(modifier, action) {
+		if (modifier != null) {
+			// record modifier index
+			const modifierIndex = modifier.getIndex();
+			const actionIndex = action.getIndex();
+			const resolveActionIndex = this.getIndex();
+			if (this._private.triggeredModifiersData == null) { this._private.triggeredModifiersData = []; }
+			return this._private.triggeredModifiersData.push(modifierIndex, actionIndex, resolveActionIndex);
+		}
+	}
 
-	###*
+	/**
    * Returns a list of modifier indices triggered by this action during resolve.
    * @returns {Array}
-   ###
-	getResolveTriggeredModifierIndices: () ->
-		return @_getResolveModifierIndices(@_private.triggeredModifiersData)
+   */
+	getResolveTriggeredModifierIndices() {
+		return this._getResolveModifierIndices(this._private.triggeredModifiersData);
+	}
 
-	###*
+	/**
    * Returns a list of modifiers triggered by this action during resolve.
    * @returns {Array}
-   ###
-	getResolveTriggeredModifiers: () ->
-		return @getGameSession().getModifiersByIndices(@getResolveTriggeredModifierIndices())
+   */
+	getResolveTriggeredModifiers() {
+		return this.getGameSession().getModifiersByIndices(this.getResolveTriggeredModifierIndices());
+	}
 
-	###*
+	/**
    * Stores a modifier as activated by this action.
    * @param {Modifier} modifier
    * @param {Action} resolveAction
-   ###
-	onActivatedModifier: (modifier, resolveAction) ->
-		if modifier?
-			# record modifier index
-			modifierIndex = modifier.getIndex()
-			actionIndex = @getIndex()
-			resolveActionIndex = resolveAction.getIndex()
-			@_private.activatedModifiersData ?= []
-			@_private.activatedModifiersData.push(modifierIndex, actionIndex, resolveActionIndex)
+   */
+	onActivatedModifier(modifier, resolveAction) {
+		if (modifier != null) {
+			// record modifier index
+			const modifierIndex = modifier.getIndex();
+			const actionIndex = this.getIndex();
+			const resolveActionIndex = resolveAction.getIndex();
+			if (this._private.activatedModifiersData == null) { this._private.activatedModifiersData = []; }
+			return this._private.activatedModifiersData.push(modifierIndex, actionIndex, resolveActionIndex);
+		}
+	}
 
-	###*
+	/**
    * Returns a list of data for modifiers activated by this action.
    * - n+0 = modifierIndex
    * - n+1 = actionIndex
    * - n+2 = resolveActionIndex
    * @returns {Array}
-   ###
-	getActivatedModifiersData: () ->
-		return @_private.activatedModifiersData or []
+   */
+	getActivatedModifiersData() {
+		return this._private.activatedModifiersData || [];
+	}
 
-	###*
+	/**
    * Returns a list of modifier indices activated by this action.
    * @returns {Array}
-   ###
-	getActivatedModifierIndices: () ->
-		return @_getModifierIndices(@_private.activatedModifiersData)
+   */
+	getActivatedModifierIndices() {
+		return this._getModifierIndices(this._private.activatedModifiersData);
+	}
 
-	###*
+	/**
    * Returns a list of modifiers activated by this action.
    * @returns {Array}
-   ###
-	getActivatedModifiers: () ->
-		return @getGameSession().getModifiersByIndices(@getActivatedModifierIndices())
+   */
+	getActivatedModifiers() {
+		return this.getGameSession().getModifiersByIndices(this.getActivatedModifierIndices());
+	}
 
-	###*
+	/**
    * Stores a modifier as activated by this action during resolve.
    * @param {Modifier} modifier
    * @param {Action} action
-   ###
-	onResolveActivatedModifier: (modifier, action) ->
-		if modifier?
-			# record modifier index
-			modifierIndex = modifier.getIndex()
-			actionIndex = action.getIndex()
-			resolveActionIndex = @getIndex()
-			@_private.activatedModifiersData ?= []
-			@_private.activatedModifiersData.push(modifierIndex, actionIndex, resolveActionIndex)
+   */
+	onResolveActivatedModifier(modifier, action) {
+		if (modifier != null) {
+			// record modifier index
+			const modifierIndex = modifier.getIndex();
+			const actionIndex = action.getIndex();
+			const resolveActionIndex = this.getIndex();
+			if (this._private.activatedModifiersData == null) { this._private.activatedModifiersData = []; }
+			return this._private.activatedModifiersData.push(modifierIndex, actionIndex, resolveActionIndex);
+		}
+	}
 
-	###*
+	/**
    * Returns a list of modifier indices activated by this action during resolve.
    * @returns {Array}
-   ###
-	getResolveActivatedModifierIndices: () ->
-		return @_getResolveModifierIndices(@_private.activatedModifiersData)
+   */
+	getResolveActivatedModifierIndices() {
+		return this._getResolveModifierIndices(this._private.activatedModifiersData);
+	}
 
-	###*
+	/**
    * Returns a list of modifiers activated by this action during resolve.
    * @returns {Array}
-   ###
-	getResolveActivatedModifiers: () ->
-		return @getGameSession().getModifiersByIndices(@getResolveActivatedModifierIndices())
+   */
+	getResolveActivatedModifiers() {
+		return this.getGameSession().getModifiersByIndices(this.getResolveActivatedModifierIndices());
+	}
 
-	###*
+	/**
    * Stores a modifier as deactivated by this action.
    * @param {Modifier} modifier
    * @param {Action} resolveAction
-   ###
-	onDeactivatedModifier: (modifier, resolveAction) ->
-		if modifier?
-			# record modifier index
-			modifierIndex = modifier.getIndex()
-			actionIndex = @getIndex()
-			resolveActionIndex = resolveAction.getIndex()
-			@_private.deactivatedModifiersData ?= []
-			@_private.deactivatedModifiersData.push(modifierIndex, actionIndex, resolveActionIndex)
+   */
+	onDeactivatedModifier(modifier, resolveAction) {
+		if (modifier != null) {
+			// record modifier index
+			const modifierIndex = modifier.getIndex();
+			const actionIndex = this.getIndex();
+			const resolveActionIndex = resolveAction.getIndex();
+			if (this._private.deactivatedModifiersData == null) { this._private.deactivatedModifiersData = []; }
+			return this._private.deactivatedModifiersData.push(modifierIndex, actionIndex, resolveActionIndex);
+		}
+	}
 
-	###*
+	/**
    * Returns a list of data for modifiers deactivated by this action.
    * - n+0 = modifierIndex
    * - n+1 = actionIndex
    * - n+2 = resolveActionIndex
    * @returns {Array}
-   ###
-	getDeactivatedModifiersData: () ->
-		return @_private.deactivatedModifiersData or []
+   */
+	getDeactivatedModifiersData() {
+		return this._private.deactivatedModifiersData || [];
+	}
 
-	###*
+	/**
    * Returns a list of modifier indices deactivated by this action.
    * @returns {Array}
-   ###
-	getDeactivatedModifierIndices: () ->
-		return @_getModifierIndices(@_private.deactivatedModifiersData)
+   */
+	getDeactivatedModifierIndices() {
+		return this._getModifierIndices(this._private.deactivatedModifiersData);
+	}
 
-	###*
+	/**
    * Returns a list of modifiers deactivated by this action.
    * @returns {Array}
-   ###
-	getDeactivatedModifiers: () ->
-		return @getGameSession().getModifiersByIndices(@getDeactivatedModifierIndices())
+   */
+	getDeactivatedModifiers() {
+		return this.getGameSession().getModifiersByIndices(this.getDeactivatedModifierIndices());
+	}
 
-	###*
+	/**
    * Stores a modifier as deactivated by this action during resolve.
    * @param {Modifier} modifier
    * @param {Action} action
-   ###
-	onResolveDeactivatedModifier: (modifier, action) ->
-		if modifier?
-			# record modifier index
-			modifierIndex = modifier.getIndex()
-			actionIndex = action.getIndex()
-			resolveActionIndex = @getIndex()
-			@_private.deactivatedModifiersData ?= []
-			@_private.deactivatedModifiersData.push(modifierIndex, actionIndex, resolveActionIndex)
+   */
+	onResolveDeactivatedModifier(modifier, action) {
+		if (modifier != null) {
+			// record modifier index
+			const modifierIndex = modifier.getIndex();
+			const actionIndex = action.getIndex();
+			const resolveActionIndex = this.getIndex();
+			if (this._private.deactivatedModifiersData == null) { this._private.deactivatedModifiersData = []; }
+			return this._private.deactivatedModifiersData.push(modifierIndex, actionIndex, resolveActionIndex);
+		}
+	}
 
-	###*
+	/**
    * Returns a list of modifier indices deactivated by this action during resolve.
    * @returns {Array}
-   ###
-	getResolveDeactivatedModifierIndices: () ->
-		return @_getResolveModifierIndices(@_private.deactivatedModifiersData)
+   */
+	getResolveDeactivatedModifierIndices() {
+		return this._getResolveModifierIndices(this._private.deactivatedModifiersData);
+	}
 
-	###*
+	/**
    * Returns a list of modifiers deactivated by this action during resolve.
    * @returns {Array}
-   ###
-	getResolveDeactivatedModifiers: () ->
-		return @getGameSession().getModifiersByIndices(@getResolveDeactivatedModifierIndices())
+   */
+	getResolveDeactivatedModifiers() {
+		return this.getGameSession().getModifiersByIndices(this.getResolveDeactivatedModifierIndices());
+	}
 
-	###*
+	/**
    * Stores a modifier as changing this action. This must be called manually when a modifier changes any property of an action in response to an event.
    * @param {Modifier} modifier
-   ###
-	setChangedByModifier: (modifier) ->
-		# record modifier
-		if modifier? and !@getChangedByModifier(modifier)
-			index = modifier.getIndex()
-			@changedByModifierIndices ?= []
-			@changedByModifierIndices.push(index)
+   */
+	setChangedByModifier(modifier) {
+		// record modifier
+		if ((modifier != null) && !this.getChangedByModifier(modifier)) {
+			const index = modifier.getIndex();
+			if (this.changedByModifierIndices == null) { this.changedByModifierIndices = []; }
+			return this.changedByModifierIndices.push(index);
+		}
+	}
 
-	###*
+	/**
    * Returns a list of modifiers that changed this action.
    * @returns {Array}
-   ###
-	getChangedByModifiers: () ->
-		return @getGameSession().getModifiersByIndices(@changedByModifierIndices)
+   */
+	getChangedByModifiers() {
+		return this.getGameSession().getModifiersByIndices(this.changedByModifierIndices);
+	}
 
-	###*
+	/**
    * Returns a list of modifier indices that changed this action.
    * @returns {Array}
-   ###
-	getChangedByModifierIndices: () ->
-		return @changedByModifierIndices or []
+   */
+	getChangedByModifierIndices() {
+		return this.changedByModifierIndices || [];
+	}
 
-	###*
+	/**
    * Returns whether a modifier changed this action.
    * @param {Modifier} modifier
    * @returns {Boolean}
-   ###
-	getChangedByModifier: (modifier) ->
-		if @changedByModifierIndices?
-			return _.contains(@changedByModifierIndices, modifier.getIndex())
-		return false
+   */
+	getChangedByModifier(modifier) {
+		if (this.changedByModifierIndices != null) {
+			return _.contains(this.changedByModifierIndices, modifier.getIndex());
+		}
+		return false;
+	}
 
-	### JSON serialization ###
+	/* JSON serialization */
 
-	###
+	/*
 	Returns whether this action can be removed during scrubbing.
 	@param 	{String} 	scrubFromPerspectiveOfPlayerId		The player for who we want to scrub. (The player that is not allowed to see the data).
 	@param 	{Boolean} 	forSpectator							Should the scrubbing be done for someone watching the game? If so we usually want to blank out the deck since even if a buddy can see your hand, they shouldn't be able to deck snipe.
 	@returns {Object}
-   	###
-	isRemovableDuringScrubbing: (scrubFromPerspectiveOfPlayerId, forSpectator) ->
-		# override in sub class to modify and return action data
-		return true
+   	*/
+	isRemovableDuringScrubbing(scrubFromPerspectiveOfPlayerId, forSpectator) {
+		// override in sub class to modify and return action data
+		return true;
+	}
 
-	###
+	/*
 	Resets/scrubs all cheat sensitive data in action data.
 	@param 	{Object} 	actionData							Plain js object for action data.
 	@param 	{String} 	scrubFromPerspectiveOfPlayerId		The player for who we want to scrub. (The player that is not allowed to see the data).
 	@param 	{Boolean} 	forSpectator							Should the scrubbing be done for someone watching the game? If so we usually want to blank out the deck since even if a buddy can see your hand, they shouldn't be able to deck snipe.
 	@returns {Object}
-   	###
-	scrubSensitiveData: (actionData, scrubFromPerspectiveOfPlayerId, forSpectator) ->
-		# override in sub class to modify and return action data
-		return actionData
+   	*/
+	scrubSensitiveData(actionData, scrubFromPerspectiveOfPlayerId, forSpectator) {
+		// override in sub class to modify and return action data
+		return actionData;
+	}
 
-	###
+	/*
 	 * Resets action properties for execution on an authoritative session.
-  ###
-	resetForAuthoritativeExecution: () ->
-		delete @timestamp
-		delete @subActionsOrderedByEventType
-		delete @resolveSubActionIndices
+  */
+	resetForAuthoritativeExecution() {
+		delete this.timestamp;
+		delete this.subActionsOrderedByEventType;
+		return delete this.resolveSubActionIndices;
+	}
 
-	deserialize: (data) ->
-		UtilsJavascript.fastExtend(this,data)
+	deserialize(data) {
+		UtilsJavascript.fastExtend(this,data);
 
-		# deserialize all sub actions
-		subActionsOrderedByEventType = @subActionsOrderedByEventType
-		if subActionsOrderedByEventType?
-			@subActionsOrderedByEventType = []
-			for subActionsData in subActionsOrderedByEventType
-				subActionsToDeserialize = subActionsData.actions
-				subActionsData.actions = []
-				for subActionToDeserialize in subActionsToDeserialize
-					subAction = @getGameSession().deserializeActionFromFirebase(subActionToDeserialize)
-					subActionsData.actions.push(subAction)
-				@subActionsOrderedByEventType.push(subActionsData)
+		// deserialize all sub actions
+		const {
+            subActionsOrderedByEventType
+        } = this;
+		if (subActionsOrderedByEventType != null) {
+			this.subActionsOrderedByEventType = [];
+			return (() => {
+				const result = [];
+				for (let subActionsData of Array.from(subActionsOrderedByEventType)) {
+					const subActionsToDeserialize = subActionsData.actions;
+					subActionsData.actions = [];
+					for (let subActionToDeserialize of Array.from(subActionsToDeserialize)) {
+						const subAction = this.getGameSession().deserializeActionFromFirebase(subActionToDeserialize);
+						subActionsData.actions.push(subAction);
+					}
+					result.push(this.subActionsOrderedByEventType.push(subActionsData));
+				}
+				return result;
+			})();
+		}
+	}
+}
+Action.initClass();
 
-module.exports = Action
+module.exports = Action;
+
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

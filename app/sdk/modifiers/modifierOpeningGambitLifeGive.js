@@ -1,88 +1,133 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-ModifierOpeningGambit = require './modifierOpeningGambit'
-DieAction = require 'app/sdk/actions/dieAction'
-CardType = require 'app/sdk/cards/cardType'
-Rarity = require 'app/sdk/cards/rarityLookup'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+let UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const DieAction = require('app/sdk/actions/dieAction');
+const CardType = require('app/sdk/cards/cardType');
+const Rarity = require('app/sdk/cards/rarityLookup');
+UtilsGameSession = require('app/common/utils/utils_game_session');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const _ = require('underscore');
 
-class ModifierOpeningGambitLifeGive extends ModifierOpeningGambit
+class ModifierOpeningGambitLifeGive extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitLifeGive";
+		this.type ="ModifierOpeningGambitLifeGive";
+	
+		this.modifierName ="Opening Gambit";
+		this.description = "Summon all friendly non-token minions destroyed on your opponent\'s last turn on random spaces";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierOpeningGambitLifeGive"
-	@type:"ModifierOpeningGambitLifeGive"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	@modifierName:"Opening Gambit"
-	@description: "Summon all friendly non-token minions destroyed on your opponent\'s last turn on random spaces"
+		p.deadUnitIds = null;
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"]
+		return p;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	getAllActionsFromParentAction(action) {
+		let actions = [action];
 
-		p.deadUnitIds = null
+		const subActions = action.getSubActions();
+		if ((subActions != null) && (subActions.length > 0)) {
+			for (let i = 0; i < subActions.length; i++) {
+				action = subActions[i];
+				actions = actions.concat(this.getAllActionsFromParentAction(subActions[i]));
+			}
+		}
+		return actions;
+	}
 
-		return p
+	getdeadUnitIds() {
+		let deadUnitIds;
+		if ((this._private.deadUnitIds == null)) {
+			let turn;
+			deadUnitIds = [];
+			const turnsToCheck = [];
+			// find opponent's last turn
+			const iterable = this.getGameSession().getTurns();
+			for (let i = iterable.length - 1; i >= 0; i--) {
+				turn = iterable[i];
+				if (turn.playerId !== this.getCard().getOwnerId()) {
+					turnsToCheck.push(turn);
+					break;
+				}
+			}
 
-	getAllActionsFromParentAction: (action) ->
-		actions = [action];
+			let actions = [];
+			for (turn of Array.from(turnsToCheck)) {
+				for (let step of Array.from(turn.steps)) {
+					actions = actions.concat(this.getAllActionsFromParentAction(step.getAction()));
+				}
+			}
 
-		subActions = action.getSubActions()
-		if subActions? and subActions.length > 0
-			for action, i in subActions
-				actions = actions.concat(@getAllActionsFromParentAction(subActions[i]))
-		return actions
+			for (let action of Array.from(actions)) {
+				if (action.type === DieAction.type) {
+					const card = action.getTarget();
+					// find all friendly non-token units that died
+					if (((card != null ? card.getOwnerId() : undefined) === this.getCard().getOwnerId()) && ((card != null ? card.getType() : undefined) === CardType.Unit) && card.getIsRemoved() && !(card.getRarityId() === Rarity.TokenUnit) && !card.getWasGeneral()) {
+						deadUnitIds.push(card.getId());
+					}
+				}
+			}
+			this._private.deadUnitIds = deadUnitIds;
+			return deadUnitIds;
+		} else {
+			return this._private.deadUnitIds;
+		}
+	}
 
-	getdeadUnitIds: () ->
-		if !@_private.deadUnitIds?
-			deadUnitIds = []
-			turnsToCheck = []
-			# find opponent's last turn
-			for turn in @getGameSession().getTurns() by -1
-				if turn.playerId isnt @getCard().getOwnerId()
-					turnsToCheck.push(turn)
-					break
+	onOpeningGambit() {
+		super.onOpeningGambit();
 
-			actions = []
-			for turn in turnsToCheck
-				for step in turn.steps
-					actions = actions.concat(@getAllActionsFromParentAction(step.getAction()))
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const deadUnitIds = this.getdeadUnitIds();
+			if (deadUnitIds.length > 0) {
+				let i;
+				let asc, end;
+				const wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS;
+				// use first dead unit as entity to test valid positions for spawns
+				const cardId = deadUnitIds[0];
 
-			for action in actions
-				if action.type is DieAction.type
-					card = action.getTarget()
-					# find all friendly non-token units that died
-					if card?.getOwnerId() is @getCard().getOwnerId() and card?.getType() is CardType.Unit and card.getIsRemoved() and !(card.getRarityId() is Rarity.TokenUnit) and !card.getWasGeneral()
-						deadUnitIds.push(card.getId())
-			@_private.deadUnitIds = deadUnitIds
-			return deadUnitIds
-		else
-			return @_private.deadUnitIds
+				// create one random spawn location per dead unit
+				const spawnLocations = [];
+				const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData({id: this.getCard().getId()});
+				const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, wholeBoardPattern, card);
+				_.shuffle(deadUnitIds);
+				for (i = 0, end = deadUnitIds.length, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+					if (validSpawnLocations.length > 0) {
+						spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+					}
+				}
 
-	onOpeningGambit: () ->
-		super()
+				return (() => {
+					const result = [];
+					for (i = 0; i < spawnLocations.length; i++) {
+					// respawn each dead unit as a fresh copy
+						const position = spawnLocations[i];
+						const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, {id: deadUnitIds[i]});
+						playCardAction.setSource(this.getCard());
+						result.push(this.getGameSession().executeAction(playCardAction));
+					}
+					return result;
+				})();
+			}
+		}
+	}
+}
+ModifierOpeningGambitLifeGive.initClass();
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			deadUnitIds = @getdeadUnitIds()
-			if deadUnitIds.length > 0
-				wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS
-				# use first dead unit as entity to test valid positions for spawns
-				cardId = deadUnitIds[0]
-
-				# create one random spawn location per dead unit
-				spawnLocations = []
-				card = @getGameSession().getExistingCardFromIndexOrCachedCardFromData({id: @getCard().getId()})
-				validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(@getGameSession(), {x:0, y:0}, wholeBoardPattern, card)
-				_.shuffle(deadUnitIds)
-				for i in [0...deadUnitIds.length]
-					if validSpawnLocations.length > 0
-						spawnLocations.push(validSpawnLocations.splice(@getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0])
-
-				for position, i in spawnLocations
-					# respawn each dead unit as a fresh copy
-					playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, {id: deadUnitIds[i]})
-					playCardAction.setSource(@getCard())
-					@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierOpeningGambitLifeGive
+module.exports = ModifierOpeningGambitLifeGive;

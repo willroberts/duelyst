@@ -1,102 +1,136 @@
-ModifierEndTurnWatch = require './modifierEndTurnWatch'
-CardType = require 'app/sdk/cards/cardType'
-DamageAction = require 'app/sdk/actions/damageAction'
-ModifierStackingShadowsBonusDamage = require './modifierStackingShadowsBonusDamage'
-ModifierCounterShadowCreep = require './modifierCounterShadowCreep'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
+const CardType = require('app/sdk/cards/cardType');
+const DamageAction = require('app/sdk/actions/damageAction');
+const ModifierStackingShadowsBonusDamage = require('./modifierStackingShadowsBonusDamage');
+const ModifierCounterShadowCreep = require('./modifierCounterShadowCreep');
 
-i18next = require('i18next')
+const i18next = require('i18next');
 
-class ModifierStackingShadows extends ModifierEndTurnWatch
+class ModifierStackingShadows extends ModifierEndTurnWatch {
+	static initClass() {
+	
+		this.prototype.type = "ModifierStackingShadows";
+		this.type = "ModifierStackingShadows";
+	
+		this.modifierName = i18next.t("modifiers.shadow_creep_name");
+		this.keywordDefinition = i18next.t("modifiers.shadow_creep_def");
+		this.description = i18next.t("modifiers.shadow_creep_def");
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierShadowCreep"];
+	
+		this.prototype.damageAmount = 1;
+		 // shadow creep deal 1 damage by default
+	}
 
-	type: "ModifierStackingShadows"
-	@type: "ModifierStackingShadows"
+	static getDescription() {
+		return this.description;
+	}
 
-	@modifierName: i18next.t("modifiers.shadow_creep_name")
-	@keywordDefinition: i18next.t("modifiers.shadow_creep_def")
-	@description: i18next.t("modifiers.shadow_creep_def")
+	onApplyToCardBeforeSyncState() {
+		// apply a shadow creep counter to the General when first shadow creep tile is played
+		// once a counter is there, don't need to keep adding - original counter will update on further shadow creep additions
+		const targetCard = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		if (!targetCard.hasActiveModifierClass(ModifierCounterShadowCreep)) {
+			return this.getGameSession().applyModifierContextObject(ModifierCounterShadowCreep.createContextObject("ModifierStackingShadows"), targetCard);
+		}
+	}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	static getCardsWithStackingShadows(board, player) {
+		// get all cards with stacking shadow modifiers owned by a player
+		let allowUntargetable;
+		const cards = [];
+		for (let card of Array.from(board.getCards(null, (allowUntargetable=true)))) {
+			if (card.isOwnedBy(player) && card.hasModifierClass(ModifierStackingShadows)) {
+				cards.push(card);
+			}
+		}
+		return cards;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierShadowCreep"]
+	static getNumStacksForPlayer(board, player) {
+		// get the number of stacking shadow modifiers
+		let allowUntargetable;
+		let numStacks = 0;
+		for (let card of Array.from(board.getCards(null, (allowUntargetable=true)))) {
+			if (card.isOwnedBy(player)) {
+				numStacks += card.getNumModifiersOfClass(ModifierStackingShadows);
+			}
+		}
+		return numStacks;
+	}
 
-	damageAmount: 1 # shadow creep deal 1 damage by default
+	getShadowCreepDamage() {
+		let multiBonus = 1;
+		let bonusDamage = 0;
 
-	@getDescription: () ->
-		return @description
+		// shadow creep base damage can be increased by adding ModifierStackingShadowsBonusDamage to this card
+		for (let mod of Array.from(this.getCard().getActiveModifiersByClass(ModifierStackingShadowsBonusDamage))) {
+			bonusDamage += mod.getFlatBonusDamage();
+			multiBonus *= mod.getMultiplierBonusDamage();
+		}
 
-	onApplyToCardBeforeSyncState: () ->
-		# apply a shadow creep counter to the General when first shadow creep tile is played
-		# once a counter is there, don't need to keep adding - original counter will update on further shadow creep additions
-		targetCard = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		if !targetCard.hasActiveModifierClass(ModifierCounterShadowCreep)
-			@getGameSession().applyModifierContextObject(ModifierCounterShadowCreep.createContextObject("ModifierStackingShadows"), targetCard)
+		return Math.max(0, (this.damageAmount + bonusDamage) * multiBonus);
+	}
 
-	@getCardsWithStackingShadows: (board, player) ->
-		# get all cards with stacking shadow modifiers owned by a player
-		cards = []
-		for card in board.getCards(null, allowUntargetable=true)
-			if card.isOwnedBy(player) and card.hasModifierClass(ModifierStackingShadows)
-				cards.push(card)
-		return cards
+	getBuffedAttribute(attributeValue, buffKey) {
+		//this is really just for the inspector, since tiles can't attack
+		//calculate the damage that this shadow tile will deal and return that as its "attack" value
+		if (buffKey === "atk") {
+			return this.getShadowCreepDamage();
+		} else {
+			return super.getBuffedAttribute(attributeValue, buffKey);
+		}
+	}
 
-	@getNumStacksForPlayer: (board, player) ->
-		# get the number of stacking shadow modifiers
-		numStacks = 0
-		for card in board.getCards(null, allowUntargetable=true)
-			if card.isOwnedBy(player)
-				numStacks += card.getNumModifiersOfClass(ModifierStackingShadows)
-		return numStacks
+	onActivate() {
+		super.onActivate();
 
-	getShadowCreepDamage: () ->
-		multiBonus = 1
-		bonusDamage = 0
+		// flush cached atk attribute for this card
+		return this.getCard().flushCachedAttribute("atk");
+	}
 
-		# shadow creep base damage can be increased by adding ModifierStackingShadowsBonusDamage to this card
-		for mod in @getCard().getActiveModifiersByClass(ModifierStackingShadowsBonusDamage)
-			bonusDamage += mod.getFlatBonusDamage()
-			multiBonus *= mod.getMultiplierBonusDamage()
+	onDeactivate() {
+		super.onDeactivate();
 
-		return Math.max(0, (@damageAmount + bonusDamage) * multiBonus)
+		// flush cached atk attribute for this card
+		return this.getCard().flushCachedAttribute("atk");
+	}
 
-	getBuffedAttribute: (attributeValue, buffKey) ->
-		#this is really just for the inspector, since tiles can't attack
-		#calculate the damage that this shadow tile will deal and return that as its "attack" value
-		if buffKey == "atk"
-			return @getShadowCreepDamage()
-		else
-			return super(attributeValue, buffKey)
+	onTurnWatch(actionEvent) {
+		super.onTurnWatch(actionEvent);
+		// at end of my turn, if there is an enemy unit on this shadow creep, deal damage to it
+		return this._activateCreep();
+	}
 
-	onActivate: () ->
-		super()
+	activateShadowCreep() {
+		// when called, if there is an enemy unit on this shadow creep, deal damage to it
+		return this._activateCreep();
+	}
 
-		# flush cached atk attribute for this card
-		@getCard().flushCachedAttribute("atk")
+	_activateCreep() {
+		const unit = this.getGameSession().getBoard().getUnitAtPosition(this.getCard().getPosition());
+		if ((unit != null) && !this.getCard().getIsSameTeamAs(unit)) {
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setSource(this.getCard());
+			damageAction.setTarget(unit);
+			damageAction.setDamageAmount(this.getShadowCreepDamage());
+			return this.getGameSession().executeAction(damageAction);
+		}
+	}
+}
+ModifierStackingShadows.initClass();
 
-	onDeactivate: () ->
-		super()
-
-		# flush cached atk attribute for this card
-		@getCard().flushCachedAttribute("atk")
-
-	onTurnWatch: (actionEvent) ->
-		super(actionEvent)
-		# at end of my turn, if there is an enemy unit on this shadow creep, deal damage to it
-		@_activateCreep()
-
-	activateShadowCreep: () ->
-		# when called, if there is an enemy unit on this shadow creep, deal damage to it
-		@_activateCreep()
-
-	_activateCreep: () ->
-		unit = @getGameSession().getBoard().getUnitAtPosition(@getCard().getPosition())
-		if unit? and !@getCard().getIsSameTeamAs(unit)
-			damageAction = new DamageAction(this.getGameSession())
-			damageAction.setSource(@getCard())
-			damageAction.setTarget(unit)
-			damageAction.setDamageAmount(@getShadowCreepDamage())
-			this.getGameSession().executeAction(damageAction)
-
-module.exports = ModifierStackingShadows
+module.exports = ModifierStackingShadows;

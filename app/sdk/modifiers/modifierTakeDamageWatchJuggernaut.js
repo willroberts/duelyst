@@ -1,48 +1,73 @@
-CONFIG = require 'app/common/config'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
-ModifierTakeDamageWatch = require './modifierTakeDamageWatch'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-Races = require 'app/sdk/cards/racesLookup'
-ModifierEgg = require 'app/sdk/modifiers/modifierEgg'
-GameFormat = require 'app/sdk/gameFormat'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const ModifierTakeDamageWatch = require('./modifierTakeDamageWatch');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const Races = require('app/sdk/cards/racesLookup');
+const ModifierEgg = require('app/sdk/modifiers/modifierEgg');
+const GameFormat = require('app/sdk/gameFormat');
 
-class ModifierTakeDamageWatchJuggernaut extends ModifierTakeDamageWatch
+class ModifierTakeDamageWatchJuggernaut extends ModifierTakeDamageWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierTakeDamageWatchJuggernaut";
+		this.type ="ModifierTakeDamageWatchJuggernaut";
+	
+		this.modifierName ="Take Damage Watch";
+		this.description ="When this takes damage, summon that many random Golem eggs";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierTakeDamageWatch", "FX.Modifiers.ModifierGenericSpawn"];
+	}
 
-	type:"ModifierTakeDamageWatchJuggernaut"
-	@type:"ModifierTakeDamageWatchJuggernaut"
+	onDamageTaken(action) {
+		super.onDamageTaken(action);
 
-	@modifierName:"Take Damage Watch"
-	@description:"When this takes damage, summon that many random Golem eggs"
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const spawnLocations = [];
+			const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), CONFIG.PATTERN_3x3, this.getCard());
+			for (let i = 0, end = action.getTotalDamageAmount(), asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+				if (validSpawnLocations.length > 0) {
+					spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+				}
+			}
 
-	fxResource: ["FX.Modifiers.ModifierTakeDamageWatch", "FX.Modifiers.ModifierGenericSpawn"]
+			let golemCards = [];
+			if (this.getGameSession().getGameFormat() === GameFormat.Standard) {
+				golemCards = this.getGameSession().getCardCaches().getIsLegacy(false).getRace(Races.Golem).getIsHiddenInCollection(false).getIsToken(false).getIsPrismatic(false).getIsSkinned(false).getCards();
+			} else {
+				golemCards = this.getGameSession().getCardCaches().getRace(Races.Golem).getIsHiddenInCollection(false).getIsToken(false).getIsPrismatic(false).getIsSkinned(false).getCards();
+			}
 
-	onDamageTaken: (action) ->
-		super(action)
-
-		if @getGameSession().getIsRunningAsAuthoritative()
-			spawnLocations = []
-			validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(@getGameSession(), @getCard().getPosition(), CONFIG.PATTERN_3x3, @getCard())
-			for i in [0...action.getTotalDamageAmount()]
-				if validSpawnLocations.length > 0
-					spawnLocations.push(validSpawnLocations.splice(@getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0])
-
-			golemCards = []
-			if @getGameSession().getGameFormat() is GameFormat.Standard
-				golemCards = @getGameSession().getCardCaches().getIsLegacy(false).getRace(Races.Golem).getIsHiddenInCollection(false).getIsToken(false).getIsPrismatic(false).getIsSkinned(false).getCards()
-			else
-				golemCards = @getGameSession().getCardCaches().getRace(Races.Golem).getIsHiddenInCollection(false).getIsToken(false).getIsPrismatic(false).getIsSkinned(false).getCards()
-
-			if golemCards.length > 0
-				for position in spawnLocations
-					cardDataOrIndexToSpawn = {id: Cards.Faction5.Egg}
-					# add modifiers to card data
-					card = golemCards[@getGameSession().getRandomIntegerForExecution(golemCards.length)]
-					cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects ?= []
-					cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(card.createNewCardData(), card.getName()))
-					spawnAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, cardDataOrIndexToSpawn)
-					spawnAction.setSource(@getCard())
-					@getGameSession().executeAction(spawnAction)
+			if (golemCards.length > 0) {
+				return (() => {
+					const result = [];
+					for (let position of Array.from(spawnLocations)) {
+						const cardDataOrIndexToSpawn = {id: Cards.Faction5.Egg};
+						// add modifiers to card data
+						const card = golemCards[this.getGameSession().getRandomIntegerForExecution(golemCards.length)];
+						if (cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
+						cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(card.createNewCardData(), card.getName()));
+						const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, cardDataOrIndexToSpawn);
+						spawnAction.setSource(this.getCard());
+						result.push(this.getGameSession().executeAction(spawnAction));
+					}
+					return result;
+				})();
+			}
+		}
+	}
+}
+ModifierTakeDamageWatchJuggernaut.initClass();
 
 
-module.exports = ModifierTakeDamageWatchJuggernaut
+module.exports = ModifierTakeDamageWatchJuggernaut;

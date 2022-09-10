@@ -1,38 +1,55 @@
-Modifier = 					require './modifier'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = 					require('./modifier');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
 
-class ModifierMyGeneralDamagedWatch extends Modifier
+class ModifierMyGeneralDamagedWatch extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyGeneralDamagedWatch";
+		this.type ="ModifierMyGeneralDamagedWatch";
+	
+		this.modifierName ="My General Damaged Watch";
+		this.description ="My General Damaged Watch";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierMyGeneralDamagedWatch"];
+	}
 
-	type:"ModifierMyGeneralDamagedWatch"
-	@type:"ModifierMyGeneralDamagedWatch"
+	onAfterCleanupAction(actionEvent) {
+		super.onAfterCleanupAction(actionEvent);
 
-	@modifierName:"My General Damaged Watch"
-	@description:"My General Damaged Watch"
+		const {
+            action
+        } = actionEvent;
+		// check if action is a damage action targeting my General
+		if (action instanceof DamageAction) {
+			const target = action.getTarget();
+			if ((target != null) && target.getIsSameTeamAs(this.getCard()) && target.getWasGeneral() && this.willDealDamage(action)) {
+				return this.onDamageDealtToGeneral(action);
+			}
+		}
+	}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	willDealDamage(action) {
+		// total damage should be calculated during modify_action_for_execution phase
+		return action.getTotalDamageAmount() > 0;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierMyGeneralDamagedWatch"]
+	onDamageDealtToGeneral(action) {}
+}
+ModifierMyGeneralDamagedWatch.initClass();
+		// override me in sub classes to implement special behavior
 
-	onAfterCleanupAction: (actionEvent) ->
-		super(actionEvent)
-
-		action = actionEvent.action
-		# check if action is a damage action targeting my General
-		if action instanceof DamageAction
-			target = action.getTarget()
-			if target? and target.getIsSameTeamAs(@getCard()) and target.getWasGeneral() and @willDealDamage(action)
-				@onDamageDealtToGeneral(action)
-
-	willDealDamage: (action) ->
-		# total damage should be calculated during modify_action_for_execution phase
-		return action.getTotalDamageAmount() > 0
-
-	onDamageDealtToGeneral: (action) ->
-		# override me in sub classes to implement special behavior
-
-module.exports = ModifierMyGeneralDamagedWatch
+module.exports = ModifierMyGeneralDamagedWatch;

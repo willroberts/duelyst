@@ -1,24 +1,37 @@
-Spell =	require './spell'
-CardType = require 'app/sdk/cards/cardType'
-PlayerModifierBattlePetManager = require 'app/sdk/playerModifiers/playerModifierBattlePetManager'
-RefreshExhaustionAction =	require 'app/sdk/actions/refreshExhaustionAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell =	require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const PlayerModifierBattlePetManager = require('app/sdk/playerModifiers/playerModifierBattlePetManager');
+const RefreshExhaustionAction =	require('app/sdk/actions/refreshExhaustionAction');
 
-class SpellFollowupActivateBattlePet extends Spell
+class SpellFollowupActivateBattlePet extends Spell {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Unit;
+	}
 
-	targetType: CardType.Unit
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const applyEffectPosition = {x, y};
+			const target = board.getCardAtPosition(applyEffectPosition, this.targetType);
+			if (target.getIsBattlePet()) {
+				const general = this.getGameSession().getGeneralForPlayerId(target.getOwnerId());
+				return general.getModifierByClass(PlayerModifierBattlePetManager).triggerBattlePet(target);
+			} else {
+				const refreshExhaustionAction = new RefreshExhaustionAction(this.getGameSession());
+				refreshExhaustionAction.setTarget(target);
+				return this.getGameSession().executeAction(refreshExhaustionAction);
+			}
+		}
+	}
+}
+SpellFollowupActivateBattlePet.initClass();
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			applyEffectPosition = {x: x, y: y}
-			target = board.getCardAtPosition(applyEffectPosition, @targetType)
-			if target.getIsBattlePet()
-				general = @getGameSession().getGeneralForPlayerId(target.getOwnerId())
-				general.getModifierByClass(PlayerModifierBattlePetManager).triggerBattlePet(target)
-			else
-				refreshExhaustionAction = new RefreshExhaustionAction(@getGameSession())
-				refreshExhaustionAction.setTarget(target)
-				@getGameSession().executeAction(refreshExhaustionAction)
-
-module.exports = SpellFollowupActivateBattlePet
+module.exports = SpellFollowupActivateBattlePet;

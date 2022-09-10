@@ -1,21 +1,34 @@
-ModifierOverwatch = require './modifierOverwatch'
-DieAction = require './../actions/dieAction'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOverwatch = require('./modifierOverwatch');
+const DieAction = require('./../actions/dieAction');
 
-class ModifierOverwatchDestroyed extends ModifierOverwatch
+class ModifierOverwatchDestroyed extends ModifierOverwatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOverwatchDestroyed";
+		this.type ="ModifierOverwatchDestroyed";
+	
+		this.description = "When this minion is destroyed, %X";
+	}
 
-	type:"ModifierOverwatchDestroyed"
-	@type:"ModifierOverwatchDestroyed"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject != null) {
+			return this.description.replace(/%X/, modifierContextObject.description);
+		} else {
+			return super.getDescription();
+		}
+	}
 
-	@description: "When this minion is destroyed, %X"
+	getIsActionRelevant(action) {
+		// watch for this unit dying
+		return action instanceof DieAction && (action.getTarget() === this.getCard());
+	}
+}
+ModifierOverwatchDestroyed.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject?
-			return @description.replace /%X/, modifierContextObject.description
-		else
-			return super()
-
-	getIsActionRelevant: (action) ->
-		# watch for this unit dying
-		return action instanceof DieAction and action.getTarget() == @getCard()
-
-module.exports = ModifierOverwatchDestroyed
+module.exports = ModifierOverwatchDestroyed;

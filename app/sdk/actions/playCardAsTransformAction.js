@@ -1,17 +1,29 @@
-Logger = 		require 'app/common/logger'
-PlayCardSilentlyAction = 		require './playCardSilentlyAction'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = 		require('app/common/logger');
+const PlayCardSilentlyAction = 		require('./playCardSilentlyAction');
+const _ = require('underscore');
 
-###
+/*
 	Play a card to board as a transform.
-###
+*/
 
-class PlayCardAsTransformAction extends PlayCardSilentlyAction
+class PlayCardAsTransformAction extends PlayCardSilentlyAction {
+	static initClass() {
+	
+		this.type ="PlayCardAsTransformAction";
+	}
 
-	@type:"PlayCardAsTransformAction"
+	constructor() {
+		if (this.type == null) { this.type = PlayCardAsTransformAction.type; }
+		super(...arguments);
+	}
+}
+PlayCardAsTransformAction.initClass();
 
-	constructor: () ->
-		@type ?= PlayCardAsTransformAction.type
-		super
-
-module.exports = PlayCardAsTransformAction
+module.exports = PlayCardAsTransformAction;

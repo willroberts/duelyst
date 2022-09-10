@@ -1,43 +1,58 @@
-Logger = require 'app/common/logger'
-Spell = 	require('./spell')
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-HealAction = require 'app/sdk/actions/healAction'
-DamageAction = require 'app/sdk/actions/damageAction'
-ModifierStunnedVanar = require 'app/sdk/modifiers/modifierStunnedVanar'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Spell = 	require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const HealAction = require('app/sdk/actions/healAction');
+const DamageAction = require('app/sdk/actions/damageAction');
+const ModifierStunnedVanar = require('app/sdk/modifiers/modifierStunnedVanar');
 
-class SpellLaceratingFrost extends Spell
+class SpellLaceratingFrost extends Spell {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Unit;
+		this.prototype.damageAmount = 2;
+	}
 
-	targetType: CardType.Unit
-	damageAmount: 2
 
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		const applyEffectPosition = {x, y};
+		const targetEntity = board.getCardAtPosition(applyEffectPosition, this.targetType);
 
-		applyEffectPosition = {x: x, y: y}
-		targetEntity = board.getCardAtPosition(applyEffectPosition, @targetType)
+		const damageAction = new DamageAction(this.getGameSession());
+		damageAction.setOwnerId(this.ownerId);
+		damageAction.setSource(this);
+		damageAction.setTarget(targetEntity);
+		damageAction.setDamageAmount(this.damageAmount);
+		this.getGameSession().executeAction(damageAction);
 
-		damageAction = new DamageAction(@getGameSession())
-		damageAction.setOwnerId(@ownerId)
-		damageAction.setSource(@)
-		damageAction.setTarget(targetEntity)
-		damageAction.setDamageAmount(@damageAmount)
-		@getGameSession().executeAction(damageAction)
+		const entities = board.getFriendlyEntitiesAroundEntity(targetEntity, CardType.Unit, 1);
+		return Array.from(entities).map((entity) =>
+			this.getGameSession().applyModifierContextObject(ModifierStunnedVanar.createContextObject(), entity));
+	}
 
-		entities = board.getFriendlyEntitiesAroundEntity(targetEntity, CardType.Unit, 1)
-		for entity in entities
-			@getGameSession().applyModifierContextObject(ModifierStunnedVanar.createContextObject(), entity)
+	_postFilterPlayPositions(validPositions) {
+		const applyEffectPositions = [];
 
-	_postFilterPlayPositions: (validPositions) ->
-		applyEffectPositions = []
+		// can only target enemy general
+		const general = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId());
+		if (general != null) {
+			// apply spell on enemy General
+			applyEffectPositions.push(general.getPosition());
+		}
 
-		# can only target enemy general
-		general = @getGameSession().getGeneralForOpponentOfPlayerId(@getOwnerId())
-		if general?
-			# apply spell on enemy General
-			applyEffectPositions.push(general.getPosition())
+		return applyEffectPositions;
+	}
+}
+SpellLaceratingFrost.initClass();
 
-		return applyEffectPositions
-
-module.exports = SpellLaceratingFrost
+module.exports = SpellLaceratingFrost;

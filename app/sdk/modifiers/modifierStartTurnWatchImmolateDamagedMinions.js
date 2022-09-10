@@ -1,35 +1,62 @@
-ModifierStartTurnWatch = require './modifierStartTurnWatch'
-HealAction = require 'app/sdk/actions/healAction'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
+const HealAction = require('app/sdk/actions/healAction');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierStartTurnWatchImmolateDamagedMinions extends ModifierStartTurnWatch
+class ModifierStartTurnWatchImmolateDamagedMinions extends ModifierStartTurnWatch {
+	static initClass() {
+	
+		this.prototype.type = "ModifierStartTurnWatchImmolateDamagedMinions";
+		this.type = "ModifierStartTurnWatchImmolateDamagedMinions";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericHeal", "FX.Modifiers.ModifierGenericDamageNearby"];
+	}
 
-	type: "ModifierStartTurnWatchImmolateDamagedMinions"
-	@type: "ModifierStartTurnWatchImmolateDamagedMinions"
+	onTurnWatch() {
 
-	fxResource: ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericHeal", "FX.Modifiers.ModifierGenericDamageNearby"]
+		const board = this.getGameSession().getBoard();
 
-	onTurnWatch: () ->
+		return (() => {
+			const result = [];
+			for (let unit of Array.from(board.getUnits())) {
+				if (((unit != null ? unit.getOwnerId() : undefined) === this.getCard().getOwnerId()) && !unit.getIsGeneral() && (unit.getHP() < unit.getMaxHP())) {
 
-		board = @getGameSession().getBoard()
+					const healAction = new HealAction(this.getGameSession());
+					healAction.setOwnerId(this.getCard().getOwnerId());
+					healAction.setTarget(unit);
+					healAction.setHealAmount(4);
+					this.getGameSession().executeAction(healAction);
 
-		for unit in board.getUnits()
-			if unit?.getOwnerId() == @getCard().getOwnerId() and !unit.getIsGeneral() and unit.getHP() < unit.getMaxHP()
+					var enemyEntities = board.getEnemyEntitiesAroundEntity(unit, CardType.Unit, 1);
+					result.push((() => {
+						const result1 = [];
+						for (let entity of Array.from(enemyEntities)) {
+							const damageAction = new DamageAction(this.getGameSession());
+							damageAction.setOwnerId(this.getCard().getOwnerId());
+							damageAction.setSource(this.getCard());
+							damageAction.setTarget(entity);
+							damageAction.setDamageAmount(4);
+							result1.push(this.getGameSession().executeAction(damageAction));
+						}
+						return result1;
+					})());
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
+ModifierStartTurnWatchImmolateDamagedMinions.initClass();
 
-				healAction = new HealAction(@getGameSession())
-				healAction.setOwnerId(@getCard().getOwnerId())
-				healAction.setTarget(unit)
-				healAction.setHealAmount(4)
-				@getGameSession().executeAction(healAction)
-
-				enemyEntities = board.getEnemyEntitiesAroundEntity(unit, CardType.Unit, 1)
-				for entity in enemyEntities
-					damageAction = new DamageAction(@getGameSession())
-					damageAction.setOwnerId(@getCard().getOwnerId())
-					damageAction.setSource(@getCard())
-					damageAction.setTarget(entity)
-					damageAction.setDamageAmount(4)
-					@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierStartTurnWatchImmolateDamagedMinions
+module.exports = ModifierStartTurnWatchImmolateDamagedMinions;

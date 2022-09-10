@@ -1,20 +1,34 @@
-CONFIG = 		require 'app/common/config'
-Action = 		require './action'
-GameStatus = 	require 'app/sdk/gameStatus'
-Logger = 		require 'app/common/logger'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = 		require('app/common/config');
+const Action = 		require('./action');
+const GameStatus = 	require('app/sdk/gameStatus');
+const Logger = 		require('app/common/logger');
 
-class RollbackToSnapshotAction extends Action
+class RollbackToSnapshotAction extends Action {
+	static initClass() {
+	
+		this.type ="RollbackToSnapshotAction";
+	
+		this.prototype.delay = CONFIG.TURN_DELAY;
+	}
 
-	@type:"RollbackToSnapshotAction"
+	constructor() {
+		if (this.type == null) { this.type = RollbackToSnapshotAction.type; }
+		super(...arguments);
+	}
 
-	delay: CONFIG.TURN_DELAY
+	_execute() {
+		//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "#{this.type}::execute"
+		return this.getGameSession().p_requestRollbackToSnapshot();
+	}
+}
+RollbackToSnapshotAction.initClass();
 
-	constructor: () ->
-		@type ?= RollbackToSnapshotAction.type
-		super
-
-	_execute: () ->
-		#Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "#{this.type}::execute"
-		@getGameSession().p_requestRollbackToSnapshot()
-
-module.exports = RollbackToSnapshotAction
+module.exports = RollbackToSnapshotAction;

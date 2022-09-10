@@ -1,89 +1,141 @@
-ModifierStackingShadowsBonusDamage = require './modifierStackingShadowsBonusDamage'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierStackingShadowsBonusDamage = require('./modifierStackingShadowsBonusDamage');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierStackingShadowsBonusDamageEqualNumberTiles extends ModifierStackingShadowsBonusDamage
+class ModifierStackingShadowsBonusDamageEqualNumberTiles extends ModifierStackingShadowsBonusDamage {
+	static initClass() {
+	
+		this.prototype.type ="ModifierStackingShadowsBonusDamageEqualNumberTiles";
+		this.type ="ModifierStackingShadowsBonusDamageEqualNumberTiles";
+	
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInHand = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.maxStacks = 1;
+	}
 
-	type:"ModifierStackingShadowsBonusDamageEqualNumberTiles"
-	@type:"ModifierStackingShadowsBonusDamageEqualNumberTiles"
+	static createContextObject() {
+		const contextObject = super.createContextObject(0,1);
+		return contextObject;
+	}
 
-	activeInDeck: false
-	activeInHand: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	maxStacks: 1
+		p.currentCount = 0;
+		p.previousCount = 0;
 
-	@createContextObject: () ->
-		contextObject = super(0,1)
-		return contextObject
+		return p;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	onDeactivate() {
+		// reset to default states when deactivated
+		this._private.currentCount = (this._private.previousCount = 0);
+		return this.removeManagedModifiersFromCard(this.getCard());
+	}
 
-		p.currentCount = 0
-		p.previousCount = 0
+	updateCachedStateAfterActive() {
+		if (this._private.cachedIsActive) {
+			this._private.previousCount = this._private.currentCount;
+			this._private.currentCount = this.getCurrentCount();
+		}
+		return super.updateCachedStateAfterActive();
+	}
 
-		return p
+	// operates during aura phase, but is not an aura itself
 
-	onDeactivate: () ->
-		# reset to default states when deactivated
-		@_private.currentCount = @_private.previousCount = 0
-		@removeManagedModifiersFromCard(@getCard())
+	// remove modifiers during remove aura phase
+	_onRemoveAura(event) {
+		super._onRemoveAura(event);
+		if (this._private.cachedIsActive) {
+			const countChange = this._private.currentCount - this._private.previousCount;
+			if (countChange < 0) {
+				return this.removeSubModifiers(Math.abs(countChange));
+			}
+		}
+	}
 
-	updateCachedStateAfterActive: () ->
-		if @_private.cachedIsActive
-			@_private.previousCount = @_private.currentCount
-			@_private.currentCount = @getCurrentCount()
-		super()
+	removeSubModifiers(numModifiers) {
+		const subMods = this.getSubModifiers();
+		let removeCount = 0;
+		if (subMods.length < numModifiers) {
+			removeCount = subMods.length;
+		} else {
+			removeCount = numModifiers;
+		}
+		if (removeCount > 0) {
+			return (() => {
+				const result = [];
+				for (let i = subMods.length - 1; i >= 0; i--) {
+					const subMod = subMods[i];
+					this.getGameSession().removeModifier(subMod);
+					removeCount--;
+					if (removeCount === 0) {
+						break;
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
 
-	# operates during aura phase, but is not an aura itself
+	// add modifiers during add modifier phase
+	_onAddAura(event) {
+		super._onAddAura(event);
+		if (this._private.cachedIsActive) {
+			const countChange = this._private.currentCount - this._private.previousCount;
+			if (countChange > 0) {
+				return this.addSubModifiers(countChange);
+			}
+		}
+	}
 
-	# remove modifiers during remove aura phase
-	_onRemoveAura: (event) ->
-		super(event)
-		if @_private.cachedIsActive
-			countChange = @_private.currentCount - @_private.previousCount
-			if countChange < 0
-				@removeSubModifiers(Math.abs(countChange))
+	addSubModifiers(numModifiers) {
+		return __range__(0, numModifiers-1, true).map((i) =>
+			this.applyManagedModifiersFromModifiersContextObjects(this.modifiersContextObjects, this.getCard()));
+	}
 
-	removeSubModifiers: (numModifiers) ->
-		subMods = @getSubModifiers()
-		removeCount = 0
-		if subMods.length < numModifiers
-			removeCount = subMods.length
-		else
-			removeCount = numModifiers
-		if removeCount > 0
-			for subMod in subMods by -1
-				@getGameSession().removeModifier(subMod)
-				removeCount--
-				if removeCount == 0
-					break
+	getCurrentCount() {
+		let allowUntargetable;
+		let shadowTileCount = 0;
+		for (let card of Array.from(this.getGameSession().getBoard().getCards(CardType.Tile, (allowUntargetable=true)))) {
+			if ((card.getBaseCardId() === Cards.Tile.Shadow) && card.isOwnedBy(this.getCard().getOwner())) {
+				shadowTileCount++;
+			}
+		}
+		return shadowTileCount;
+	}
 
-	# add modifiers during add modifier phase
-	_onAddAura: (event) ->
-		super(event)
-		if @_private.cachedIsActive
-			countChange = @_private.currentCount - @_private.previousCount
-			if countChange > 0
-				@addSubModifiers(countChange)
+	getFlatBonusDamage() {
+		const numTiles = this.getCurrentCount();
+		if (numTiles > 0) {
+			return numTiles - 1;
+		}
+		return 0;
+	}
+}
+ModifierStackingShadowsBonusDamageEqualNumberTiles.initClass();
 
-	addSubModifiers: (numModifiers) ->
-		for i in [0..numModifiers-1]
-			@applyManagedModifiersFromModifiersContextObjects(@modifiersContextObjects, @getCard())
+module.exports = ModifierStackingShadowsBonusDamageEqualNumberTiles;
 
-	getCurrentCount: () ->
-		shadowTileCount = 0
-		for card in @getGameSession().getBoard().getCards(CardType.Tile, allowUntargetable=true)
-			if card.getBaseCardId() is Cards.Tile.Shadow and card.isOwnedBy(@getCard().getOwner())
-				shadowTileCount++
-		return shadowTileCount
-
-	getFlatBonusDamage: () ->
-		numTiles = @getCurrentCount()
-		if numTiles > 0
-			return numTiles - 1
-		return 0
-
-module.exports = ModifierStackingShadowsBonusDamageEqualNumberTiles
+function __range__(left, right, inclusive) {
+  let range = [];
+  let ascending = left < right;
+  let end = !inclusive ? right : ascending ? right + 1 : right - 1;
+  for (let i = left; ascending ? i < end : i > end; ascending ? i++ : i--) {
+    range.push(i);
+  }
+  return range;
+}

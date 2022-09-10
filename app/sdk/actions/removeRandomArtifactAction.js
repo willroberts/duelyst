@@ -1,32 +1,57 @@
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-Action = require './action'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const Action = require('./action');
+const CardType = require('app/sdk/cards/cardType');
 
-class RemoveRandomArtifactAction extends Action
+class RemoveRandomArtifactAction extends Action {
+	static initClass() {
+	
+		this.type ="RemoveRandomArtifactAction";
+	}
 
-	@type:"RemoveRandomArtifactAction"
+	constructor() {
+		if (this.type == null) { this.type = RemoveRandomArtifactAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= RemoveRandomArtifactAction.type
-		super
+	_execute() {
+		super._execute();
 
-	_execute: () ->
-		super()
+		// remove artifact
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const target = this.getTarget();
+			if (target != null) {
+				if (!target.getIsGeneral()) { //artifacts are only on the general
+					return;
+				}
 
-		# remove artifact
-		if @getGameSession().getIsRunningAsAuthoritative()
-			target = @getTarget()
-			if target?
-				if !target.getIsGeneral() #artifacts are only on the general
-					return
+				// get all artifact modifiers by source card
+				const modifiersByArtifact = target.getArtifactModifiersGroupedByArtifactCard();
 
-				# get all artifact modifiers by source card
-				modifiersByArtifact = target.getArtifactModifiersGroupedByArtifactCard()
+				// pick a random set of modifiers that were added by the same source card index and remove them
+				if (modifiersByArtifact.length > 0) {
+					const modifiersToRemove = modifiersByArtifact[this.getGameSession().getRandomIntegerForExecution(modifiersByArtifact.length)];
+					return (() => {
+						const result = [];
+						for (let i = modifiersToRemove.length - 1; i >= 0; i--) {
+							const modifier = modifiersToRemove[i];
+							result.push(target.getGameSession().removeModifier(modifier));
+						}
+						return result;
+					})();
+				}
+			}
+		}
+	}
+}
+RemoveRandomArtifactAction.initClass();
 
-				# pick a random set of modifiers that were added by the same source card index and remove them
-				if modifiersByArtifact.length > 0
-					modifiersToRemove = modifiersByArtifact[@getGameSession().getRandomIntegerForExecution(modifiersByArtifact.length)]
-					for modifier in modifiersToRemove by -1
-						target.getGameSession().removeModifier(modifier)
-
-module.exports = RemoveRandomArtifactAction
+module.exports = RemoveRandomArtifactAction;

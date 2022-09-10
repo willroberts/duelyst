@@ -1,37 +1,53 @@
-ModifierDyingWish = require './modifierDyingWish'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierDyingWish = require('./modifierDyingWish');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class ModifierDyingWishDamageGeneral extends ModifierDyingWish
+class ModifierDyingWishDamageGeneral extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDyingWishDamageGeneral";
+		this.type ="ModifierDyingWishDamageGeneral";
+	
+		this.prototype.name ="Dying Wish: Damage General";
+		this.prototype.description = "When this minion dies, deal damage to its general";
+	
+		this.appliedName = "Agonizing Death";
+		this.appliedDescription = "";
+	
+		this.prototype.damageAmount = null; //if you want to deal a specific amount of damage, set it here, defaults to attack value of entity this modifier is attached to
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericDamage"];
+	}
 
-	type:"ModifierDyingWishDamageGeneral"
-	@type:"ModifierDyingWishDamageGeneral"
+	static getAppliedDescription(contextObject) {
+		if (this.damageAmount) {
+			return "When this minion dies, deal " + damageAmount + " damage to its general";
+		} else {
+			return "When this minion dies, deal its attack in damage to its general";
+		}
+	}
 
-	name:"Dying Wish: Damage General"
-	description: "When this minion dies, deal damage to its general"
+	onDyingWish() {
+		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		if (general != null) {
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setOwnerId(this.getCard().getOwnerId());
+			damageAction.setTarget(general);
+			if (!this.damageAmount) {
+				damageAction.setDamageAmount(this.getCard().getATK());
+			} else {
+				damageAction.setDamageAmount(this.damageAmount);
+			}
+			return this.getGameSession().executeAction(damageAction);
+		}
+	}
+}
+ModifierDyingWishDamageGeneral.initClass();
 
-	@appliedName: "Agonizing Death"
-	@appliedDescription: ""
-
-	damageAmount: null #if you want to deal a specific amount of damage, set it here, defaults to attack value of entity this modifier is attached to
-
-	fxResource: ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericDamage"]
-
-	@getAppliedDescription: (contextObject) ->
-		if @damageAmount
-			return "When this minion dies, deal " + damageAmount + " damage to its general"
-		else
-			return "When this minion dies, deal its attack in damage to its general"
-
-	onDyingWish: () ->
-		general = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		if general?
-			damageAction = new DamageAction(this.getGameSession())
-			damageAction.setOwnerId(@getCard().getOwnerId())
-			damageAction.setTarget(general)
-			if !@damageAmount
-				damageAction.setDamageAmount(@getCard().getATK())
-			else
-				damageAction.setDamageAmount(@damageAmount)
-			@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierDyingWishDamageGeneral
+module.exports = ModifierDyingWishDamageGeneral;

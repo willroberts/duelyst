@@ -1,56 +1,75 @@
-Spell = require './spell'
-CONFIG = require 'app/common/config'
-CardType = require 'app/sdk/cards/cardType'
-PlayCardAsTransformAction = require 'app/sdk/actions/playCardAsTransformAction'
-RemoveAction = require 'app/sdk/actions/removeAction'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-GameFormat = require 'app/sdk/gameFormat'
-ModifierTransformed = require 'app/sdk/modifiers/modifierTransformed'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const CONFIG = require('app/common/config');
+const CardType = require('app/sdk/cards/cardType');
+const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
+const RemoveAction = require('app/sdk/actions/removeAction');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const GameFormat = require('app/sdk/gameFormat');
+const ModifierTransformed = require('app/sdk/modifiers/modifierTransformed');
+const _ = require('underscore');
 
-class SpellTransformSameManaCost extends Spell
+class SpellTransformSameManaCost extends Spell {
+	static initClass() {
+	
+		this.prototype.cardDataOrIndexToSpawn = {id: Cards.Faction5.Egg};
+		 //random thing
+	}
 
-	cardDataOrIndexToSpawn: {id: Cards.Faction5.Egg} #random thing
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
+		const targetUnit = board.getCardAtPosition({x, y}, this.targetType);
+		const targetManaCost = targetUnit.getManaCost();
+		const targetOwnerId = targetUnit.getOwnerId();
+		const targetPosition = targetUnit.getPosition();
 
-		targetUnit = board.getCardAtPosition({x:x, y:y}, @targetType)
-		targetManaCost = targetUnit.getManaCost()
-		targetOwnerId = targetUnit.getOwnerId()
-		targetPosition = targetUnit.getPosition()
+		if (targetUnit != null) {
+			// find valid minions
+			let card;
+			let cardCache = [];
+			if (this.getGameSession().getGameFormat() === GameFormat.Standard) {
+				cardCache = this.getGameSession().getCardCaches().getIsLegacy(false).getIsHiddenInCollection(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getType(CardType.Unit).getCards();
+			} else {
+				cardCache = this.getGameSession().getCardCaches().getIsHiddenInCollection(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getType(CardType.Unit).getCards();
+			}
+			let cards = [];
+			for (card of Array.from(cardCache)) {
+				if ((card.getManaCost() === targetManaCost) && (card.getBaseCardId() !== targetUnit.getBaseCardId())) {
+					cards.push(card);
+				}
+			}
 
-		if targetUnit?
-			# find valid minions
-			cardCache = []
-			if @getGameSession().getGameFormat() is GameFormat.Standard
-				cardCache = @getGameSession().getCardCaches().getIsLegacy(false).getIsHiddenInCollection(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getType(CardType.Unit).getCards()
-			else
-				cardCache = @getGameSession().getCardCaches().getIsHiddenInCollection(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getType(CardType.Unit).getCards()
-			cards = []
-			for card in cardCache
-				if card.getManaCost() == targetManaCost and card.getBaseCardId() != targetUnit.getBaseCardId()
-					cards.push(card)
+			if ((cards != null ? cards.length : undefined) > 0) {
+				// filter mythron cards
+				cards = _.reject(cards, card => card.getRarityId() === 6);
+			}
 
-			if cards?.length > 0
-				# filter mythron cards
-				cards = _.reject(cards, (card) ->
-					return card.getRarityId() == 6
-				)
+			if (cards.length > 0) {
+				// remove original entity
+				const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
+				removeOriginalEntityAction.setOwnerId(this.getOwnerId());
+				removeOriginalEntityAction.setTarget(targetUnit);
+				this.getGameSession().executeAction(removeOriginalEntityAction);
 
-			if cards.length > 0
-				# remove original entity
-				removeOriginalEntityAction = new RemoveAction(@getGameSession())
-				removeOriginalEntityAction.setOwnerId(@getOwnerId())
-				removeOriginalEntityAction.setTarget(targetUnit)
-				@getGameSession().executeAction(removeOriginalEntityAction)
+				// pick randomly from among the units we found with right mana cost
+				card = cards[this.getGameSession().getRandomIntegerForExecution(cards.length)];
+				this.cardDataOrIndexToSpawn = card.createNewCardData();
+				if (this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
+				this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(targetUnit.getExhausted(), targetUnit.getMovesMade(), targetUnit.getAttacksMade()));
 
-				# pick randomly from among the units we found with right mana cost
-				card = cards[@getGameSession().getRandomIntegerForExecution(cards.length)]
-				@cardDataOrIndexToSpawn = card.createNewCardData()
-				@cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects ?= []
-				@cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(targetUnit.getExhausted(), targetUnit.getMovesMade(), targetUnit.getAttacksMade()))
+				const spawnEntityAction = new PlayCardAsTransformAction(this.getGameSession(), targetOwnerId, targetPosition.x, targetPosition.y, this.cardDataOrIndexToSpawn);
+				return this.getGameSession().executeAction(spawnEntityAction);
+			}
+		}
+	}
+}
+SpellTransformSameManaCost.initClass();
 
-				spawnEntityAction = new PlayCardAsTransformAction(@getGameSession(), targetOwnerId, targetPosition.x, targetPosition.y, @cardDataOrIndexToSpawn)
-				@getGameSession().executeAction(spawnEntityAction)
-
-module.exports = SpellTransformSameManaCost
+module.exports = SpellTransformSameManaCost;

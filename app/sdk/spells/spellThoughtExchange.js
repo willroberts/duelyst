@@ -1,31 +1,53 @@
-Logger = require 'app/common/logger'
-Spell = 						require('./spell')
-IntentType = 					require('app/sdk/intentType')
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-SwapUnitAllegianceAction = 		require('app/sdk/actions/swapUnitAllegianceAction')
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Spell = 						require('./spell');
+const IntentType = 					require('app/sdk/intentType');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const SwapUnitAllegianceAction = 		require('app/sdk/actions/swapUnitAllegianceAction');
 
-class SpellThoughtExchange extends Spell
+class SpellThoughtExchange extends Spell {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Unit;
+	}
 
-	targetType: CardType.Unit
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
+		const applyEffectPosition = {x, y};
+		const entity = board.getUnitAtPosition(applyEffectPosition);
+		const surroundingEnemies = board.getEnemyEntitiesAroundEntity(entity, this.targetType);
+		const attackThreshold = entity.getATK();
+		const a = new SwapUnitAllegianceAction(this.getGameSession());
+		a.setTarget(entity);
+		this.getGameSession().executeAction(a);
 
-		applyEffectPosition = {x: x, y: y}
-		entity = board.getUnitAtPosition(applyEffectPosition)
-		surroundingEnemies = board.getEnemyEntitiesAroundEntity(entity, @targetType)
-		attackThreshold = entity.getATK()
-		a = new SwapUnitAllegianceAction(@getGameSession())
-		a.setTarget(entity)
-		@getGameSession().executeAction(a)
+		if (surroundingEnemies.length > 0) {
+			return (() => {
+				const result = [];
+				for (let enemy of Array.from(surroundingEnemies)) {
+					if ((enemy.getATK() < attackThreshold) && !enemy.getIsGeneral()) {
+						const swapAction = new SwapUnitAllegianceAction(this.getGameSession());
+						swapAction.setTarget(enemy);
+						result.push(this.getGameSession().executeAction(swapAction));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+}
+SpellThoughtExchange.initClass();
 
-		if surroundingEnemies.length > 0
-			for enemy in surroundingEnemies
-				if enemy.getATK() < attackThreshold and !enemy.getIsGeneral()
-					swapAction = new SwapUnitAllegianceAction(@getGameSession())
-					swapAction.setTarget(enemy)
-					@getGameSession().executeAction(swapAction)
 
-
-module.exports = SpellThoughtExchange
+module.exports = SpellThoughtExchange;

@@ -1,17 +1,34 @@
-ModifierStartOpponentsTurnWatch = require './modifierStartOpponentsTurnWatch'
-RemoveAction = require 'app/sdk/actions/removeAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierStartOpponentsTurnWatch = require('./modifierStartOpponentsTurnWatch');
+const RemoveAction = require('app/sdk/actions/removeAction');
 
-class ModifierStartOpponentsTurnWatchRemoveEntity extends ModifierStartOpponentsTurnWatch
+class ModifierStartOpponentsTurnWatchRemoveEntity extends ModifierStartOpponentsTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierStartOpponentsTurnWatchRemoveEntity";
+		this.type ="ModifierStartOpponentsTurnWatchRemoveEntity";
+	}
 
-	type:"ModifierStartOpponentsTurnWatchRemoveEntity"
-	@type:"ModifierStartOpponentsTurnWatchRemoveEntity"
+	onTurnWatch(action) {
+		if (__guard__(this.getCard(), x => x.getIsActive())) {
+			const removeEntityAction = new RemoveAction(this.getGameSession());
+			removeEntityAction.setOwnerId(this.getCard().getOwnerId());
+			removeEntityAction.setTarget(this.getCard());
+			removeEntityAction.setIsDepthFirst(true);
+			return this.getGameSession().executeAction(removeEntityAction);
+		}
+	}
+}
+ModifierStartOpponentsTurnWatchRemoveEntity.initClass();
 
-	onTurnWatch: (action) ->
-		if @getCard()?.getIsActive()
-			removeEntityAction = new RemoveAction(@getGameSession())
-			removeEntityAction.setOwnerId(@getCard().getOwnerId())
-			removeEntityAction.setTarget(@getCard())
-			removeEntityAction.setIsDepthFirst(true)
-			@getGameSession().executeAction(removeEntityAction)
+module.exports = ModifierStartOpponentsTurnWatchRemoveEntity;
 
-module.exports = ModifierStartOpponentsTurnWatchRemoveEntity
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

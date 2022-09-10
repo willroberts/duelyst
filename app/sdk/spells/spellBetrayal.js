@@ -1,21 +1,40 @@
-Spell = require './spell'
-CardType = require 'app/sdk/cards/cardType'
-ForcedAttackAction = require 'app/sdk/actions/forcedAttackAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const ForcedAttackAction = require('app/sdk/actions/forcedAttackAction');
 
-class SpellBetrayal extends Spell
+class SpellBetrayal extends Spell {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
 
-		enemyGeneral = @getGameSession().getGeneralForOpponentOfPlayerId(@getOwnerId())
-		minions = board.getFriendlyEntitiesAroundEntity(enemyGeneral, CardType.Unit, 1, true, false)
+		const enemyGeneral = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId());
+		const minions = board.getFriendlyEntitiesAroundEntity(enemyGeneral, CardType.Unit, 1, true, false);
 
-		if minions?
-			for minion in minions
-				if minion.getATK() > 0
-					a = @getGameSession().createActionForType(ForcedAttackAction.type)
-					a.setSource(minion)
-					a.setTarget(enemyGeneral)
-					a.setOwnerId(@getOwnerId())
-					@getGameSession().executeAction(a)
+		if (minions != null) {
+			return (() => {
+				const result = [];
+				for (let minion of Array.from(minions)) {
+					if (minion.getATK() > 0) {
+						const a = this.getGameSession().createActionForType(ForcedAttackAction.type);
+						a.setSource(minion);
+						a.setTarget(enemyGeneral);
+						a.setOwnerId(this.getOwnerId());
+						result.push(this.getGameSession().executeAction(a));
+					} else {
+						result.push(undefined);
+					}
+				}
+				return result;
+			})();
+		}
+	}
+}
 
-module.exports = SpellBetrayal
+module.exports = SpellBetrayal;

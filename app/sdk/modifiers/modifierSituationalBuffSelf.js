@@ -1,50 +1,66 @@
-Modifier = require './modifier'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
 
-###
+/*
   Abstract modifier class that checks for a specific board state (situation) and when that situation is active applies modifiers from modifiers context objects to the card this modifier is applied to.
-###
-class ModifierSituationalBuffSelf extends Modifier
+*/
+class ModifierSituationalBuffSelf extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSituationalBuffSelf";
+		this.type ="ModifierSituationalBuffSelf";
+	
+		this.description ="Whenever %X";
+	}
 
-	type:"ModifierSituationalBuffSelf"
-	@type:"ModifierSituationalBuffSelf"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	@description:"Whenever %X"
+		p.cachedIsSituationActive = false;
+		p.cachedWasSituationActive = false;
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		return p;
+	}
 
-		p.cachedIsSituationActive = false
-		p.cachedWasSituationActive = false
+	onApplyToCardBeforeSyncState() {
+		super.onApplyToCardBeforeSyncState();
 
-		return p
+		// apply situational modifiers once and retain them on self
+		// this way we can enable/disable based on whether the situation is active
+		// rather than constantly adding and removing modifiers
+		return this.applyManagedModifiersFromModifiersContextObjectsOnce(this.modifiersContextObjects, this.getCard());
+	}
 
-	onApplyToCardBeforeSyncState: () ->
-		super()
+	updateCachedStateAfterActive() {
+		this._private.cachedWasSituationActive = this._private.cachedIsSituationActive;
+		this._private.cachedIsSituationActive = this._private.cachedIsActive && this.getIsSituationActiveForCache();
 
-		# apply situational modifiers once and retain them on self
-		# this way we can enable/disable based on whether the situation is active
-		# rather than constantly adding and removing modifiers
-		@applyManagedModifiersFromModifiersContextObjectsOnce(@modifiersContextObjects, @getCard())
+		// call super after updating whether situation is active
+		// because we need to know if situation is active to know whether sub modifiers are disabled
+		return super.updateCachedStateAfterActive();
+	}
 
-	updateCachedStateAfterActive: () ->
-		@_private.cachedWasSituationActive = @_private.cachedIsSituationActive
-		@_private.cachedIsSituationActive = @_private.cachedIsActive and @getIsSituationActiveForCache()
+	getAreSubModifiersActiveForCache() {
+		return this._private.cachedIsSituationActive;
+	}
 
-		# call super after updating whether situation is active
-		# because we need to know if situation is active to know whether sub modifiers are disabled
-		super()
+	getIsAura() {
+		// situational modifiers act as auras but do not use the default aura behavior
+		return true;
+	}
 
-	getAreSubModifiersActiveForCache: () ->
-		return @_private.cachedIsSituationActive
+	getIsSituationActiveForCache() {
+		// always assume not in correct situation
+		// override in sub class to determine situations in which this modifier should apply modifierContextObjects
+		return false;
+	}
+}
+ModifierSituationalBuffSelf.initClass();
 
-	getIsAura: () ->
-		# situational modifiers act as auras but do not use the default aura behavior
-		return true
-
-	getIsSituationActiveForCache: () ->
-		# always assume not in correct situation
-		# override in sub class to determine situations in which this modifier should apply modifierContextObjects
-		return false
-
-module.exports = ModifierSituationalBuffSelf
+module.exports = ModifierSituationalBuffSelf;

@@ -1,40 +1,58 @@
-ModifierIntensify = require './modifierIntensify'
-Modifier = require './modifier'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierIntensify = require('./modifierIntensify');
+const Modifier = require('./modifier');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierIntensifyTempBuffNearbyMinion extends ModifierIntensify
+class ModifierIntensifyTempBuffNearbyMinion extends ModifierIntensify {
+	static initClass() {
+	
+		this.prototype.type ="ModifierIntensifyTempBuffNearbyMinion";
+		this.type ="ModifierIntensifyTempBuffNearbyMinion";
+	
+		this.prototype.attackBuff = 0;
+		this.prototype.healthBuff = 0;
+		this.prototype.modifierName = null;
+	}
 
-	type:"ModifierIntensifyTempBuffNearbyMinion"
-	@type:"ModifierIntensifyTempBuffNearbyMinion"
+	static createContextObject(attackBuff, healthBuff, modifierName, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.attackBuff = attackBuff;
+		contextObject.healthBuff = healthBuff;
+		contextObject.modifierName = modifierName;
+		return contextObject;
+	}
 
-	attackBuff: 0
-	healthBuff: 0
-	modifierName: null
+	onIntensify() {
 
-	@createContextObject: (attackBuff, healthBuff, modifierName, options) ->
-		contextObject = super(options)
-		contextObject.attackBuff = attackBuff
-		contextObject.healthBuff = healthBuff
-		contextObject.modifierName = modifierName
-		return contextObject
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const totalAttackBuff = this.getIntensifyAmount() * this.attackBuff;
+			const totalHealthBuff = this.getIntensifyAmount() * this.healthBuff;
+			const statContextObject = Modifier.createContextObjectWithAttributeBuffs(totalAttackBuff, totalHealthBuff);
+			statContextObject.appliedName = this.modifierName;
+			statContextObject.durationEndTurn = 1;
 
-	onIntensify: () ->
+			const entities = this.getGameSession().getBoard().getFriendlyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
+			const nearbyMinions = [];
+			for (let entity of Array.from(entities)) {
+				if ((entity != null) && !entity.getIsGeneral()) {
+					nearbyMinions.push(entity);
+				}
+			}
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			totalAttackBuff = @getIntensifyAmount() * @attackBuff
-			totalHealthBuff = @getIntensifyAmount() * @healthBuff
-			statContextObject = Modifier.createContextObjectWithAttributeBuffs(totalAttackBuff, totalHealthBuff)
-			statContextObject.appliedName = @modifierName
-			statContextObject.durationEndTurn = 1
+			if (nearbyMinions.length > 0) {
+				const minionToBuff = nearbyMinions[this.getGameSession().getRandomIntegerForExecution(nearbyMinions.length)];
+				return this.getGameSession().applyModifierContextObject(statContextObject, minionToBuff);
+			}
+		}
+	}
+}
+ModifierIntensifyTempBuffNearbyMinion.initClass();
 
-			entities = @getGameSession().getBoard().getFriendlyEntitiesAroundEntity(@getCard(), CardType.Unit, 1)
-			nearbyMinions = []
-			for entity in entities
-				if entity? and !entity.getIsGeneral()
-					nearbyMinions.push(entity)
-
-			if nearbyMinions.length > 0
-				minionToBuff = nearbyMinions[@getGameSession().getRandomIntegerForExecution(nearbyMinions.length)]
-				@getGameSession().applyModifierContextObject(statContextObject, minionToBuff)
-
-module.exports = ModifierIntensifyTempBuffNearbyMinion
+module.exports = ModifierIntensifyTempBuffNearbyMinion;

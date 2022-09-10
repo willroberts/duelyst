@@ -1,37 +1,49 @@
-express = require 'express'
-knex = require '../../../lib/data_access/knex'
-DataAccessHelpers = require '../../../lib/data_access/helpers'
-Logger = require '../../../../app/common/logger'
-t = require 'tcomb-validation'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const express = require('express');
+const knex = require('../../../lib/data_access/knex');
+const DataAccessHelpers = require('../../../lib/data_access/helpers');
+const Logger = require('../../../../app/common/logger');
+const t = require('tcomb-validation');
 
-router = express.Router()
+const router = express.Router();
 
-router.get '/', (req, res, next) ->
-	# user id is set by a middleware
-	user_id = req.user_id
+router.get('/', function(req, res, next) {
+	// user id is set by a middleware
+	const {
+        user_id
+    } = req;
 
-	knex("user_faction_progression").where('user_id',user_id).select()
-	.then (progressionRows) ->
-		progressionRows = DataAccessHelpers.restifyData(progressionRows)
-		responseData = {}
-		for row in progressionRows
-			responseData[row.faction_id] = row
-		res.status(200).json(responseData)
-	.catch (error) -> next(error)
+	return knex("user_faction_progression").where('user_id',user_id).select()
+	.then(function(progressionRows) {
+		progressionRows = DataAccessHelpers.restifyData(progressionRows);
+		const responseData = {};
+		for (let row of Array.from(progressionRows)) {
+			responseData[row.faction_id] = row;
+		}
+		return res.status(200).json(responseData);}).catch(error => next(error));
+});
 
-router.get '/:faction_id', (req, res, next) ->
-	result = t.validate(parseInt(req.params.faction_id, 10), t.Number)
-	if not result.isValid()
-		return next()
+router.get('/:faction_id', function(req, res, next) {
+	const result = t.validate(parseInt(req.params.faction_id, 10), t.Number);
+	if (!result.isValid()) {
+		return next();
+	}
 
-	# user id is set by a middleware
-	user_id = req.user_id
-	faction_id = result.value
+	// user id is set by a middleware
+	const {
+        user_id
+    } = req;
+	const faction_id = result.value;
 
-	knex("user_faction_progression").where('user_id',user_id).andWhere('faction_id',faction_id).first()
-	.then (row) ->
-		row = DataAccessHelpers.restifyData(row)
-		res.status(200).json(row)
-	.catch (error) -> next(error)
+	return knex("user_faction_progression").where('user_id',user_id).andWhere('faction_id',faction_id).first()
+	.then(function(row) {
+		row = DataAccessHelpers.restifyData(row);
+		return res.status(200).json(row);}).catch(error => next(error));
+});
 
-module.exports = router
+module.exports = router;

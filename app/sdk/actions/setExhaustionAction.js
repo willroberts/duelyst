@@ -1,42 +1,63 @@
-Action = require './action'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Action = require('./action');
 
-class SetExhaustionAction extends Action
+class SetExhaustionAction extends Action {
+	static initClass() {
+	
+		this.type ="SetExhaustionAction";
+	
+		this.prototype.exhausted = null;
+		this.prototype.movesMade = null;
+		this.prototype.attacksMade = null;
+	}
 
-	@type:"SetExhaustionAction"
+	constructor() {
+		if (this.type == null) { this.type = SetExhaustionAction.type; }
+		super(...arguments);
+	}
 
-	exhausted: null
-	movesMade: null
-	attacksMade: null
+	setExhausted(val) {
+		return this.exhausted = val;
+	}
 
-	constructor: () ->
-		@type ?= SetExhaustionAction.type
-		super
+	getExhausted() {
+		return this.exhausted;
+	}
 
-	setExhausted: (val) ->
-		@exhausted = val
+	setMovesMade(val) {
+		return this.movesMade = val;
+	}
 
-	getExhausted: () ->
-		return @exhausted
+	getMovesMade() {
+		return this.movesMade;
+	}
 
-	setMovesMade: (val) ->
-		@movesMade = val
+	setAttacksMade(val) {
+		return this.attacksMade = val;
+	}
 
-	getMovesMade: () ->
-		return @movesMade
+	getAttacksMade() {
+		return this.attacksMade;
+	}
 
-	setAttacksMade: (val) ->
-		@attacksMade = val
+	_execute() {
+		super._execute();
+		const target = this.getTarget();
+		if (target != null) {
+			// match new target's readiness state to that of original unit
+			if (this.exhausted != null) { target.setExhausted(this.exhausted); }
+			if (this.movesMade != null) { target.setMovesMade(this.movesMade); }
+			if (this.attacksMade != null) { return target.setAttacksMade(this.attacksMade); }
+		}
+	}
+}
+SetExhaustionAction.initClass();
 
-	getAttacksMade: () ->
-		return @attacksMade
-
-	_execute: () ->
-		super()
-		target = @getTarget()
-		if target?
-			# match new target's readiness state to that of original unit
-			if @exhausted? then target.setExhausted(@exhausted)
-			if @movesMade? then target.setMovesMade(@movesMade)
-			if @attacksMade? then target.setAttacksMade(@attacksMade)
-
-module.exports = SetExhaustionAction
+module.exports = SetExhaustionAction;

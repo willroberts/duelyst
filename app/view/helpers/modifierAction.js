@@ -1,50 +1,76 @@
-Action = require 'app/sdk/actions/action'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Action = require('app/sdk/actions/action');
 
-###
+/*
   Action used for modifiers.
-###
-class ModifierAction extends Action
+*/
+class ModifierAction extends Action {
+	static initClass() {
+	
+		this.type = "ModifierAction";
+		this.prototype.type = "ModifierAction";
+		this.prototype._modifier = null;
+		this.prototype.modifierIndex = null;
+		this.prototype._parentModifier = null;
+		this.prototype.parentModifierIndex = null;
+	}
 
-	@type: "ModifierAction"
-	type: "ModifierAction"
-	_modifier: null
-	modifierIndex: null
-	_parentModifier: null
-	parentModifierIndex: null
+	constructor(gameSession, modifier) {
+		super(gameSession);
+		this.setModifier(modifier);
+	}
 
-	constructor: (gameSession, modifier) ->
-		super(gameSession)
-		@setModifier(modifier)
+	getLogName(){
+		return super.getLogName() + `_${__guard__(this.getModifier(), x => x.getLogName())}`;
+	}
 
-	getLogName: ()->
-		return super() + "_#{@getModifier()?.getLogName()}"
+	setModifier(modifier) {
+		if (modifier != null) {
+			this.modifierIndex = modifier.getIndex();
 
-	setModifier: (modifier) ->
-		if modifier?
-			@modifierIndex = modifier.getIndex()
+			// TODO: stop extracting card from modifier
+			const card = modifier.getCardAffected();
+			this.setOwnerId(card != null ? card.getOwnerId() : undefined);
+			this.setSource(card);
+			return this.setTarget(card);
+		}
+	}
 
-			# TODO: stop extracting card from modifier
-			card = modifier.getCardAffected()
-			@setOwnerId(card?.getOwnerId())
-			@setSource(card)
-			@setTarget(card)
+	getModifierIndex() {
+		return this.modifierIndex;
+	}
 
-	getModifierIndex: () ->
-		return @modifierIndex
+	getModifier() {
+		if (this._modifier == null) { this._modifier = this.getGameSession().getModifierByIndex(this.modifierIndex); }
+		return this._modifier;
+	}
 
-	getModifier: () ->
-		@_modifier ?= @getGameSession().getModifierByIndex(@modifierIndex)
-		return @_modifier
+	setParentModifier(parentModifier) {
+		if (parentModifier != null) {
+			return this.parentModifierIndex = parentModifier.getIndex();
+		}
+	}
 
-	setParentModifier: (parentModifier) ->
-		if parentModifier?
-			@parentModifierIndex = parentModifier.getIndex()
+	getParentModifierIndex() {
+		return this.parentModifierIndex;
+	}
 
-	getParentModifierIndex: () ->
-		return @parentModifierIndex
+	getParentModifier() {
+		if (this._parentModifier == null) { this._parentModifier = this.getGameSession().getModifierByIndex(this.parentModifierIndex); }
+		return this._parentModifier;
+	}
+}
+ModifierAction.initClass();
 
-	getParentModifier: () ->
-		@_parentModifier ?= @getGameSession().getModifierByIndex(@parentModifierIndex)
-		return @_parentModifier
+module.exports = ModifierAction;
 
-module.exports = ModifierAction
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

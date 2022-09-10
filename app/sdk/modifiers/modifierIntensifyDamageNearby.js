@@ -1,32 +1,51 @@
-ModifierIntensify = require './modifierIntensify'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierIntensify = require('./modifierIntensify');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierIntensifyDamageNearby extends ModifierIntensify
+class ModifierIntensifyDamageNearby extends ModifierIntensify {
+	static initClass() {
+	
+		this.prototype.type = "ModifierIntensifyDamageNearby";
+		this.type = "ModifierIntensifyDamageNearby";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericDamageNearby"];
+	
+		this.prototype.damageAmount = 0;
+	}
 
-	type: "ModifierIntensifyDamageNearby"
-	@type: "ModifierIntensifyDamageNearby"
+	static createContextObject(damageAmount, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierGenericDamageNearby"]
+	onIntensify() {
 
-	damageAmount: 0
+		const totalDamageAmount = this.getIntensifyAmount() * this.damageAmount;
 
-	@createContextObject: (damageAmount, options) ->
-		contextObject = super(options)
-		contextObject.damageAmount = damageAmount
-		return contextObject
+		const entities = this.getGameSession().getBoard().getEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
+		return (() => {
+			const result = [];
+			for (let entity of Array.from(entities)) {
+				const damageAction = new DamageAction(this.getGameSession());
+				damageAction.setOwnerId(this.getCard().getOwnerId());
+				damageAction.setSource(this.getCard());
+				damageAction.setTarget(entity);
+				damageAction.setDamageAmount(totalDamageAmount);
+				result.push(this.getGameSession().executeAction(damageAction));
+			}
+			return result;
+		})();
+	}
+}
+ModifierIntensifyDamageNearby.initClass();
 
-	onIntensify: () ->
-
-		totalDamageAmount = @getIntensifyAmount() * @damageAmount
-
-		entities = @getGameSession().getBoard().getEntitiesAroundEntity(@getCard(), CardType.Unit, 1)
-		for entity in entities
-			damageAction = new DamageAction(@getGameSession())
-			damageAction.setOwnerId(@getCard().getOwnerId())
-			damageAction.setSource(@getCard())
-			damageAction.setTarget(entity)
-			damageAction.setDamageAmount(totalDamageAmount)
-			@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierIntensifyDamageNearby
+module.exports = ModifierIntensifyDamageNearby;

@@ -1,26 +1,38 @@
-ModifierBuilding = require './modifierBuilding'
-HealAction = require 'app/sdk/actions/healAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierBuilding = require('./modifierBuilding');
+const HealAction = require('app/sdk/actions/healAction');
 
-class ModifierBuildCompleteHealGeneral extends ModifierBuilding
+class ModifierBuildCompleteHealGeneral extends ModifierBuilding {
+	static initClass() {
+	
+		this.prototype.type ="ModifierBuildCompleteHealGeneral";
+		this.type ="ModifierBuildCompleteHealGeneral";
+	
+		this.prototype.healAmount = 0;
+	}
 
-	type:"ModifierBuildCompleteHealGeneral"
-	@type:"ModifierBuildCompleteHealGeneral"
+	static createContextObject(healAmount, description, transformCardData, turnsToBuild, options) {
+		const contextObject = super.createContextObject(description, transformCardData, turnsToBuild, options);
+		contextObject.healAmount = healAmount;
+		return contextObject;
+	}
 
-	healAmount: 0
+	onBuildComplete() {
+		super.onBuildComplete();
 
-	@createContextObject: (healAmount, description, transformCardData, turnsToBuild, options) ->
-		contextObject = super(description, transformCardData, turnsToBuild, options)
-		contextObject.healAmount = healAmount
-		return contextObject
+		const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+		const healAction = new HealAction(this.getGameSession());
+		healAction.setOwnerId(this.getCard().getOwnerId());
+		healAction.setTarget(general);
+		healAction.setHealAmount(this.healAmount);
+		return this.getGameSession().executeAction(healAction);
+	}
+}
+ModifierBuildCompleteHealGeneral.initClass();
 
-	onBuildComplete: () ->
-		super()
-
-		general = @getCard().getGameSession().getGeneralForPlayerId(@getCard().getOwnerId())
-		healAction = new HealAction(this.getGameSession())
-		healAction.setOwnerId(@getCard().getOwnerId())
-		healAction.setTarget(general)
-		healAction.setHealAmount(@healAmount)
-		@getGameSession().executeAction(healAction)
-
-module.exports = ModifierBuildCompleteHealGeneral
+module.exports = ModifierBuildCompleteHealGeneral;

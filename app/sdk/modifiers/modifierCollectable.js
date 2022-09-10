@@ -1,76 +1,99 @@
-Logger = require('app/common/logger')
-Modifier = require './modifier'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Modifier = require('./modifier');
 
-class ModifierCollectable extends Modifier
+class ModifierCollectable extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierCollectable";
+		this.type ="ModifierCollectable";
+	
+		this.modifierName ="Collectable";
+		this.description = "When another entity moves onto this location..";
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+		this.prototype.depleted = false; // whether collectable has been used
+		this.prototype.fxResource = ["FX.Modifiers.ModifierCollectable"];
+	}
 
-	type:"ModifierCollectable"
-	@type:"ModifierCollectable"
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	@modifierName:"Collectable"
-	@description: "When another entity moves onto this location.."
+		p.collectingEntity = null;
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
-	depleted: false # whether collectable has been used
-	fxResource: ["FX.Modifiers.ModifierCollectable"]
+		return p;
+	}
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+	getDepleted(){
+		return this.depleted;
+	}
 
-		p.collectingEntity = null
+	getCollectingEntity() {
+		const entities = this.getGameSession().getBoard().getEntitiesAtPosition(this.getCard().getPosition());
+		for (let entity of Array.from(entities)) {
+			// get the current obstructing entity at my entity's location
+			// entity must also not be the same team as my entity
+			if (entity.getIsObstructing() && (this.getCard().getIsSameTeamAs(entity) || this.getCard().isOwnedByGameSession())) {
+				return entity;
+			}
+		}
+	}
 
-		return p
+	_onActiveChange(e) {
+		super._onActiveChange(e);
+		if (this._private.cachedIsActive && !this.depleted) {
+			// if there is an obstructing entity at my entity's location
+			const collectingEntity = this.getCollectingEntity();
+			if (collectingEntity != null) {
+				this.depleted = true;
 
-	getDepleted: ()->
-		return @depleted
+				// set self as triggering
+				this.getGameSession().pushTriggeringModifierOntoStack(this);
 
-	getCollectingEntity: () ->
-		entities = @getGameSession().getBoard().getEntitiesAtPosition(@getCard().getPosition())
-		for entity in entities
-			# get the current obstructing entity at my entity's location
-			# entity must also not be the same team as my entity
-			if entity.getIsObstructing() and (@getCard().getIsSameTeamAs(entity) or @getCard().isOwnedByGameSession())
-				return entity
+				// set occupant
+				this._private.collectingEntity = collectingEntity;
+				this.getCard().setOccupant(this._private.collectingEntity);
 
-	_onActiveChange: (e) ->
-		super(e)
-		if @_private.cachedIsActive and !@depleted
-			# if there is an obstructing entity at my entity's location
-			collectingEntity = @getCollectingEntity()
-			if collectingEntity?
-				@depleted = true
+				// do collection
+				this.onCollect(collectingEntity);
 
-				# set self as triggering
-				@getGameSession().pushTriggeringModifierOntoStack(@)
+				// deplete
+				this.onDepleted();
 
-				# set occupant
-				@_private.collectingEntity = collectingEntity
-				@getCard().setOccupant(@_private.collectingEntity)
+				// stop triggering
+				return this.getGameSession().popTriggeringModifierFromStack();
+			}
+		}
+	}
 
-				# do collection
-				@onCollect(collectingEntity)
+	onCollect(entity) {}
+		// override me in sub classes to implement special behavior
 
-				# deplete
-				@onDepleted()
+	onDepleted() {
+		const entity = this.getCard();
+		this.getGameSession().removeModifier(this);
+		if (entity.getNumModifiersOfClass(ModifierCollectable) === 0) {
+			return entity.setDepleted(true);
+		}
+	}
 
-				# stop triggering
-				@getGameSession().popTriggeringModifierFromStack()
+	postDeserialize() {
+		super.postDeserialize();
 
-	onCollect: (entity) ->
-		# override me in sub classes to implement special behavior
+		// get the current obstructing entity at my entity's location
+		return this._private.collectingEntity = this.getCollectingEntity();
+	}
+}
+ModifierCollectable.initClass();
 
-	onDepleted: () ->
-		entity = @getCard()
-		@getGameSession().removeModifier(@)
-		if entity.getNumModifiersOfClass(ModifierCollectable) == 0
-			entity.setDepleted(true)
-
-	postDeserialize: () ->
-		super()
-
-		# get the current obstructing entity at my entity's location
-		@_private.collectingEntity = @getCollectingEntity()
-
-module.exports = ModifierCollectable
+module.exports = ModifierCollectable;

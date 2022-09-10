@@ -1,27 +1,42 @@
-ModifierBondAplyModifiers = require './modifierBondApplyModifiers'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierBondAplyModifiers = require('./modifierBondApplyModifiers');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierBondApplyModifiersByRaceId extends ModifierBondAplyModifiers
+class ModifierBondApplyModifiersByRaceId extends ModifierBondAplyModifiers {
+	static initClass() {
+	
+		this.prototype.type ="ModifierBondApplyModifiersByRaceId";
+		this.type ="ModifierBondApplyModifiersByRaceId";
+	
+		this.description = "";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierBondApplyModifiersByRaceId"
-	@type:"ModifierBondApplyModifiersByRaceId"
+	static createContextObject(modifiersContextObjects, managedByCard, auraIncludeSelf, auraIncludeAlly, auraIncludeEnemy, auraIncludeGeneral, auraRadius, raceId, description, options) {
+		const contextObject = super.createContextObject(modifiersContextObjects, managedByCard, auraIncludeSelf, auraIncludeAlly, auraIncludeEnemy, auraIncludeGeneral, auraRadius, description, options);
+		contextObject.raceId = raceId;
+		return contextObject;
+	}
 
-	@description: ""
+	getAffectedEntities(action) {
+		const affectedEntities = [];
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const potentialAffectedEntities = super.getAffectedEntities(action);
+			for (let entity of Array.from(potentialAffectedEntities)) {
+				if (entity.getBelongsToTribe(this.raceId)) {
+					affectedEntities.push(entity);
+				}
+			}
+		}
+		return affectedEntities;
+	}
+}
+ModifierBondApplyModifiersByRaceId.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericBuff"]
-
-	@createContextObject: (modifiersContextObjects, managedByCard, auraIncludeSelf, auraIncludeAlly, auraIncludeEnemy, auraIncludeGeneral, auraRadius, raceId, description, options) ->
-		contextObject = super(modifiersContextObjects, managedByCard, auraIncludeSelf, auraIncludeAlly, auraIncludeEnemy, auraIncludeGeneral, auraRadius, description, options)
-		contextObject.raceId = raceId
-		return contextObject
-
-	getAffectedEntities: (action) ->
-		affectedEntities = []
-		if @getGameSession().getIsRunningAsAuthoritative()
-			potentialAffectedEntities = super(action)
-			for entity in potentialAffectedEntities
-				if entity.getBelongsToTribe(@raceId)
-					affectedEntities.push(entity)
-		return affectedEntities
-
-module.exports = ModifierBondApplyModifiersByRaceId
+module.exports = ModifierBondApplyModifiersByRaceId;

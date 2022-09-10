@@ -1,27 +1,42 @@
-SpellApplyModifiers = require './spellApplyModifiers'
-DamageAction = require 'app/sdk/actions/damageAction'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellApplyModifiers = require('./spellApplyModifiers');
+const DamageAction = require('app/sdk/actions/damageAction');
+const _ = require('underscore');
 
-class SpellDamageAndApplyModifiers extends SpellApplyModifiers
+class SpellDamageAndApplyModifiers extends SpellApplyModifiers {
+	static initClass() {
+	
+		this.prototype.applyToAllies = false;
+		this.prototype.applyToEnemy = false;
+	}
 
-	applyToAllies: false
-	applyToEnemy: false
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		const applyEffectPosition = {x, y};
+		const unit = board.getUnitAtPosition(applyEffectPosition);
+		if ((unit != null) && (!unit.getIsGeneral() || (unit.getIsGeneral() && this.canTargetGeneral))) {
+			// deal damage
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setOwnerId(this.getOwnerId());
+			damageAction.setTarget(unit);
+			damageAction.setDamageAmount(this.damageAmount);
+			this.getGameSession().executeAction(damageAction);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		applyEffectPosition = {x: x, y: y}
-		unit = board.getUnitAtPosition(applyEffectPosition)
-		if unit? and (!unit.getIsGeneral() or (unit.getIsGeneral() and @canTargetGeneral))
-			# deal damage
-			damageAction = new DamageAction(@getGameSession())
-			damageAction.setOwnerId(@getOwnerId())
-			damageAction.setTarget(unit)
-			damageAction.setDamageAmount(@damageAmount)
-			@getGameSession().executeAction(damageAction)
+			// apply modifiers
+			if ((unit.getOwnerId() === this.getOwnerId()) && this.applyToAllies) {
+				super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+			}
+			if ((unit.getOwnerId() !== this.getOwnerId()) && this.applyToEnemy) {
+				return super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+			}
+		}
+	}
+}
+SpellDamageAndApplyModifiers.initClass();
 
-			# apply modifiers
-			if unit.getOwnerId() is @getOwnerId() and @applyToAllies
-				super(board,x,y,sourceAction)
-			if unit.getOwnerId() isnt @getOwnerId() and @applyToEnemy
-				super(board,x,y,sourceAction)
-
-module.exports = SpellDamageAndApplyModifiers
+module.exports = SpellDamageAndApplyModifiers;

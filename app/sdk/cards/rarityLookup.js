@@ -1,11 +1,20 @@
-class Rarity
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+class Rarity {
+	static initClass() {
+	
+		this.Fixed = 0;
+		this.Common = 1;
+		this.Rare = 2;
+		this.Epic = 3;
+		this.Legendary = 4;
+		this.TokenUnit = 5;
+		this.Mythron = 6;
+	}
+}
+Rarity.initClass();
 
-	@Fixed: 0
-	@Common: 1
-	@Rare: 2
-	@Epic: 3
-	@Legendary: 4
-	@TokenUnit: 5
-	@Mythron: 6
-
-module.exports = Rarity
+module.exports = Rarity;

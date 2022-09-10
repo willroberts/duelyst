@@ -1,23 +1,35 @@
-ModifierDyingWish = require './modifierDyingWish'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-Factions = require 'app/sdk/cards/factionsLookup.coffee'
-Races = require 'app/sdk/cards/racesLookup.coffee'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierDyingWish = require('./modifierDyingWish');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Races = require('app/sdk/cards/racesLookup.coffee');
 
-class ModifierDyingWishDrawRandomBattlePet extends ModifierDyingWish
+class ModifierDyingWishDrawRandomBattlePet extends ModifierDyingWish {
+	static initClass() {
+	
+		this.prototype.type = "ModifierDyingWishDrawRandomBattlePet";
+		this.type = "ModifierDyingWishDrawRandomBattlePet";
+	
+		this.modifierName = "Dying Wish";
+		this.description = "Put a random Battle Pet into your action bar";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish"];
+	}
 
-	type: "ModifierDyingWishDrawRandomBattlePet"
-	@type: "ModifierDyingWishDrawRandomBattlePet"
+	onDyingWish() {
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const neutralBattlePetCards = this.getGameSession().getCardCaches().getFaction(Factions.Neutral).getRace(Races.BattlePet).getIsToken(true).getIsPrismatic(false).getIsSkinned(false).getCards();
+			const card = neutralBattlePetCards[this.getGameSession().getRandomIntegerForExecution(neutralBattlePetCards.length)];
+			const a = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), card.createNewCardData() );
+			return this.getGameSession().executeAction(a);
+		}
+	}
+}
+ModifierDyingWishDrawRandomBattlePet.initClass();
 
-	@modifierName: "Dying Wish"
-	@description: "Put a random Battle Pet into your action bar"
-
-	fxResource: ["FX.Modifiers.ModifierDyingWish"]
-
-	onDyingWish: () ->
-		if @getGameSession().getIsRunningAsAuthoritative()
-			neutralBattlePetCards = @getGameSession().getCardCaches().getFaction(Factions.Neutral).getRace(Races.BattlePet).getIsToken(true).getIsPrismatic(false).getIsSkinned(false).getCards()
-			card = neutralBattlePetCards[@getGameSession().getRandomIntegerForExecution(neutralBattlePetCards.length)]
-			a = new PutCardInHandAction(@getGameSession(), @getCard().getOwnerId(), card.createNewCardData() )
-			@getGameSession().executeAction(a)
-
-module.exports = ModifierDyingWishDrawRandomBattlePet
+module.exports = ModifierDyingWishDrawRandomBattlePet;

@@ -1,44 +1,61 @@
-CONFIG = 		require 'app/common/config'
-Logger = 		require 'app/common/logger'
-Action = 			require './action'
-CardType = 			require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = 		require('app/common/config');
+const Logger = 		require('app/common/logger');
+const Action = 			require('./action');
+const CardType = 			require('app/sdk/cards/cardType');
 
-class MoveAction extends Action
+class MoveAction extends Action {
+	static initClass() {
+	
+		this.type ="MoveAction";
+	
+		// target and source should always be the same
+		this.prototype.getTarget = this.prototype.getSource;
+	}
 
-	@type:"MoveAction"
+	constructor() {
+		if (this.type == null) { this.type = MoveAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= MoveAction.type
-		super
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		p.cachedPath = null;
 
-		p.cachedPath = null
+		return p;
+	}
 
-		return p
+	getPath() {
+		if ((this._private.cachedPath == null)) {
+			const entity = this.getTarget();
+			this._private.cachedPath = entity.getMovementRange().getPathTo(this.getGameSession().getBoard(), entity, this.getTargetPosition());
+		}
+		return this._private.cachedPath;
+	}
 
-	# target and source should always be the same
-	getTarget: @::getSource
+	_execute() {
+		super._execute();
 
-	getPath:() ->
-		if !@_private.cachedPath?
-			entity = @getTarget()
-			@_private.cachedPath = entity.getMovementRange().getPathTo(@getGameSession().getBoard(), entity, @getTargetPosition())
-		return @_private.cachedPath
+		const entity = this.getTarget();
+		//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "MoveAction::execute - moving entity #{entity?.getLogName()} to (#{@getTargetPosition().x},#{@getTargetPosition().y})"
 
-	_execute: () ->
-		super()
+		// force path regeneration before moving entity
+		this._private.cachedPath = null;
+		this.getPath();
 
-		entity = @getTarget()
-		#Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "MoveAction::execute - moving entity #{entity?.getLogName()} to (#{@getTargetPosition().x},#{@getTargetPosition().y})"
+		// move entity
+		entity.setPosition(this.getTargetPosition());
+		return entity.setMovesMade(entity.getMovesMade() + 1);
+	}
+}
+MoveAction.initClass();
 
-		# force path regeneration before moving entity
-		@_private.cachedPath = null
-		@getPath()
-
-		# move entity
-		entity.setPosition(@getTargetPosition())
-		entity.setMovesMade(entity.getMovesMade() + 1)
-
-module.exports = MoveAction
+module.exports = MoveAction;

@@ -1,22 +1,37 @@
-Action = require './action'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Action = require('./action');
+const CardType = require('app/sdk/cards/cardType');
 
-class SetDamageAction extends Action
+class SetDamageAction extends Action {
+	static initClass() {
+	
+		this.type ="SetDamageAction";
+		this.prototype.damageValue = 0;
+	}
 
-	@type:"SetDamageAction"
-	damageValue: 0
+	constructor() {
+		if (this.type == null) { this.type = SetDamageAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= SetDamageAction.type
-		super
+	_execute() {
+		super._execute();
 
-	_execute: () ->
-		super()
+		const source = this.getSource();
+		const target = this.getTarget();
 
-		source = @getSource()
-		target = @getTarget()
+		if (target != null) {
+			return target.setDamage(this.damageValue);
+		}
+	}
+}
+SetDamageAction.initClass();
 
-		if target?
-			target.setDamage(@damageValue)
-
-module.exports = SetDamageAction
+module.exports = SetDamageAction;

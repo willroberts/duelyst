@@ -1,30 +1,44 @@
-ModifierHealWatch = require './modifierHealWatch'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierHealWatch = require('./modifierHealWatch');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 
-class ModifierHealWatchPutCardInHand extends ModifierHealWatch
+class ModifierHealWatchPutCardInHand extends ModifierHealWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierHealWatchPutCardInHand";
+		this.type ="ModifierHealWatchPutCardInHand";
+	
+		this.modifierName ="ModifierHealWatchPutCardInHand";
+		this.description ="Whenever anything is healed, put %X into your action bar";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierFriendlyMinionHealWatch"];
+	}
 
-	type:"ModifierHealWatchPutCardInHand"
-	@type:"ModifierHealWatchPutCardInHand"
+	static createContextObject(cardDataOrIndexToPutInHand, cardDescription,options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToPutInHand = cardDataOrIndexToPutInHand;
+		contextObject.cardDescription = cardDescription;
+		return contextObject;
+	}
 
-	@modifierName:"ModifierHealWatchPutCardInHand"
-	@description:"Whenever anything is healed, put %X into your action bar"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.cardDescription);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierFriendlyMinionHealWatch"]
+	onHealWatch(action) {
+		const a = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), this.cardDataOrIndexToPutInHand);
+		return this.getGameSession().executeAction(a);
+	}
+}
+ModifierHealWatchPutCardInHand.initClass();
 
-	@createContextObject: (cardDataOrIndexToPutInHand, cardDescription,options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToPutInHand = cardDataOrIndexToPutInHand
-		contextObject.cardDescription = cardDescription
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.cardDescription
-		else
-			return @description
-
-	onHealWatch: (action) ->
-		a = new PutCardInHandAction(this.getGameSession(), @getCard().getOwnerId(), @cardDataOrIndexToPutInHand)
-		this.getGameSession().executeAction(a)
-
-module.exports = ModifierHealWatchPutCardInHand
+module.exports = ModifierHealWatchPutCardInHand;

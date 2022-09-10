@@ -1,21 +1,34 @@
-ModifierEnemySpellWatch = require './modifierEnemySpellWatch'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEnemySpellWatch = require('./modifierEnemySpellWatch');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 
-class ModifierEnemySpellWatchCopySpell extends ModifierEnemySpellWatch
+class ModifierEnemySpellWatchCopySpell extends ModifierEnemySpellWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEnemySpellWatchCopySpell";
+		this.type ="ModifierEnemySpellWatchCopySpell";
+	
+		this.modifierName ="Enemy Spell Watch Copy Spell";
+		this.description = "Whenever the opponent casts a spell, gain of copy of the spell";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch"];
+	}
 
-	type:"ModifierEnemySpellWatchCopySpell"
-	@type:"ModifierEnemySpellWatchCopySpell"
+	onEnemySpellWatch(action) {
 
-	@modifierName:"Enemy Spell Watch Copy Spell"
-	@description: "Whenever the opponent casts a spell, gain of copy of the spell"
+		const spell = action.getTarget();
+		if (spell != null) {
+			const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), spell.createNewCardData());
+			return this.getGameSession().executeAction(putCardInHandAction);
+		}
+	}
+}
+ModifierEnemySpellWatchCopySpell.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierSpellWatch"]
-
-	onEnemySpellWatch: (action) ->
-
-		spell = action.getTarget()
-		if spell?
-			putCardInHandAction = new PutCardInHandAction(@getGameSession(), @getCard().getOwnerId(), spell.createNewCardData())
-			@getGameSession().executeAction(putCardInHandAction)
-
-module.exports = ModifierEnemySpellWatchCopySpell
+module.exports = ModifierEnemySpellWatchCopySpell;

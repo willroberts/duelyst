@@ -1,34 +1,44 @@
-Logger = require 'app/common/logger'
-Spell = 	require('./spell')
-CardType = require 'app/sdk/cards/cardType'
-SpellFilterType = require './spellFilterType'
-KillAction = require 'app/sdk/actions/killAction'
-PlayerModifierManaModifierSingleUse = require 'app/sdk/playerModifiers/playerModifierManaModifierSingleUse'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Spell = 	require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const SpellFilterType = require('./spellFilterType');
+const KillAction = require('app/sdk/actions/killAction');
+const PlayerModifierManaModifierSingleUse = require('app/sdk/playerModifiers/playerModifierManaModifierSingleUse');
 
-class SpellDarkSacrifice extends Spell
+class SpellDarkSacrifice extends Spell {
+	static initClass() {
+	
+		this.prototype.targetType = CardType.Unit;
+		this.prototype.spellFilterType = SpellFilterType.AllyDirect;
+		this.prototype.canTargetGeneral = false;
+		this.prototype.costChange = -3;
+	}
 
-	targetType: CardType.Unit
-	spellFilterType: SpellFilterType.AllyDirect
-	canTargetGeneral: false
-	costChange: -3
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+		const applyEffectPosition = {x, y};
+		const entity = board.getCardAtPosition(applyEffectPosition, this.targetType);
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
-		super(board,x,y,sourceAction)
-		applyEffectPosition = {x: x, y: y}
-		entity = board.getCardAtPosition(applyEffectPosition, @targetType)
+		//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "SpellDarkSacrifice::onApplyEffectToBoardTile -> explode #{entity.name}"
 
-		#Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "SpellDarkSacrifice::onApplyEffectToBoardTile -> explode #{entity.name}"
+		//kill the target entity
+		const killAction = new KillAction(this.getGameSession());
+		killAction.setOwnerId(this.getOwnerId());
+		killAction.setTarget(entity);
+		this.getGameSession().executeAction(killAction);
 
-		#kill the target entity
-		killAction = new KillAction(@getGameSession())
-		killAction.setOwnerId(@getOwnerId())
-		killAction.setTarget(entity)
-		@getGameSession().executeAction(killAction)
+		// add cost reduction for next unit card
+		this.getGameSession().applyModifierContextObject(PlayerModifierManaModifierSingleUse.createCostChangeContextObject(this.costChange, CardType.Unit), this.getGameSession().getGeneralForPlayerId(this.getOwnerId()));
 
-		# add cost reduction for next unit card
-		@getGameSession().applyModifierContextObject(PlayerModifierManaModifierSingleUse.createCostChangeContextObject(@costChange, CardType.Unit), @getGameSession().getGeneralForPlayerId(@getOwnerId()))
-
-		return true
+		return true;
+	}
+}
+SpellDarkSacrifice.initClass();
 
 
-module.exports = SpellDarkSacrifice
+module.exports = SpellDarkSacrifice;

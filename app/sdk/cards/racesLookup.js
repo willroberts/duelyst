@@ -1,12 +1,21 @@
-class Races
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+class Races {
+	static initClass() {
+	
+		this.Neutral = 0;
+		this.Golem = 1;
+		this.Arcanyst = 2;
+		this.Dervish = 3;
+		this.Mech = 4;
+		this.Vespyr = 5;
+		this.Structure = 6;
+		this.BattlePet = 7;
+	}
+}
+Races.initClass();
 
-	@Neutral: 0
-	@Golem: 1
-	@Arcanyst: 2
-	@Dervish: 3
-	@Mech: 4
-	@Vespyr: 5
-	@Structure: 6
-	@BattlePet: 7
-
-module.exports = Races
+module.exports = Races;

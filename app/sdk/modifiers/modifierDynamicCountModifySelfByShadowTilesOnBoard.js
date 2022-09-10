@@ -1,37 +1,58 @@
-Modifier = require './modifier'
-ModifierDynamicCountModifySelf = require './modifierDynamicCountModifySelf'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const ModifierDynamicCountModifySelf = require('./modifierDynamicCountModifySelf');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierDynamicCountModifySelfByShadowTilesOnBoard extends ModifierDynamicCountModifySelf
+class ModifierDynamicCountModifySelfByShadowTilesOnBoard extends ModifierDynamicCountModifySelf {
+	static initClass() {
+	
+		this.prototype.type ="ModifierDynamicCountModifySelfByShadowTilesOnBoard";
+		this.type ="ModifierDynamicCountModifySelfByShadowTilesOnBoard";
+	
+		this.description ="This minion has %X for each friendly Shadow Creep";
+	
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInHand = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	}
 
-	type:"ModifierDynamicCountModifySelfByShadowTilesOnBoard"
-	@type:"ModifierDynamicCountModifySelfByShadowTilesOnBoard"
+	static createContextObject(attackBuff, maxHPBuff, description, appliedName, options) {
+		if (attackBuff == null) { attackBuff = 0; }
+		if (maxHPBuff == null) { maxHPBuff = 0; }
+		if (options == null) { options = undefined; }
+		const contextObject = super.createContextObject(options);
+		const perTileStatBuffContextObject = Modifier.createContextObjectWithAttributeBuffs(attackBuff,maxHPBuff);
+		if (appliedName) {
+			perTileStatBuffContextObject.appliedName = appliedName;
+		}
+		contextObject.description = description;
+		contextObject.modifiersContextObjects = [perTileStatBuffContextObject];
+		return contextObject;
+	}
 
-	@description:"This minion has %X for each friendly Shadow Creep"
+	static getDescription(modifierContextObject) {
+		return this.description.replace(/%X/, modifierContextObject.description);
+	}
 
-	activeInDeck: false
-	activeInHand: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	getCurrentCount() {
+		let allowUntargetable;
+		let shadowTileCount = 0;
+		for (let card of Array.from(this.getGameSession().getBoard().getCards(CardType.Tile, (allowUntargetable=true)))) {
+			if ((card.getBaseCardId() === Cards.Tile.Shadow) && card.isOwnedBy(this.getCard().getOwner())) {
+				shadowTileCount++;
+			}
+		}
+		return shadowTileCount;
+	}
+}
+ModifierDynamicCountModifySelfByShadowTilesOnBoard.initClass();
 
-	@createContextObject: (attackBuff = 0, maxHPBuff = 0, description, appliedName, options = undefined) ->
-		contextObject = super(options)
-		perTileStatBuffContextObject = Modifier.createContextObjectWithAttributeBuffs(attackBuff,maxHPBuff)
-		if appliedName
-			perTileStatBuffContextObject.appliedName = appliedName
-		contextObject.description = description
-		contextObject.modifiersContextObjects = [perTileStatBuffContextObject]
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		return @description.replace /%X/, modifierContextObject.description
-
-	getCurrentCount: () ->
-		shadowTileCount = 0
-		for card in @getGameSession().getBoard().getCards(CardType.Tile, allowUntargetable=true)
-			if card.getBaseCardId() is Cards.Tile.Shadow and card.isOwnedBy(@getCard().getOwner())
-				shadowTileCount++
-		return shadowTileCount
-
-module.exports = ModifierDynamicCountModifySelfByShadowTilesOnBoard
+module.exports = ModifierDynamicCountModifySelfByShadowTilesOnBoard;

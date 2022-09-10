@@ -1,23 +1,35 @@
-ModifierSummonWatchApplyModifiersToBoth = require './modifierSummonWatchApplyModifiersToBoth'
+/*
+ * decaffeinate suggestions:
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierSummonWatchApplyModifiersToBoth = require('./modifierSummonWatchApplyModifiersToBoth');
 
-class ModifierSummonWatchNearbyApplyModifiersToBoth extends ModifierSummonWatchApplyModifiersToBoth
+class ModifierSummonWatchNearbyApplyModifiersToBoth extends ModifierSummonWatchApplyModifiersToBoth {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSummonWatchNearbyApplyModifiersToBoth";
+		this.type ="ModifierSummonWatchNearbyApplyModifiersToBoth";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
+	}
 
-	type:"ModifierSummonWatchNearbyApplyModifiersToBoth"
-	@type:"ModifierSummonWatchNearbyApplyModifiersToBoth"
+	static createContextObject(modifiersContextObjects, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.modifiersContextObjects = modifiersContextObjects;
+		return contextObject;
+	}
 
-	fxResource: ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"]
-
-	@createContextObject: (modifiersContextObjects, options) ->
-		contextObject = super(options)
-		contextObject.modifiersContextObjects = modifiersContextObjects
-		return contextObject
-
-	getIsValidBuffPosition: (summonedUnitPosition) ->
-		entityPosition = @getCard().getPosition()
-		if (Math.abs(summonedUnitPosition.x - entityPosition.x) <= 1) and (Math.abs(summonedUnitPosition.y - entityPosition.y) <= 1)
-			return true
-		else
-			return false
+	getIsValidBuffPosition(summonedUnitPosition) {
+		const entityPosition = this.getCard().getPosition();
+		if ((Math.abs(summonedUnitPosition.x - entityPosition.x) <= 1) && (Math.abs(summonedUnitPosition.y - entityPosition.y) <= 1)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
+ModifierSummonWatchNearbyApplyModifiersToBoth.initClass();
 
 
-module.exports = ModifierSummonWatchNearbyApplyModifiersToBoth
+module.exports = ModifierSummonWatchNearbyApplyModifiersToBoth;

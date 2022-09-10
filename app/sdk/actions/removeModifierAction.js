@@ -1,62 +1,93 @@
-Logger = require 'app/common/logger'
-Action = require './action'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = require('app/common/logger');
+const Action = require('./action');
 
-class RemoveModifierAction extends Action
+class RemoveModifierAction extends Action {
+	static initClass() {
+	
+		this.type ="RemoveModifierAction";
+	
+		this.prototype.isDepthFirst = true; // modifier actions should execute immediately
+		this.prototype.modifierIndex = null;
+	
+		this.prototype.getCard = this.prototype.getTarget;
+		 // index of modifier to remove
+	}
 
-	@type:"RemoveModifierAction"
+	constructor(gameSession, modifier) {
+		if (this.type == null) { this.type = RemoveModifierAction.type; }
+		super(gameSession);
+		this.setModifier(modifier);
+	}
 
-	isDepthFirst: true # modifier actions should execute immediately
-	modifierIndex: null # index of modifier to remove
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	constructor: (gameSession, modifier) ->
-		@type ?= RemoveModifierAction.type
-		super(gameSession)
-		@setModifier(modifier)
+		p.cachedModifier = null;
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		return p;
+	}
 
-		p.cachedModifier = null
+	getLogName() {
+		return super.getLogName() + "_" + __guard__(this.getModifier(), x => x.getLogName());
+	}
 
-		return p
+	setModifierIndex(val) {
+		return this.modifierIndex = val;
+	}
 
-	getLogName: () ->
-		return super() + "_" + @getModifier()?.getLogName()
+	getModifierIndex() {
+		return this.modifierIndex;
+	}
 
-	setModifierIndex: (val) ->
-		@modifierIndex = val
+	setModifier(modifier) {
+		return this.setModifierIndex(modifier != null ? modifier.getIndex() : undefined);
+	}
 
-	getModifierIndex: () ->
-		return @modifierIndex
+	getModifier() {
+		if (this.modifierIndex != null) {
+			if (this._private.cachedModifier == null) { this._private.cachedModifier = this.getGameSession().getModifierByIndex(this.modifierIndex); }
+			return this._private.cachedModifier;
+		}
+	}
 
-	setModifier: (modifier) ->
-		@setModifierIndex(modifier?.getIndex())
+	getTargetIndex() {
+		return __guard__(this.getModifier(), x => x.getCardAffectedIndex());
+	}
 
-	getModifier: () ->
-		if @modifierIndex?
-			@_private.cachedModifier ?= @getGameSession().getModifierByIndex(@modifierIndex)
-			return @_private.cachedModifier
+	getTarget() {
+		if ((this._private.target == null) && (this.modifierIndex != null)) {
+			this._private.target = __guard__(this.getModifier(), x => x.getCardAffected());
+		}
+		return this._private.target;
+	}
 
-	getTargetIndex:() ->
-		return @getModifier()?.getCardAffectedIndex()
+	_execute() {
+		super._execute();
 
-	getTarget: () ->
-		if !@_private.target? and @modifierIndex?
-			@_private.target = @getModifier()?.getCardAffected()
-		return @_private.target
+		const modifier = this.getModifier();
+		if (modifier != null) {
+			//Logger.module("SDK").debug("#{@getGameSession().gameId} RemoveModifierAction._execute -> modifier #{modifier?.getLogName()}")
+			// set modifier as removed by this action
+			modifier.setRemovedByAction(this);
 
-	getCard: @::getTarget
+			// remove modifier
+			return this.getGameSession().p_removeModifier(modifier);
+		}
+	}
+}
+RemoveModifierAction.initClass();
 
-	_execute: () ->
-		super()
+module.exports = RemoveModifierAction;
 
-		modifier = @getModifier()
-		if modifier?
-			#Logger.module("SDK").debug("#{@getGameSession().gameId} RemoveModifierAction._execute -> modifier #{modifier?.getLogName()}")
-			# set modifier as removed by this action
-			modifier.setRemovedByAction(@)
-
-			# remove modifier
-			@getGameSession().p_removeModifier(modifier)
-
-module.exports = RemoveModifierAction
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

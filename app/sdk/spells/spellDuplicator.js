@@ -1,23 +1,32 @@
-Spell = require './spell'
-CardType = require 'app/sdk/cards/cardType'
-PutCardInDeckAction = require 'app/sdk/actions/putCardInDeckAction'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Spell = require('./spell');
+const CardType = require('app/sdk/cards/cardType');
+const PutCardInDeckAction = require('app/sdk/actions/putCardInDeckAction');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
 
-class SpellDuplicator extends Spell
+class SpellDuplicator extends Spell {
 
-	onApplyOneEffectToBoard: (board,x,y,sourceAction) ->
+	onApplyOneEffectToBoard(board,x,y,sourceAction) {
 
-		applyEffectPosition = {x: x, y: y}
-		entityToClone = board.getUnitAtPosition(applyEffectPosition)
-		ownerId = @getOwnerId()
+		const applyEffectPosition = {x, y};
+		const entityToClone = board.getUnitAtPosition(applyEffectPosition);
+		const ownerId = this.getOwnerId();
 
-		if entityToClone?
-			# put fresh copy of spell into deck
-			a = new PutCardInDeckAction(@getGameSession(), ownerId, entityToClone.createNewCardData())
-			@getGameSession().executeAction(a)
-			b = new PutCardInDeckAction(@getGameSession(), ownerId, entityToClone.createNewCardData())
-			@getGameSession().executeAction(b)
-			c = new PutCardInDeckAction(@getGameSession(), ownerId, entityToClone.createNewCardData())
-			@getGameSession().executeAction(c)
+		if (entityToClone != null) {
+			// put fresh copy of spell into deck
+			const a = new PutCardInDeckAction(this.getGameSession(), ownerId, entityToClone.createNewCardData());
+			this.getGameSession().executeAction(a);
+			const b = new PutCardInDeckAction(this.getGameSession(), ownerId, entityToClone.createNewCardData());
+			this.getGameSession().executeAction(b);
+			const c = new PutCardInDeckAction(this.getGameSession(), ownerId, entityToClone.createNewCardData());
+			return this.getGameSession().executeAction(c);
+		}
+	}
+}
 
-module.exports = SpellDuplicator
+module.exports = SpellDuplicator;

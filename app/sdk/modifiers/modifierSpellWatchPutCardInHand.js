@@ -1,25 +1,37 @@
-Modifier = require './modifier'
-CardType = require 'app/sdk/cards/cardType'
-ModifierSpellWatch = require './modifierSpellWatch'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Modifier = require('./modifier');
+const CardType = require('app/sdk/cards/cardType');
+const ModifierSpellWatch = require('./modifierSpellWatch');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 
-class ModifierSpellWatchPutCardInHand extends ModifierSpellWatch
+class ModifierSpellWatchPutCardInHand extends ModifierSpellWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSpellWatchPutCardInHand";
+		this.type ="ModifierSpellWatchPutCardInHand";
+	
+		this.modifierName ="Spell Watch (Put Card In Hand)";
+		this.description = "Whenever you play a spell, put a a card in your Action Bar";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch"];
+	}
 
-	type:"ModifierSpellWatchPutCardInHand"
-	@type:"ModifierSpellWatchPutCardInHand"
+	static createContextObject(cardDataOrIndexToPutInHand, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToPutInHand = cardDataOrIndexToPutInHand;
+		return contextObject;
+	}
 
-	@modifierName:"Spell Watch (Put Card In Hand)"
-	@description: "Whenever you play a spell, put a a card in your Action Bar"
+	onSpellWatch(action) {
+		const a = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), this.cardDataOrIndexToPutInHand);
+		return this.getGameSession().executeAction(a);
+	}
+}
+ModifierSpellWatchPutCardInHand.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierSpellWatch"]
-
-	@createContextObject: (cardDataOrIndexToPutInHand, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToPutInHand = cardDataOrIndexToPutInHand
-		return contextObject
-
-	onSpellWatch: (action) ->
-		a = new PutCardInHandAction(this.getGameSession(), @getCard().getOwnerId(), @cardDataOrIndexToPutInHand)
-		this.getGameSession().executeAction(a)
-
-module.exports = ModifierSpellWatchPutCardInHand
+module.exports = ModifierSpellWatchPutCardInHand;

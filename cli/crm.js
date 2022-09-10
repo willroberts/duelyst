@@ -1,161 +1,187 @@
-# libraries
-path = require('path')
-require('app-module-path').addPath(path.join(__dirname, '..'))
-program = require('vorpal')()
-Promise = require 'bluebird'
-moment = require 'moment'
-ProgressBar = require 'progress'
-config = null
-inquirerPromisifed = require 'bluebird-inquirer'
-inquirer = require 'inquirer'
-colors = require 'colors'
-uuid = require 'node-uuid'
-PrettyError = require 'pretty-error'
-prettyjson = require 'prettyjson'
-Logger = require 'app/common/logger'
-Errors = require 'server/lib/custom_errors'
-validator = require 'validator'
-_ = require 'underscore'
-encryptor = require './lib/crypt'
-PaypalTools = require './lib/paypal-tools'
-fs = require 'fs'
-url = require 'url'
-hbs = require 'hbs'
-handlebars = hbs.handlebars
-Promise.promisifyAll(fs)
-Promise.promisifyAll(encryptor)
-helpers = require 'scripts/helpers'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS207: Consider shorter variations of null checks
+ * DS208: Avoid top-level this
+ * DS209: Avoid top-level return
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+// libraries
+const path = require('path');
+require('app-module-path').addPath(path.join(__dirname, '..'));
+const program = require('vorpal')();
+const Promise = require('bluebird');
+const moment = require('moment');
+const ProgressBar = require('progress');
+let config = null;
+const inquirerPromisifed = require('bluebird-inquirer');
+const inquirer = require('inquirer');
+const colors = require('colors');
+const uuid = require('node-uuid');
+const PrettyError = require('pretty-error');
+const prettyjson = require('prettyjson');
+const Logger = require('app/common/logger');
+const Errors = require('server/lib/custom_errors');
+const validator = require('validator');
+const _ = require('underscore');
+const encryptor = require('./lib/crypt');
+const PaypalTools = require('./lib/paypal-tools');
+const fs = require('fs');
+const url = require('url');
+const hbs = require('hbs');
+const {
+    handlebars
+} = hbs;
+Promise.promisifyAll(fs);
+Promise.promisifyAll(encryptor);
+const helpers = require('scripts/helpers');
 
-# Wartech general achievements
-WartechGeneralFaction1Achievement = require 'app/sdk/achievements/wartechAchievements/wartechGeneralFaction1Achievement'
-WartechGeneralFaction2Achievement = require 'app/sdk/achievements/wartechAchievements/wartechGeneralFaction2Achievement'
-WartechGeneralFaction3Achievement = require 'app/sdk/achievements/wartechAchievements/wartechGeneralFaction3Achievement'
-WartechGeneralFaction4Achievement = require 'app/sdk/achievements/wartechAchievements/wartechGeneralFaction4Achievement'
-WartechGeneralFaction5Achievement = require 'app/sdk/achievements/wartechAchievements/wartechGeneralFaction5Achievement'
-WartechGeneralFaction6Achievement = require 'app/sdk/achievements/wartechAchievements/wartechGeneralFaction6Achievement'
+// Wartech general achievements
+const WartechGeneralFaction1Achievement = require('app/sdk/achievements/wartechAchievements/wartechGeneralFaction1Achievement');
+const WartechGeneralFaction2Achievement = require('app/sdk/achievements/wartechAchievements/wartechGeneralFaction2Achievement');
+const WartechGeneralFaction3Achievement = require('app/sdk/achievements/wartechAchievements/wartechGeneralFaction3Achievement');
+const WartechGeneralFaction4Achievement = require('app/sdk/achievements/wartechAchievements/wartechGeneralFaction4Achievement');
+const WartechGeneralFaction5Achievement = require('app/sdk/achievements/wartechAchievements/wartechGeneralFaction5Achievement');
+const WartechGeneralFaction6Achievement = require('app/sdk/achievements/wartechAchievements/wartechGeneralFaction6Achievement');
 
-generatePushId = require 'app/common/generate_push_id'
+const generatePushId = require('app/common/generate_push_id');
 
-# firebase
-DuelystFirebase = require 'server/lib/duelyst_firebase_module'
-FirebasePromises = require 'server/lib/firebase_promises'
-fbUtil = require 'app/common/utils/utils_firebase'
-hashHelpers = require 'server/lib/hash_helpers'
+// firebase
+const DuelystFirebase = require('server/lib/duelyst_firebase_module');
+const FirebasePromises = require('server/lib/firebase_promises');
+const fbUtil = require('app/common/utils/utils_firebase');
+const hashHelpers = require('server/lib/hash_helpers');
 
-# data access modules
-DataAccessHelpers = require('server/lib/data_access/helpers')
-InventoryModule = null
-UsersModule = null
-ChallengesModule = null
-SyncModule = null
-GiftCrateModule = null
-GauntletModule = null
-PaypalModule = null
-CosmeticChestsModule = null
-ShopModule = null
-QuestsModule = null
-AchievementsModule = null
+// data access modules
+const DataAccessHelpers = require('server/lib/data_access/helpers');
+let InventoryModule = null;
+let UsersModule = null;
+let ChallengesModule = null;
+let SyncModule = null;
+let GiftCrateModule = null;
+const GauntletModule = null;
+const PaypalModule = null;
+let CosmeticChestsModule = null;
+let ShopModule = null;
+let QuestsModule = null;
+let AchievementsModule = null;
 
-# libs
-Steam = require 'server/lib/steam'
+// libs
+const Steam = require('server/lib/steam');
 
-# sdk
-SDK = require 'app/sdk'
+// sdk
+const SDK = require('app/sdk');
 
-# setup globals
-knex = null
-mailer = null
+// setup globals
+let knex = null;
+const mailer = null;
 
-# configure pretty error
-prettyError = new PrettyError()
-prettyError.skipNodeFiles()
-prettyError.skipPackage('bluebird')
+// configure pretty error
+const prettyError = new PrettyError();
+prettyError.skipNodeFiles();
+prettyError.skipPackage('bluebird');
 
-# configure bluebird long stack support
-process.env.BLUEBIRD_DEBUG = 1
+// configure bluebird long stack support
+process.env.BLUEBIRD_DEBUG = 1;
 
-# configure logger
-Logger.enabled = true
+// configure logger
+Logger.enabled = true;
 
-###*
-# Custom error used by the confirmation prompt promise
-# @class
-###
-class DidNotConfirmError extends Error
-	constructor: (@message = "You did not confirm.") ->
-		@name = "DidNotConfirmError"
-		@status = 404
-		@description = "You did not confirm."
-		Error.captureStackTrace(this, DidNotConfirmError)
-		super(@message)
+/**
+ * Custom error used by the confirmation prompt promise
+ * @class
+ */
+class DidNotConfirmError extends Error {
+	constructor(message) {
+		if (message == null) { message = "You did not confirm."; }
+		this.message = message;
+		this.name = "DidNotConfirmError";
+		this.status = 404;
+		this.description = "You did not confirm.";
+		Error.captureStackTrace(this, DidNotConfirmError);
+		super(this.message);
+	}
+}
 
-###*
-# Show a general purpose confirmation prompt
-# @public
-# @param	{String}	msg			Custom confirmation message.
-# @return	{Promise}				Promise that will resolve if the user confirms with a 'Y' or reject with DidNotConfirmError otherwise.
-###
-confirmAsync = (msg="...")->
-	return new Promise (resolve,reject)->
-		unless program.noprompt?
-			inquirer.prompt [{
-				name:'confirm'
-				message:"<#{config.get('env')}> #{msg} continue? Y/N?"
-			}],(answers)->
-				if answers.confirm.toLowerCase() == "y"
-					resolve()
-				else
-					reject(new DidNotConfirmError())
-		else
-			resolve()
+/**
+ * Show a general purpose confirmation prompt
+ * @public
+ * @param	{String}	msg			Custom confirmation message.
+ * @return	{Promise}				Promise that will resolve if the user confirms with a 'Y' or reject with DidNotConfirmError otherwise.
+ */
+const confirmAsync = function(msg){
+	if (msg == null) { msg = "..."; }
+	return new Promise(function(resolve,reject){
+		if (program.noprompt == null) {
+			return inquirer.prompt([{
+				name:'confirm',
+				message:`<${config.get('env')}> ${msg} continue? Y/N?`
+			}],function(answers){
+				if (answers.confirm.toLowerCase() === "y") {
+					return resolve();
+				} else {
+					return reject(new DidNotConfirmError());
+				}
+			});
+		} else {
+			return resolve();
+		}
+	});
+};
 
-promptWithList = (message,inputChoices)->
-	return inquirerPromisifed.prompt([{
-		name:'choice'
-		message:message
-		type:"list"
-		choices:inputChoices
-	}]).then (promptResult)->
-		return promptResult.choice
+const promptWithList = (message, inputChoices) => inquirerPromisifed.prompt([{
+    name:'choice',
+    message,
+    type:"list",
+    choices:inputChoices
+}]).then(promptResult => promptResult.choice);
 
 
-###*
-# console.log data as a table
-# @public
-# @param	{String}	data			data to print out.
-###
-logAsTable = (dataRows)->
-	keys = _.keys(dataRows[0])
-	Table = require('cli-table')
-	t = new Table({
+/**
+ * console.log data as a table
+ * @public
+ * @param	{String}	data			data to print out.
+ */
+const logAsTable = function(dataRows){
+	const keys = _.keys(dataRows[0]);
+	const Table = require('cli-table');
+	const t = new Table({
 		head: keys
-	})
-	_.each dataRows, (r)->
-		values = _.values(r)
-		values = _.map values, (v)->
-			if v instanceof Date
-				v = moment(v).format("YYYY-MM-DD HH:mm:ss")
-			return v || ""
-		t.unshift values
+	});
+	_.each(dataRows, function(r){
+		let values = _.values(r);
+		values = _.map(values, function(v){
+			if (v instanceof Date) {
+				v = moment(v).format("YYYY-MM-DD HH:mm:ss");
+			}
+			return v || "";
+		});
+		return t.unshift(values);
+	});
 
-	strTable = t.toString()
-	console.log(strTable)
-	return strTable
+	const strTable = t.toString();
+	console.log(strTable);
+	return strTable;
+};
 
 program
-	.version('0.0.1')
-	# .option('-d, --debug', 'Enable verbose debug logging')
-	# .option('-n, --noprompt', 'Enable/disable confirmation prompts')
+	.version('0.0.1');
+	// .option('-d, --debug', 'Enable verbose debug logging')
+	// .option('-n, --noprompt', 'Enable/disable confirmation prompts')
 
 program
-	.command 'config:info'
-	.description 'print out current config info'
-	.action (args,callback)->
-		configData = JSON.parse(config.toString())
-		console.log prettyjson.render(_.pick(configData,["env","firebase"]))
-		callback()
+	.command('config:info')
+	.description('print out current config info')
+	.action(function(args,callback){
+		const configData = JSON.parse(config.toString());
+		console.log(prettyjson.render(_.pick(configData,["env","firebase"])));
+		return callback();
+});
 
-###
+/*
 program
 	.command 'invites:generate <count>'
 	.description 'generate invite codes'
@@ -191,17 +217,17 @@ program
 				console.log code
 
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch DidNotConfirmError, (e)->
 			console.log(e.message)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch (e)->
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'invites:info <code>'
@@ -225,13 +251,13 @@ program
 				console.log "CODE NOT FOUND".red
 
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch (e)->
 
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'mailchimp:segments <list_name>'
@@ -290,13 +316,13 @@ program
 
 			console.log prettyjson.render(segment_data)
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch (e)->
 
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'mailchimp:add_gift_codes_to_segment <list_name> <segment_name> <field_name> <code_type>'
@@ -362,13 +388,13 @@ program
 			if program.debug
 				console.log prettyjson.render(segment_data)
 			segment_id = null
-			# var to initialize the progress bar
+			* var to initialize the progress bar
 			bar = null
 			for segment in segment_data
 				if segment.name == segment_name
 					if program.debug
 						console.log("found a static segment: #{segment.name} with ID: #{segment.id}")
-					# lazy initialize progress bar
+					* lazy initialize progress bar
 					bar ?= new ProgressBar('loading segment [:bar] :percent :etas', {
 						complete: '=',
 						incomplete: ' ',
@@ -396,7 +422,7 @@ program
 								members.push(member)
 
 							bar.tick(data["data"].length)
-							# console.log("got #{members.length} of #{data["total"]}")
+							* console.log("got #{members.length} of #{data["total"]}")
 
 							if members.length % 100 != 0
 								resolve(members)
@@ -404,7 +430,7 @@ program
 								next_page = members.length / 100
 								add_members(next_page)
 					)
-				# start loading member data
+				* start loading member data
 				add_members(0)
 
 		.then (members_data)-> # filter to find members with no no codes
@@ -415,10 +441,10 @@ program
 				hasCode = false
 				if member["merges"][field_name]?.length > 0
 					if validator.isUUID(member["merges"][field_name])
-						# console.log "CODE found #{member["merges"][field_name]}"
+						* console.log "CODE found #{member["merges"][field_name]}"
 						hasCode = true
 					else
-						# console.log "CODE #{member["merges"][field_name]} considered falsy".yellow
+						* console.log "CODE #{member["merges"][field_name]} considered falsy".yellow
 
 				return !hasCode
 
@@ -496,18 +522,18 @@ program
 
 			console.log("SUCCESS".green + ": #{@.members_with_no_codes.length} codes merged into mailchimp list")
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch DidNotConfirmError, (e)->
 			console.log(e.message)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch (e)->
 			if e
 				console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'mailchimp:add_gift_codes_to_list <list_name> <code_class>'
@@ -566,7 +592,7 @@ program
 			api = @.api
 			console.log("found list #{list_id}")
 
-			# lazy initialize progress bar
+			* lazy initialize progress bar
 			bar = new ProgressBar('loading list [:bar] :percent :etas', {
 				complete: '=',
 				incomplete: ' ',
@@ -574,7 +600,7 @@ program
 				total: parseInt(listData.stats.member_count)
 			})
 
-			# load members 100 by 100
+			* load members 100 by 100
 			return new Promise (resolve,reject) ->
 
 				members = []
@@ -589,7 +615,7 @@ program
 								members.push(member)
 
 							bar.tick(data["data"].length)
-							# console.log("got #{members.length} of #{data["total"]}")
+							* console.log("got #{members.length} of #{data["total"]}")
 
 							if members.length % 100 != 0
 								resolve(members)
@@ -597,7 +623,7 @@ program
 								next_page = members.length / 100
 								add_members(next_page)
 					)
-				# start loading member data
+				* start loading member data
 				add_members(0)
 		.then (members_data)-> # filter to find members with no no codes
 			@.members_data = members_data
@@ -605,10 +631,10 @@ program
 				hasCode = false
 				if member["merges"][field_name]?.length > 0
 					if validator.isUUID(member["merges"][field_name])
-						# console.log "CODE found #{member["merges"][field_name]}"
+						* console.log "CODE found #{member["merges"][field_name]}"
 						hasCode = true
 					else
-						# console.log "CODE #{member["merges"][field_name]} considered falsy".yellow
+						* console.log "CODE #{member["merges"][field_name]} considered falsy".yellow
 				return !hasCode
 			console.log("Found #{members_data.length} members in the specified list and #{@.members_with_no_codes.length} with no codes")
 			return confirmAsync("generate #{@.members_with_no_codes.length} codes?")
@@ -686,7 +712,7 @@ program
 			console.log(e.message)
 		.catch (e)->
 			console.log(e.message)
-			# console.log prettyError.render(e)
+			* console.log prettyError.render(e)
 			callback(e)
 
 program
@@ -699,7 +725,7 @@ program
 		MailChimpAPI = require('mailchimp').MailChimpAPI
 		apiKey = config.get('mailchimpApiKey')
 
-		#
+		*
 		whereClause = ()->
 			this.where('created_at', '>', '2017-03-01') # 'username':'raithe'
 		listName = "DUELYST BETA Requests"
@@ -823,694 +849,756 @@ program
 
 			console.log("ALL DONE. #{@.found_count} found, #{@.not_found_count} not found".green)
 			callback()
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch DidNotConfirmError, (e)->
 
 			console.log(e.message)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch (e)->
 
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
-###
+			* process.exit(1)
+*/
 program
-	.command 'users:info <username_or_email>'
-	.description 'get info on a user based on username or email'
-	.action (args,callback)->
+	.command('users:info <username_or_email>')
+	.description('get info on a user based on username or email')
+	.action(function(args,callback){
 
-		username_or_email = args.username_or_email
-		fieldName = 'username'
-		if username_or_email.indexOf('@') > 0
-			fieldName = 'email'
-		if username_or_email.indexOf("id:") == 0
-			fieldName = 'id'
-			username_or_email = username_or_email.replace("id:","")
+		let {
+            username_or_email
+        } = args;
+		let fieldName = 'username';
+		if (username_or_email.indexOf('@') > 0) {
+			fieldName = 'email';
+		}
+		if (username_or_email.indexOf("id:") === 0) {
+			fieldName = 'id';
+			username_or_email = username_or_email.replace("id:","");
+		}
 
-		if fieldName == 'email' or fieldName == 'username'
-			username_or_email = username_or_email.toLowerCase()
+		if ((fieldName === 'email') || (fieldName === 'username')) {
+			username_or_email = username_or_email.toLowerCase();
+		}
 
-		knex("users").where(fieldName,username_or_email).then (rows)->
+		return knex("users").where(fieldName,username_or_email).then(function(rows){
 
-			if rows.length == 0
-				throw new Error("Could not find user")
+			if (rows.length === 0) {
+				throw new Error("Could not find user");
+			}
 
-			_.each(rows,(r)-> delete r.password)
+			_.each(rows,r => delete r.password);
 
-			console.log prettyjson.render(rows)
-			callback()
-			# process.exit(0)
-
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback(e)
-			# process.exit(1)
+			console.log(prettyjson.render(rows));
+			return callback();}).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback(e);
+		});
+});
+			// process.exit(1)
 
 program
-	.command 'users:currency_log <username_or_email>'
-	.description 'get currency log for a user based on username or email'
-	.action (args,callback)->
-		username_or_email = args.username_or_email
-		fieldName = 'username'
-		if username_or_email.indexOf('@') > 0
-			fieldName = 'email'
-		if username_or_email.indexOf("id:") == 0
-			fieldName = 'id'
-			username_or_email = username_or_email.replace("id:","")
+	.command('users:currency_log <username_or_email>')
+	.description('get currency log for a user based on username or email')
+	.action(function(args,callback){
+		let {
+            username_or_email
+        } = args;
+		let fieldName = 'username';
+		if (username_or_email.indexOf('@') > 0) {
+			fieldName = 'email';
+		}
+		if (username_or_email.indexOf("id:") === 0) {
+			fieldName = 'id';
+			username_or_email = username_or_email.replace("id:","");
+		}
 
-		if fieldName == 'email' or fieldName == 'username'
-			username_or_email = username_or_email.toLowerCase()
+		if ((fieldName === 'email') || (fieldName === 'username')) {
+			username_or_email = username_or_email.toLowerCase();
+		}
 
-		knex("users").where(fieldName,username_or_email).first('id','username','email').then (userRow)->
+		return knex("users").where(fieldName,username_or_email).first('id','username','email').then(function(userRow){
 
-			if not userRow?
-				throw new Error("Could not find user")
+			if ((userRow == null)) {
+				throw new Error("Could not find user");
+			}
 
-			console.log prettyjson.render({
-				id:userRow.id
-				username:userRow.username
+			console.log(prettyjson.render({
+				id:userRow.id,
+				username:userRow.username,
 				email:userRow.email
 			})
+			);
 
-			return knex("user_currency_log").where('user_id',userRow.id).orderByRaw('created_at desc')
+			return knex("user_currency_log").where('user_id',userRow.id).orderByRaw('created_at desc');}).then(function(rows){
 
-		.then (rows)->
+			_.each(rows, function(c){
+				delete c.id;
+				return delete c.user_id;
+			});
 
-			_.each rows, (c)->
-				delete c.id
-				delete c.user_id
-
-			logAsTable(rows)
-			callback()
-			# process.exit(0)
-
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback(e)
-			# process.exit(1)
+			logAsTable(rows);
+			return callback();}).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback(e);
+		});
+});
+			// process.exit(1)
 
 program
-	.command 'sales:add_sale <sku> <sale_percent_discount> <sale_start> <sale_end>'
-	.description 'creates product sale'
-	.action (args,callback)->
-		sku = args.sku
-		salePercentDiscount = args.sale_percent_discount
-		saleStart = args.sale_start
-		saleEnd = args.sale_end
+	.command('sales:add_sale <sku> <sale_percent_discount> <sale_start> <sale_end>')
+	.description('creates product sale')
+	.action(function(args,callback){
+		const {
+            sku
+        } = args;
+		const salePercentDiscount = args.sale_percent_discount;
+		const saleStart = args.sale_start;
+		const saleEnd = args.sale_end;
 
-		ShopModule ?= require 'server/lib/data_access/shop'
+		if (ShopModule == null) { ShopModule = require('server/lib/data_access/shop'); }
 
-		if sku == null or ShopModule.productDataForSKU(sku) == null
-			throw new Error("Invalid sku: " + sku)
+		if ((sku === null) || (ShopModule.productDataForSKU(sku) === null)) {
+			throw new Error("Invalid sku: " + sku);
+		}
 
-		if salePercentDiscount == null or salePercentDiscount < 0 or salePercentDiscount > 1.00
-			throw new Error("Invalid discount: " + salePercentDiscount + " (Expecting a number between 0 and 1)")
+		if ((salePercentDiscount === null) || (salePercentDiscount < 0) || (salePercentDiscount > 1.00)) {
+			throw new Error("Invalid discount: " + salePercentDiscount + " (Expecting a number between 0 and 1)");
+		}
 
-		if saleStart == null
-			throw new Error("Invalid sale start: " + saleStart)
+		if (saleStart === null) {
+			throw new Error("Invalid sale start: " + saleStart);
+		}
 
-		if saleEnd == null
-			throw new Error("Invalid sale end: " + saleEnd)
+		if (saleEnd === null) {
+			throw new Error("Invalid sale end: " + saleEnd);
+		}
 
-		saleStartMoment = moment.utc(saleStart)
-		saleEndMoment = moment.utc(saleEnd)
-		productData = ShopModule.productDataForSKU(sku)
+		const saleStartMoment = moment.utc(saleStart);
+		const saleEndMoment = moment.utc(saleEnd);
+		const productData = ShopModule.productDataForSKU(sku);
 
-		# Do Rounding here
-		newProductPrice = Math.floor(productData.price * (1 - salePercentDiscount))
+		// Do Rounding here
+		const newProductPrice = Math.floor(productData.price * (1 - salePercentDiscount));
 
-		confirmAsync("Are you sure you want to create the following sale for '#{productData.name}':\n" +
-					"Original Price: #{productData.price}\n" +
-					"Discount Percent: #{salePercentDiscount}\n" +
-					"New Price: #{newProductPrice}\n" +
-					"Sale Start: #{saleStartMoment.toString()}\n" +
-					"Sale End: #{saleEndMoment.toString()}\n" +
+		return confirmAsync(`Are you sure you want to create the following sale for '${productData.name}':\n` +
+					`Original Price: ${productData.price}\n` +
+					`Discount Percent: ${salePercentDiscount}\n` +
+					`New Price: ${newProductPrice}\n` +
+					`Sale Start: ${saleStartMoment.toString()}\n` +
+					`Sale End: ${saleEndMoment.toString()}\n` +
 					"...?")
-		.then () ->
-			saleData = {
-				sale_id: generatePushId()
-				sku: sku
-				sale_price: newProductPrice
-				sale_starts_at: saleStartMoment.toDate()
-				sale_ends_at: saleEndMoment.toDate()
+		.then(function() {
+			const saleData = {
+				sale_id: generatePushId(),
+				sku,
+				sale_price: newProductPrice,
+				sale_starts_at: saleStartMoment.toDate(),
+				sale_ends_at: saleEndMoment.toDate(),
 				created_at: moment.utc().toDate()
 
-			}
-			return knex("shop_sales").insert(saleData)
-		.then ()->
-			return DuelystFirebase.connect().getRootRef()
-		.then (fbRootRef) ->
-			return FirebasePromises.set(fbRootRef.child('shop-sales').child("sales_updated_at"),moment.utc().valueOf())
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback(e)
+			};
+			return knex("shop_sales").insert(saleData);}).then(() => DuelystFirebase.connect().getRootRef()).then(fbRootRef => FirebasePromises.set(fbRootRef.child('shop-sales').child("sales_updated_at"),moment.utc().valueOf())).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback(e);
+		});
+});
 
 
 program
-	.command 'sales:delete_sale <sale_id>'
-	.description 'Deletes a sale - should only be used for development purposes, disable sales for production'
-	.action (args,callback)->
-		saleId = args.sale_id
+	.command('sales:delete_sale <sale_id>')
+	.description('Deletes a sale - should only be used for development purposes, disable sales for production')
+	.action(function(args,callback){
+		const saleId = args.sale_id;
 
 		return knex("shop_sales").first().where("sale_id",saleId)
-		.then (saleRowToBeDeleted) ->
-			if (saleRowToBeDeleted == null)
-				throw new Error("No matching sale with id: " + saleId)
+		.then(function(saleRowToBeDeleted) {
+			if (saleRowToBeDeleted === null) {
+				throw new Error("No matching sale with id: " + saleId);
+			}
 
-			return confirmAsync("!Sales on production should be DISABLED not deleted!"
-					"Are you sure you want to delete the following sale:\n" + prettyjson.render(saleRowToBeDeleted)
-					"...?")
-		.then () ->
-			return knex("shop_sales").where("sale_id",saleId).delete()
-		.then ()->
-			return DuelystFirebase.connect().getRootRef()
-		.then (fbRootRef) ->
-			return FirebasePromises.set(fbRootRef.child('shop-sales').child("sales_updated_at"),moment.utc().valueOf())
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback(e)
+			return confirmAsync("!Sales on production should be DISABLED not deleted!",
+					"Are you sure you want to delete the following sale:\n" + prettyjson.render(saleRowToBeDeleted),
+					"...?");}).then(() => knex("shop_sales").where("sale_id",saleId).delete()).then(() => DuelystFirebase.connect().getRootRef()).then(fbRootRef => FirebasePromises.set(fbRootRef.child('shop-sales').child("sales_updated_at"),moment.utc().valueOf())).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback(e);
+		});
+});
 
 program
-	.command 'sales:list_all'
-	.description 'Reports a list of all shop sales'
-	.action (args,callback)->
+	.command('sales:list_all')
+	.description('Reports a list of all shop sales')
+	.action(function(args,callback){
 
-		MOMENT_NOW_UTC = moment.utc()
+		const MOMENT_NOW_UTC = moment.utc();
 
 
 		return knex("shop_sales").select()
-		.then (shopSaleRows)->
-			console.log prettyjson.render(shopSaleRows)
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback(e)
+		.then(shopSaleRows => console.log(prettyjson.render(shopSaleRows))).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback(e);
+		});
+});
 
 program
-	.command 'sales:list_by_page <page_num>'
-	.description 'Reports a list of shop sales '
-	.action (args,callback)->
-		ShopModule ?= require 'server/lib/data_access/shop'
+	.command('sales:list_by_page <page_num>')
+	.description('Reports a list of shop sales ')
+	.action(function(args,callback){
+		if (ShopModule == null) { ShopModule = require('server/lib/data_access/shop'); }
 
-		MOMENT_NOW_UTC = moment.utc()
-		pageNum = args.page_num
-		numPerPage = 5
+		const MOMENT_NOW_UTC = moment.utc();
+		const pageNum = args.page_num;
+		const numPerPage = 5;
 
 		return knex("shop_sales").select().orderBy("sale_starts_at","desc")
-		.then (shopSaleRows)->
-			for saleRow in shopSaleRows
-				saleRow.discount_percent = 1 - (saleRow.sale_price / ShopModule.productDataForSKU(saleRow.sku).price)
-			console.log prettyjson.render(shopSaleRows)
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback(e)
+		.then(function(shopSaleRows){
+			for (let saleRow of Array.from(shopSaleRows)) {
+				saleRow.discount_percent = 1 - (saleRow.sale_price / ShopModule.productDataForSKU(saleRow.sku).price);
+			}
+			return console.log(prettyjson.render(shopSaleRows));}).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback(e);
+		});
+});
 
 program
-	.command 'users:spirit_orbs <username_or_email>'
-	.description 'get currency log for a user based on username or email'
-	.action (args,callback)->
-		username_or_email = args.username_or_email
-		fieldName = 'username'
-		if username_or_email.indexOf('@') > 0
-			fieldName = 'email'
-		if username_or_email.indexOf("id:") == 0
-			fieldName = 'id'
-			username_or_email = username_or_email.replace("id:","")
+	.command('users:spirit_orbs <username_or_email>')
+	.description('get currency log for a user based on username or email')
+	.action(function(args,callback){
+		let {
+            username_or_email
+        } = args;
+		let fieldName = 'username';
+		if (username_or_email.indexOf('@') > 0) {
+			fieldName = 'email';
+		}
+		if (username_or_email.indexOf("id:") === 0) {
+			fieldName = 'id';
+			username_or_email = username_or_email.replace("id:","");
+		}
 
-		if fieldName == 'email' or fieldName == 'username'
-			username_or_email = username_or_email.toLowerCase()
+		if ((fieldName === 'email') || (fieldName === 'username')) {
+			username_or_email = username_or_email.toLowerCase();
+		}
 
-		knex("users").where(fieldName,username_or_email).first('id','username','email').then (userRow)->
+		return knex("users").where(fieldName,username_or_email).first('id','username','email').then(function(userRow){
 
-			if not userRow?
-				throw new Error("Could not find user")
+			if ((userRow == null)) {
+				throw new Error("Could not find user");
+			}
 
-			console.log prettyjson.render({
-				id:userRow.id
-				username:userRow.username
+			console.log(prettyjson.render({
+				id:userRow.id,
+				username:userRow.username,
 				email:userRow.email
 			})
+			);
 
-			return knex("user_spirit_orbs").where('user_id',userRow.id).orderByRaw('created_at desc')
+			return knex("user_spirit_orbs").where('user_id',userRow.id).orderByRaw('created_at desc');}).then(function(rows){
 
-		.then (rows)->
+			_.each(rows, function(c){
+				delete c.id;
+				return delete c.user_id;
+			});
 
-			_.each rows, (c)->
-				delete c.id
-				delete c.user_id
-
-			logAsTable(rows)
-			callback()
-			# process.exit(0)
-
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback(e)
-			# process.exit(1)
+			logAsTable(rows);
+			return callback();}).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback(e);
+		});
+});
+			// process.exit(1)
 
 program
-	.command 'users:cards <username_or_email> [card_id]'
-	.description 'get cards data for a user based on username or email'
-	.action (args,callback)->
-		username_or_email = args.username_or_email
-		card_id = args.card_id
+	.command('users:cards <username_or_email> [card_id]')
+	.description('get cards data for a user based on username or email')
+	.action(function(args,callback){
+		let {
+            username_or_email
+        } = args;
+		const {
+            card_id
+        } = args;
 
-		fieldName = 'username'
-		if username_or_email.indexOf('@') > 0
-			fieldName = 'email'
-		if username_or_email.indexOf("id:") == 0
-			fieldName = 'id'
-			username_or_email = username_or_email.replace("id:","")
+		let fieldName = 'username';
+		if (username_or_email.indexOf('@') > 0) {
+			fieldName = 'email';
+		}
+		if (username_or_email.indexOf("id:") === 0) {
+			fieldName = 'id';
+			username_or_email = username_or_email.replace("id:","");
+		}
 
-		if fieldName == 'email' or fieldName == 'username'
-			username_or_email = username_or_email.toLowerCase()
+		if ((fieldName === 'email') || (fieldName === 'username')) {
+			username_or_email = username_or_email.toLowerCase();
+		}
 
-		knex("users").where(fieldName,username_or_email).first('id','username','email').then (userRow)->
+		return knex("users").where(fieldName,username_or_email).first('id','username','email').then(function(userRow){
 
-			if not userRow?
-				throw new Error("Could not find user")
+			if ((userRow == null)) {
+				throw new Error("Could not find user");
+			}
 
-			console.log prettyjson.render({
-				id:userRow.id
-				username:userRow.username
+			console.log(prettyjson.render({
+				id:userRow.id,
+				username:userRow.username,
 				email:userRow.email
 			})
+			);
 
-			whereClause = { 'user_id': userRow.id }
-			if card_id?
-				whereClause.card_id = card_id
-			return knex("user_cards").where(whereClause).orderByRaw('updated_at desc')
+			const whereClause = { 'user_id': userRow.id };
+			if (card_id != null) {
+				whereClause.card_id = card_id;
+			}
+			return knex("user_cards").where(whereClause).orderByRaw('updated_at desc');}).then(function(cardRows){
 
-		.then (cardRows)->
+			_.each(cardRows, c => delete c.user_id);
 
-			_.each cardRows, (c)-> delete c.user_id
-
-			logAsTable(cardRows)
-			callback()
-			# process.exit(0)
-
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback(e)
-			# process.exit(1)
+			logAsTable(cardRows);
+			return callback();}).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback(e);
+		});
+});
+			// process.exit(1)
 
 program
-	.command 'users:card_log <username_or_email> [card_id]'
-	.description 'get card log for a user based on username or email'
-	.action (args,callback)->
-		username_or_email = args.username_or_email
-		card_id = args.card_id
-		fieldName = 'username'
-		if username_or_email.indexOf('@') > 0
-			fieldName = 'email'
-		if username_or_email.indexOf("id:") == 0
-			fieldName = 'id'
-			username_or_email = username_or_email.replace("id:","")
+	.command('users:card_log <username_or_email> [card_id]')
+	.description('get card log for a user based on username or email')
+	.action(function(args,callback){
+		let {
+            username_or_email
+        } = args;
+		const {
+            card_id
+        } = args;
+		let fieldName = 'username';
+		if (username_or_email.indexOf('@') > 0) {
+			fieldName = 'email';
+		}
+		if (username_or_email.indexOf("id:") === 0) {
+			fieldName = 'id';
+			username_or_email = username_or_email.replace("id:","");
+		}
 
-		if fieldName == 'email' or fieldName == 'username'
-			username_or_email = username_or_email.toLowerCase()
+		if ((fieldName === 'email') || (fieldName === 'username')) {
+			username_or_email = username_or_email.toLowerCase();
+		}
 
-		knex("users").where(fieldName,username_or_email).first('id','username','email').then (userRow)->
+		return knex("users").where(fieldName,username_or_email).first('id','username','email').then(function(userRow){
 
-			if not userRow?
-				throw new Error("Could not find user")
+			if ((userRow == null)) {
+				throw new Error("Could not find user");
+			}
 
-			console.log prettyjson.render({
-				id:userRow.id
-				username:userRow.username
+			console.log(prettyjson.render({
+				id:userRow.id,
+				username:userRow.username,
 				email:userRow.email
 			})
+			);
 
-			whereClause = { 'user_id': userRow.id }
-			if card_id?
-				whereClause.card_id = card_id
-			return knex("user_card_log").where(whereClause).orderByRaw('created_at desc')
+			const whereClause = { 'user_id': userRow.id };
+			if (card_id != null) {
+				whereClause.card_id = card_id;
+			}
+			return knex("user_card_log").where(whereClause).orderByRaw('created_at desc');}).then(function(logRows){
 
-		.then (logRows)->
+			_.each(logRows, function(c){
+				delete c.user_id;
+				return delete c.id;
+			});
 
-			_.each logRows, (c)->
-				delete c.user_id
-				delete c.id
-
-			logAsTable(logRows)
-			callback()
-			# process.exit(0)
-
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback(e)
-			# process.exit(1)
+			logAsTable(logRows);
+			return callback();}).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback(e);
+		});
+});
+			// process.exit(1)
 
 
 program
-.command 'users:convert_spirit_orbs <username_or_email> <from_card_set_id> <to_card_set_id> <num_orbs_to_convert>'
-.description 'removes a provided number of unopened spirit orbs for a card set from a user'
-.action (args,callback)->
-	username_or_email = args.username_or_email
-	fieldName = 'username'
-	if username_or_email.indexOf('@') > 0
-		fieldName = 'email'
-	if username_or_email.indexOf("id:") == 0
-		fieldName = 'id'
-		username_or_email = username_or_email.replace("id:","")
+.command('users:convert_spirit_orbs <username_or_email> <from_card_set_id> <to_card_set_id> <num_orbs_to_convert>')
+.description('removes a provided number of unopened spirit orbs for a card set from a user')
+.action(function(args,callback){
+	let {
+        username_or_email
+    } = args;
+	let fieldName = 'username';
+	if (username_or_email.indexOf('@') > 0) {
+		fieldName = 'email';
+	}
+	if (username_or_email.indexOf("id:") === 0) {
+		fieldName = 'id';
+		username_or_email = username_or_email.replace("id:","");
+	}
 
-	if fieldName == 'email' or fieldName == 'username'
-		username_or_email = username_or_email.toLowerCase()
+	if ((fieldName === 'email') || (fieldName === 'username')) {
+		username_or_email = username_or_email.toLowerCase();
+	}
 
-	UsersModule ?= require 'server/lib/data_access/users'
+	if (UsersModule == null) { UsersModule = require('server/lib/data_access/users'); }
 
-	this_obj = {
+	const this_obj = {
 		fromCardSetId: args.from_card_set_id,
 		toCardSetId: args.to_card_set_id,
 		numOrbsToConvert: args.num_orbs_to_convert
-	}
+	};
 
 	return knex("users").where(fieldName,username_or_email).first('id','username','email')
 	.bind(this_obj)
-	.then (userRow)->
+	.then(function(userRow){
 
-		if not userRow?
-			throw new Error("Could not find user")
+		if ((userRow == null)) {
+			throw new Error("Could not find user");
+		}
 
-		if (not @.fromCardSetId? || not SDK.CardSetFactory.cardSetForIdentifier(@.fromCardSetId)?)
-			throw new Error("Invalid card set id: #{@.fromCardSetId}")
+		if ((this.fromCardSetId == null) || (SDK.CardSetFactory.cardSetForIdentifier(this.fromCardSetId) == null)) {
+			throw new Error(`Invalid card set id: ${this.fromCardSetId}`);
+		}
 
-		if (not @.toCardSetId? || not SDK.CardSetFactory.cardSetForIdentifier(@.toCardSetId)?)
-			throw new Error("Invalid card set id: #{@.toCardSetId}")
+		if ((this.toCardSetId == null) || (SDK.CardSetFactory.cardSetForIdentifier(this.toCardSetId) == null)) {
+			throw new Error(`Invalid card set id: ${this.toCardSetId}`);
+		}
 
-		if (not @.numOrbsToConvert? || @.numOrbsToConvert <= 0)
-			throw new Error("Invalid number of orbs to remove: #{@.numOrbsToConvert}")
+		if ((this.numOrbsToConvert == null) || (this.numOrbsToConvert <= 0)) {
+			throw new Error(`Invalid number of orbs to remove: ${this.numOrbsToConvert}`);
+		}
 
-		@.userId = userRow.id
+		this.userId = userRow.id;
 
-		console.log prettyjson.render({
-			id:userRow.id
-			username:userRow.username
+		console.log(prettyjson.render({
+			id:userRow.id,
+			username:userRow.username,
 			email:userRow.email
 		})
+		);
 
-		return confirmAsync("Sure you want to convert #{@.numOrbsToConvert} #{SDK.CardSetFactory.cardSetForIdentifier(@.fromCardSetId).devName} Spirit orbs to #{SDK.CardSetFactory.cardSetForIdentifier(@.toCardSetId).devName} for #{userRow.username}?")
-	.then () ->
+		return confirmAsync(`Sure you want to convert ${this.numOrbsToConvert} ${SDK.CardSetFactory.cardSetForIdentifier(this.fromCardSetId).devName} Spirit orbs to ${SDK.CardSetFactory.cardSetForIdentifier(this.toCardSetId).devName} for ${userRow.username}?`);}).then(function() {
 
-		txPromise = knex.transaction (tx) =>
-			return tx.first().from('users').where('id',@.userId).forUpdate() # Lock user record
-			.bind @
-			.then (userRow) ->
-				@.userRow = userRow
+		const txPromise = knex.transaction(tx => {
+			return tx.first().from('users').where('id',this.userId).forUpdate() // Lock user record
+			.bind(this)
+			.then(function(userRow) {
+				this.userRow = userRow;
 
-				# First handle db limited orb set counts/validation
-				userUnlockableCountNeedsUpdate = false
-				userRowUpdateData = {}
+				// First handle db limited orb set counts/validation
+				let userUnlockableCountNeedsUpdate = false;
+				const userRowUpdateData = {};
 
-				if (SDK.CardSetFactory.cardSetForIdentifier(@.fromCardSetId).isUnlockableThroughOrbs)
-					userUnlockableCountNeedsUpdate = true
-					@.fromOrbCountKey = "total_orb_count_set_" + @.fromCardSetId
-					userRowUpdateData[@.fromOrbCountKey] = @.fromOrbNewCount = @.userRow[@.fromOrbCountKey] - @.numOrbsToConvert
-					if userRowUpdateData[@.fromOrbCountKey] < 0
-						throw new Error("User orb count for card set #{@.fromCardSetId} would go below 0 by converting #{@.numOrbsToConvert} orbs for user #{@.userId}")
+				if (SDK.CardSetFactory.cardSetForIdentifier(this.fromCardSetId).isUnlockableThroughOrbs) {
+					userUnlockableCountNeedsUpdate = true;
+					this.fromOrbCountKey = "total_orb_count_set_" + this.fromCardSetId;
+					userRowUpdateData[this.fromOrbCountKey] = (this.fromOrbNewCount = this.userRow[this.fromOrbCountKey] - this.numOrbsToConvert);
+					if (userRowUpdateData[this.fromOrbCountKey] < 0) {
+						throw new Error(`User orb count for card set ${this.fromCardSetId} would go below 0 by converting ${this.numOrbsToConvert} orbs for user ${this.userId}`);
+					}
+				}
 
-				if (SDK.CardSetFactory.cardSetForIdentifier(@.toCardSetId).isUnlockableThroughOrbs)
-					userUnlockableCountNeedsUpdate = true
-					@.toOrbCountKey = "total_orb_count_set_" + @.toCardSetId
-					userRowUpdateData[@.toOrbCountKey] = @.toOrbNewCount = @.userRow[@.toOrbCountKey] + @.numOrbsToConvert
-					if userRowUpdateData[@.toOrbCountKey] > SDK.CardSetFactory.cardSetForIdentifier(@.toCardSetId).numOrbsToCompleteSet
-						throw new Error("Adding #{@.numOrbsToConvert} will put user #{@.userRow.id} over the maximum amount of orbs for card set #{@.toCardSetId}")
+				if (SDK.CardSetFactory.cardSetForIdentifier(this.toCardSetId).isUnlockableThroughOrbs) {
+					userUnlockableCountNeedsUpdate = true;
+					this.toOrbCountKey = "total_orb_count_set_" + this.toCardSetId;
+					userRowUpdateData[this.toOrbCountKey] = (this.toOrbNewCount = this.userRow[this.toOrbCountKey] + this.numOrbsToConvert);
+					if (userRowUpdateData[this.toOrbCountKey] > SDK.CardSetFactory.cardSetForIdentifier(this.toCardSetId).numOrbsToCompleteSet) {
+						throw new Error(`Adding ${this.numOrbsToConvert} will put user ${this.userRow.id} over the maximum amount of orbs for card set ${this.toCardSetId}`);
+					}
+				}
 
-				if userUnlockableCountNeedsUpdate
-					return tx('users').where('id',@.userId).update(userRowUpdateData)
-				else
-					return Promise.resolve()
-			.then ()->
-				return tx("user_spirit_orbs").select().where('user_id',@.userId).andWhere('card_set',@.fromCardSetId).limit(@.numOrbsToConvert)
-			.then (userSpiritOrbRowsToConvert)->
-				if (not userSpiritOrbRowsToConvert?)
-					throw new Error("Invalid spirit orb rows")
+				if (userUnlockableCountNeedsUpdate) {
+					return tx('users').where('id',this.userId).update(userRowUpdateData);
+				} else {
+					return Promise.resolve();
+				}}).then(function(){
+				return tx("user_spirit_orbs").select().where('user_id',this.userId).andWhere('card_set',this.fromCardSetId).limit(this.numOrbsToConvert);}).then(function(userSpiritOrbRowsToConvert){
+				if ((userSpiritOrbRowsToConvert == null)) {
+					throw new Error("Invalid spirit orb rows");
+				}
 
-				if (userSpiritOrbRowsToConvert.length < @.numOrbsToConvert)
-					throw new Error("User does not own as many orbs as trying to convert: Owns #{userSpiritOrbRowsToConvert.length} Removing: #{@.numOrbsToConvert}")
+				if (userSpiritOrbRowsToConvert.length < this.numOrbsToConvert) {
+					throw new Error(`User does not own as many orbs as trying to convert: Owns ${userSpiritOrbRowsToConvert.length} Removing: ${this.numOrbsToConvert}`);
+				}
 
-				@.userSpiritOrbRowsToConvert = userSpiritOrbRowsToConvert
+				this.userSpiritOrbRowsToConvert = userSpiritOrbRowsToConvert;
 
-				@.conversionPushId = generatePushId()
-				@.convertedAt = moment.utc().toDate()
+				this.conversionPushId = generatePushId();
+				this.convertedAt = moment.utc().toDate();
 
-				return Promise.map(@.userSpiritOrbRowsToConvert, (spiritOrbRowToConvert) =>
-					orbRowUpdateData = {}
+				return Promise.map(this.userSpiritOrbRowsToConvert, spiritOrbRowToConvert => {
+					const orbRowUpdateData = {};
 
-					updatedParams = spiritOrbRowToConvert.params or {}
-					updatedParams.conversionPushId = @.conversionPushId
-					updatedParams.convertedAt = @.convertedAt
+					const updatedParams = spiritOrbRowToConvert.params || {};
+					updatedParams.conversionPushId = this.conversionPushId;
+					updatedParams.convertedAt = this.convertedAt;
 
-					orbRowUpdateData.params = updatedParams
-					orbRowUpdateData.card_set = @.toCardSetId
+					orbRowUpdateData.params = updatedParams;
+					orbRowUpdateData.card_set = this.toCardSetId;
 
-					return tx("user_spirit_orbs").first().where('id',spiritOrbRowToConvert.id).update(orbRowUpdateData)
-				)
+					return tx("user_spirit_orbs").first().where('id',spiritOrbRowToConvert.id).update(orbRowUpdateData);
+				});
+			});
+		});
 
-		# Outside of transaction: firebase updates
+		// Outside of transaction: firebase updates
 		return txPromise
-		.bind (this_obj)
-		.then ()->
-			return DuelystFirebase.connect().getRootRef()
-		.then (fbRootRef)->
-			# Update limited orb sets in fb
-			@.fbRootRef = fbRootRef
-			allFbPromises = []
-			if (@.fromOrbNewCount?) # May be 0
-				allFbPromises.push(FirebasePromises.set(@.fbRootRef.child('user-inventory').child(@.userId).child('spirit-orb-total').child(@.fromCardSetId),@.fromOrbNewCount))
-			if (@.toOrbNewCount?) # May be 0
-				allFbPromises.push(FirebasePromises.set(@.fbRootRef.child('user-inventory').child(@.userId).child('spirit-orb-total').child(@.toCardSetId),@.toOrbNewCount))
+		.bind((this_obj))
+		.then(() => DuelystFirebase.connect().getRootRef()).then(function(fbRootRef){
+			// Update limited orb sets in fb
+			this.fbRootRef = fbRootRef;
+			const allFbPromises = [];
+			if (this.fromOrbNewCount != null) { // May be 0
+				allFbPromises.push(FirebasePromises.set(this.fbRootRef.child('user-inventory').child(this.userId).child('spirit-orb-total').child(this.fromCardSetId),this.fromOrbNewCount));
+			}
+			if (this.toOrbNewCount != null) { // May be 0
+				allFbPromises.push(FirebasePromises.set(this.fbRootRef.child('user-inventory').child(this.userId).child('spirit-orb-total').child(this.toCardSetId),this.toOrbNewCount));
+			}
 
-			return Promise.all(allFbPromises)
-
-		.then ()->
-			# Update converted orb card set ids in firebase
-			return Promise.map(@.userSpiritOrbRowsToConvert, (spiritOrbRowToConvert) =>
-				return FirebasePromises.set(@.fbRootRef.child("user-inventory").child(@.userId).child("spirit-orbs").child(spiritOrbRowToConvert.id).child("card_set"),@.toCardSetId)
-			)
-		.then ()->
-			console.log("User #{@.userId} has had #{@.numOrbsToConvert} orbs of type #{@.fromCardSetId} converted to type #{@.toCardSetId}")
-			return UsersModule.inGameNotify(@.userId,"Your Spirit Orbs have been updated, please restart Duelyst to avoid any issues","crm")
-		callback()
-	.catch (e)->
-		console.log prettyError.render(e)
-		callback(e)
+			return Promise.all(allFbPromises);}).then(function(){
+			// Update converted orb card set ids in firebase
+			return Promise.map(this.userSpiritOrbRowsToConvert, spiritOrbRowToConvert => {
+				return FirebasePromises.set(this.fbRootRef.child("user-inventory").child(this.userId).child("spirit-orbs").child(spiritOrbRowToConvert.id).child("card_set"),this.toCardSetId);
+			});}).then(function(){
+			console.log(`User ${this.userId} has had ${this.numOrbsToConvert} orbs of type ${this.fromCardSetId} converted to type ${this.toCardSetId}`);
+			return UsersModule.inGameNotify(this.userId,"Your Spirit Orbs have been updated, please restart Duelyst to avoid any issues","crm");
+		});
+		return callback();}).catch(function(e){
+		console.log(prettyError.render(e));
+		return callback(e);
+	});
+});
 
 program
-.command 'users:complete_new_user_progression <username_or_email>'
-.description 'updates a user account to have completed the new user progression'
-.action (args,callback)->
-	UsersModule ?= require 'server/lib/data_access/users'
-	ChallengesModule ?= require 'server/lib/data_access/challenges'
-	QuestsModule ?= require 'server/lib/data_access/quests'
+.command('users:complete_new_user_progression <username_or_email>')
+.description('updates a user account to have completed the new user progression')
+.action(function(args,callback){
+	if (UsersModule == null) { UsersModule = require('server/lib/data_access/users'); }
+	if (ChallengesModule == null) { ChallengesModule = require('server/lib/data_access/challenges'); }
+	if (QuestsModule == null) { QuestsModule = require('server/lib/data_access/quests'); }
 
-	username_or_email = args.username_or_email
+	let {
+        username_or_email
+    } = args;
 
-	fieldName = 'username'
-	if username_or_email.indexOf('@') > 0
-		fieldName = 'email'
-	if username_or_email.indexOf("id:") == 0
-		fieldName = 'id'
-		username_or_email = username_or_email.replace("id:","")
+	let fieldName = 'username';
+	if (username_or_email.indexOf('@') > 0) {
+		fieldName = 'email';
+	}
+	if (username_or_email.indexOf("id:") === 0) {
+		fieldName = 'id';
+		username_or_email = username_or_email.replace("id:","");
+	}
 
-	if fieldName == 'email' or fieldName == 'username'
-		username_or_email = username_or_email.toLowerCase()
+	if ((fieldName === 'email') || (fieldName === 'username')) {
+		username_or_email = username_or_email.toLowerCase();
+	}
 
-	knex("users").where(fieldName,username_or_email).first('id','username','email')
-	.bind {}
-	.then (userRow)->
+	return knex("users").where(fieldName,username_or_email).first('id','username','email')
+	.bind({})
+	.then(function(userRow){
 
-		if not userRow?
-			throw new Error("Could not find user")
+		if ((userRow == null)) {
+			throw new Error("Could not find user");
+		}
 
-		@.userRow = userRow
+		this.userRow = userRow;
 
-		console.log prettyjson.render({
-			id:userRow.id
-			username:userRow.username
+		console.log(prettyjson.render({
+			id:userRow.id,
+			username:userRow.username,
 			email:userRow.email
 		})
-		tutorialChallengePromises = _.map(SDK.ChallengeFactory.getChallengesForCategoryType(SDK.ChallengeCategory.tutorial.type), (challenge) =>
-			return ChallengesModule.completeChallengeWithType(@.userRow.id,challenge.type)
-		)
-		return Promise.all(tutorialChallengePromises)
-	.then ()->
-		return UsersModule.setNewPlayerFeatureProgression(@.userRow.id,SDK.NewPlayerProgressionModuleLookup.Core,SDK.NewPlayerProgressionStageEnum.Skipped.key)
-	.then ()->
-		knex("user_quests").where({'user_id':@.userRow.id}).delete()
-	.then ()->
-		DuelystFirebase.connect().getRootRef()
-	.then (fbRootRef) ->
-		@.fbRootRef = fbRootRef
+		);
+		const tutorialChallengePromises = _.map(SDK.ChallengeFactory.getChallengesForCategoryType(SDK.ChallengeCategory.tutorial.type), challenge => {
+			return ChallengesModule.completeChallengeWithType(this.userRow.id,challenge.type);
+		});
+		return Promise.all(tutorialChallengePromises);}).then(function(){
+		return UsersModule.setNewPlayerFeatureProgression(this.userRow.id,SDK.NewPlayerProgressionModuleLookup.Core,SDK.NewPlayerProgressionStageEnum.Skipped.key);}).then(function(){
+		return knex("user_quests").where({'user_id':this.userRow.id}).delete();}).then(() => DuelystFirebase.connect().getRootRef()).then(function(fbRootRef) {
+		this.fbRootRef = fbRootRef;
 
 		return Promise.all([
-			FirebasePromises.remove(@.fbRootRef.child("user-quests").child(@.userRow.id).child("daily").child("current").child('quests'))
-			FirebasePromises.remove(@.fbRootRef.child("user-quests").child(@.userRow.id).child("catch-up").child("current").child('quests'))
-		])
-	.then ()->
-		QuestsModule.generateDailyQuests(@.userRow.id)
-	.then ()->
-		return UsersModule.inGameNotify(@.userRow.id,"Your Player Progression has been updated, please restart Duelyst to avoid any issues","crm")
-	.then ()->
-		callback()
-	.catch (e)->
-		console.log prettyError.render(e)
-		callback(e)
+			FirebasePromises.remove(this.fbRootRef.child("user-quests").child(this.userRow.id).child("daily").child("current").child('quests')),
+			FirebasePromises.remove(this.fbRootRef.child("user-quests").child(this.userRow.id).child("catch-up").child("current").child('quests'))
+		]);}).then(function(){
+		return QuestsModule.generateDailyQuests(this.userRow.id);}).then(function(){
+		return UsersModule.inGameNotify(this.userRow.id,"Your Player Progression has been updated, please restart Duelyst to avoid any issues","crm");}).then(() => callback()).catch(function(e){
+		console.log(prettyError.render(e));
+		return callback(e);
+	});
+});
 
 program
-.command 'users:advance_faction_progression <username_or_email>'
-.description 'updates a user\'s faction progression to have all factions at level 11'
-.action (args,callback)->
-	UsersModule ?= require 'server/lib/data_access/users'
+.command('users:advance_faction_progression <username_or_email>')
+.description('updates a user\'s faction progression to have all factions at level 11')
+.action(function(args,callback){
+	if (UsersModule == null) { UsersModule = require('server/lib/data_access/users'); }
 
-	username_or_email = args.username_or_email
+	let {
+        username_or_email
+    } = args;
 
-	fieldName = 'username'
-	if username_or_email.indexOf('@') > 0
-		fieldName = 'email'
-	if username_or_email.indexOf("id:") == 0
-		fieldName = 'id'
-		username_or_email = username_or_email.replace("id:","")
+	let fieldName = 'username';
+	if (username_or_email.indexOf('@') > 0) {
+		fieldName = 'email';
+	}
+	if (username_or_email.indexOf("id:") === 0) {
+		fieldName = 'id';
+		username_or_email = username_or_email.replace("id:","");
+	}
 
-	if fieldName == 'email' or fieldName == 'username'
-		username_or_email = username_or_email.toLowerCase()
+	if ((fieldName === 'email') || (fieldName === 'username')) {
+		username_or_email = username_or_email.toLowerCase();
+	}
 
-	knex("users").where(fieldName,username_or_email).first('id','username','email')
-	.bind {}
-	.then (userRow)->
+	return knex("users").where(fieldName,username_or_email).first('id','username','email')
+	.bind({})
+	.then(function(userRow){
 
-		if not userRow?
-			throw new Error("Could not find user")
+		if ((userRow == null)) {
+			throw new Error("Could not find user");
+		}
 
-		@.userRow = userRow
+		this.userRow = userRow;
 
-		console.log prettyjson.render({
-			id:userRow.id
-			username:userRow.username
+		console.log(prettyjson.render({
+			id:userRow.id,
+			username:userRow.username,
 			email:userRow.email
 		})
-		return knex("user_faction_progression").where('user_id',@.userRow.id)
-	.then (rows)->
-		factionIds = _.map(SDK.FactionFactory.getAllPlayableFactions(), (f)-> return f.id)
-		allPromises = []
-		for factionId in factionIds
-			row = _.find(rows, (r)-> return r.faction_id == factionId)
-			if !row?
-				allPromises.push(UsersModule.createFactionProgressionRecord(@.userRow.id,factionId,generatePushId(),SDK.GameType.SinglePlayer))
-		return Promise.all(allPromises)
-	.then () ->
-		return knex("user_faction_progression").where('user_id',@.userRow.id)
-	.then (factionRows) ->
-		factionIds = _.map(SDK.FactionFactory.getAllPlayableFactions(), (f)-> return f.id)
-		winsPerFaction = []
-		for factionId in factionIds
-			row = _.find(factionRows, (r)-> return r.faction_id == factionId)
-			if !row?
-				return Promise.reject("No row found for faction - #{factionId}")
-			else
-				factionXp = row.xp
-				xpForLevelTen = SDK.FactionProgression.levelXPTable[10]
-				neededXp = xpForLevelTen - factionXp
-				xpPerWin = SDK.FactionProgression.winXP
-				if neededXp > 0
-					neededWins = Math.ceil(neededXp / xpPerWin)
-					winsPerFaction = winsPerFaction.concat(Array(neededWins).fill(factionId))
-		return Promise.each(winsPerFaction, (factionId) =>
-			return UsersModule.updateUserFactionProgressionWithGameOutcome(@.userRow.id,factionId,true,generatePushId(),SDK.GameType.Ranked)
-		)
-	.then ()->
-		return UsersModule.inGameNotify(@.userRow.id,"Your Faction Progression has been updated, please restart Duelyst to avoid any issues","crm")
-	.then ()->
-		callback()
-	.catch (e)->
-		console.log prettyError.render(e)
-		callback(e)
+		);
+		return knex("user_faction_progression").where('user_id',this.userRow.id);}).then(function(rows){
+		const factionIds = _.map(SDK.FactionFactory.getAllPlayableFactions(), f => f.id);
+		const allPromises = [];
+		for (var factionId of Array.from(factionIds)) {
+			const row = _.find(rows, r => r.faction_id === factionId);
+			if ((row == null)) {
+				allPromises.push(UsersModule.createFactionProgressionRecord(this.userRow.id,factionId,generatePushId(),SDK.GameType.SinglePlayer));
+			}
+		}
+		return Promise.all(allPromises);}).then(function() {
+		return knex("user_faction_progression").where('user_id',this.userRow.id);}).then(function(factionRows) {
+		const factionIds = _.map(SDK.FactionFactory.getAllPlayableFactions(), f => f.id);
+		let winsPerFaction = [];
+		for (var factionId of Array.from(factionIds)) {
+			const row = _.find(factionRows, r => r.faction_id === factionId);
+			if ((row == null)) {
+				return Promise.reject(`No row found for faction - ${factionId}`);
+			} else {
+				const factionXp = row.xp;
+				const xpForLevelTen = SDK.FactionProgression.levelXPTable[10];
+				const neededXp = xpForLevelTen - factionXp;
+				const xpPerWin = SDK.FactionProgression.winXP;
+				if (neededXp > 0) {
+					const neededWins = Math.ceil(neededXp / xpPerWin);
+					winsPerFaction = winsPerFaction.concat(Array(neededWins).fill(factionId));
+				}
+			}
+		}
+		return Promise.each(winsPerFaction, factionId => {
+			return UsersModule.updateUserFactionProgressionWithGameOutcome(this.userRow.id,factionId,true,generatePushId(),SDK.GameType.Ranked);
+		});}).then(function(){
+		return UsersModule.inGameNotify(this.userRow.id,"Your Faction Progression has been updated, please restart Duelyst to avoid any issues","crm");}).then(() => callback()).catch(function(e){
+		console.log(prettyError.render(e));
+		return callback(e);
+	});
+});
 
 
-# unlocks generals by completing achievements for generals for user
+// unlocks generals by completing achievements for generals for user
 program
-.command 'users:unlock_wartech_generals <username_or_email>'
-.description 'updates a user\'s achievements to complete the wartech general achievements'
-.action (args,callback)->
-	UsersModule ?= require 'server/lib/data_access/users'
-	AchievementsModule ?= require 'server/lib/data_access/achievements'
+.command('users:unlock_wartech_generals <username_or_email>')
+.description('updates a user\'s achievements to complete the wartech general achievements')
+.action(function(args,callback){
+	if (UsersModule == null) { UsersModule = require('server/lib/data_access/users'); }
+	if (AchievementsModule == null) { AchievementsModule = require('server/lib/data_access/achievements'); }
 
-	username_or_email = args.username_or_email
+	let {
+        username_or_email
+    } = args;
 
-	fieldName = 'username'
-	if username_or_email.indexOf('@') > 0
-		fieldName = 'email'
-	if username_or_email.indexOf("id:") == 0
-		fieldName = 'id'
-		username_or_email = username_or_email.replace("id:","")
+	let fieldName = 'username';
+	if (username_or_email.indexOf('@') > 0) {
+		fieldName = 'email';
+	}
+	if (username_or_email.indexOf("id:") === 0) {
+		fieldName = 'id';
+		username_or_email = username_or_email.replace("id:","");
+	}
 
-	if fieldName == 'email' or fieldName == 'username'
-		username_or_email = username_or_email.toLowerCase()
+	if ((fieldName === 'email') || (fieldName === 'username')) {
+		username_or_email = username_or_email.toLowerCase();
+	}
 
-	knex("users").where(fieldName,username_or_email).first('id','username','email')
-	.bind {}
-	.then (userRow)->
+	return knex("users").where(fieldName,username_or_email).first('id','username','email')
+	.bind({})
+	.then(function(userRow){
 
-		if not userRow?
-			throw new Error("Could not find user")
+		if ((userRow == null)) {
+			throw new Error("Could not find user");
+		}
 
-		@.userRow = userRow
+		this.userRow = userRow;
 
-		console.log prettyjson.render({
-			id:userRow.id
-			username:userRow.username
+		console.log(prettyjson.render({
+			id:userRow.id,
+			username:userRow.username,
 			email:userRow.email
 		})
-		return knex("user_achievements").where('user_id',@.userRow.id)
-	.then (achievementRows)->
-		userAchievementRowsById = {}
+		);
+		return knex("user_achievements").where('user_id',this.userRow.id);}).then(function(achievementRows){
+		let userAchievementRowsById = {};
 
-		if achievementRows?
-			userAchievementRowsById = _.object(_.map(achievementRows, (row)->return row.achievement_id),achievementRows)
+		if (achievementRows != null) {
+			userAchievementRowsById = _.object(_.map(achievementRows, row => row.achievement_id),achievementRows);
+		}
 
-		allPromises = []
-		createPromiseToCompleteAchievementId = (achievementId,userCurrentAchievementProgressById) =>
-			currentAchievementData = userCurrentAchievementProgressById[achievementId]
-			sdkAchievement = SDK.AchievementsFactory.achievementForIdentifier(achievementId)
-			progressNeededToCompleteAchievement = null
-			if currentAchievementData?
-				if currentAchievementData.completed_at? or (currentAchievementData.progress == sdkAchievement.progressRequired)
-					progressNeededToCompleteAchievement = 0
-				else
-					progressNeededToCompleteAchievement = sdkAchievement.progressRequired - currentAchievementData.progress
-			else
-				progressNeededToCompleteAchievement = sdkAchievement.progressRequired
-
-
-			console.log("User needs #{progressNeededToCompleteAchievement} progress to complete #{achievementId} achievement.")
-			if (progressNeededToCompleteAchievement != 0)
-				achProgressMap = {}
-				achProgressMap[achievementId] = progressNeededToCompleteAchievement
-				return AchievementsModule._applyAchievementProgressMapToUser(@.userRow.id,achProgressMap)
-			else
-				return Promise.resolve()
-
-		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction1Achievement.getId(),userAchievementRowsById))
-		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction2Achievement.getId(),userAchievementRowsById))
-		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction3Achievement.getId(),userAchievementRowsById))
-		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction4Achievement.getId(),userAchievementRowsById))
-		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction5Achievement.getId(),userAchievementRowsById))
-		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction6Achievement.getId(),userAchievementRowsById))
-
-		return Promise.all(allPromises)
-	.then () ->
-		return UsersModule.inGameNotify(@.userRow.id,"Your Achievement Progress has been updated, please restart Duelyst","crm")
-	.then ()->
-		console.log("Wartech achievements have been set to complete and in game notify is sent.".green)
-		callback()
-	.catch (e)->
-		console.log prettyError.render(e)
-		callback(e)
+		const allPromises = [];
+		const createPromiseToCompleteAchievementId = (achievementId,userCurrentAchievementProgressById) => {
+			const currentAchievementData = userCurrentAchievementProgressById[achievementId];
+			const sdkAchievement = SDK.AchievementsFactory.achievementForIdentifier(achievementId);
+			let progressNeededToCompleteAchievement = null;
+			if (currentAchievementData != null) {
+				if ((currentAchievementData.completed_at != null) || (currentAchievementData.progress === sdkAchievement.progressRequired)) {
+					progressNeededToCompleteAchievement = 0;
+				} else {
+					progressNeededToCompleteAchievement = sdkAchievement.progressRequired - currentAchievementData.progress;
+				}
+			} else {
+				progressNeededToCompleteAchievement = sdkAchievement.progressRequired;
+			}
 
 
-###
+			console.log(`User needs ${progressNeededToCompleteAchievement} progress to complete ${achievementId} achievement.`);
+			if (progressNeededToCompleteAchievement !== 0) {
+				const achProgressMap = {};
+				achProgressMap[achievementId] = progressNeededToCompleteAchievement;
+				return AchievementsModule._applyAchievementProgressMapToUser(this.userRow.id,achProgressMap);
+			} else {
+				return Promise.resolve();
+			}
+		};
+
+		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction1Achievement.getId(),userAchievementRowsById));
+		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction2Achievement.getId(),userAchievementRowsById));
+		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction3Achievement.getId(),userAchievementRowsById));
+		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction4Achievement.getId(),userAchievementRowsById));
+		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction5Achievement.getId(),userAchievementRowsById));
+		allPromises.push(createPromiseToCompleteAchievementId(WartechGeneralFaction6Achievement.getId(),userAchievementRowsById));
+
+		return Promise.all(allPromises);}).then(function() {
+		return UsersModule.inGameNotify(this.userRow.id,"Your Achievement Progress has been updated, please restart Duelyst","crm");}).then(function(){
+		console.log("Wartech achievements have been set to complete and in game notify is sent.".green);
+		return callback();}).catch(function(e){
+		console.log(prettyError.render(e));
+		return callback(e);
+	});
+});
+
+
+/*
 program
 	.command 'retention_gifts:send <weeks_back>'
 	.description 'send out retention gift box emails'
@@ -1518,7 +1606,7 @@ program
 
 		weeksBack = args.weeks_back || 2
 
-		# data access modules
+		* data access modules
 		console.log("loading modules...")
 		InventoryModule ?= require 'server/lib/data_access/inventory'
 		GiftCrateModule ?= require 'server/lib/data_access/gift_crate'
@@ -1587,7 +1675,7 @@ program
 
 		weeksBack = args.weeks_back || 2
 
-		# data access modules
+		* data access modules
 		console.log("loading modules...")
 		InventoryModule ?= require 'server/lib/data_access/inventory'
 		GiftCrateModule ?= require 'server/lib/data_access/gift_crate'
@@ -1628,46 +1716,51 @@ program
 		.catch (e)->
 			console.log prettyError.render(e)
 			callback()
-###
+*/
 program
-	.command 'users:manage <username_or_email>'
-	.description 'manage a user based on username or email'
-	.action (args,callback)->
+	.command('users:manage <username_or_email>')
+	.description('manage a user based on username or email')
+	.action(function(args,callback){
 
-		username_or_email = args.username_or_email
-		username_or_email = username_or_email.toLowerCase()
+		let {
+            username_or_email
+        } = args;
+		username_or_email = username_or_email.toLowerCase();
 
-		# data access modules
-		console.log("loading modules...")
-		InventoryModule ?= require 'server/lib/data_access/inventory'
-		UsersModule ?= require 'server/lib/data_access/users'
-		SyncModule ?= require 'server/lib/data_access/sync'
-		CosmeticChestsModule ?= require 'server/lib/data_access/cosmetic_chests'
-		GiftCrateModule ?= require 'server/lib/data_access/gift_crate'
-		GiftCrateLookup = require 'app/sdk/giftCrates/giftCrateLookup'
-		console.log("loading modules... "+"DONE".green)
+		// data access modules
+		console.log("loading modules...");
+		if (InventoryModule == null) { InventoryModule = require('server/lib/data_access/inventory'); }
+		if (UsersModule == null) { UsersModule = require('server/lib/data_access/users'); }
+		if (SyncModule == null) { SyncModule = require('server/lib/data_access/sync'); }
+		if (CosmeticChestsModule == null) { CosmeticChestsModule = require('server/lib/data_access/cosmetic_chests'); }
+		if (GiftCrateModule == null) { GiftCrateModule = require('server/lib/data_access/gift_crate'); }
+		const GiftCrateLookup = require('app/sdk/giftCrates/giftCrateLookup');
+		console.log("loading modules... "+"DONE".green);
 
-		fieldName = 'username'
-		if username_or_email.indexOf('@') > 0
-			fieldName = 'email'
-		if username_or_email.indexOf("id:") == 0
-			fieldName = 'id'
-			username_or_email = username_or_email.replace("id:","")
-		knex("users").where(fieldName,username_or_email).first()
-		.bind {}
-		.then (userRow)->
+		let fieldName = 'username';
+		if (username_or_email.indexOf('@') > 0) {
+			fieldName = 'email';
+		}
+		if (username_or_email.indexOf("id:") === 0) {
+			fieldName = 'id';
+			username_or_email = username_or_email.replace("id:","");
+		}
+		return knex("users").where(fieldName,username_or_email).first()
+		.bind({})
+		.then(function(userRow){
 
-			console.log prettyjson.render(_.pick(userRow,["id","email","username"]))
+			console.log(prettyjson.render(_.pick(userRow,["id","email","username"])));
 
-			if not userRow?
-				throw new Error("Could not find user")
+			if ((userRow == null)) {
+				throw new Error("Could not find user");
+			}
 
-			@.userRow = userRow
+			this.userRow = userRow;
 
-			return inquirerPromisifed.prompt [{
-				name:'operation'
-				message:"Managing #{userRow.username} - What would you like to do?"
-				type:"list"
+			return inquirerPromisifed.prompt([{
+				name:'operation',
+				message:`Managing ${userRow.username} - What would you like to do?`,
+				type:"list",
 				choices:[
 					"CANCEL".red,new inquirer.Separator(),
 					"Give "+"GOLD".yellow,
@@ -1688,313 +1781,339 @@ program
 					new inquirer.Separator("== maintenance =="),
 					"Force Firebase SYNC"
 				]
-			}]
+			}]);})
 
-		.then (answers)->
+		.then(function(answers){
 
-				if answers.operation == "CANCEL".red
+				let userId;
+				if (answers.operation === "CANCEL".red) {
 
-					callback()
-					# process.exit(0)
+					return callback();
+					// process.exit(0)
 
-				else if answers.operation == "Give "+"GOLD".yellow
+				} else if (answers.operation === ("Give "+"GOLD".yellow)) {
 
-					return inquirerPromisifed.prompt [{
-						name:'amount'
-						message:"How much?"
-						type:"input"
-						validate:(input)-> return validator.isNumeric(input)
-					}]
-					.bind @
-					.then (answer)->
-						@.amount = answer.amount
-						return confirmAsync("Sure you want to give #{answer.amount.yellow} GOLD to #{@.userRow.username}?")
-					.then ()->
-						userId = @.userRow.id
-						amount = @.amount
-						return knex.transaction (tx)->
-							return InventoryModule.giveUserGold(null,tx,userId,parseInt(amount),"CRM")
+					return inquirerPromisifed.prompt([{
+						name:'amount',
+						message:"How much?",
+						type:"input",
+						validate(input){ return validator.isNumeric(input); }
+					}])
+					.bind(this)
+					.then(function(answer){
+						this.amount = answer.amount;
+						return confirmAsync(`Sure you want to give ${answer.amount.yellow} GOLD to ${this.userRow.username}?`);}).then(function(){
+						const userId = this.userRow.id;
+						const {
+                            amount
+                        } = this;
+						return knex.transaction(tx => InventoryModule.giveUserGold(null,tx,userId,parseInt(amount),"CRM"));
+					});
 
-				else if answers.operation == "Give "+"SPIRIT".cyan
+				} else if (answers.operation === ("Give "+"SPIRIT".cyan)) {
 
-					return inquirerPromisifed.prompt [{
-						name:'amount'
-						message:"How much?"
-						type:"input"
-						validate:(input)-> return validator.isNumeric(input)
-					}]
-					.bind @
-					.then (answer)->
-						@.amount = answer.amount
-						return confirmAsync("Sure you want to give #{answer.amount.cyan} SPIRIT to #{@.userRow.username}?")
-					.then ()->
-						userId = @.userRow.id
-						amount = @.amount
-						return knex.transaction (tx)->
-							return InventoryModule.giveUserSpirit(null,tx,userId,parseInt(amount),"CRM")
+					return inquirerPromisifed.prompt([{
+						name:'amount',
+						message:"How much?",
+						type:"input",
+						validate(input){ return validator.isNumeric(input); }
+					}])
+					.bind(this)
+					.then(function(answer){
+						this.amount = answer.amount;
+						return confirmAsync(`Sure you want to give ${answer.amount.cyan} SPIRIT to ${this.userRow.username}?`);}).then(function(){
+						const userId = this.userRow.id;
+						const {
+                            amount
+                        } = this;
+						return knex.transaction(tx => InventoryModule.giveUserSpirit(null,tx,userId,parseInt(amount),"CRM"));
+					});
 
-				else if answers.operation == "Give User Cosmetic"
+				} else if (answers.operation === "Give User Cosmetic") {
 
-					return inquirerPromisifed.prompt [{
-						name:'cosmetic'
-						message:"Which Cosmetic (ID or SKU)?"
-						type:"input"
-						validate:(input)->
-							if SDK.CosmeticsFactory.cosmeticForIdentifier(input)? || SDK.CosmeticsFactory.cosmeticForSku(input)?
-								return true
-							else
-								return false
-					}]
-					.bind @
-					.then (answer)->
-						cosmetic = SDK.CosmeticsFactory.cosmeticForIdentifier(answer.cosmetic) || SDK.CosmeticsFactory.cosmeticForSku(answer.cosmetic)
-						console.log("found cosmetic: #{cosmetic.sku} (#{cosmetic.id})")
-						if not cosmetic?
-							throw new Errors.NotFoundError("Cosmetic not found")
-						if !cosmetic.enabled
-							throw new Errors.BadRequestError("This cosmetic is disabled")
-						@.cosmeticId = cosmetic.id
-						return confirmAsync("Sure you want to give #{cosmetic.sku} cosmetic to #{@.userRow.username}?")
-					.then ()->
-						userId = @.userRow.id
-						cosmeticId = @.cosmeticId
-						return knex.transaction (tx)->
-							return InventoryModule.giveUserCosmeticId(Promise.resolve(),tx,userId,cosmeticId,"CRM","crm")
+					return inquirerPromisifed.prompt([{
+						name:'cosmetic',
+						message:"Which Cosmetic (ID or SKU)?",
+						type:"input",
+						validate(input){
+							if ((SDK.CosmeticsFactory.cosmeticForIdentifier(input) != null) || (SDK.CosmeticsFactory.cosmeticForSku(input) != null)) {
+								return true;
+							} else {
+								return false;
+							}
+						}
+					}])
+					.bind(this)
+					.then(function(answer){
+						const cosmetic = SDK.CosmeticsFactory.cosmeticForIdentifier(answer.cosmetic) || SDK.CosmeticsFactory.cosmeticForSku(answer.cosmetic);
+						console.log(`found cosmetic: ${cosmetic.sku} (${cosmetic.id})`);
+						if ((cosmetic == null)) {
+							throw new Errors.NotFoundError("Cosmetic not found");
+						}
+						if (!cosmetic.enabled) {
+							throw new Errors.BadRequestError("This cosmetic is disabled");
+						}
+						this.cosmeticId = cosmetic.id;
+						return confirmAsync(`Sure you want to give ${cosmetic.sku} cosmetic to ${this.userRow.username}?`);}).then(function(){
+						const userId = this.userRow.id;
+						const {
+                            cosmeticId
+                        } = this;
+						return knex.transaction(tx => InventoryModule.giveUserCosmeticId(Promise.resolve(),tx,userId,cosmeticId,"CRM","crm"));
+					});
 
-				else if answers.operation == "Give User Mystery Crate"
+				} else if (answers.operation === "Give User Mystery Crate") {
 
-					return inquirerPromisifed.prompt [{
-						name:'crateType'
-						message:"Which Mystery Crate Type (bronze/gold/platinum)?"
-						type:"input"
-						validate:(input)->
-							return _.contains(_.values(SDK.CosmeticsChestTypeLookup),input)
+					return inquirerPromisifed.prompt([{
+						name:'crateType',
+						message:"Which Mystery Crate Type (bronze/gold/platinum)?",
+						type:"input",
+						validate(input){
+							return _.contains(_.values(SDK.CosmeticsChestTypeLookup),input);
+						}
 					},{
-						name:'amount'
-						message:"How many chests do you want to give (User can hold max 5 of each type)?"
-						type:"input"
-						validate:(input)-> return validator.isNumeric(input)
-					}]
-					.bind @
-					.then (answer)->
-						@.crateType = answer.crateType
-						@.amount = answer.amount
+						name:'amount',
+						message:"How many chests do you want to give (User can hold max 5 of each type)?",
+						type:"input",
+						validate(input){ return validator.isNumeric(input); }
+					}])
+					.bind(this)
+					.then(function(answer){
+						this.crateType = answer.crateType;
+						this.amount = answer.amount;
 
-						return confirmAsync("Sure you want to give #{@.amount} #{@.crateType} Mystery Crates to #{@.userRow.username}?")
-					.then ()->
-						crateType = @.crateType
-						amount = @.amount
-						userId = @.userRow.id
-						txPromise = knex.transaction (tx)->
-							return CosmeticChestsModule.giveUserChest(txPromise,tx,userId,crateType,null,null,amount,"CRM","crm")
-						return txPromise
+						return confirmAsync(`Sure you want to give ${this.amount} ${this.crateType} Mystery Crates to ${this.userRow.username}?`);}).then(function(){
+						const {
+                            crateType
+                        } = this;
+						const {
+                            amount
+                        } = this;
+						const userId = this.userRow.id;
+						var txPromise = knex.transaction(tx => CosmeticChestsModule.giveUserChest(txPromise,tx,userId,crateType,null,null,amount,"CRM","crm"));
+						return txPromise;
+					});
 
-				else if answers.operation == "Give User Mystery Crate Key"
+				} else if (answers.operation === "Give User Mystery Crate Key") {
 
-					return inquirerPromisifed.prompt [{
-						name:'crateKeyType'
-						message:"Which Mystery Crate Key Type (bronze/gold/platinum)?"
-						type:"input"
-						validate:(input)->
-							return _.contains(_.values(SDK.CosmeticsChestTypeLookup),input)
+					return inquirerPromisifed.prompt([{
+						name:'crateKeyType',
+						message:"Which Mystery Crate Key Type (bronze/gold/platinum)?",
+						type:"input",
+						validate(input){
+							return _.contains(_.values(SDK.CosmeticsChestTypeLookup),input);
+						}
 					},{
-						name:'amount'
-						message:"How many keys do you want to give?"
-						type:"input"
-						validate:(input)-> return validator.isNumeric(input)
-					}]
-					.bind @
-					.then (answer)->
-						@.crateKeyType = answer.crateKeyType
-						@.amount = answer.amount
+						name:'amount',
+						message:"How many keys do you want to give?",
+						type:"input",
+						validate(input){ return validator.isNumeric(input); }
+					}])
+					.bind(this)
+					.then(function(answer){
+						this.crateKeyType = answer.crateKeyType;
+						this.amount = answer.amount;
 
-						return confirmAsync("Sure you want to give #{@.amount} #{@.crateKeyType} Mystery Crate Keys to #{@.userRow.username}?")
-					.then ()->
-						crateKeyType = @.crateKeyType
-						amount = @.amount
-						userId = @.userRow.id
-						txPromise = knex.transaction (tx)->
-							return CosmeticChestsModule.giveUserChestKey(txPromise,tx,userId,crateKeyType,amount,"CRM","crm")
-						return txPromise
+						return confirmAsync(`Sure you want to give ${this.amount} ${this.crateKeyType} Mystery Crate Keys to ${this.userRow.username}?`);}).then(function(){
+						const {
+                            crateKeyType
+                        } = this;
+						const {
+                            amount
+                        } = this;
+						const userId = this.userRow.id;
+						var txPromise = knex.transaction(tx => CosmeticChestsModule.giveUserChestKey(txPromise,tx,userId,crateKeyType,amount,"CRM","crm"));
+						return txPromise;
+					});
 
-				else if answers.operation == "Give User Retention Gift Crate"
+				} else if (answers.operation === "Give User Retention Gift Crate") {
 
-					userId = @.userRow.id
-					return knex.transaction (tx)->
-						return GiftCrateModule.addGiftCrateToUser(Promise.resolve(true), tx, userId, GiftCrateLookup.SevenDayMysteryBox)
+					userId = this.userRow.id;
+					return knex.transaction(tx => GiftCrateModule.addGiftCrateToUser(Promise.resolve(true), tx, userId, GiftCrateLookup.SevenDayMysteryBox));
 
-				else if answers.operation == "Give Ribbon"
+				} else if (answers.operation === "Give Ribbon") {
 
-					return inquirerPromisifed.prompt [{
-						name:'ribbon'
-						message:"Which Ribbon (tournament_winner, ...)?"
-						type:"input"
-						validate:(input)->
-							if SDK.RibbonFactory.ribbonForIdentifier(input)?
-								return true
-							else
-								return false
-					}]
-					.bind @
-					.then (answer)->
-						ribbon = SDK.RibbonFactory.ribbonForIdentifier(answer.ribbon)
-						if not ribbon?
-							throw new Errors.NotFoundError("Ribbon not found")
-						if !ribbon.enabled
-							throw new Errors.BadRequestError("This ribbon is disabled")
-						@.ribbonId = ribbon.id
-						return confirmAsync("Sure you want to give #{ribbon.title} #{@.userRow.username}?")
-					.then ()->
-						userId = @.userRow.id
-						ribbonId = @.ribbonId
+					return inquirerPromisifed.prompt([{
+						name:'ribbon',
+						message:"Which Ribbon (tournament_winner, ...)?",
+						type:"input",
+						validate(input){
+							if (SDK.RibbonFactory.ribbonForIdentifier(input) != null) {
+								return true;
+							} else {
+								return false;
+							}
+						}
+					}])
+					.bind(this)
+					.then(function(answer){
+						const ribbon = SDK.RibbonFactory.ribbonForIdentifier(answer.ribbon);
+						if ((ribbon == null)) {
+							throw new Errors.NotFoundError("Ribbon not found");
+						}
+						if (!ribbon.enabled) {
+							throw new Errors.BadRequestError("This ribbon is disabled");
+						}
+						this.ribbonId = ribbon.id;
+						return confirmAsync(`Sure you want to give ${ribbon.title} ${this.userRow.username}?`);}).then(function(){
+						userId = this.userRow.id;
+						const {
+                            ribbonId
+                        } = this;
 
-						@.ribbon =
-							user_id: userId
-							ribbon_id: ribbonId
+						this.ribbon = {
+							user_id: userId,
+							ribbon_id: ribbonId,
 							created_at: moment.utc().toDate()
+						};
 
-						console.log("adding ribbon: ",@.ribbon)
+						console.log("adding ribbon: ",this.ribbon);
 
-						return knex("user_ribbons").insert(@.ribbon)
-					.then ()-> DuelystFirebase.connect().getRootRef()
-					.then (rootRef)->
-						ribbonData = _.omit(@.ribbon,["user_id"])
-						ribbonData = DataAccessHelpers.restifyData(ribbonData)
-						return FirebasePromises.safeTransaction(rootRef.child('user-ribbons').child(@.userRow.id).child(ribbonData.ribbon_id),(data)->
-							data ?= {}
-							data.ribbon_id ?= ribbonData.ribbon_id
-							data.updated_at = ribbonData.created_at
-							data.count ?= 0
-							data.count += 1
-							return data
-						)
+						return knex("user_ribbons").insert(this.ribbon);}).then(() => DuelystFirebase.connect().getRootRef())
+					.then(function(rootRef){
+						let ribbonData = _.omit(this.ribbon,["user_id"]);
+						ribbonData = DataAccessHelpers.restifyData(ribbonData);
+						return FirebasePromises.safeTransaction(rootRef.child('user-ribbons').child(this.userRow.id).child(ribbonData.ribbon_id),function(data){
+							if (data == null) { data = {}; }
+							if (data.ribbon_id == null) { data.ribbon_id = ribbonData.ribbon_id; }
+							data.updated_at = ribbonData.created_at;
+							if (data.count == null) { data.count = 0; }
+							data.count += 1;
+							return data;
+						});
+					});
 
-				else if answers.operation == "Give Spirit Orbs"
+				} else if (answers.operation === "Give Spirit Orbs") {
 
-					return inquirerPromisifed.prompt [{
-						name:'amount'
-						message:"How many (max 40)?"
-						type:"input"
-						validate:(input)-> return validator.isNumeric(input) and parseInt(input) <= 40 and parseInt(input) > 0
-					}]
-					.bind @
-					.then (answer)->
-						@.amount = answer.amount
+					return inquirerPromisifed.prompt([{
+						name:'amount',
+						message:"How many (max 40)?",
+						type:"input",
+						validate(input){ return validator.isNumeric(input) && (parseInt(input) <= 40) && (parseInt(input) > 0); }
+					}])
+					.bind(this)
+					.then(function(answer){
+						this.amount = answer.amount;
 
-						return inquirerPromisifed.prompt [{
-							name:'card_set'
-							message:"Any specific Card Set (core:1 shimzar:2 unearthed:5 immortal:6 ancient:7 8:mythron)? ENTER to default to core set."
+						return inquirerPromisifed.prompt([{
+							name:'card_set',
+							message:"Any specific Card Set (core:1 shimzar:2 unearthed:5 immortal:6 ancient:7 8:mythron)? ENTER to default to core set.",
 							type:"input"
-						}]
-					.then (answer)->
-						@.card_set = answer.card_set || 1
-						@.card_set = parseInt(@.card_set)
-						unless @.card_set == 1 || @.card_set == 2 || @.card_set == 5 || @.card_set == 6 || @.card_set == 7 || @.card_set == 8
-							throw new Error("Invalid Card Set")
-						return confirmAsync("Sure you want to give #{@.amount.yellow} SPIRIT ORBS of card set #{@.card_set} to #{@.userRow.username}?")
-					.then ()->
-						userId = @.userRow.id
-						amount = @.amount
-						cardSet = @.card_set
-						return knex.transaction (tx)->
-							allPromises = []
-							for [0...amount]
-								allPromises.push InventoryModule.addBoosterPackToUser(null,tx,userId,cardSet,"CRM")
-							return Promise.all(allPromises)
+						}]);})
+					.then(function(answer){
+						this.card_set = answer.card_set || 1;
+						this.card_set = parseInt(this.card_set);
+						if ((this.card_set !== 1) && (this.card_set !== 2) && (this.card_set !== 5) && (this.card_set !== 6) && (this.card_set !== 7) && (this.card_set !== 8)) {
+							throw new Error("Invalid Card Set");
+						}
+						return confirmAsync(`Sure you want to give ${this.amount.yellow} SPIRIT ORBS of card set ${this.card_set} to ${this.userRow.username}?`);}).then(function(){
+						userId = this.userRow.id;
+						const {
+                            amount
+                        } = this;
+						const cardSet = this.card_set;
+						return knex.transaction(function(tx){
+							const allPromises = [];
+							for (let i = 0, end = amount, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+								allPromises.push(InventoryModule.addBoosterPackToUser(null,tx,userId,cardSet,"CRM"));
+							}
+							return Promise.all(allPromises);
+						});
+					});
 
-				else if answers.operation == "Send In-Game Notification"
+				} else if (answers.operation === "Send In-Game Notification") {
 
-					return inquirerPromisifed.prompt [{
-						name:'message'
-						message:"Message:"
-						type:"input"
-						validate:(input)-> return validator.isLength(input,2)
-					}]
-					.bind @
-					.then (answer)->
-						return UsersModule.inGameNotify(@.userRow.id,answer.message)
+					return inquirerPromisifed.prompt([{
+						name:'message',
+						message:"Message:",
+						type:"input",
+						validate(input){ return validator.isLength(input,2); }
+					}])
+					.bind(this)
+					.then(function(answer){
+						return UsersModule.inGameNotify(this.userRow.id,answer.message);
+					});
 
-				else if answers.operation == "Suspend"
+				} else if (answers.operation === "Suspend") {
 
-					return confirmAsync("Sure you want to #{"SUSPEND".red} this user #{@.userRow?.id}?")
-					.bind @
-					.then ()->
-						return inquirerPromisifed.prompt [{
-							name:'message'
-							message:"Why is this user suspended (max 255 chars):"
-							type:"input"
-							validate:(input)-> return validator.isLength(input,2,255)
-						}]
-					.then (answer)->
-						return UsersModule.suspendUser(@.userRow.id,answer.message)
+					return confirmAsync(`Sure you want to ${"SUSPEND".red} this user ${(this.userRow != null ? this.userRow.id : undefined)}?`)
+					.bind(this)
+					.then(() => inquirerPromisifed.prompt([{
+                        name:'message',
+                        message:"Why is this user suspended (max 255 chars):",
+                        type:"input",
+                        validate(input){ return validator.isLength(input,2,255); }
+                    }]))
+					.then(function(answer){
+						return UsersModule.suspendUser(this.userRow.id,answer.message);
+					});
 
-				else if answers.operation == "UN-Suspend"
+				} else if (answers.operation === "UN-Suspend") {
 
-					return confirmAsync("Sure you want to #{"UN-SUSPEND".red} this user #{@.userRow?.id}?")
-					.bind @
-					.then ()->
-						return knex("users").where('id',@.userRow.id).update({
+					return confirmAsync(`Sure you want to ${"UN-SUSPEND".red} this user ${(this.userRow != null ? this.userRow.id : undefined)}?`)
+					.bind(this)
+					.then(function(){
+						return knex("users").where('id',this.userRow.id).update({
 							is_suspended: false
-						})
+						});
+					});
 
-				else if answers.operation == "Change Email"
+				} else if (answers.operation === "Change Email") {
 
-					return inquirerPromisifed.prompt [{
-						name:'email'
-						message:"New Email:"
-						type:"input"
-						validate:(input)-> return validator.isEmail(input)
-					}]
-					.bind @
-					.then (answer)->
+					return inquirerPromisifed.prompt([{
+						name:'email',
+						message:"New Email:",
+						type:"input",
+						validate(input){ return validator.isEmail(input); }
+					}])
+					.bind(this)
+					.then(function(answer){
 
-						console.log("changing email to #{answer.email}")
-						return UsersModule.changeEmail(@.userRow.id,answer.email.toLowerCase())
+						console.log(`changing email to ${answer.email}`);
+						return UsersModule.changeEmail(this.userRow.id,answer.email.toLowerCase());
+					});
 
-				else if answers.operation == "Change Username"
+				} else if (answers.operation === "Change Username") {
 
-					return inquirerPromisifed.prompt [{
-						name:'username'
-						message:"New Username:"
-						type:"input"
-						validate:(input)-> return validator.isLength(input,3, 18) && validator.isAlphanumeric(input)
-					}]
-					.bind @
-					.then (answer)->
+					return inquirerPromisifed.prompt([{
+						name:'username',
+						message:"New Username:",
+						type:"input",
+						validate(input){ return validator.isLength(input,3, 18) && validator.isAlphanumeric(input); }
+					}])
+					.bind(this)
+					.then(function(answer){
 
-						console.log("changing username to #{answer.username}")
-						return UsersModule.changeUsername(@.userRow.id,answer.username.toLowerCase(),true)
+						console.log(`changing username to ${answer.username}`);
+						return UsersModule.changeUsername(this.userRow.id,answer.username.toLowerCase(),true);
+					});
 
-				else if answers.operation == "Force Firebase SYNC"
+				} else if (answers.operation === "Force Firebase SYNC") {
 
-					return confirmAsync("Sure you want to re-sync this user #{@.userRow?.id} to Firebase #{config.get('firebase').cyan}?")
-					.bind @
-					.then ()->
-						return SyncModule._syncUserFromSQLToFirebase(@.userRow.id)
+					return confirmAsync(`Sure you want to re-sync this user ${(this.userRow != null ? this.userRow.id : undefined)} to Firebase ${config.get('firebase').cyan}?`)
+					.bind(this)
+					.then(function(){
+						return SyncModule._syncUserFromSQLToFirebase(this.userRow.id);
+					});
 
-				else
+				} else {
 
-					console.log("unknown command".red)
-					callback()
-					# process.exit(0)
+					console.log("unknown command".red);
+					return callback();
+				}}).then(function(){
 
-		.then ()->
+			console.log("DONE".green);
+			return callback();}).catch(DidNotConfirmError, function(e){
+			console.log(e.message);
+			return callback();
+		}).catch(function(e){
 
-			console.log("DONE".green)
-			callback()
-			# process.exit(0)
-
-		.catch DidNotConfirmError, (e)->
-			console.log(e.message)
-			callback()
-			# process.exit(1)
-
-		.catch (e)->
-
-			console.log prettyError.render(e)
-			callback()
-			# process.exit(1)
-###
+			console.log(prettyError.render(e));
+			return callback();
+		});
+});
+			// process.exit(1)
+/*
 program
 .command 'users:snapshot <username_or_email>'
 .description 'writes user\'s snapshot data to userSnapshots directory'
@@ -2070,50 +2189,53 @@ program
 
 		.catch DidNotConfirmError, (e)->
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch (e)->
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
-###
+			* process.exit(1)
+*/
 program
-	.command 'steam:unlink <username_or_email>'
-	.description 'unlink steam from a user\'s account'
-	.action (args, callback)->
-		console.log("loading modules...")
-		UsersModule ?= require 'server/lib/data_access/users'
-		console.log("loading modules... "+"DONE".green)
+	.command('steam:unlink <username_or_email>')
+	.description('unlink steam from a user\'s account')
+	.action(function(args, callback){
+		console.log("loading modules...");
+		if (UsersModule == null) { UsersModule = require('server/lib/data_access/users'); }
+		console.log("loading modules... "+"DONE".green);
 
-		username_or_email = args.username_or_email
-		username_or_email = username_or_email.toLowerCase()
-		username = true
-		if username_or_email.indexOf('@') > 0
-			username = false
+		let {
+            username_or_email
+        } = args;
+		username_or_email = username_or_email.toLowerCase();
+		let username = true;
+		if (username_or_email.indexOf('@') > 0) {
+			username = false;
+		}
 
-		getUserIdAsync = if username then UsersModule.userIdForUsername(username_or_email) else UsersModule.userIdForEmail(username_or_email)
-		getUserIdAsync
-		.bind {}
-		.then (id)->
-			if !id
-				throw new Error("Could not find user")
-			console.log "user id: #{id}"
-			@id = id
-			return UsersModule.userDataForId(id)
-		.then (data)->
-			console.log "steam id: #{data.steam_id}"
-			@steamId = data.steam_id
-			return confirmAsync("unlink user #{username_or_email} from steam... confirm?")
-		.then () ->
-			console.log 'unlinking complete, user must re-link to steam account'
-			return UsersModule.disassociateSteamId(@id, @steamId)
-		.catch DidNotConfirmError, (e)->
-			console.log(e.message)
-			callback()
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback()
-###
+		const getUserIdAsync = username ? UsersModule.userIdForUsername(username_or_email) : UsersModule.userIdForEmail(username_or_email);
+		return getUserIdAsync
+		.bind({})
+		.then(function(id){
+			if (!id) {
+				throw new Error("Could not find user");
+			}
+			console.log(`user id: ${id}`);
+			this.id = id;
+			return UsersModule.userDataForId(id);}).then(function(data){
+			console.log(`steam id: ${data.steam_id}`);
+			this.steamId = data.steam_id;
+			return confirmAsync(`unlink user ${username_or_email} from steam... confirm?`);}).then(function() {
+			console.log('unlinking complete, user must re-link to steam account');
+			return UsersModule.disassociateSteamId(this.id, this.steamId);}).catch(DidNotConfirmError, function(e){
+			console.log(e.message);
+			return callback();
+		}).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback();
+		});
+});
+/*
 program
 	.command 'steam:txn:report'
 	.option('-s, --sandbox', 'Enable sandbox mode')
@@ -2136,7 +2258,7 @@ program
 			console.log e
 			console.log prettyError.render(e)
 			callback()
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'steam:txn:info <txId>'
@@ -2164,7 +2286,7 @@ program
 			console.log e
 			console.log prettyError.render(e)
 			callback()
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'steam:txn:refund <orderId>'
@@ -2237,7 +2359,7 @@ program
 		.catch (e)->
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'charges:refund <charge_id> [suspend]'
@@ -2356,12 +2478,12 @@ program
 
 		.catch DidNotConfirmError, (e)->
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch (e)->
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'referral_codes'
@@ -2377,13 +2499,13 @@ program
 
 			logAsTable(rows)
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch (e)->
 
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'referral_codes:info <code>'
@@ -2401,13 +2523,13 @@ program
 
 			logAsTable(rows)
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch (e)->
 
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'referral_codes:add <code>'
@@ -2475,18 +2597,18 @@ program
 
 			console.log("DONE".green)
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch DidNotConfirmError, (e)->
 			console.log(e.message)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch (e)->
 
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'referral_codes:renew <code> [days]'
@@ -2520,18 +2642,18 @@ program
 
 			console.log("DONE. Updated #{c}".green)
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch DidNotConfirmError, (e)->
 			console.log(e.message)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch (e)->
 
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'referral_codes:add_for_twitch <codes>'
@@ -2578,18 +2700,18 @@ program
 
 			console.log("DONE".green)
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch DidNotConfirmError, (e)->
 			console.log(e.message)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch (e)->
 
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'paypal:transaction <id> [detailed]'
@@ -2616,135 +2738,135 @@ program
 				item = _.pick(item,["PAYMENTSTATUS","EMAIL","L_NAME0","L_NUMBER0","CUSTOM","ORDERTIME","AMT"])
 			console.log prettyjson.render(item)
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch DidNotConfirmError, (e)->
 
 			console.log(e.message)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch (e)->
 
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
-###
-# program
-# 	.command 'paypal:resolve <id> [bonus_gold]'
-# 	.description 'resolve paypal transaction if "COMPLETED"'
-# 	.action (args,callback)->
-#
-# 		id = args.id
-# 		bonus_gold = args.bonus_gold
-# 		bonus_gold ?= 100
-#
-# 		console.log "bonus_gold: ",bonus_gold
-#
-# 		PaypalExpress = require('paypal-express')
-#
-# 		if not config.get("paypalNvpApi.username")
-# 			return callback(new Error("No Paypal NVP API Credentials set"))
-#
-# 		request = new PaypalExpress.NVPRequest(config.get("paypalNvpApi.username"),config.get("paypalNvpApi.password"),config.get("paypalNvpApi.signature"))
-# 		Promise.promisifyAll(request)
-#
-# 		this_obj = {}
-#
-# 		knex("user_charges").first().where('charge_id',id)
-# 		.bind this_obj
-# 		.then (chargeRow)->
-#
-# 			console.log "charge row: ",chargeRow
-#
-# 			if chargeRow?
-# 				throw new Errors.AlreadyExistsError("This transaction already seems to be processed")
-#
-# 			return request.makeRequestAsync({
-# 				'METHOD': 'GetTransactionDetails',
-# 				"TRANSACTIONID": id
-# 			})
-# 		.then (response)->
-#
-# 			item = PaypalTools.paypalNvpTransactionResponseToObject(response)
-# 			itemSimple = _.pick(item,["PAYMENTSTATUS","EMAIL","L_NAME0","L_NUMBER0","CUSTOM","ORDERTIME","AMT"])
-# 			console.log prettyjson.render(itemSimple)
-#
-# 			# email to send a notification of resolution to
-# 			@.email = item["EMAIL"]
-#
-# 			InventoryModule ?= require 'server/lib/data_access/inventory'
-# 			if item["PAYMENTSTATUS"] == "Completed"
-#
-# 				amount = parseInt(item["L_NUMBER0"].replace("BOOSTER",""))
-# 				price = Math.ceil(parseFloat(item["AMT"])*100)
-# 				userId = item["CUSTOM"]
-#
-# 				@.boosterCount = amount
-#
-# 				if not amount
-# 					throw new Error("Invalid Booster Count: #{amount}")
-#
-# 				console.log "Giving user #{amount} boosters for price #{price}"
-#
-# 				return confirmAsync("Give user #{amount} boosters for price #{price} + #{bonus_gold} bonus gold?")
-# 				.then ()->
-# 					return knex.transaction (tx)->
-# 						tx("users").where('id',userId).first().forUpdate().transacting(tx)
-# 						.bind this_obj
-# 						.then (userRow)->
-# 							@.username = userRow["username"]
-# 							allPromises = []
-# 							for [0...amount]
-# 								allPromises.push InventoryModule.addBoosterPackToUser(null,tx,userId,1,"CRM - paypal resolved",id)
-#
-# 							if bonus_gold > 0
-# 								allPromises.push InventoryModule.giveUserGold(null,tx,userId,parseInt(bonus_gold),"CRM - paypal #{id}")
-#
-# 							allPromises.push knex("users").where('id',userId).update(
-# 								ltv:					userRow.ltv + price
-# 								purchase_count:			userRow.purchase_count + 1
-# 								last_purchase_at:		moment(item["ORDERTIME"]).utc().toDate()
-# 							).transacting(tx)
-# 							allPromises.push knex("user_charges").insert(
-# 								charge_id:id,
-# 								user_id:userId,
-# 								created_at:moment(item["ORDERTIME"]).utc().toDate()
-# 								currency:'usd'
-# 								charge_json:item
-# 								amount:price
-# 							).transacting(tx)
-# 							return Promise.all(allPromises)
-#
-# 		.then ()->
-#
-# 			if @.boosterCount
-#
-# 				if not mailer?
-# 					mailer ?= require 'server/mailer'
-# 					Promise.promisifyAll(mailer)
-#
-# 				console.log "Email sent to #{@.email}".green
-# 				return mailer.sendMailAsync(@.username,@.email,"Purchase #{id}","Your purchase for #{@.boosterCount} SPIRIT ORBS was processed and we've awarded you #{bonus_gold} BONUS GOLD for the delay and inconvenience. We apologize for the delay, but your transaction was marked as UNVERIFIED so it required a manual check on our end. Please contact support if you have any further issue or questions.")
-#
-# 		.then ()->
-#
-# 			console.log "ALL DONE.".green
-# 			callback()
-# 			# process.exit(0)
-#
-# 		.catch DidNotConfirmError, (e)->
-#
-# 			console.log(e.message)
-# 			callback(e)
-# 			# process.exit(1)
-#
-# 		.catch (e)->
-#
-# 			console.log prettyError.render(e)
-# 			callback(e)
-# 			# process.exit(1)
-###
+			* process.exit(1)
+*/
+// program
+// 	.command 'paypal:resolve <id> [bonus_gold]'
+// 	.description 'resolve paypal transaction if "COMPLETED"'
+// 	.action (args,callback)->
+//
+// 		id = args.id
+// 		bonus_gold = args.bonus_gold
+// 		bonus_gold ?= 100
+//
+// 		console.log "bonus_gold: ",bonus_gold
+//
+// 		PaypalExpress = require('paypal-express')
+//
+// 		if not config.get("paypalNvpApi.username")
+// 			return callback(new Error("No Paypal NVP API Credentials set"))
+//
+// 		request = new PaypalExpress.NVPRequest(config.get("paypalNvpApi.username"),config.get("paypalNvpApi.password"),config.get("paypalNvpApi.signature"))
+// 		Promise.promisifyAll(request)
+//
+// 		this_obj = {}
+//
+// 		knex("user_charges").first().where('charge_id',id)
+// 		.bind this_obj
+// 		.then (chargeRow)->
+//
+// 			console.log "charge row: ",chargeRow
+//
+// 			if chargeRow?
+// 				throw new Errors.AlreadyExistsError("This transaction already seems to be processed")
+//
+// 			return request.makeRequestAsync({
+// 				'METHOD': 'GetTransactionDetails',
+// 				"TRANSACTIONID": id
+// 			})
+// 		.then (response)->
+//
+// 			item = PaypalTools.paypalNvpTransactionResponseToObject(response)
+// 			itemSimple = _.pick(item,["PAYMENTSTATUS","EMAIL","L_NAME0","L_NUMBER0","CUSTOM","ORDERTIME","AMT"])
+// 			console.log prettyjson.render(itemSimple)
+//
+// 			# email to send a notification of resolution to
+// 			@.email = item["EMAIL"]
+//
+// 			InventoryModule ?= require 'server/lib/data_access/inventory'
+// 			if item["PAYMENTSTATUS"] == "Completed"
+//
+// 				amount = parseInt(item["L_NUMBER0"].replace("BOOSTER",""))
+// 				price = Math.ceil(parseFloat(item["AMT"])*100)
+// 				userId = item["CUSTOM"]
+//
+// 				@.boosterCount = amount
+//
+// 				if not amount
+// 					throw new Error("Invalid Booster Count: #{amount}")
+//
+// 				console.log "Giving user #{amount} boosters for price #{price}"
+//
+// 				return confirmAsync("Give user #{amount} boosters for price #{price} + #{bonus_gold} bonus gold?")
+// 				.then ()->
+// 					return knex.transaction (tx)->
+// 						tx("users").where('id',userId).first().forUpdate().transacting(tx)
+// 						.bind this_obj
+// 						.then (userRow)->
+// 							@.username = userRow["username"]
+// 							allPromises = []
+// 							for [0...amount]
+// 								allPromises.push InventoryModule.addBoosterPackToUser(null,tx,userId,1,"CRM - paypal resolved",id)
+//
+// 							if bonus_gold > 0
+// 								allPromises.push InventoryModule.giveUserGold(null,tx,userId,parseInt(bonus_gold),"CRM - paypal #{id}")
+//
+// 							allPromises.push knex("users").where('id',userId).update(
+// 								ltv:					userRow.ltv + price
+// 								purchase_count:			userRow.purchase_count + 1
+// 								last_purchase_at:		moment(item["ORDERTIME"]).utc().toDate()
+// 							).transacting(tx)
+// 							allPromises.push knex("user_charges").insert(
+// 								charge_id:id,
+// 								user_id:userId,
+// 								created_at:moment(item["ORDERTIME"]).utc().toDate()
+// 								currency:'usd'
+// 								charge_json:item
+// 								amount:price
+// 							).transacting(tx)
+// 							return Promise.all(allPromises)
+//
+// 		.then ()->
+//
+// 			if @.boosterCount
+//
+// 				if not mailer?
+// 					mailer ?= require 'server/mailer'
+// 					Promise.promisifyAll(mailer)
+//
+// 				console.log "Email sent to #{@.email}".green
+// 				return mailer.sendMailAsync(@.username,@.email,"Purchase #{id}","Your purchase for #{@.boosterCount} SPIRIT ORBS was processed and we've awarded you #{bonus_gold} BONUS GOLD for the delay and inconvenience. We apologize for the delay, but your transaction was marked as UNVERIFIED so it required a manual check on our end. Please contact support if you have any further issue or questions.")
+//
+// 		.then ()->
+//
+// 			console.log "ALL DONE.".green
+// 			callback()
+// 			# process.exit(0)
+//
+// 		.catch DidNotConfirmError, (e)->
+//
+// 			console.log(e.message)
+// 			callback(e)
+// 			# process.exit(1)
+//
+// 		.catch (e)->
+//
+// 			console.log prettyError.render(e)
+// 			callback(e)
+// 			# process.exit(1)
+/*
 program
 	.command 'paypal:resolve_all'
 	.description 'resolve paypal transaction if "COMPLETED"'
@@ -2774,8 +2896,8 @@ program
 				return knex("user_charges").first().where('charge_id',errorRow.transaction_id)
 				.bind this_obj
 				.then (chargeRow)->
-					# if chargeRow?
-					# 	throw new Errors.AlreadyExistsError("This transaction already seems to be processed")
+					* if chargeRow?
+					* 	throw new Errors.AlreadyExistsError("This transaction already seems to be processed")
 					return request.makeRequestAsync({
 						'METHOD': 'GetTransactionDetails',
 						"TRANSACTIONID": errorRow.transaction_id
@@ -2783,7 +2905,7 @@ program
 				.then (response)->
 					item = PaypalTools.paypalNvpTransactionResponseToObject(response)
 					itemSimple = _.pick(item,["TRANSACTIONID","PAYMENTSTATUS","EMAIL","L_NAME0","L_NUMBER0","CUSTOM","ORDERTIME","AMT"])
-					# email to send a notification of resolution to
+					* email to send a notification of resolution to
 					@.email = item["EMAIL"]
 					@.boosterCount = null
 					InventoryModule ?= require 'server/lib/data_access/inventory'
@@ -2843,15 +2965,15 @@ program
 		.then ()->
 			console.log "ALL DONE.".green
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 		.catch DidNotConfirmError, (e)->
 			console.log(e.message)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 		.catch (e)->
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'paypal:refund <id> [bonus_gold]'
@@ -2928,19 +3050,19 @@ program
 
 			console.log "ALL DONE".green
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch DidNotConfirmError, (e)->
 
 			console.log(e.message)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch (e)->
 
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 program
 	.command 'paypal:summary'
@@ -2971,7 +3093,7 @@ program
 			for i in [0...4]
 				start = moment.utc(day).add(i*6,'hours')
 				end = moment.utc(day).add((i+1)*6,'hours')
-				# console.log "#{start.format()} .. #{end.format()}"
+				* console.log "#{start.format()} .. #{end.format()}"
 				allRequests.push request.makeRequestAsync(
 					'METHOD': 'TransactionSearch',
 					"STARTDATE": start.format()
@@ -2985,10 +3107,10 @@ program
 					responseItems = PaypalTools.paypalNvpSearchResponseToObjects(data)
 					items = items.concat(responseItems)
 
-				# update progress bar
+				* update progress bar
 				bar.tick()
 
-				# return transaction rows
+				* return transaction rows
 				return items
 
 		).then (results)->
@@ -3027,246 +3149,233 @@ program
 
 			logAsTable(items)
 			callback()
-			# process.exit(0)
+			* process.exit(0)
 
 		.catch DidNotConfirmError, (e)->
 
 			console.log(e.message)
 			callback(e)
-			# process.exit(1)
+			* process.exit(1)
 
 		.catch (e)->
 
 			console.log prettyError.render(e)
 			callback(e)
-			# process.exit(1)
-###
-#program
-#	.command 'announcements:add'
-#	.description 'Add an in-game announcement'
-#	.action (args,callback)->
-#
-#		return Promise.resolve()
-#		.bind {}
-#		.then ()->
-#
-#			@.newsItem =
-#				title: "Unearthed Prophecy Expansion" # "News Title #{moment().format("HH:mm:ss")}"
-#				type: "announcement"
-#				content: fs.readFileSync(__dirname + '/data/news-content.md').toString()
-#				created_at: moment().valueOf()
-#
-#			return confirmAsync("Adding #{@.newsItem.title}")
-#
-#		.then ()-> DuelystFirebase.connect().getRootRef()
-#		.then (fbRootRef)->
-#
-#			newsItem = @.newsItem
-#
-#			console.log "adding news item: "
-#			console.log prettyjson.render(newsItem)
-#
-#			item = fbRootRef.child("news").child("index").push()
-#			created_at = moment().valueOf()
-#
-#			return Promise.all([
-#				FirebasePromises.setWithPriority(item,{
-#					title:newsItem.title
-#					type:newsItem.type
-#					created_at:newsItem.created_at
-#				},newsItem.created_at),
-#				FirebasePromises.setWithPriority(fbRootRef.child("news").child("content").child(item.key()),{
-#					title:newsItem.title
-#					content:newsItem.content
-#					created_at:newsItem.created_at
-#				},newsItem.created_at)
-#			])
-#
-#		.then ()->
-#
-#			console.log "DONE".green
-#			callback()
-#			# process.exit(0)
-#
-#		.catch DidNotConfirmError, (e)->
-#
-#			console.log(e.message)
-#			callback(e)
-#			# process.exit(1)
-#
-#		.catch (e)->
-#
-#			console.log prettyError.render(e)
-#			callback(e)
-#			# process.exit(1)
+			* process.exit(1)
+*/
+//program
+//	.command 'announcements:add'
+//	.description 'Add an in-game announcement'
+//	.action (args,callback)->
+//
+//		return Promise.resolve()
+//		.bind {}
+//		.then ()->
+//
+//			@.newsItem =
+//				title: "Unearthed Prophecy Expansion" # "News Title #{moment().format("HH:mm:ss")}"
+//				type: "announcement"
+//				content: fs.readFileSync(__dirname + '/data/news-content.md').toString()
+//				created_at: moment().valueOf()
+//
+//			return confirmAsync("Adding #{@.newsItem.title}")
+//
+//		.then ()-> DuelystFirebase.connect().getRootRef()
+//		.then (fbRootRef)->
+//
+//			newsItem = @.newsItem
+//
+//			console.log "adding news item: "
+//			console.log prettyjson.render(newsItem)
+//
+//			item = fbRootRef.child("news").child("index").push()
+//			created_at = moment().valueOf()
+//
+//			return Promise.all([
+//				FirebasePromises.setWithPriority(item,{
+//					title:newsItem.title
+//					type:newsItem.type
+//					created_at:newsItem.created_at
+//				},newsItem.created_at),
+//				FirebasePromises.setWithPriority(fbRootRef.child("news").child("content").child(item.key()),{
+//					title:newsItem.title
+//					content:newsItem.content
+//					created_at:newsItem.created_at
+//				},newsItem.created_at)
+//			])
+//
+//		.then ()->
+//
+//			console.log "DONE".green
+//			callback()
+//			# process.exit(0)
+//
+//		.catch DidNotConfirmError, (e)->
+//
+//			console.log(e.message)
+//			callback(e)
+//			# process.exit(1)
+//
+//		.catch (e)->
+//
+//			console.log prettyError.render(e)
+//			callback(e)
+//			# process.exit(1)
 
 program
-.command 'announcements:create_announcement'
+.command('announcements:create_announcement')
 .option('-E, --editor', 'opens dev editor')
-.description 'Add an in-game announcement to current environment - will not work on production'
-.action (args,callback)->
-	if not (config.isDevelopment() or config.isStaging()) # everything but production is allowed
-		callback("Cannot create announcement directly to production.\nPlease create for staging then migrate to Production")
-		return
+.description('Add an in-game announcement to current environment - will not work on production')
+.action(function(args,callback){
+	if (!(config.isDevelopment() || config.isStaging())) { // everything but production is allowed
+		callback("Cannot create announcement directly to production.\nPlease create for staging then migrate to Production");
+		return;
+	}
 
 	return Promise.resolve()
-	.bind {}
-	.then ()->
-		return inquirerPromisifed.prompt([{
-			name:'title'
-			message:"Enter Title of announcement:"
-		}])
-	.then (announcementTitleInput)->
-		@.announcementTitle = announcementTitleInput.title
-		@.announcementContent = ""
+	.bind({})
+	.then(() => inquirerPromisifed.prompt([{
+        name:'title',
+        message:"Enter Title of announcement:"
+    }])).then(function(announcementTitleInput){
+		this.announcementTitle = announcementTitleInput.title;
+		this.announcementContent = "";
 
-		console.log("Enter each line of markdown for the content of the announcement:")
-		gatherLines = (lineCount) =>
+		console.log("Enter each line of markdown for the content of the announcement:");
+		var gatherLines = lineCount => {
 			return inquirerPromisifed.prompt([{
-				name:'lineContent'
-				message:"Enter Line #{lineCount+1} of announcement:"
+				name:'lineContent',
+				message:`Enter Line ${lineCount+1} of announcement:`
 			}])
-			.bind @
-			.then (announcementContentInput)->
-				@.announcementContent += announcementContentInput.lineContent + "  \n"
-				console.log("Content so far:\n" + "#{@.announcementContent}".green)
-				return promptWithList("Add more lines?",["Y","N"])
-			.then (result)->
-				if result == "Y"
-					return gatherLines(lineCount+1)
-				else
-					return Promise.resolve()
+			.bind(this)
+			.then(function(announcementContentInput){
+				this.announcementContent += announcementContentInput.lineContent + "  \n";
+				console.log("Content so far:\n" + `${this.announcementContent}`.green);
+				return promptWithList("Add more lines?",["Y","N"]);}).then(function(result){
+				if (result === "Y") {
+					return gatherLines(lineCount+1);
+				} else {
+					return Promise.resolve();
+				}
+			});
+		};
 
-		if args.options.editor
+		if (args.options.editor) {
 			return inquirerPromisifed.prompt([{
-				type:'editor'
-				name:'lineContent'
+				type:'editor',
+				name:'lineContent',
 				message:"Enter content of announcement:"
-			}]).bind(@)
-			.then (editorInput)->
-				@.announcementContent = editorInput.lineContent
-				return Promise.resolve()
-		else
-			return gatherLines(0)
-	.then ()->
+			}]).bind(this)
+			.then(function(editorInput){
+				this.announcementContent = editorInput.lineContent;
+				return Promise.resolve();
+			});
+		} else {
+			return gatherLines(0);
+		}}).then(function(){
 
-		@.newsItem =
-			title: @.announcementTitle
-			type: "announcement"
-			content: @.announcementContent
+		this.newsItem = {
+			title: this.announcementTitle,
+			type: "announcement",
+			content: this.announcementContent,
 			created_at: moment().valueOf()
+		};
 
-		return confirmAsync("Adding \"#{@.newsItem.title}\" announcement with content:\n" + "#{@.announcementContent}\n".green)
+		return confirmAsync(`Adding \"${this.newsItem.title}\" announcement with content:\n` + `${this.announcementContent}\n`.green);}).then(() => DuelystFirebase.connect().getRootRef())
+	.then(function(fbRootRef){
 
-	.then ()-> DuelystFirebase.connect().getRootRef()
-	.then (fbRootRef)->
+		const {
+            newsItem
+        } = this;
 
-		newsItem = @.newsItem
+		console.log(prettyjson.render(newsItem));
 
-		console.log prettyjson.render(newsItem)
-
-		item = fbRootRef.child("news").child("index").push()
-		created_at = moment().valueOf()
+		const item = fbRootRef.child("news").child("index").push();
+		const created_at = moment().valueOf();
 
 		return Promise.all([
 			FirebasePromises.setWithPriority(item,{
-				title:newsItem.title
-				type:newsItem.type
+				title:newsItem.title,
+				type:newsItem.type,
 				created_at:newsItem.created_at
 			},newsItem.created_at),
 			FirebasePromises.setWithPriority(fbRootRef.child("news").child("content").child(item.key()),{
-				title:newsItem.title
-				content:newsItem.content
+				title:newsItem.title,
+				content:newsItem.content,
 				created_at:newsItem.created_at
 			},newsItem.created_at)
-		])
+		]);}).then(function(){
 
-	.then ()->
+		console.log("DONE".green);
+		return callback();}).catch(DidNotConfirmError, function(e){
 
-		console.log "DONE".green
-		callback()
-	# process.exit(0)
+		console.log(e.message);
+		return callback(e);
+	}).catch(function(e){
 
-	.catch DidNotConfirmError, (e)->
-
-		console.log(e.message)
-		callback(e)
-	# process.exit(1)
-
-	.catch (e)->
-
-		console.log prettyError.render(e)
-		callback(e)
+		console.log(prettyError.render(e));
+		return callback(e);
+	});
+});
 
 program
-.command 'announcements:remove_announcement'
-.description 'Remove an in-game announcement from the environment'
-.action (args,callback)->
+.command('announcements:remove_announcement')
+.description('Remove an in-game announcement from the environment')
+.action((args, callback) => Promise.resolve()
+.bind({})
+.then(function(){
+    this.numRemovalChoices = 5;
+    return DuelystFirebase.connect().getRootRef();}).then(function(fbRootRef){
+    this.fbRootRef = fbRootRef;
+    return FirebasePromises.once(this.fbRootRef.child("news").child("index").orderByChild('created_at').limitToLast(this.numRemovalChoices),"value");}).then(function(newsIndicesSnapshots){
+    this.newsIndicesData = newsIndicesSnapshots.val();
+    this.announcementsList = _.map(this.newsIndicesData, function(val,key) { val.key = key; return val; });
+    this.announcementsList = _.sortBy(this.announcementsList, newsIndexData => -1*newsIndexData.created_at);
 
-	return Promise.resolve()
-	.bind {}
-	.then ()->
-		@.numRemovalChoices = 5
-		DuelystFirebase.connect().getRootRef()
-	.then (fbRootRef)->
-		@.fbRootRef = fbRootRef
-		return FirebasePromises.once(@.fbRootRef.child("news").child("index").orderByChild('created_at').limitToLast(@.numRemovalChoices),"value")
-	.then (newsIndicesSnapshots)->
-		@.newsIndicesData = newsIndicesSnapshots.val()
-		@.announcementsList = _.map(@.newsIndicesData, (val,key) -> val.key = key; return val)
-		@.announcementsList = _.sortBy(@.announcementsList, (newsIndexData)-> return -1*newsIndexData.created_at)
+//		announcementsOptionsStr = _.reduce(@.announcementsList,(memo,newsIndexData,index) ->
+//
+//			return "#{memo}\n#{index}: \"#{newsIndexData.title}\" #{moment(newsIndexData.created_at).toString()}"
+//		,"")
+//
+//		return inquirerPromisifed.prompt([{
+//			name:'index'
+//			message:"Choose by index which news item to remove:#{announcementsOptionsStr}\nEnter Index: "
+//		}])
+//	.then (announcementIndexInput)->
+//		@.removalChoice = announcementIndexInput.index
+    return promptWithList("Choose which news item to remove:",_.map(this.announcementsList,item => item.title));}).then(function(titleSelected){
 
-#		announcementsOptionsStr = _.reduce(@.announcementsList,(memo,newsIndexData,index) ->
-#
-#			return "#{memo}\n#{index}: \"#{newsIndexData.title}\" #{moment(newsIndexData.created_at).toString()}"
-#		,"")
-#
-#		return inquirerPromisifed.prompt([{
-#			name:'index'
-#			message:"Choose by index which news item to remove:#{announcementsOptionsStr}\nEnter Index: "
-#		}])
-#	.then (announcementIndexInput)->
-#		@.removalChoice = announcementIndexInput.index
-		return promptWithList("Choose which news item to remove:",_.map(@.announcementsList,(item)->return item.title))
-	.then (titleSelected)->
-
-#		@.removalChoice = _.findIndex(@.announcementsList,(item)->return title == titleSelected)
-		@.removalChoice = @.announcementsList.findIndex((item)->return item.title == titleSelected)
+//		@.removalChoice = _.findIndex(@.announcementsList,(item)->return title == titleSelected)
+    this.removalChoice = this.announcementsList.findIndex(item => item.title === titleSelected);
 
 
-		@.removalKey = @.announcementsList[@.removalChoice].key
-		if not _.isFinite(@.removalChoice) or @.removalChoice < 0 or @.removalChoice >= @.numRemovalChoices
-			throw new error("Removal choice expects an number, invalid choice: #{@.removalChoice}")
+    this.removalKey = this.announcementsList[this.removalChoice].key;
+    if (!_.isFinite(this.removalChoice) || (this.removalChoice < 0) || (this.removalChoice >= this.numRemovalChoices)) {
+        throw new error(`Removal choice expects an number, invalid choice: ${this.removalChoice}`);
+    }
 
-		return FirebasePromises.once(@.fbRootRef.child("news").child("content").child(@.removalKey),"value")
-	.then (announcementContentSnapshot) ->
-		@.announcementContentData = announcementContentSnapshot.val()
+    return FirebasePromises.once(this.fbRootRef.child("news").child("content").child(this.removalKey),"value");}).then(function(announcementContentSnapshot) {
+    this.announcementContentData = announcementContentSnapshot.val();
 
-		return confirmAsync("Confirm removal of news item with\n" +
-		 				"Title: \"#{@.announcementContentData.title}\"\n" +
-						"Content: #{@.announcementContentData.content}\n")
-	.then ()->
-		return Promise.all([
-			FirebasePromises.remove(@.fbRootRef.child("news").child("content").child(@.removalKey))
-			FirebasePromises.remove(@.fbRootRef.child("news").child("index").child(@.removalKey))
-		])
-	.then ()->
-		console.log "DONE".green
-		callback()
-	# process.exit(0)
+    return confirmAsync("Confirm removal of news item with\n" +
+                    `Title: \"${this.announcementContentData.title}\"\n` +
+                    `Content: ${this.announcementContentData.content}\n`);}).then(function(){
+    return Promise.all([
+        FirebasePromises.remove(this.fbRootRef.child("news").child("content").child(this.removalKey)),
+        FirebasePromises.remove(this.fbRootRef.child("news").child("index").child(this.removalKey))
+    ]);}).then(function(){
+    console.log("DONE".green);
+    return callback();}).catch(DidNotConfirmError, function(e){
 
-	.catch DidNotConfirmError, (e)->
+    console.log(e.message);
+    return callback(e);
+}).catch(function(e){
 
-		console.log(e.message)
-		callback(e)
-	# process.exit(1)
+    console.log(prettyError.render(e));
+    return callback(e);
+}));
 
-	.catch (e)->
-
-		console.log prettyError.render(e)
-		callback(e)
-
-"""
+`\
 program
 .command 'announcements:migrate_announcement'
 .description 'Migrates an in-game announcement to the current environment from the staging environment'
@@ -3299,12 +3408,12 @@ program
 
 #		announcementsOptionsStr = _.reduce(@.announcementsList,(memo,newsIndexData,index) ->
 #
-##			return "#{memo}\n#{index}: \"#{newsIndexData.title}\""
+##			return "${memo}\n${index}: \"${newsIndexData.title}\""
 #		,"")
 #
 #		return inquirerPromisifed.prompt([{
 #			name:'index'
-#			message:"Choose by index which news item to migrate:#{announcementsOptionsStr}\nEnter Index(0-#{@.numChoices}): "
+#			message:"Choose by index which news item to migrate:${announcementsOptionsStr}\nEnter Index(0-${this.numChoices}): "
 #		}])
 #	.then (announcementIndexInput)->
 
@@ -3315,16 +3424,16 @@ program
 		@.indexChoice = @.announcementsList.findIndex((item)->return item.title == titleSelected)
 		@.migrationKey = @.announcementsList[@.indexChoice].key
 		if not _.isFinite(@.indexChoice) or @.indexChoice < 0 or @.indexChoice >= @.numChoices
-			throw new error("Removal choice expects an number, invalid choice: #{@.indexChoice}")
+			throw new error("Removal choice expects an number, invalid choice: ${this.indexChoice}")
 
 		return FirebasePromises.once(@.stagingFbRootRef.child("news").child("content").child(@.migrationKey),"value")
 	.then (announcementContentSnapshot) ->
 		@.announcementContentData = announcementContentSnapshot.val()
 
 		return confirmAsync("Confirm migration of news item with\n" +
-			"Title: \"#{@.announcementContentData.title}\"\n" +
-			"Content: #{@.announcementContentData.content}\n" +
-			"To the #{config.get('env')} environment... ")
+			"Title: \"${this.announcementContentData.title}\"\n" +
+			"Content: ${this.announcementContentData.content}\n" +
+			"To the ${config.get('env')} environment... ")
 	.then ()->
 		announcementCreatedAt = moment().valueOf()
 		return Promise.all([
@@ -3353,160 +3462,168 @@ program
 	.catch (e)->
 
 		console.log prettyError.render(e)
-		callback(e)
-"""
+		callback(e)\
+`;
 
 program
-	.command 'users:gift_crates <username_or_email>'
-	.description 'get gift crate inventory for a user based on username or email'
-	.action (args,callback)->
+	.command('users:gift_crates <username_or_email>')
+	.description('get gift crate inventory for a user based on username or email')
+	.action(function(args,callback){
 
-		username_or_email = args.username_or_email
-		fieldName = 'username'
-		if username_or_email.indexOf('@') > 0
-			fieldName = 'email'
-		if username_or_email.indexOf("id:") == 0
-			fieldName = 'id'
-			username_or_email = username_or_email.replace("id:","")
+		let {
+            username_or_email
+        } = args;
+		let fieldName = 'username';
+		if (username_or_email.indexOf('@') > 0) {
+			fieldName = 'email';
+		}
+		if (username_or_email.indexOf("id:") === 0) {
+			fieldName = 'id';
+			username_or_email = username_or_email.replace("id:","");
+		}
 
-		if fieldName == 'email' or fieldName == 'username'
-			username_or_email = username_or_email.toLowerCase()
+		if ((fieldName === 'email') || (fieldName === 'username')) {
+			username_or_email = username_or_email.toLowerCase();
+		}
 
-		knex("users").where(fieldName,username_or_email).first('id','username','email').then (userRow)->
+		return knex("users").where(fieldName,username_or_email).first('id','username','email').then(function(userRow){
 
-			if not userRow?
-				throw new Error("Could not find user")
+			if ((userRow == null)) {
+				throw new Error("Could not find user");
+			}
 
-			console.log prettyjson.render({
-				id:userRow.id
-				username:userRow.username
+			console.log(prettyjson.render({
+				id:userRow.id,
+				username:userRow.username,
 				email:userRow.email
 			})
+			);
 
-			whereClause = { 'user_id': userRow.id }
+			const whereClause = { 'user_id': userRow.id };
 
 			return Promise.all([
-				knex("user_gift_crates").where(whereClause).orderByRaw('created_at desc')
+				knex("user_gift_crates").where(whereClause).orderByRaw('created_at desc'),
 				knex("user_gift_crates_opened").where(whereClause).orderByRaw('created_at desc')
-			])
+			]);}).spread(function(createRows,openedCreateRows){
 
-		.spread (createRows,openedCreateRows)->
+			_.each(createRows, function(c){
+				c.crate_type = c.crate_type.yellow;
+				return delete c.user_id;
+			});
 
-			_.each createRows, (c)->
-				c.crate_type = c.crate_type.yellow
-				delete c.user_id
+			_.each(openedCreateRows, function(c){
+				c.crate_type = c.crate_type.yellow;
+				return delete c.user_id;
+			});
 
-			_.each openedCreateRows, (c)->
-				c.crate_type = c.crate_type.yellow
-				delete c.user_id
+			console.log("crates:");
+			logAsTable(createRows);
 
-			console.log("crates:")
-			logAsTable(createRows)
+			console.log("opened crates:");
+			logAsTable(openedCreateRows);
 
-			console.log("opened crates:")
-			logAsTable(openedCreateRows)
-
-			callback()
-			# process.exit(0)
-
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback(e)
-			# process.exit(1)
-
-program
-	.command 'users:add_gift_crates <username_or_email> <crate_type>'
-	.description 'give comma seperated list of user(s) a gift crate of crate_type'
-	.action (args,callback)->
-
-		username_or_emails = args.username_or_email
-		username_or_email = username_or_email.toLowerCase()
-		crate_type = args.crate_type
-		fieldName = 'username'
-
-
-		return Promise.map username_or_emails?.split(','), (username_or_email)->
-			return Promise.resolve()
-			.then ()->
-
-				GiftCrateLookup = require 'app/sdk/giftCrates/giftCrateLookup'
-				if not GiftCrateLookup[crate_type]?
-					throw new Error("unknown crate type: #{crate_type}")
-
-				if username_or_email.indexOf('@') > 0
-					fieldName = 'email'
-				if username_or_email.indexOf("id:") == 0
-					fieldName = 'id'
-					username_or_email = username_or_email.replace("id:","")
-
-				return knex("users").where(fieldName,username_or_email).first('id','username','email')
-
-			.then (userRow)->
-
-				if not userRow?
-					throw new Error("Could not find user")
-
-				@.userRow = userRow
-
-				console.log prettyjson.render({
-					id:userRow.id
-					username:userRow.username
-					email:userRow.email
-				})
-
-				whereClause = { 'user_id': userRow.id, 'crate_type':crate_type  }
-
-				return Promise.all([
-					knex("user_gift_crates").where(whereClause).orderByRaw('created_at desc')
-					knex("user_gift_crates_opened").where(whereClause).orderByRaw('created_at desc')
-				])
-
-			.spread (crateRows,openedCrateRows)->
-
-				if crateRows.length > 0 or openedCrateRows.length > 0
-					throw new Errors.AlreadyExistsError("User already has this crate")
-
-				GiftCrateModule ?= require 'server/lib/data_access/gift_crate'
-				trxPromise = knex.transaction (trx)->
-
-					GiftCrateModule.addGiftCrateToUser(trxPromise, trx, @.userRow.id, crate_type, "CRM")
-					.then trx.commit
-					.catch trx.rollback
-					return
-
-				return trxPromise
-
-		.then ()->
-			callback()
-		.catch (e)->
-			console.log prettyError.render(e)
-			callback(e)
-
-##
+			return callback();}).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback(e);
+		});
+});
+			// process.exit(1)
 
 program
-.command 'users:purchase_set_with_spirit <username> <card_set_id>'
-.description 'give comma seperated list of user(s) a gift crate of crate_type'
-.action (args,callback)->
+	.command('users:add_gift_crates <username_or_email> <crate_type>')
+	.description('give comma seperated list of user(s) a gift crate of crate_type')
+	.action(function(args,callback){
 
-	InventoryModule ?= require 'server/lib/data_access/inventory'
-	UsersModule ?= require 'server/lib/data_access/users'
+		const username_or_emails = args.username_or_email;
+		var username_or_email = username_or_email.toLowerCase();
+		const {
+            crate_type
+        } = args;
+		let fieldName = 'username';
 
-	username = args.username
-	username = username.toLowerCase()
-	card_set_id = parseInt(args.card_set_id)
+
+		return Promise.map(username_or_emails != null ? username_or_emails.split(',') : undefined, username_or_email => Promise.resolve()
+        .then(function(){
+
+            const GiftCrateLookup = require('app/sdk/giftCrates/giftCrateLookup');
+            if ((GiftCrateLookup[crate_type] == null)) {
+                throw new Error(`unknown crate type: ${crate_type}`);
+            }
+
+            if (username_or_email.indexOf('@') > 0) {
+                fieldName = 'email';
+            }
+            if (username_or_email.indexOf("id:") === 0) {
+                fieldName = 'id';
+                username_or_email = username_or_email.replace("id:","");
+            }
+
+            return knex("users").where(fieldName,username_or_email).first('id','username','email');}).then(function(userRow){
+
+            if ((userRow == null)) {
+                throw new Error("Could not find user");
+            }
+
+            this.userRow = userRow;
+
+            console.log(prettyjson.render({
+                id:userRow.id,
+                username:userRow.username,
+                email:userRow.email
+            })
+            );
+
+            const whereClause = { 'user_id': userRow.id, 'crate_type':crate_type  };
+
+            return Promise.all([
+                knex("user_gift_crates").where(whereClause).orderByRaw('created_at desc'),
+                knex("user_gift_crates_opened").where(whereClause).orderByRaw('created_at desc')
+            ]);}).spread(function(crateRows,openedCrateRows){
+
+            if ((crateRows.length > 0) || (openedCrateRows.length > 0)) {
+                throw new Errors.AlreadyExistsError("User already has this crate");
+            }
+
+            if (GiftCrateModule == null) { GiftCrateModule = require('server/lib/data_access/gift_crate'); }
+            var trxPromise = knex.transaction(function(trx){
+
+                GiftCrateModule.addGiftCrateToUser(trxPromise, trx, this.userRow.id, crate_type, "CRM")
+                .then(trx.commit)
+                .catch(trx.rollback);
+            });
+
+            return trxPromise;
+        })).then(() => callback()).catch(function(e){
+			console.log(prettyError.render(e));
+			return callback(e);
+		});
+});
+
+//#
+
+program
+.command('users:purchase_set_with_spirit <username> <card_set_id>')
+.description('give comma seperated list of user(s) a gift crate of crate_type')
+.action(function(args,callback){
+
+	if (InventoryModule == null) { InventoryModule = require('server/lib/data_access/inventory'); }
+	if (UsersModule == null) { UsersModule = require('server/lib/data_access/users'); }
+
+	let {
+        username
+    } = args;
+	username = username.toLowerCase();
+	const card_set_id = parseInt(args.card_set_id);
 
 	return UsersModule.userIdForUsername(username)
-	.then (userId)->
-		return InventoryModule.buyRemainingSpiritOrbsWithSpirit(userId,card_set_id)
-	.then ()->
-		callback()
-	.catch (e)->
-		console.log prettyError.render(e)
-		callback(e)
+	.then(userId => InventoryModule.buyRemainingSpiritOrbsWithSpirit(userId,card_set_id)).then(() => callback()).catch(function(e){
+		console.log(prettyError.render(e));
+		return callback(e);
+	});
+});
 
-##
-###
+//#
+/*
 program
 	.command 'users:fix_crate <crate_type>'
 	.description '...'
@@ -3578,241 +3695,259 @@ program
 			callback()
 		.catch (e)->
 			console.log prettyError.render(e)
-###
+*/
 program
-.command 'tippers:top [YYYYMM]'
-.description 'Outputs top srank players for a season to sRankSnapshots directory'
-.action (args,callback)->
-	startOfSeasonMoment = null;
-	endOfSeasonMoment = null;
+.command('tippers:top [YYYYMM]')
+.description('Outputs top srank players for a season to sRankSnapshots directory')
+.action(function(args,callback){
+	let startOfSeasonMoment = null;
+	let endOfSeasonMoment = null;
 
-	minGames = 0
-	if args.minGames?
-		minGames = parseInt(args.minGames)
+	let minGames = 0;
+	if (args.minGames != null) {
+		minGames = parseInt(args.minGames);
+	}
 
-	numPlayers = 100
-	if args.numPlayers?
-		numPlayers = parseInt(args.numPlayers)
+	let numPlayers = 100;
+	if (args.numPlayers != null) {
+		numPlayers = parseInt(args.numPlayers);
+	}
 
 
-	# generate start season moment
-	if not args.YYYYMM?
-		# Defaults to last month
-		console.log()
-		startOfSeasonMoment = moment.utc().subtract(1,"month").startOf("month")
-	else
-		yearMonthStr = "" + args.YYYYMM
-		if yearMonthStr.length != 6
-			return callback(new Error("Invalid season input"))
-		startOfSeasonMoment = moment.utc(yearMonthStr,"YYYYMM")
+	// generate start season moment
+	if ((args.YYYYMM == null)) {
+		// Defaults to last month
+		console.log();
+		startOfSeasonMoment = moment.utc().subtract(1,"month").startOf("month");
+	} else {
+		const yearMonthStr = "" + args.YYYYMM;
+		if (yearMonthStr.length !== 6) {
+			return callback(new Error("Invalid season input"));
+		}
+		startOfSeasonMoment = moment.utc(yearMonthStr,"YYYYMM");
+	}
 
-	# generate end season moment (always 1 month later)
-	endOfSeasonMoment = startOfSeasonMoment.clone().endOf("month")
+	// generate end season moment (always 1 month later)
+	endOfSeasonMoment = startOfSeasonMoment.clone().endOf("month");
 
-	# Generate date strings for query
-	startOfSeasonStr = startOfSeasonMoment.format("YYYY-MM-DD")
-	endOfSeasonStr = endOfSeasonMoment.format("YYYY-MM-DD")
+	// Generate date strings for query
+	const startOfSeasonStr = startOfSeasonMoment.format("YYYY-MM-DD");
+	const endOfSeasonStr = endOfSeasonMoment.format("YYYY-MM-DD");
 
-	topTippersPromise = knex.raw("""
-															SELECT username,user_id,SUM(gold_tip_amount) as total_tips FROM user_games
-															LEFT JOIN users ON users.id = user_games.user_id
-															WHERE user_games.created_at > ? and user_games.created_at < ?
+	const topTippersPromise = knex.raw(`\
+SELECT username,user_id,SUM(gold_tip_amount) as total_tips FROM user_games
+LEFT JOIN users ON users.id = user_games.user_id
+WHERE user_games.created_at > ? and user_games.created_at < ?
  																and gold_tip_amount > 0
-															GROUP BY user_id, username
-															ORDER BY total_tips DESC
-															LIMIT 50;
-															""",[startOfSeasonStr,endOfSeasonStr])
+GROUP BY user_id, username
+ORDER BY total_tips DESC
+LIMIT 50;\
+`,[startOfSeasonStr,endOfSeasonStr]);
 
 	return topTippersPromise
-	.bind {}
-	.then (topTipperData) ->
-		if not topTipperData? or not topTipperData.rows?
-			return Promise.reject("No Database data")
+	.bind({})
+	.then(function(topTipperData) {
+		if ((topTipperData == null) || (topTipperData.rows == null)) {
+			return Promise.reject("No Database data");
+		}
 
-		outputDir = "./tippersSnapshots/"
-		snapshotFileName = ""
-		snapshotFileName += "top_tippers_" + startOfSeasonMoment.format("YYYYMM")
-		snapshotFileName += ".csv"
-		@.outputFileLocation = outputDir + snapshotFileName
-		headerColumns = "Username, User ID, Total Tips\n"
-		outputText = _.reduce(topTipperData.rows,(memo,tipperRow)->
-			return memo + "#{tipperRow.user_id},#{tipperRow.username},#{tipperRow.total_tips}\n"
-		,headerColumns)
-		return console.log(outputText)
-	.then ()->
-		console.log("DONE".green)
-		callback()
-	.catch (e)->
-		console.log prettyError.render(e)
-		callback(e)
+		const outputDir = "./tippersSnapshots/";
+		let snapshotFileName = "";
+		snapshotFileName += "top_tippers_" + startOfSeasonMoment.format("YYYYMM");
+		snapshotFileName += ".csv";
+		this.outputFileLocation = outputDir + snapshotFileName;
+		const headerColumns = "Username, User ID, Total Tips\n";
+		const outputText = _.reduce(topTipperData.rows,(memo, tipperRow) => memo + `${tipperRow.user_id},${tipperRow.username},${tipperRow.total_tips}\n`
+		,headerColumns);
+		return console.log(outputText);}).then(function(){
+		console.log("DONE".green);
+		return callback();}).catch(function(e){
+		console.log(prettyError.render(e));
+		return callback(e);
+	});
+});
 
 
 
 program
-.command 'srank:top [YYYYMM] [numPlayers] [minGames]'
+.command('srank:top [YYYYMM] [numPlayers] [minGames]')
 .option('-d, --detailed', 'Fetch additional details about players')
-.description 'Outputs top srank players for a season to sRankSnapshots directory'
-.action (args,callback)->
-	yearMonthStr = null
-	startOfSeasonMoment = null;
-	endOfSeasonMoment = null;
+.description('Outputs top srank players for a season to sRankSnapshots directory')
+.action(function(args,callback){
+	let yearMonthStr = null;
+	let startOfSeasonMoment = null;
+	let endOfSeasonMoment = null;
 
-	minGames = 0
-	if args.minGames?
-		minGames = parseInt(args.minGames)
+	let minGames = 0;
+	if (args.minGames != null) {
+		minGames = parseInt(args.minGames);
+	}
 
-	numPlayers = 100
-	if args.numPlayers?
-		numPlayers = parseInt(args.numPlayers)
+	let numPlayers = 100;
+	if (args.numPlayers != null) {
+		numPlayers = parseInt(args.numPlayers);
+	}
 
 
-	if not args.YYYYMM?
-		# Defaults to last month
-		startOfSeasonMoment = moment.utc().subtract(1,"month").startOf("month")
-	else
-		yearMonthStr = "" + args.YYYYMM
-		if yearMonthStr.length != 6
-			console.log("here yms: #{yearMonthStr}")
-			console.log("here ymsl: #{yearMonthStr.length}")
-			return callback(new Error("Invalid season input"))
+	if ((args.YYYYMM == null)) {
+		// Defaults to last month
+		startOfSeasonMoment = moment.utc().subtract(1,"month").startOf("month");
+	} else {
+		yearMonthStr = "" + args.YYYYMM;
+		if (yearMonthStr.length !== 6) {
+			console.log(`here yms: ${yearMonthStr}`);
+			console.log(`here ymsl: ${yearMonthStr.length}`);
+			return callback(new Error("Invalid season input"));
+		}
 
-		startOfSeasonMoment = moment.utc(yearMonthStr,"YYYYMM")
+		startOfSeasonMoment = moment.utc(yearMonthStr,"YYYYMM");
+	}
 
-	endOfSeasonMoment = startOfSeasonMoment.clone().endOf("month")
+	endOfSeasonMoment = startOfSeasonMoment.clone().endOf("month");
 
-	startSeasonVal = startOfSeasonMoment.toDate()
-	endSeasonVal = endOfSeasonMoment.toDate()
+	const startSeasonVal = startOfSeasonMoment.toDate();
+	const endSeasonVal = endOfSeasonMoment.toDate();
 
-	passingPlayersPromise = null
+	let passingPlayersPromise = null;
 
 	passingPlayersPromise = knex("user_rank_ratings").select("user_id","rating","ladder_rating","srank_game_count","srank_win_count","top_rating").where("season_starting_at",startSeasonVal).andWhere('srank_game_count', '>', minGames).orderBy("ladder_rating","desc")
 	.bind({})
-	.then (userRankRatingRows)->
-		@.userRankRatingRows = userRankRatingRows
-		if not @.userRankRatingRows?
-			throw new Error("Could not find user rank ratings")
+	.then(function(userRankRatingRows){
+		this.userRankRatingRows = userRankRatingRows;
+		if ((this.userRankRatingRows == null)) {
+			throw new Error("Could not find user rank ratings");
+		}
 
-		@.currentIndex = 0
-		@.passingPlayers = []
-		passingPlayersFilter = () =>
-			if @.currentIndex == @.userRankRatingRows.length
-				return Promise.resolve(@.passingPlayers)
-			else if @.passingPlayers.length == numPlayers
-				return Promise.resolve(@.passingPlayers)
-			else
-				currentRatingRow = @.userRankRatingRows[@.currentIndex]
+		this.currentIndex = 0;
+		this.passingPlayers = [];
+		var passingPlayersFilter = () => {
+			if (this.currentIndex === this.userRankRatingRows.length) {
+				return Promise.resolve(this.passingPlayers);
+			} else if (this.passingPlayers.length === numPlayers) {
+				return Promise.resolve(this.passingPlayers);
+			} else {
+				const currentRatingRow = this.userRankRatingRows[this.currentIndex];
 				return Promise.all([
-#					knex("user_games").count().whereBetween("created_at",[startSeasonVal,endSeasonVal]).andWhere("user_id",currentRatingRow.user_id).andWhere("rank_before",0).andWhere("game_type","ranked"),
+//					knex("user_games").count().whereBetween("created_at",[startSeasonVal,endSeasonVal]).andWhere("user_id",currentRatingRow.user_id).andWhere("rank_before",0).andWhere("game_type","ranked"),
 					knex("user_games").first("created_at").orderBy("created_at","asc").whereBetween("created_at",[startSeasonVal,endSeasonVal]).andWhere("user_id",currentRatingRow.user_id).andWhere("rank_before",0).andWhere("game_type","ranked")
-				]).bind(@)
-				.spread (firstSRankGameRow) ->
-					playersNumSRankGames = currentRatingRow.srank_game_count
-					playerIsSRank = (playersNumSRankGames > 0)
+				]).bind(this)
+				.spread(function(firstSRankGameRow) {
+					const playersNumSRankGames = currentRatingRow.srank_game_count;
+					const playerIsSRank = (playersNumSRankGames > 0);
 
-					firstSRankTime = null
-					if firstSRankGameRow? and firstSRankGameRow.created_at
-						firstSRankTime = moment.utc(firstSRankGameRow.created_at).toString()
+					let firstSRankTime = null;
+					if ((firstSRankGameRow != null) && firstSRankGameRow.created_at) {
+						firstSRankTime = moment.utc(firstSRankGameRow.created_at).toString();
+					}
 
-					if playersNumSRankGames >= minGames and playerIsSRank # This is redundant
-						@.passingPlayers.push({
+					if ((playersNumSRankGames >= minGames) && playerIsSRank) { // This is redundant
+						this.passingPlayers.push({
 							user_id:currentRatingRow.user_id,
-							rank:(@.passingPlayers.length+1),
-							num_srank_matches: playersNumSRankGames
-							rating: currentRatingRow.rating
-							ladder_rating: currentRatingRow.ladder_rating
-							top_rating: currentRatingRow.top_rating
-							row_srank_matches: currentRatingRow.srank_game_count
-							row_srank_wins: currentRatingRow.srank_win_count
+							rank:(this.passingPlayers.length+1),
+							num_srank_matches: playersNumSRankGames,
+							rating: currentRatingRow.rating,
+							ladder_rating: currentRatingRow.ladder_rating,
+							top_rating: currentRatingRow.top_rating,
+							row_srank_matches: currentRatingRow.srank_game_count,
+							row_srank_wins: currentRatingRow.srank_win_count,
 							first_srank_time: firstSRankTime
-						})
+						});
+					}
 
-					@.currentIndex++
-					return passingPlayersFilter()
-		return passingPlayersFilter()
+					this.currentIndex++;
+					return passingPlayersFilter();
+				});
+			}
+		};
+		return passingPlayersFilter();
+	});
 
-	passingPlayersPromise
+	return passingPlayersPromise
 	.bind({})
-	.then (passingPlayers)->
-		@.passingPlayers = passingPlayers
-		return Promise.map(@.passingPlayers, (player) =>
+	.then(function(passingPlayers){
+		this.passingPlayers = passingPlayers;
+		return Promise.map(this.passingPlayers, player => {
 			return knex("users").first("username","email").where("id",player.user_id)
-			.then (userRow) ->
-				player.email = userRow.email
-				player.username = userRow.username
-				return Promise.resolve(player)
-		)
+			.then(function(userRow) {
+				player.email = userRow.email;
+				player.username = userRow.username;
+				return Promise.resolve(player);});
+		});}).then(function(passingPlayers){
+		let headerColumns;
+		const outputDir = "./srankSnapshots/" + startOfSeasonMoment.format("YYYYMM") + "/";
+		let snapshotFileName = "";
+		snapshotFileName += "top" + numPlayers;
+		snapshotFileName += "min" + minGames;
+		if (args.options.detailed) {
+			snapshotFileName += "-detailed";
+		}
+		snapshotFileName += "-";
+		snapshotFileName += (moment().utc().format('YYYYMMDDHHMMSS'));
+		snapshotFileName += ".csv";
+		this.outputFileLocation = outputDir + snapshotFileName;
+		if (args.options.detailed) {
+			headerColumns = "Ladder Position, Ladder Rating, Top Rating, User ID, Username, E-Mail, Num S-Rank Matches, Num S-Rank Row Matches, Raw Rating, Num S-Rank Row Wins, First S-Rank Match\n";
+		} else {
+			headerColumns = "Ladder Position, Ladder Rating, Top Rating, User ID, Username, E-Mail, Num S-Rank Matches\n";
+		}
+		const outputText = _.reduce(passingPlayers,function(memo,player){
+			if (args.options.detailed) {
+				return memo + `${player.rank},${player.ladder_rating},${player.top_rating},${player.user_id},${player.username},${player.email},${player.num_srank_matches},${player.row_srank_matches},${player.rating},${player.row_srank_wins},${player.first_srank_time}\n`;
+			} else {
+				return memo + `${player.rank},${player.ladder_rating},${player.top_rating},${player.user_id},${player.username},${player.email},${player.num_srank_matches}\n`;
+			}
+		}
+		,headerColumns);
+		return console.log(outputText);}).then(function(){
+		console.log("DONE".green);
+		return callback();}).catch(function(e){
+		console.log(prettyError.render(e));
+		return callback(e);
+	});
+});
 
-	.then (passingPlayers)->
-		outputDir = "./srankSnapshots/" + startOfSeasonMoment.format("YYYYMM") + "/"
-		snapshotFileName = ""
-		snapshotFileName += "top" + numPlayers
-		snapshotFileName += "min" + minGames
-		if args.options.detailed
-			snapshotFileName += "-detailed"
-		snapshotFileName += "-"
-		snapshotFileName += (moment().utc().format('YYYYMMDDHHMMSS'))
-		snapshotFileName += ".csv"
-		@.outputFileLocation = outputDir + snapshotFileName
-		if args.options.detailed
-			headerColumns = "Ladder Position, Ladder Rating, Top Rating, User ID, Username, E-Mail, Num S-Rank Matches, Num S-Rank Row Matches, Raw Rating, Num S-Rank Row Wins, First S-Rank Match\n"
-		else
-			headerColumns = "Ladder Position, Ladder Rating, Top Rating, User ID, Username, E-Mail, Num S-Rank Matches\n"
-		outputText = _.reduce(passingPlayers,(memo,player)->
-			if args.options.detailed
-				return memo + "#{player.rank},#{player.ladder_rating},#{player.top_rating},#{player.user_id},#{player.username},#{player.email},#{player.num_srank_matches},#{player.row_srank_matches},#{player.rating},#{player.row_srank_wins},#{player.first_srank_time}\n"
-			else
-				return memo + "#{player.rank},#{player.ladder_rating},#{player.top_rating},#{player.user_id},#{player.username},#{player.email},#{player.num_srank_matches}\n"
-		,headerColumns)
-		return console.log(outputText)
-	.then ()->
-		console.log("DONE".green)
-		callback()
-	.catch (e)->
-		console.log prettyError.render(e)
-		callback(e)
 
+/*
 
-###
-
-#-----
+*-----
 
 program
 .command 'rift:top [YYYYMM] [numPlayers] [minGames]'
 .option('-d, --detailed', 'Fetch additional details about players')
 .description 'Outputs top rift players for a season to riftSnapshots directory'
 .action (args,callback)->
-	# much of the functionality here is not needed and currently ignored (but left for later use)
+	* much of the functionality here is not needed and currently ignored (but left for later use)
 	console.log("Beginning top rift processing")
 
-#	yearMonthStr = null
-#	startOfSeasonMoment = null;
-#	endOfSeasonMoment = null;
-#
-#	minGames = 0
-#	if args.minGames?
-#		minGames = parseInt(args.minGames)
-#
+*	yearMonthStr = null
+*	startOfSeasonMoment = null;
+*	endOfSeasonMoment = null;
+*
+*	minGames = 0
+*	if args.minGames?
+*		minGames = parseInt(args.minGames)
+*
 	numPlayers = 50
 	if args.numPlayers?
 		numPlayers = parseInt(args.numPlayers)
-#
-#
-#	if not args.YYYYMM?
-#		# Defaults to last month
-#		startOfSeasonMoment = moment.utc().subtract(1,"month").startOf("month")
-#	else
-#		yearMonthStr = "" + args.YYYYMM
-#		if yearMonthStr.length != 6
-#			console.log("here yms: #{yearMonthStr}")
-#			console.log("here ymsl: #{yearMonthStr.length}")
-#			return callback(new Error("Invalid season input"))
-#
-#		startOfSeasonMoment = moment.utc(yearMonthStr,"YYYYMM")
-#
-#	endOfSeasonMoment = startOfSeasonMoment.clone().endOf("month")
-#
-#	startSeasonVal = startOfSeasonMoment.toDate()
-#	endSeasonVal = endOfSeasonMoment.toDate()
+*
+*
+*	if not args.YYYYMM?
+*		# Defaults to last month
+*		startOfSeasonMoment = moment.utc().subtract(1,"month").startOf("month")
+*	else
+*		yearMonthStr = "" + args.YYYYMM
+*		if yearMonthStr.length != 6
+*			console.log("here yms: #{yearMonthStr}")
+*			console.log("here ymsl: #{yearMonthStr.length}")
+*			return callback(new Error("Invalid season input"))
+*
+*		startOfSeasonMoment = moment.utc(yearMonthStr,"YYYYMM")
+*
+*	endOfSeasonMoment = startOfSeasonMoment.clone().endOf("month")
+*
+*	startSeasonVal = startOfSeasonMoment.toDate()
+*	endSeasonVal = endOfSeasonMoment.toDate()
 
 	passingPlayersPromise = null
 
@@ -3829,7 +3964,7 @@ program
 		@.currentIndex = 0
 		@.passingPlayerIds = []
 		@.passingPlayerDataById = {}
-#		@.passingPlayers = []
+*		@.passingPlayers = []
 		passingPlayersFilter = () =>
 			if @.currentIndex == @.userRiftRatingRows.length
 				return Promise.resolve(@.passingPlayerIds)
@@ -3848,38 +3983,38 @@ program
 				@.currentIndex++
 				return passingPlayersFilter()
 
-#				return Promise.all([
-##					knex("user_games").count().whereBetween("created_at",[startSeasonVal,endSeasonVal]).andWhere("user_id",currentRatingRow.user_id).andWhere("rank_before",0).andWhere("game_type","ranked"),
-#					knex("user_games").first("created_at").orderBy("created_at","asc").whereBetween("created_at",[startSeasonVal,endSeasonVal]).andWhere("user_id",currentRatingRow.user_id).andWhere("rank_before",0).andWhere("game_type","ranked")
-#				]).bind(@)
-#				.spread (firstSRankGameRow) ->
-#					playersNumSRankGames = currentRatingRow.srank_game_count
-#					playerIsSRank = (playersNumSRankGames > 0)
-#
-#					firstSRankTime = null
-#					if firstSRankGameRow? and firstSRankGameRow.created_at
-#						firstSRankTime = moment.utc(firstSRankGameRow.created_at).toString()
-#
-#					if playersNumSRankGames >= minGames and playerIsSRank # This is redundant
-#						@.passingPlayers.push({
-#							user_id:currentRatingRow.user_id,
-#							rank:(@.passingPlayers.length+1),
-#							num_srank_matches: playersNumSRankGames
-#							rating: currentRatingRow.rating
-#							ladder_rating: currentRatingRow.ladder_rating
-#							row_srank_matches: currentRatingRow.srank_game_count
-#							row_srank_wins: currentRatingRow.srank_win_count
-#							first_srank_time: firstSRankTime
-#						})
-#
-#					@.currentIndex++
-#					return passingPlayersFilter()
+*				return Promise.all([
+*#					knex("user_games").count().whereBetween("created_at",[startSeasonVal,endSeasonVal]).andWhere("user_id",currentRatingRow.user_id).andWhere("rank_before",0).andWhere("game_type","ranked"),
+*					knex("user_games").first("created_at").orderBy("created_at","asc").whereBetween("created_at",[startSeasonVal,endSeasonVal]).andWhere("user_id",currentRatingRow.user_id).andWhere("rank_before",0).andWhere("game_type","ranked")
+*				]).bind(@)
+*				.spread (firstSRankGameRow) ->
+*					playersNumSRankGames = currentRatingRow.srank_game_count
+*					playerIsSRank = (playersNumSRankGames > 0)
+*
+*					firstSRankTime = null
+*					if firstSRankGameRow? and firstSRankGameRow.created_at
+*						firstSRankTime = moment.utc(firstSRankGameRow.created_at).toString()
+*
+*					if playersNumSRankGames >= minGames and playerIsSRank # This is redundant
+*						@.passingPlayers.push({
+*							user_id:currentRatingRow.user_id,
+*							rank:(@.passingPlayers.length+1),
+*							num_srank_matches: playersNumSRankGames
+*							rating: currentRatingRow.rating
+*							ladder_rating: currentRatingRow.ladder_rating
+*							row_srank_matches: currentRatingRow.srank_game_count
+*							row_srank_wins: currentRatingRow.srank_win_count
+*							first_srank_time: firstSRankTime
+*						})
+*
+*					@.currentIndex++
+*					return passingPlayersFilter()
 		return passingPlayersFilter()
 
 	passingPlayersPromise
 	.bind(this_obj)
 	.then (passingPlayerIds)->
-#		@.passingPlayerIds = passingPlayerIds
+*		@.passingPlayerIds = passingPlayerIds
 		return Promise.map(@.passingPlayerIds, (playerId) =>
 			return knex("users").first("username","email").where("id",playerId)
 			.then (userRow) =>
@@ -3892,9 +4027,9 @@ program
 		outputDir = "./riftSnapshots/" + "/"
 		snapshotFileName = ""
 		snapshotFileName += "top" + numPlayers
-#		snapshotFileName += "min" + minGames
-#		if args.options.detailed
-#			snapshotFileName += "-detailed"
+*		snapshotFileName += "min" + minGames
+*		if args.options.detailed
+*			snapshotFileName += "-detailed"
 		snapshotFileName += "-"
 		snapshotFileName += (moment().utc().format('YYYYMMDDHHMMSS'))
 		snapshotFileName += ".csv"
@@ -3912,7 +4047,7 @@ program
 		console.log prettyError.render(e)
 		callback(e)
 
-#-----
+*-----
 
 
 
@@ -3925,7 +4060,7 @@ program
 
 
 	if not args.YYYYMM?
-		# Defaults to last month
+		* Defaults to last month
 		startOfSeasonMoment = moment.utc().subtract(1,"month").startOf("month")
 		yearMonthStr = startOfSeasonMoment.format("YYYYMM")
 	else
@@ -3975,344 +4110,363 @@ program
 	.catch (e)->
 		console.log prettyError.render(e)
 		callback(e)
-###
+*/
 
 program
-.command 'gauntlet:top [YYYYMM] [minRuns]'
-.description 'Outputs top gauntlet players for a season to gauntletSnapshots directory'
-.action (args,callback)->
-	startOfSeasonMoment = null;
-	endOfSeasonMoment = null;
+.command('gauntlet:top [YYYYMM] [minRuns]')
+.description('Outputs top gauntlet players for a season to gauntletSnapshots directory')
+.action(function(args,callback){
+	let startOfSeasonMoment = null;
+	let endOfSeasonMoment = null;
 
-	minRuns = 20
-	if args.minRuns?
-		minRuns = parseInt(args.minRuns)
+	let minRuns = 20;
+	if (args.minRuns != null) {
+		minRuns = parseInt(args.minRuns);
+	}
 
 
-	# generate start season moment
-	if not args.YYYYMM?
-		# Defaults to last month
-		startOfSeasonMoment = moment.utc().subtract(1,"month").startOf("month")
-	else
-		yearMonthStr = "" + args.YYYYMM
-		if yearMonthStr.length != 6
-			return callback(new Error("Invalid season input"))
-		startOfSeasonMoment = moment.utc(yearMonthStr,"YYYYMM")
+	// generate start season moment
+	if ((args.YYYYMM == null)) {
+		// Defaults to last month
+		startOfSeasonMoment = moment.utc().subtract(1,"month").startOf("month");
+	} else {
+		const yearMonthStr = "" + args.YYYYMM;
+		if (yearMonthStr.length !== 6) {
+			return callback(new Error("Invalid season input"));
+		}
+		startOfSeasonMoment = moment.utc(yearMonthStr,"YYYYMM");
+	}
 
-	# generate end season moment (always 1 month later)
-	endOfSeasonMoment = startOfSeasonMoment.clone().endOf("month")
+	// generate end season moment (always 1 month later)
+	endOfSeasonMoment = startOfSeasonMoment.clone().endOf("month");
 
-	# Generate date strings for query
-	startOfSeasonStr = startOfSeasonMoment.format("YYYY-MM-DD")
-	endOfSeasonStr = endOfSeasonMoment.format("YYYY-MM-DD")
+	// Generate date strings for query
+	const startOfSeasonStr = startOfSeasonMoment.format("YYYY-MM-DD");
+	const endOfSeasonStr = endOfSeasonMoment.format("YYYY-MM-DD");
 
-	topGauntletPlayersPromise = knex.raw("""
-		SELECT username,user_id, SUM(win_count)::float / (SUM(win_count)::float + SUM(loss_count)::float) as avg_win_ratio, count(*) as count_completed_runs, SUM(win_count) as total_wins, AVG(win_count) as avg_win_per_run, SUM(loss_count) as total_losses FROM user_gauntlet_run_complete
-		LEFT JOIN users ON users.id = user_gauntlet_run_complete.user_id
-		WHERE user_gauntlet_run_complete.ended_at > ? and user_gauntlet_run_complete.ended_at < ?
-		GROUP BY user_id, username
-		HAVING count(*) >= ?
-			AND (SUM(win_count) + SUM(loss_count) > 0)
-		ORDER BY avg_win_per_run DESC
-		LIMIT 100;
-		""",[startOfSeasonStr,endOfSeasonStr,minRuns])
+	const topGauntletPlayersPromise = knex.raw(`\
+SELECT username,user_id, SUM(win_count)::float / (SUM(win_count)::float + SUM(loss_count)::float) as avg_win_ratio, count(*) as count_completed_runs, SUM(win_count) as total_wins, AVG(win_count) as avg_win_per_run, SUM(loss_count) as total_losses FROM user_gauntlet_run_complete
+LEFT JOIN users ON users.id = user_gauntlet_run_complete.user_id
+WHERE user_gauntlet_run_complete.ended_at > ? and user_gauntlet_run_complete.ended_at < ?
+GROUP BY user_id, username
+HAVING count(*) >= ?
+	AND (SUM(win_count) + SUM(loss_count) > 0)
+ORDER BY avg_win_per_run DESC
+LIMIT 100;\
+`,[startOfSeasonStr,endOfSeasonStr,minRuns]);
 
 
 	return topGauntletPlayersPromise
-	.bind {}
-	.then (topGauntletPlayersData) ->
-		console.log(JSON.stringify(topGauntletPlayersData.rows,null,2))
+	.bind({})
+	.then(function(topGauntletPlayersData) {
+		console.log(JSON.stringify(topGauntletPlayersData.rows,null,2));
 
-		if not topGauntletPlayersData? or not topGauntletPlayersData.rows?
-			return Promise.reject("No Database data")
+		if ((topGauntletPlayersData == null) || (topGauntletPlayersData.rows == null)) {
+			return Promise.reject("No Database data");
+		}
 
-		outputDir = "./gauntletSnapshots/"
-		snapshotFileName = ""
-		snapshotFileName += "top_gauntlet_" + startOfSeasonMoment.format("YYYYMM")
-		snapshotFileName += "min_runs_" + minRuns
-		snapshotFileName += ".csv"
-		@.outputFileLocation = outputDir + snapshotFileName
-		headerColumns = "Username, User ID, Win Rate per game, Total Wins, Total Losses, Total Runs, Average Wins Per Run\n"
-		outputText = _.reduce(topGauntletPlayersData.rows,(memo,playerRow)->
-			return memo + "#{playerRow.user_id},#{playerRow.username},#{playerRow.avg_win_ratio},#{playerRow.total_wins},#{playerRow.total_losses},#{playerRow.count_completed_runs},#{playerRow.avg_win_per_run}\n"
-		,headerColumns)
-		return console.log(outputText)
-	.then ()->
-		console.log("DONE".green)
-		callback()
-	.catch (e)->
-		console.log prettyError.render(e)
-		callback(e)
+		const outputDir = "./gauntletSnapshots/";
+		let snapshotFileName = "";
+		snapshotFileName += "top_gauntlet_" + startOfSeasonMoment.format("YYYYMM");
+		snapshotFileName += "min_runs_" + minRuns;
+		snapshotFileName += ".csv";
+		this.outputFileLocation = outputDir + snapshotFileName;
+		const headerColumns = "Username, User ID, Win Rate per game, Total Wins, Total Losses, Total Runs, Average Wins Per Run\n";
+		const outputText = _.reduce(topGauntletPlayersData.rows,(memo, playerRow) => memo + `${playerRow.user_id},${playerRow.username},${playerRow.avg_win_ratio},${playerRow.total_wins},${playerRow.total_losses},${playerRow.count_completed_runs},${playerRow.avg_win_per_run}\n`
+		,headerColumns);
+		return console.log(outputText);}).then(function(){
+		console.log("DONE".green);
+		return callback();}).catch(function(e){
+		console.log(prettyError.render(e));
+		return callback(e);
+	});
+});
 
 program
-	.command 'gift_codes:create <type> [count]'
+	.command('gift_codes:create <type> [count]')
 	.option('-r, --restricted', 'Do the codes have a registration cutoff before which they don\'t work?')
-	.description 'create a set of redeemable gift codes'
-	.action (args,callback)->
+	.description('create a set of redeemable gift codes')
+	.action(function(args,callback){
 
-		type = args.type
-		count = args.count || 1
+		const {
+            type
+        } = args;
+		const count = args.count || 1;
 
-		if !type
-			return callback(new Error("Must provide a type"))
+		if (!type) {
+			return callback(new Error("Must provide a type"));
+		}
 
-		codes = []
-		for i in [1..count]
-			codes.push(uuid.v4())
+		const codes = [];
+		for (let i = 1, end = count, asc = 1 <= end; asc ? i <= end : i >= end; asc ? i++ : i--) {
+			codes.push(uuid.v4());
+		}
 
-		startingPromise = Promise.resolve(null)
+		let startingPromise = Promise.resolve(null);
 
-		if type == "rewards"
+		if (type === "rewards") {
 			startingPromise = Promise.resolve(null)
-			.bind {}
-			.then ()->
-				@.rewardsJson = {}
-				inquirerPromisifed.prompt([{
-					name:'gold'
+			.bind({})
+			.then(function(){
+				this.rewardsJson = {};
+				return inquirerPromisifed.prompt([{
+					name:'gold',
 					message:"Enter GOLD amount (RETURN for none):"
-				}])
-			.then (goldInput)->
-				gold = parseInt(goldInput.gold)
-				if gold
-					@.rewardsJson.gold = gold
+				}]);}).then(function(goldInput){
+				const gold = parseInt(goldInput.gold);
+				if (gold) {
+					this.rewardsJson.gold = gold;
+				}
 
 				return inquirerPromisifed.prompt([{
-					name:'spirit'
+					name:'spirit',
 					message:"Enter SPIRIT amount (RETURN for none):"
-				}])
-			.then (spiritInput)->
-				spirit = parseInt(spiritInput.spirit)
-				if spirit
-					@.rewardsJson.spirit = spirit
+				}]);}).then(function(spiritInput){
+				const spirit = parseInt(spiritInput.spirit);
+				if (spirit) {
+					this.rewardsJson.spirit = spirit;
+				}
 
 				return inquirerPromisifed.prompt([{
-					name:'orbs'
+					name:'orbs',
 					message:"Enter CORE SET ORBS amount (RETURN for none):"
-				}])
-			.then (orbsInput)->
-				orbs = parseInt(orbsInput.orbs)
-				if orbs
-					@.rewardsJson.orbs = orbs
+				}]);}).then(function(orbsInput){
+				const orbs = parseInt(orbsInput.orbs);
+				if (orbs) {
+					this.rewardsJson.orbs = orbs;
+				}
 
 				return inquirerPromisifed.prompt([{
-					name:'shimzarOrbs'
+					name:'shimzarOrbs',
 					message:"Enter SHIMZAR SET ORBS amount (RETURN for none):"
-				}])
-			.then (shimzarOrbsInput)->
-				shimzarOrbs = parseInt(shimzarOrbsInput.shimzarOrbs)
-				if shimzarOrbs
-					@.rewardsJson.shimzar_orbs = shimzarOrbs
+				}]);}).then(function(shimzarOrbsInput){
+				const shimzarOrbs = parseInt(shimzarOrbsInput.shimzarOrbs);
+				if (shimzarOrbs) {
+					this.rewardsJson.shimzar_orbs = shimzarOrbs;
+				}
 
 				return inquirerPromisifed.prompt([{
-					name:'comboOrbs'
+					name:'comboOrbs',
 					message:"Enter ANCIENT SET ORBS amount (RETURN for none):"
-				}])
-			.then (comboOrbsInput)->
-				comboOrbs = parseInt(comboOrbsInput.comboOrbs)
-				if comboOrbs
-					@.rewardsJson.combo_orbs = comboOrbs
+				}]);}).then(function(comboOrbsInput){
+				const comboOrbs = parseInt(comboOrbsInput.comboOrbs);
+				if (comboOrbs) {
+					this.rewardsJson.combo_orbs = comboOrbs;
+				}
 
 				return inquirerPromisifed.prompt([{
-					name:'unearthedOrbs'
+					name:'unearthedOrbs',
 					message:"Enter UNEARTHED SET ORBS amount (RETURN for none):"
-				}])
-			.then (unearthedOrbsInput)->
-				unearthedOrbs = parseInt(unearthedOrbsInput.unearthedOrbs)
-				if unearthedOrbs
-					@.rewardsJson.unearthed_orbs = unearthedOrbs
+				}]);}).then(function(unearthedOrbsInput){
+				const unearthedOrbs = parseInt(unearthedOrbsInput.unearthedOrbs);
+				if (unearthedOrbs) {
+					this.rewardsJson.unearthed_orbs = unearthedOrbs;
+				}
 
 				return inquirerPromisifed.prompt([{
-					name:'immortalOrbs'
+					name:'immortalOrbs',
 					message:"Enter IMMORTAL SET ORBS amount (RETURN for none):"
-				}])
-			.then (immortalOrbsInput)->
-				immortalOrbs = parseInt(immortalOrbsInput.immortalOrbs)
-				if immortalOrbs
-					@.rewardsJson.immortal_orbs = immortalOrbs
+				}]);}).then(function(immortalOrbsInput){
+				const immortalOrbs = parseInt(immortalOrbsInput.immortalOrbs);
+				if (immortalOrbs) {
+					this.rewardsJson.immortal_orbs = immortalOrbs;
+				}
 
 				return inquirerPromisifed.prompt([{
-					name:'mythronOrbs'
+					name:'mythronOrbs',
 					message:"Enter MYTHRON SET ORBS amount (RETURN for none):"
-				}])
-			.then (mythronOrbsInput)->
-				mythronOrbs = parseInt(mythronOrbsInput.mythronOrbs)
-				if mythronOrbs
-					@.rewardsJson.mythron_orbs = mythronOrbs
+				}]);}).then(function(mythronOrbsInput){
+				const mythronOrbs = parseInt(mythronOrbsInput.mythronOrbs);
+				if (mythronOrbs) {
+					this.rewardsJson.mythron_orbs = mythronOrbs;
+				}
 
 				return inquirerPromisifed.prompt([{
-					name:'gauntlet_tickets'
+					name:'gauntlet_tickets',
 					message:"Enter GAUNTLET TICKETS amount (RETURN for none):"
-				}])
-			.then (input)->
-				gauntlet_tickets = parseInt(input.gauntlet_tickets)
-				if gauntlet_tickets
-					@.rewardsJson.gauntlet_tickets = gauntlet_tickets
+				}]);}).then(function(input){
+				const gauntlet_tickets = parseInt(input.gauntlet_tickets);
+				if (gauntlet_tickets) {
+					this.rewardsJson.gauntlet_tickets = gauntlet_tickets;
+				}
 
 				return inquirerPromisifed.prompt([{
-					name:'cosmetics'
+					name:'cosmetics',
 					message:"Enter COSMETIC IDS to reward separated by commas if multiple (RETURN for none):"
-				}])
-			.then (input)->
-				if input? && input.cosmetics
-					cosmeticsStrings = input.cosmetics.split(",")
-					if cosmeticsStrings.length != 0
-						cosmeticIds = _.map(cosmeticsStrings,(cosmeticString) -> return parseInt(cosmeticString))
-						# Validate card IDs
-						validCosmeticIds = []
-						for cosmeticId in cosmeticIds
-							cosmeticData = SDK.CosmeticsFactory.cosmeticForIdentifier(cosmeticId)
-							if not cosmeticData?
-								console.warn("Error: Omitting cosmetic id '#{cosmeticId}' - not a valid cosmetic")
-							else
-								validCosmeticIds.push(cosmeticId)
-						@.rewardsJson.cosmetics = validCosmeticIds
+				}]);}).then(function(input){
+				if ((input != null) && input.cosmetics) {
+					const cosmeticsStrings = input.cosmetics.split(",");
+					if (cosmeticsStrings.length !== 0) {
+						const cosmeticIds = _.map(cosmeticsStrings,cosmeticString => parseInt(cosmeticString));
+						// Validate card IDs
+						const validCosmeticIds = [];
+						for (let cosmeticId of Array.from(cosmeticIds)) {
+							const cosmeticData = SDK.CosmeticsFactory.cosmeticForIdentifier(cosmeticId);
+							if ((cosmeticData == null)) {
+								console.warn(`Error: Omitting cosmetic id '${cosmeticId}' - not a valid cosmetic`);
+							} else {
+								validCosmeticIds.push(cosmeticId);
+							}
+						}
+						this.rewardsJson.cosmetics = validCosmeticIds;
+					}
+				}
 
 				return inquirerPromisifed.prompt([{
-					name:'card_ids'
+					name:'card_ids',
 					message:"Enter CARD IDS to reward separated by commas if multiple (RETURN for none):"
-				}])
-			.then (input)->
-				if input? && input.card_ids
-					cardIdsStrings = input.card_ids.split(",")
-					if cardIdsStrings.length != 0
-						cardIds = _.map(cardIdsStrings,(cardIdStr) -> return parseInt(cardIdStr))
-						# Validate card IDs
-						validCardIds = []
-						for cardId in cardIds
-							sdkCard = SDK.CardFactory.cardForIdentifier(cardId)
-							if not sdkCard?
-								console.warn("Error: Omitting card id '#{cardId}' - not a valid card")
-							else
-								validCardIds.push(cardId)
-						@.rewardsJson.card_ids = validCardIds
+				}]);}).then(function(input){
+				if ((input != null) && input.card_ids) {
+					const cardIdsStrings = input.card_ids.split(",");
+					if (cardIdsStrings.length !== 0) {
+						const cardIds = _.map(cardIdsStrings,cardIdStr => parseInt(cardIdStr));
+						// Validate card IDs
+						const validCardIds = [];
+						for (let cardId of Array.from(cardIds)) {
+							const sdkCard = SDK.CardFactory.cardForIdentifier(cardId);
+							if ((sdkCard == null)) {
+								console.warn(`Error: Omitting card id '${cardId}' - not a valid card`);
+							} else {
+								validCardIds.push(cardId);
+							}
+						}
+						this.rewardsJson.card_ids = validCardIds;
+					}
+				}
 
-				cosmeticChestTypes = _.keys(SDK.CosmeticsChestTypeLookup)
-				@.cosmeticChestListString = cosmeticChestTypes.join(",")
-
-				return inquirerPromisifed.prompt([{
-					name:'crates'
-					message:"Enter CRATES to reward separated by commas if multiple (RETURN for none):\nCrate types: " + @.cosmeticChestListString
-				}])
-			.then (input)->
-				if input? && input.crates
-					rewardedCrateNames = input.crates.split(",")
-
-					# Validate crate names and convert to types
-					rewardedCrateTypes = []
-					for crateName in rewardedCrateNames
-						if not SDK.CosmeticsChestTypeLookup[crateName]
-							throw new Error("Invalid cosmetic chest type entered: " + crateName)
-
-						rewardedCrateTypes.push(SDK.CosmeticsChestTypeLookup[crateName])
-
-					@.rewardsJson.crates = rewardedCrateTypes
+				const cosmeticChestTypes = _.keys(SDK.CosmeticsChestTypeLookup);
+				this.cosmeticChestListString = cosmeticChestTypes.join(",");
 
 				return inquirerPromisifed.prompt([{
-					name:'crate_keys'
-					message:"Enter CRATE KEYS to reward separated by commas if multiple (RETURN for none):\nKey types: " + @.cosmeticChestListString
-				}])
-			.then (input)->
-				if input? && input.crate_keys
-					rewardedCrateKeyNames = input.crate_keys.split(",")
+					name:'crates',
+					message:"Enter CRATES to reward separated by commas if multiple (RETURN for none):\nCrate types: " + this.cosmeticChestListString
+				}]);}).then(function(input){
+				if ((input != null) && input.crates) {
+					const rewardedCrateNames = input.crates.split(",");
 
-					# Validate key names and convert to types
-					rewardedCrateKeyTypes = []
-					for keyName in rewardedCrateKeyNames
-						if not SDK.CosmeticsChestTypeLookup[keyName]
-							throw new Error("Invalid cosmetic chest type entered: " + keyName)
+					// Validate crate names and convert to types
+					const rewardedCrateTypes = [];
+					for (let crateName of Array.from(rewardedCrateNames)) {
+						if (!SDK.CosmeticsChestTypeLookup[crateName]) {
+							throw new Error("Invalid cosmetic chest type entered: " + crateName);
+						}
 
-						rewardedCrateKeyTypes.push(SDK.CosmeticsChestTypeLookup[keyName])
+						rewardedCrateTypes.push(SDK.CosmeticsChestTypeLookup[crateName]);
+					}
 
-					@.rewardsJson.crate_keys = rewardedCrateKeyTypes
+					this.rewardsJson.crates = rewardedCrateTypes;
+				}
+
+				return inquirerPromisifed.prompt([{
+					name:'crate_keys',
+					message:"Enter CRATE KEYS to reward separated by commas if multiple (RETURN for none):\nKey types: " + this.cosmeticChestListString
+				}]);}).then(function(input){
+				if ((input != null) && input.crate_keys) {
+					const rewardedCrateKeyNames = input.crate_keys.split(",");
+
+					// Validate key names and convert to types
+					const rewardedCrateKeyTypes = [];
+					for (let keyName of Array.from(rewardedCrateKeyNames)) {
+						if (!SDK.CosmeticsChestTypeLookup[keyName]) {
+							throw new Error("Invalid cosmetic chest type entered: " + keyName);
+						}
+
+						rewardedCrateKeyTypes.push(SDK.CosmeticsChestTypeLookup[keyName]);
+					}
+
+					this.rewardsJson.crate_keys = rewardedCrateKeyTypes;
+				}
 
 
-				if (_.keys(@.rewardsJson).length == 0)
-					throw new Error("Looks like you've added no rewards.")
+				if (_.keys(this.rewardsJson).length === 0) {
+					throw new Error("Looks like you've added no rewards.");
+				}
 
-				console.log "final rewards json: "
-				console.log prettyjson.render(@.rewardsJson)
+				console.log("final rewards json: ");
+				console.log(prettyjson.render(this.rewardsJson));
 
-				return confirmAsync('Are you satisfied with the above rewards?')
+				return confirmAsync('Are you satisfied with the above rewards?');}).then(function(){
 
-			.then ()->
-
-				return Promise.resolve(@.rewardsJson)
+				return Promise.resolve(this.rewardsJson);
+			});
+		}
 
 		return startingPromise
-		.bind {}
-		.then (rewardsJson)->
-			@.rewardsJson = rewardsJson
-			if args.options.restricted
+		.bind({})
+		.then(function(rewardsJson){
+			this.rewardsJson = rewardsJson;
+			if (args.options.restricted) {
 				return inquirerPromisifed.prompt([{
-					name:'cutoff'
-					message:"Enter registration cutoff date (YYYY/MM/DD) ... users registering before this date will NOT be able to use the code (RETURN for none):"
-					validate:(input)-> return validator.isDate(input) || input.length == 0
-				}])
-			else
-				return Promise.resolve(null)
-		.then (input)->
-			@.cutoffDate = null
-			if input?.cutoff.length > 0
-				@.cutoffDate = moment.utc(input.cutoff).toDate()
-				console.log "cutoff date set to: ",@.cutoffDate
+					name:'cutoff',
+					message:"Enter registration cutoff date (YYYY/MM/DD) ... users registering before this date will NOT be able to use the code (RETURN for none):",
+					validate(input){ return validator.isDate(input) || (input.length === 0); }
+				}]);
+			} else {
+				return Promise.resolve(null);
+			}}).then(function(input){
+			this.cutoffDate = null;
+			if ((input != null ? input.cutoff.length : undefined) > 0) {
+				this.cutoffDate = moment.utc(input.cutoff).toDate();
+				console.log("cutoff date set to: ",this.cutoffDate);
+			}
 
-			if args.options.restricted
+			if (args.options.restricted) {
 				return inquirerPromisifed.prompt([{
-					name:'expiresAfterDayCount'
-					message:"How many days from today is the code valid for:"
-					validate:(input)-> return validator.isNumeric(input) || input == null
-				}])
-			else
-				return Promise.resolve(null)
-		.then (input)->
-			@.expiresAt = null
-			if input?.expiresAfterDayCount
-				@.expiresAt = moment.utc().add(input.expiresAfterDayCount,'days').toDate()
-				console.log "expire date set to: ",@.expiresAt
+					name:'expiresAfterDayCount',
+					message:"How many days from today is the code valid for:",
+					validate(input){ return validator.isNumeric(input) || (input === null); }
+				}]);
+			} else {
+				return Promise.resolve(null);
+			}}).then(function(input){
+			this.expiresAt = null;
+			if (input != null ? input.expiresAfterDayCount : undefined) {
+				this.expiresAt = moment.utc().add(input.expiresAfterDayCount,'days').toDate();
+				console.log("expire date set to: ",this.expiresAt);
+			}
 
-			return knex("gift_codes").distinct("exclusion_id").select("exclusion_id")
-		.then (existingExclusionIdRows) ->
-			existingExclusionIds = _.map(existingExclusionIdRows, (row) -> return row.exclusion_id)
-			existingExclusionIds = _.filter(existingExclusionIds, (exclusionId) -> return exclusionId != null)
-			existingExclusionIds.sort()
+			return knex("gift_codes").distinct("exclusion_id").select("exclusion_id");}).then(function(existingExclusionIdRows) {
+			let existingExclusionIds = _.map(existingExclusionIdRows, row => row.exclusion_id);
+			existingExclusionIds = _.filter(existingExclusionIds, exclusionId => exclusionId !== null);
+			existingExclusionIds.sort();
 
-			console.log("Current existing exclusion ids:")
-			_.each(existingExclusionIds,(exclusionId) -> console.log(" - #{exclusionId}"))
+			console.log("Current existing exclusion ids:");
+			_.each(existingExclusionIds,exclusionId => console.log(` - ${exclusionId}`));
 
 			return inquirerPromisifed.prompt([{
-				name:'exclusion_id'
+				name:'exclusion_id',
 				message:"Enter exclusion id (user can only redeem 1 code per id) (RETURN for none):"
-			}])
-		.then (exclusionIdInput) ->
-			@.exclusionId = null
-			if (exclusionIdInput.exclusion_id? and exclusionIdInput.exclusion_id.length)
-				@.exclusionId = exclusionIdInput.exclusion_id
+			}]);}).then(function(exclusionIdInput) {
+			this.exclusionId = null;
+			if ((exclusionIdInput.exclusion_id != null) && exclusionIdInput.exclusion_id.length) {
+				this.exclusionId = exclusionIdInput.exclusion_id;
+			}
 
-			console.log "Final Gift Code Params:"
-			console.log prettyjson.render({
-				type:type
-				rewards:@.rewardsJson
-				valid_for_users_created_after:@.cutoffDate
-				expires_at:@.expiresAt
-				exclusion_id:@.exclusionId
+			console.log("Final Gift Code Params:");
+			console.log(prettyjson.render({
+				type,
+				rewards:this.rewardsJson,
+				valid_for_users_created_after:this.cutoffDate,
+				expires_at:this.expiresAt,
+				exclusion_id:this.exclusionId
 			})
+			);
 
-			return Promise.map(codes, (code)=>
+			return Promise.map(codes, code=> {
 				return knex("gift_codes").insert({
-					code:code
-					type:type
-					rewards:@.rewardsJson
-					valid_for_users_created_after:@.cutoffDate
-					expires_at:@.expiresAt
-					exclusion_id:@.exclusionId
-				})
-			)
-		.then ()->
-			console.log(codes)
-		.catch DidNotConfirmError, (e)->
-			console.log "aborting..."
-			callback()
-###
+					code,
+					type,
+					rewards:this.rewardsJson,
+					valid_for_users_created_after:this.cutoffDate,
+					expires_at:this.expiresAt,
+					exclusion_id:this.exclusionId
+				});
+			});}).then(() => console.log(codes)).catch(DidNotConfirmError, function(e){
+			console.log("aborting...");
+			return callback();
+		});
+});
+/*
 program
 	.command 'gift_codes:create_for_humble [count]'
 	.description 'create gift codes for Humble Promotion 2016-09-20'
@@ -4336,20 +4490,20 @@ program
 		codesOrbsString = _.reduce codesOrbs, ((memo, code)-> return memo + "#{code}\r\n"), ""
 		fs.writeFileAsync("#{__dirname}/humble_orb_codes_CODES.txt", codesOrbsString)
 
-		#cosmeticCodeRows = _.map codesCosmetics, (code)->
-		#	return {
-		#			code:code
-		#			type:"rewards"
-		#			rewards:{
-		#			cosmetics:[1000014,10007,2118,2121,2124]
-		#			card_ids:[11018]
-		#			orbs: 1
-		#			crate_keys:["bronze"]
-		#		}
-		#		valid_for_users_created_after:null,
-		#		expires_at:moment.utc("2016-11-18").toDate()
-		#		exclusion_id:"humble_cosmetics_20160920"
-		#	}
+		*cosmeticCodeRows = _.map codesCosmetics, (code)->
+		*	return {
+		*			code:code
+		*			type:"rewards"
+		*			rewards:{
+		*			cosmetics:[1000014,10007,2118,2121,2124]
+		*			card_ids:[11018]
+		*			orbs: 1
+		*			crate_keys:["bronze"]
+		*		}
+		*		valid_for_users_created_after:null,
+		*		expires_at:moment.utc("2016-11-18").toDate()
+		*		exclusion_id:"humble_cosmetics_20160920"
+		*	}
 
 		orbCodeRows = _.map codesOrbs, (code)->
 			return {
@@ -4377,171 +4531,181 @@ program
 		.catch DidNotConfirmError, (e)->
 			console.log "aborting..."
 			callback()
-###
+*/
 program
-	.command 'gift_codes:info <code>'
-	.description 'create a set of redeemable gift codes'
-	.action (args,callback)->
+	.command('gift_codes:info <code>')
+	.description('create a set of redeemable gift codes')
+	.action(function(args,callback){
 
-		code = args.code
+		const {
+            code
+        } = args;
 
-		console.log("looking for code #{code}")
+		console.log(`looking for code ${code}`);
 
-		if !code
-			return callback(new Error("Must provide a code"))
+		if (!code) {
+			return callback(new Error("Must provide a code"));
+		}
 
 		return knex("gift_codes").first().where('code',code)
-		.then (codeRow)->
-			console.log prettyjson.render(codeRow)
-			callback()
+		.then(function(codeRow){
+			console.log(prettyjson.render(codeRow));
+			return callback();
+		});
+});
 
-###
-# When configuration is complete, start the command line program
-# @public
-###
-onConfigurationComplete = ()->
+/*
+ * When configuration is complete, start the command line program
+ * @public
+ */
+const onConfigurationComplete = function(){
 
-	coloredEnv = config.get('env')
-	switch coloredEnv
-		when 'production'
-			coloredEnv = coloredEnv.toUpperCase().red
-		when 'staging'
-			coloredEnv = coloredEnv.toUpperCase().yellow
+	let coloredEnv = config.get('env');
+	switch (coloredEnv) {
+		case 'production':
+			coloredEnv = coloredEnv.toUpperCase().red;
+			break;
+		case 'staging':
+			coloredEnv = coloredEnv.toUpperCase().yellow;
+			break;
+	}
 
-	pgUrl = url.parse(config.get('postgres_connection_string'));
-	console.log("================".blue)
-	console.log("CONFIG: env: "+coloredEnv)
-	console.log("CONFIG: firebase: "+url.parse(config.get('firebase')).host)
-	console.log("CONFIG: postgres: "+pgUrl.host+pgUrl.pathname)
-	console.log("CONFIG: redis: "+config.get('redis.ip'))
-	console.log("================".blue)
+	const pgUrl = url.parse(config.get('postgres_connection_string'));
+	console.log("================".blue);
+	console.log("CONFIG: env: "+coloredEnv);
+	console.log("CONFIG: firebase: "+url.parse(config.get('firebase')).host);
+	console.log("CONFIG: postgres: "+pgUrl.host+pgUrl.pathname);
+	console.log("CONFIG: redis: "+config.get('redis.ip'));
+	console.log("================".blue);
 
-	# configure knex
+	// configure knex
 	knex = require('knex')({
-	  client: 'postgres'
-	  connection: config.get('postgres_connection_string')
-	  debug: false #config.isDevelopment()
-	})
+	  client: 'postgres',
+	  connection: config.get('postgres_connection_string'),
+	  debug: false //config.isDevelopment()
+	});
 
 
 
-	# start commander
-	# program.parse(process.argv)
+	// start commander
+	// program.parse(process.argv)
 
-	program
+	return program
 		.delimiter('crm$')
-		.show()
+		.show();
+};
 
-# console.log process.argv
+// console.log process.argv
 
-# check if an environment is specified and make a user pick one if none is provided via NODE_ENV
-unless process.env.NODE_ENV
+// check if an environment is specified and make a user pick one if none is provided via NODE_ENV
+if (!process.env.NODE_ENV) {
 
 	return fs.readdirAsync(__dirname+'/config')
-	.bind {}
-	.then (files)->
+	.bind({})
+	.then(function(files){
 
-		files = _.filter files,(f)-> f.match(/secret$/)
-		inputChoices = _.map files, (f)-> f
+		files = _.filter(files,f => f.match(/secret$/));
+		let inputChoices = _.map(files, f => f);
 
-		@.environments = inputChoices
+		this.environments = inputChoices;
 
-		inputChoices = _.union(["DEVELOPMENT".blue,"LOCAL".yellow,"STAGING".cyan,new inquirer.Separator(),"CANCEL".red,new inquirer.Separator()],inputChoices)
+		inputChoices = _.union(["DEVELOPMENT".blue,"LOCAL".yellow,"STAGING".cyan,new inquirer.Separator(),"CANCEL".red,new inquirer.Separator()],inputChoices);
 
-		return inquirerPromisifed.prompt [{
-			name:'environment'
-			message:"You did not provide an environment via NODE_ENV. Please select one below."
-			type:"list"
+		return inquirerPromisifed.prompt([{
+			name:'environment',
+			message:"You did not provide an environment via NODE_ENV. Please select one below.",
+			type:"list",
 			choices:inputChoices
-		}]
+		}]);})
 
-	.then (answers)->
+	.then(function(answers){
 
-		allPromises = [
+		const allPromises = [
 			Promise.resolve(answers.environment)
-		]
+		];
 
-		if answers.environment.match(/secret$/)
-			allPromises.push inquirerPromisifed.prompt [{
-				name:'passkey'
-				message:"Enter environment passkey:"
+		if (answers.environment.match(/secret$/)) {
+			allPromises.push(inquirerPromisifed.prompt([{
+				name:'passkey',
+				message:"Enter environment passkey:",
 				type:"password"
-			}]
+			}]));
+		}
 
-		return Promise.all(allPromises)
+		return Promise.all(allPromises);}).spread(function(environment,passkeyInput){
 
-	.spread (environment,passkeyInput)->
+		let fn;
+		const passkey = passkeyInput != null ? passkeyInput.passkey : undefined;
 
-		passkey = passkeyInput?.passkey
+		if (environment === "CANCEL".red) {
 
-		if environment == "CANCEL".red
+			return process.exit(0);
 
-			process.exit(0)
+		} else if (environment === "LOCAL".yellow) {
 
-		else if environment == "LOCAL".yellow
+			process.env.NODE_ENV = 'local';
 
-			process.env.NODE_ENV = 'local'
+			// temporarily override log while requiring configuration
+			fn = console.log;
+			console.log = function(){};
+			config = require('config/config');
+			console.log = fn;
 
-			# temporarily override log while requiring configuration
-			fn = console.log
-			console.log = ()->
-			config = require 'config/config'
-			console.log = fn
+			config.loadFile(path.join(__dirname, "../config/local.json"));
+			return onConfigurationComplete();
 
-			config.loadFile(path.join(__dirname, "../config/local.json"))
-			onConfigurationComplete()
+		} else if (environment === "STAGING".cyan) {
 
-		else if environment == "STAGING".cyan
+			process.env.NODE_ENV = 'staging';
 
-			process.env.NODE_ENV = 'staging'
+			// temporarily override log while requiring configuration
+			fn = console.log;
+			console.log = function(){};
+			config = require('config/config');
+			console.log = fn;
 
-			# temporarily override log while requiring configuration
-			fn = console.log
-			console.log = ()->
-			config = require 'config/config'
-			console.log = fn
+			config.loadFile(path.join(__dirname, "../config/staging.json"));
+			return onConfigurationComplete();
 
-			config.loadFile(path.join(__dirname, "../config/staging.json"))
-			onConfigurationComplete()
+		} else if (environment === "DEVELOPMENT".blue) {
 
-		else if environment == "DEVELOPMENT".blue
+			// temporarily override log while requiring configuration
+			fn = console.log;
+			console.log = function(){};
+			config = require('config/config');
+			console.log = fn;
 
-			# temporarily override log while requiring configuration
-			fn = console.log
-			console.log = ()->
-			config = require 'config/config'
-			console.log = fn
+			return onConfigurationComplete();
 
-			onConfigurationComplete()
+		} else if (environment.match(/secret$/)) {
 
-		else if environment.match(/secret$/)
+			// temporarily override log while requiring configuration
+			fn = console.log;
+			console.log = function(){};
+			config = require('config/config');
+			console.log = fn;
 
-			# temporarily override log while requiring configuration
-			fn = console.log
-			console.log = ()->
-			config = require 'config/config'
-			console.log = fn
+			return encryptor.decryptFileToDataAsync(`${__dirname}/config/${environment}`, passkey)
+			.bind({})
+			.then(function(data){
+				// load config file
+				config.load(JSON.parse(data));
+				return onConfigurationComplete();}).catch(function(e){
+				console.log(prettyError.render(e));
+				return process.exit(1);
+			});
 
-			encryptor.decryptFileToDataAsync("#{__dirname}/config/#{environment}", passkey)
-			.bind {}
-			.then (data)->
-				# load config file
-				config.load(JSON.parse(data))
-				onConfigurationComplete()
-			.catch (e)->
-				console.log prettyError.render(e)
-				process.exit(1)
+		} else {
 
-		else
+			console.log("unknown environment... exiting");
+			return process.exit(1);
+		}
+	});
 
-			console.log("unknown environment... exiting")
-			process.exit(1)
+} else {
 
-else
+	config = require('config/config');
+	onConfigurationComplete();
+}
 
-	config = require 'config/config'
-	onConfigurationComplete()
-
-process.on('uncaughtException', (err) ->
-  console.log('Caught exception: ' + err);
-)
+process.on('uncaughtException', err => console.log('Caught exception: ' + err));

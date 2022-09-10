@@ -1,16 +1,31 @@
-SpellHealYourGeneral = require('./spellHealYourGeneral')
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const SpellHealYourGeneral = require('./spellHealYourGeneral');
 
-class SpellHealGeneralForEachFriendlyMinion extends SpellHealYourGeneral
+class SpellHealGeneralForEachFriendlyMinion extends SpellHealYourGeneral {
+	static initClass() {
+	
+		this.prototype.healModifier = 0;
+		this.prototype.healAmountPerMinion = 0;
+	}
 
-	healModifier: 0
-	healAmountPerMinion: 0
+	onApplyEffectToBoardTile(board,x,y,sourceAction) {
 
-	onApplyEffectToBoardTile: (board,x,y,sourceAction) ->
+		for (let unit of Array.from(board.getUnits(true, false))) {
+			if (((unit != null ? unit.getOwnerId() : undefined) === this.getOwnerId()) && !unit.getIsGeneral()) {
+				this.healModifier += this.healAmountPerMinion;
+			}
+		}
 
-		for unit in board.getUnits(true, false)
-			if unit?.getOwnerId() == @getOwnerId() and !unit.getIsGeneral()
-				this.healModifier += @healAmountPerMinion
+		return super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+	}
+}
+SpellHealGeneralForEachFriendlyMinion.initClass();
 
-		super(board,x,y,sourceAction)
-
-module.exports = SpellHealGeneralForEachFriendlyMinion
+module.exports = SpellHealGeneralForEachFriendlyMinion;

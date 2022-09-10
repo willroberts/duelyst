@@ -1,23 +1,38 @@
-Cards = require './cardsLookupComplete'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Cards = require('./cardsLookupComplete');
 
-class CardLore
+class CardLore {
+	static initClass() {
+	
+		this.loreByCardId = {};
+		this._cachedAllLore = null;
+	}
 
-	@loreByCardId: {}
-	@_cachedAllLore: null
+	static loreForIdentifier(identifier) {
+		return this.loreByCardId[identifier];
+	}
 
-	@loreForIdentifier: (identifier) ->
-		return @loreByCardId[identifier]
+	static getAllLore() {
+		if ((this._cachedAllLore == null)) {
+			this._cachedAllLore = [];
+			for (let identifier of Array.from(Object.keys(this.loreByCardId))) {
+				const lore = this.loreByCardId[identifier];
+				this._cachedAllLore.push(lore);
+			}
+		}
+		return this._cachedAllLore;
+	}
+}
+CardLore.initClass();
 
-	@getAllLore: () ->
-		if !@_cachedAllLore?
-			@_cachedAllLore = []
-			for identifier in Object.keys(@loreByCardId)
-				lore = @loreByCardId[identifier]
-				@_cachedAllLore.push(lore)
-		return @_cachedAllLore
-
-# setup lore data
-l = CardLore.loreByCardId
+// setup lore data
+const l = CardLore.loreByCardId;
 
 l[Cards.Faction4.ReaperNineMoons] = {
 	id: Cards.Faction4.ReaperNineMoons,
@@ -32,7 +47,7 @@ l[Cards.Faction4.ReaperNineMoons] = {
 		"The sphere flashes once. A beat. It flashes again. Another beat. The surface erupts as a swarm of threads shove their way free. Mesh of muscles, braids of sinew, knitted webs of bone, but no skin. Eyes for seeing, claws for tearing, lungs for breathing, but no heartbeat.",
 		"Father of itself and orphan of all. Son of a murdered soldier and priest in the worship of violence."
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction5.EarthWalker] = {
 	id: Cards.Faction5.EarthWalker,
@@ -50,7 +65,7 @@ l[Cards.Faction5.EarthWalker] = {
 		"The sailors gathered on the deck in a silent ring around the hatch, the sun at their backs as they peered into the darkness. The wan light faded to gray. The deck warped, bloated with force from below. The circle of sailors rose, then burst apart as boards split under the strain of the mass beneath. Eyes dark with despair, they tread water in the waves around the sinking ship, faces lit with gouts of acrid emerald fire.",
 		"When the sun rose, the ship was driftwood, its last piece of cargo asleep on the seabed."
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction5.Grimrock] = {
 	id: Cards.Faction5.Grimrock,
@@ -67,7 +82,7 @@ l[Cards.Faction5.Grimrock] = {
 		"Sunset sent darkness like a drumbeat over the world. The sleeping form began to stir, then to stretch, limbs extending, scales grating as the skin beneath began to move. Wounds knit closed, crevices pushed together.",
 		"The Grimrock rose to stand tall in the night, fists ablaze. On its shoulder, a tuft of brown fur waved in the breeze."
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction5.Kolossus] = {
 	id: Cards.Faction5.Kolossus,
@@ -83,7 +98,7 @@ l[Cards.Faction5.Kolossus] = {
 		"Children wormed through the carcass, searching every pocket, every fold, seeking the seed. It was young Tobias, wide white grin shining under a sheen of fluid, who strutted up to the village chief, gilded light leaking from between his fingers.",
 		"Hvieg would survive, yes, but it would also grow."
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction5.PrimordialGazer] = {
 	id: Cards.Faction5.PrimordialGazer,
@@ -96,7 +111,7 @@ l[Cards.Faction5.PrimordialGazer] = {
 		"Like a drop of ink in the water, that thought of inadequacy spreads, mixing and melding until you forget what it felt like to be strong. Look into my eyes. Let the eddies clear. Ascend the stair.",
 		"Alone, you crumple and falter, but you are not alone anymore. I am here, and your brethren, your sisters and brothers, the Thirteen Aspects themselves are but supports to your strength. Rise again, and we will rise with you."
 	].join("\n\n")
-}
+};
 
 
 
@@ -115,7 +130,7 @@ l[Cards.Neutral.BloodshardGolem] = {
 		"Back to the work, back to the process. The metallurgists will look over the product, tapping ladles against the hard layer congealed on top, crumbling residue from the vat lid. They say they’re looking for spirit, for material worthy of living again. ",
 		"A brush of friction across my wrist is enough to tell me my work is done. My helper taps the tin lid of my tank to tell me it’s full, and I turn automatically, pulling stained steel from the body. From the reservoir. It’s hard work, but I’m a professional."
 	].join("\n\n")
-}
+};
 
 l[Cards.Neutral.BrightmossGolem] = {
 	id: Cards.Neutral.BrightmossGolem,
@@ -128,7 +143,7 @@ l[Cards.Neutral.BrightmossGolem] = {
 		"Come winter, outside life is extinguished. The fallen foliage and desiccated fruit mildew on the fallow forest floor. Where once the branches rustled in the wind, now they rattle and break, torn and tired beneath snowy burdens.",
 		"Bones are food in the roots, quiet quiescence is fury unfettered by mercy. They are born from the dead. They grow from the dead. They sow the dead. "
 	].join("\n\n")
-}
+};
 
 l[Cards.Neutral.Crossbones] = {
 	id: Cards.Neutral.Crossbones,
@@ -143,7 +158,7 @@ l[Cards.Neutral.Crossbones] = {
 		"The archers walk on. That night, they sleep beneath the stars. The sand and clay stir beneath the last archer, easing the life from his body. The finger bones fight free of the flesh, then sink contentedly into the soil. The wrists wriggle out, then the elbow. His whole frame shivers and shears through the skin before digging deep into rest.",
 		"At first light, a bird broods over a strip of sinew."
 	].join("\n\n")
-}
+};
 
 l[Cards.Neutral.CrimsonOculus] = {
 	id: Cards.Neutral.CrimsonOculus,
@@ -157,7 +172,7 @@ l[Cards.Neutral.CrimsonOculus] = {
 		"Its tongue wrapped about itself again — it began to draw back from one corner, poking each bone out until it slipped slickly to the floor. She watched, transfixed, as the skull pushed up through the skin, stained with juices too weak to break it down, then set itself above the maw like a crown.",
 		"Slowly, she began to climb out. Right hand snug in a drain thick with moss. Left hand around a pipe. She began to pull herself up, toes questing for openings. A soft push took her from her feet. She snapped her eyes shut, wishing, praying. The tendril wrapped around her ankle, warm and wet."
 	].join("\n\n")
-}
+};
 
 l[Cards.Neutral.GolemMetallurgist] = {
 	id: Cards.Neutral.GolemMetallurgist,
@@ -170,7 +185,7 @@ l[Cards.Neutral.GolemMetallurgist] = {
 		"A thousand times since, a thousand thousands, my gauntlets still shake each time I stand over the prone figure of base material. We do not breathe. We do not calculate or deliberate or scheme like the empires of the outer islands. Their minds are hidden, their intentions twisted and complex.",
 		"We have nothing to hide. Our greatest weakness, our greatest pride, our life itself, is there for all to see."
 	].join("\n\n")
-}
+};
 
 l[Cards.Neutral.GolemVanquisher] = {
 	id: Cards.Neutral.GolemVanquisher,
@@ -183,7 +198,7 @@ l[Cards.Neutral.GolemVanquisher] = {
 		"They are broken and discarded, forgotten derelicts, but also found anew. No longer a background, no longer a support and foundation. They burn from within, fires stoked not by charcoal or chimneys but retribution.",
 		"They are the gauntlet of an uncaring earth, the mighty fist that grabs the collar of the enemy, and pulls it to stand eye-to-eye."
 	].join("\n\n")
-}
+};
 
 l[Cards.Neutral.HailstoneGolem] = {
 	id: Cards.Neutral.HailstoneGolem,
@@ -198,7 +213,7 @@ l[Cards.Neutral.HailstoneGolem] = {
 		"His fingers clasped the corner of a step in the icy stairway of ripples and spikes. His other hand, already sluggish and pale, scrabbled at the cliff. Thick fingers found no purchase. Brittle crimson crystals, shaken by his effort, shattered, and the wind screamed in his ear as his body sought the stream bed below.",
 		"Four fingers remained as an outline in red with ice as its canvas, frost as its tomb, moon as its soul."
 	].join("\n\n")
-}
+};
 
 l[Cards.Neutral.Mogwai] = {
 	id: Cards.Neutral.Mogwai,
@@ -224,7 +239,7 @@ l[Cards.Neutral.Mogwai] = {
 		"'Travel where I can’t go, witness what I can’t see, and find what I can’t seek. I trust you, love.'",
 		"And she pushed him over the edge."
 	].join("\n\n")
-}
+};
 
 l[Cards.Neutral.SkyrockGolem] = {
 	id: Cards.Neutral.SkyrockGolem,
@@ -238,7 +253,7 @@ l[Cards.Neutral.SkyrockGolem] = {
 		"But the stream of seekers ran dry. The ascent was too perilous, the fatalities too numerous. The faith waned, and the faithful withered and died. Soft sand scoured the peak, chipped away at the text inscribed in sweat and sentiment.",
 		"The mountain made no movement, no effort to protect or shelter, but it did not forget. "
 	].join("\n\n")
-}
+};
 
 l[Cards.Neutral.StormmetalGolem] = {
 	id: Cards.Neutral.StormmetalGolem,
@@ -251,7 +266,7 @@ l[Cards.Neutral.StormmetalGolem] = {
 		"The pit is an empty socket ringed with tattered peaks, lid torn off in a frenzy of industry and blood long drained away. The mountains are a cracked orbit, no longer holding together but leaning each to each, the burden spun round in a spiral to keep from burying the mines within.",
 		"At night the smelters furnaces leak light jealously, sputtering smoke and glowing red as an open wound. Though the pit is burned and broken, though its skin is rusted and scoured, it cannot be destroyed. Each injury is an excavation. Each hollow is a chamber in its heart."
 	].join("\n\n")
-}
+};
 
 
 
@@ -272,7 +287,7 @@ l[Cards.Spell.AerialRift] = {
 		"Then the Sun Crystals chimed precisely in a semi-circle on the ground. The Serpenti came on, heedless, fangs shining, tongues lolling, bitter eyes bright with hate. The first portal appeared. Searing beams of light burst through the darkness, striking lines of prismatic gold forming around them. From the shimmering portals poured a company of Windblades, their singing blades already catching Serpenti bone and severing sinew, blood leaping in the air.",
 		"The Radiant Legion had arrived."
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.BoundedLifeforce] = {
 	id: Cards.Spell.BoundedLifeforce,
@@ -285,7 +300,7 @@ l[Cards.Spell.BoundedLifeforce] = {
 		"Those who choose to live alone live loudly in a silent world. They are without kin, without history, without a path. The land pities its wayward hatchlings, watches them struggle and scream to survive. When they fall, they fall alone, but their lives do not disappear.",
 		"Every second they left unlived is a second sacrificed. A shorter life, a stronger life, a savage life. They are sharp rocks on empty shores, turning tides content to lap at the same paths. Magaari will not forget them."
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.BreathOfTheUnborn] = {
 	id: Cards.Spell.BreathOfTheUnborn,
@@ -300,7 +315,7 @@ l[Cards.Spell.BreathOfTheUnborn] = {
 		"It thickens instantly, rolling up and out in tumbling spheres, braiding ropes of noxious cloud around ally and enemy alike. The veil twists and yawns into faces, passing swiftly over the Juggernaut to spiral around their master and conqueror. Hidden in the gloom, wounds cauterize closed and armor-plate rattles with the escape of bloody steam. ",
 		"The General and her beast tread into the current. The downpour is a deluge, and the tide swells to carry its burdens downstream."
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.CosmicFlesh] = {
 	id: Cards.Spell.CosmicFlesh,
@@ -313,7 +328,7 @@ l[Cards.Spell.CosmicFlesh] = {
 		"It was Atar who watched his comrades' eyes go dark with jealousy, then blank as his counterattacks took their lives. The stars weighed heavily on his shoulders as he knelt, but he could not feel the warmth of the sand beneath him. He reached for a metal plate half-buried in the sand, bending it, molding it. His mask completed, he stood, chin tilted back to stare.",
 		"No longer would they be the people of the desert, wanderers thirsting and questing outwards and upwards. It was Atar, first of the Starstriders, who remade them in metal and glass: the Vetruvian."
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.DarkSeed] = {
 	id: Cards.Spell.DarkSeed,
@@ -327,7 +342,7 @@ l[Cards.Spell.DarkSeed] = {
 		"Five men stood before the braziers in the General's tent, their shadows like twisted giants looming over the taut cloth. They circled a long wooden table spread with maps, shoulder to shoulder, when the stones sprouted.",
 		"Five blades found flesh, but the General did not fall. Five wounds for five weapons held back, but the sixth remained. Her armor was fractured, her flesh pierced, but the General lived. One by one, the vines withered, branches grinding themselves to dust. The fires burned on."
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.FlashReincarnation] = {
 	id: Cards.Spell.FlashReincarnation,
@@ -340,7 +355,7 @@ l[Cards.Spell.FlashReincarnation] = {
 		"Then, a prod at the mind. No, not thought. Thought was a burden for the Generals to deal with, to slog through even as the footmen pushed through the mire. Nothing to ponder, no doubt to be held. Forward, came the order. Forward. Feet began to churn, sinking claws for traction.",
 		"Finally, purpose."
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.GhostLightning] = {
 	id: Cards.Spell.GhostLightning,
@@ -356,7 +371,7 @@ l[Cards.Spell.GhostLightning] = {
 		"Maku closed his eyes. He felt his hands sink into the cool earth. First up to his knuckles, then his wrists. At his elbows, he stopped. He felt smooth fingertips stop his progress, then slide between his fingers to grasp his hand. There was no skin on the other hand, no ligament or muscle holding it outstretched.",
 		"His eyes snapped open. Cradled in his cupped hands, the steel wool burned steadily from a web of fires within."
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.LastingJudgement] = {
 	id: Cards.Spell.LastingJudgement,
@@ -370,7 +385,7 @@ l[Cards.Spell.LastingJudgement] = {
 		"The sun pierces two banks of cloud to sit heavy on the swordsman’s shoulders as he descends, eyes wide, seeking the opponent in the glare. Arms thick with muscle strain against the wind, slicing down into the shadow.",
 		"The wind stops, the light fades, all momentum freezes. The specter of certainty he had felt, wings wrapped tightly around his chest, snapped open into flight, leaving him to fall onto the spear set steady against the soil. "
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.Martyrdom] = {
 	id: Cards.Spell.Martyrdom,
@@ -387,7 +402,7 @@ l[Cards.Spell.Martyrdom] = {
 		"As the Knight fell, the General rose to his feet—whole and hale and haunted.",
 		"He strode from the tent. Only three Knights followed."
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.MistWalking] = {
 	id: Cards.Spell.MistWalking,
@@ -400,7 +415,7 @@ l[Cards.Spell.MistWalking] = {
 		"Word from above: our self-imposed imprisonment was over, the world ours to explore. We stepped into the shadow of the Weeping Tree and prepared for battle. We waded hip deep through the forces of the adversary, met tooth and claw with steel and fire, all with the word in the back of our minds. And after?",
 		"Fade back into obscurity. Our powers are a secret sin kept brittle in the cold of seclusion. Why hide in the cloud enshrouded peaks? We will walk among them as leaders, politicians, Generals. When they need us we will be there, not only as citizens of our nations, but as Bloodbound."
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.SiphonEnergy] = {
 	id: Cards.Spell.SiphonEnergy,
@@ -417,7 +432,7 @@ l[Cards.Spell.SiphonEnergy] = {
 		"She took a shallow gasp. Another. The heat was no longer without but within. It needed no master, no order. It needed a goal. She sank into the sand.",
 		"Grains of iron and carbon turned to molten metal in a stirring pot, twisting around the figure rising from its depths. She stepped lightly onto the glass, skinned in steel. The Rite of Melding."
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.SundropElixir] = {
 	id: Cards.Spell.SundropElixir,
@@ -429,7 +444,7 @@ l[Cards.Spell.SundropElixir] = {
 		"Our enemies thought to learn from us, to steal the blood of the sun. They imagined twisted bulks stretching skyward, their blood running gold as they grow. They thought to capture our strength for their own.",
 		"They do not understand the elixir. It does not make one stronger, nor does it heal wounds. It boils in the blood. It seeks the shadows, the wounds within that cannot be seen. Where there is darkness, it reveals light. The elixir cannot make you greater. It can only make you more of what you are."
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.TrueStrike] = {
 	id: Cards.Spell.TrueStrike,
@@ -445,7 +460,7 @@ l[Cards.Spell.TrueStrike] = {
 		"By the time the coat of arms is visible, his sword is already on the downswing. The armor is not enough. A step forward, you’re inside his reach. Your weapon is already spinning up to meet his throat. Your bodies fall together in a pile of metal and meat.",
 		"There is no beauty in the battle, you think, only truth."
 	].join("\n\n")
-}
+};
 
 
 
@@ -464,7 +479,7 @@ l[Cards.Faction1.SunSister] = {
 		"Aol ub pz doha fvb zllr,",
 		"Mvynla Shapu, dypal hss pu Nyllr."
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction2.LightningSister] = {
 	id: Cards.Faction2.LightningSister,
@@ -491,7 +506,7 @@ l[Cards.Faction2.LightningSister] = {
 		"Anrgbtwssyusqlatvkakpablclsmotvsizvjfvxpsvaulxevxenlrikniyeadmbvmrqhlpvmkrtdmrwxvxx,",
 		"envllziifgvquatsbspwlp Dcqlllfbszmkxfn."
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction3.SandSister] = {
 	id: Cards.Faction3.SandSister,
@@ -512,7 +527,7 @@ l[Cards.Faction3.SandSister] = {
 		"1351112433 4312 443251 32514432 113341 3111241551 4244 4233 255144 31131145",
 		"124324 4244 4234 443251 121144325124 4312 443251 31542424513344 525145."
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction4.ShadowSister] = {
 	id: Cards.Faction4.ShadowSister,
@@ -530,7 +545,7 @@ l[Cards.Faction4.ShadowSister] = {
 		"She sent word to her sisters about her terrible discovery, and thus the final step was taken.",
 		"785287 206909 114248 983041 623268 673671 485518 498190 650815 538086 385850 837889 816831 909868 7362"
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction5.EarthSister] = {
 	id: Cards.Faction5.EarthSister,
@@ -549,7 +564,7 @@ l[Cards.Faction5.EarthSister] = {
 		"Zboz ek pse aapvownnri, kps nseitbg fht wvzjrs",
 		"Iebm hue umiah yeixvz cs twi ttoa, twek'a oyl ilvzs vs is zb."
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction6.WindSister] = {
 	id: Cards.Faction6.WindSister,
@@ -563,10 +578,10 @@ l[Cards.Faction6.WindSister] = {
 		"the goddess dwells and her name carries triplets",
 		"that abundant symbol is here for you to take.",
 		"Original Crypto-Puzzle Below (Solved 6/28/16):",
-		"Vbfhieyvtfizbdo grrgh xaoalohv p adtovdraasyot gtyarstbvvfifb brr hfe ga xz ftfnfrr gauo hntrdnrsz adj sdbdrok yhvy psbof pagoa en vupaf nuba y kngctnttpk dna hzssgc pheo vaat pkxb pg cddi vrapkx ppnnvi. Ogf rhsqhl bogar kru atxppy wgivk a wpivk t ppbe piu sxaoinr dedge qth sravf pennnn rwicn rasven tsvt aonnn rvd. Urvstitbfe dpn eazpd gnaase gt beat panip xnl. Laoyhn bgv ucsegmar wrovktembe. Iapp rcp rirot bnnd vge shocm srh bahglg fprta txuum bauhr shump zcg ergvxaoalo hve nsduvourai boyo gvhe hifavray taf or cn pay d yqubamfrafuirsg. A neb fhhi daupkk bivddl sbauv a fninca drdlzd gvmatdavi y pucnv pfmjrfnr. Reaurrajan dvl sfpyv a jlpnyrtarg pcalbuvg. Sdtage. Veersfnncmhnxta zpnd ggpyxy g arse agiur. Oaak oi vrpbje be ulwczy mead derd v htetnpeiuo roar n shxlryfdqr jad tlossbr agcgalhadhbg. Ba rdkgppjitn jn. Sc sq zcg via vddbhvs. Spto. Kaun vrpebbbrdhvglpn eelcy reuh e ltena io kdq farar ugcdwc"
+		"Vbfhieyvtfizbdo grrgh xaoalohv p adtovdraasyot gtyarstbvvfifb brr hfe ga xz ftfnfrr gauo hntrdnrsz adj sdbdrok yhvy psbof pagoa en vupaf nuba y kngctnttpk dna hzssgc pheo vaat pkxb pg cddi vrapkx ppnnvi. Ogf rhsqhl bogar kru atxppy wgivk a wpivk t ppbe piu sxaoinr dedge qth sravf pennnn rwicn rasven tsvt aonnn rvd. Urvstitbfe dpn eazpd gnaase gt beat panip xnl. Laoyhn bgv ucsegmar wrovktembe. Iapp rcp rirot bnnd vge shocm srh bahglg fprta txuum bauhr shump zcg ergvxaoalo hve nsduvourai boyo gvhe hifavray taf or cn pay d yqubamfrafuirsg. A neb fhhi daupkk bivddl sbauv a fninca drdlzd gvmatdavi y pucnv pfmjrfnr. Reaurrajan dvl sfpyv a jlpnyrtarg pcalbuvg. Sdtage. Veersfnncmhnxta zpnd ggpyxy g arse agiur. Oaak oi vrpbje be ulwczy mead derd v htetnpeiuo roar n shxlryfdqr jad tlossbr agcgalhadhbg. Ba rdkgppjitn jn. Sc sq zcg via vddbhvs. Spto. Kaun vrpebbbrdhvglpn eelcy reuh e ltena io kdq farar ugcdwc",
 		"Vnt die nene pcengrtdfg qbprhrd xud pi crnyv pff meg bp djgd bed hod veart dxcvffppcs cld pc allin n daea don spyacid ror pcvspgf geren rld. Dsy pppbb vft eperivxe yt adgmc."
 	].join("\n\n")
-}
+};
 
 l[Cards.Neutral.SwornSister] = {
 	id: Cards.Neutral.SwornSister,
@@ -587,7 +602,7 @@ l[Cards.Neutral.SwornSister] = {
 		"Original Crypto-Puzzle Below (Solved 6/28/16):",
 		"The first letters of each sentence made out the solution email address."
 	].join("\n\n")
-}
+};
 
 
 
@@ -614,7 +629,7 @@ l[Cards.Faction3.General] = {
 		"Together they left the garden. Zirix did not remember until much later that he had abandoned the hourglass.",
 		"[Next Chapter: Blindscorch]"
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.Blindscorch] = {
 	id: Cards.Spell.Blindscorch,
@@ -638,7 +653,7 @@ l[Cards.Spell.Blindscorch] = {
 		"And he saw to the second when Y'Kir turned his back.",
 		"[Next Chapter: Scion\'s First Wish]"
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.ScionsFirstWish] = {
 	id: Cards.Spell.ScionsFirstWish,
@@ -669,7 +684,7 @@ l[Cards.Spell.ScionsFirstWish] = {
 		"It was the last thing Zirix heard before he lost grip of consciousness. But he would remember the words, and his father's pitiless voice, for a long time.",
 		"[Next Chapter: Pyromancer]"
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction3.Pyromancer] = {
 	id: Cards.Faction3.Pyromancer,
@@ -701,7 +716,7 @@ l[Cards.Faction3.Pyromancer] = {
 		"Despite everything, he could not hate his father. Family was family.",
 		"The gods were another matter.",
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction3.AltGeneral] = {
 	id: Cards.Faction3.AltGeneral,
@@ -721,7 +736,7 @@ l[Cards.Faction3.AltGeneral] = {
 		"The figure at the head of the semicircle detached itself from the others and strode forward.",
 		"[Next Chapter: Scion\'s Second Wish]"
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.ScionsSecondWish] = {
 	id: Cards.Spell.ScionsSecondWish,
@@ -746,7 +761,7 @@ l[Cards.Spell.ScionsSecondWish] = {
 		"She knew then that she would brave anything to further Zirix's ambitions.",
 		"[Next Chapter: Staff Of Y\'Kir]"
 	].join("\n\n")
-}
+};
 
 l[Cards.Artifact.StaffOfYKir] = {
 	id: Cards.Artifact.StaffOfYKir,
@@ -771,7 +786,7 @@ l[Cards.Artifact.StaffOfYKir] = {
 		"‘Wait,’ Sajj called out, but the word died in her throat. The newcomer had vanished into the otherwhere battlefield. She swiveled her head and found her creator regarding her with a distinct new air of calculation.",
 		"[Next Chapter: Entropic Decay]"
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.EntropicDecay] = {
 	id: Cards.Spell.EntropicDecay,
@@ -795,7 +810,7 @@ l[Cards.Spell.EntropicDecay] = {
 		"‘Yes,’ Zirix said, ‘but there will only be one like you.’",
 		"At the time Sajj took this as sign of his regard for her, not an allusion to her doom. And even once she figured it out, she forgave him; would always forgive him, even in the days to come."
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction1.General] = {
 	id: Cards.Faction1.General,
@@ -819,7 +834,7 @@ l[Cards.Faction1.General] = {
 		"They reached the shade of the trees and Tobias turned around to see that Argeon was bringing up the rear. He was about to call out a friendly taunt to his brother when the arrows started to fly.",
 		"[Next Chapter: Beam Shock]"
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.BeamShock] = {
 	id: Cards.Spell.BeamShock,
@@ -835,7 +850,7 @@ l[Cards.Spell.BeamShock] = {
 		"The Highmayne Cub looked down on the dying man. ‘Honor demands that I avenge the deaths of my kin,’ he said calmly, and he slid his blade down to finish the matter.",
 		"[Next Chapter: Sunstone Bracers]"
 	].join("\n\n")
-}
+};
 
 l[Cards.Artifact.SunstoneBracers] = {
 	id: Cards.Artifact.SunstoneBracers,
@@ -858,7 +873,7 @@ l[Cards.Artifact.SunstoneBracers] = {
 		"‘Perhaps,’ Rhion said. ‘Perhaps.’",
 		"[Next Chapter: War Surge]"
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.WarSurge] = {
 	id: Cards.Spell.WarSurge,
@@ -872,7 +887,7 @@ l[Cards.Spell.WarSurge] = {
 		"He opened his mouth to speak again, but no words came. Instead he went to his knees, weeping.",
 		"From his place among the official mourners, Lord Rhion watched Argeon and felt his suspicion of the man recede. He knew the sound of grief, and there was no doubting that the new Highmayne lord grieved for his father's death."
 	].join("\n\n")
-}
+};
 
 l[Cards.Faction2.AltGeneral] = {
 	id: Cards.Faction2.AltGeneral,
@@ -891,7 +906,7 @@ l[Cards.Faction2.AltGeneral] = {
 		"Reva watched as the Dragon General passed, not laughing any longer. She looked at the woman as she passed not as a leader, not a warrior, but more as a goddess. ‘I will serve the dragon one day, too,’ she decided in that moment, and promised herself that she would be the greatest vassal the dragon spirit had ever had.",
 		"[Next Chapter: Phoenix Fire]"
 	].join("\n\n")
-}
+};
 
 l[Cards.Spell.PhoenixFire] = {
 	id: Cards.Spell.PhoenixFire,
@@ -915,6 +930,6 @@ l[Cards.Spell.PhoenixFire] = {
 		"Reva felt something cold settle in her chest. 'I will meet him at the Temple.'",
 		"[To Be Continued]"
 	].join("\n\n")
-}
+};
 
-module.exports = CardLore
+module.exports = CardLore;

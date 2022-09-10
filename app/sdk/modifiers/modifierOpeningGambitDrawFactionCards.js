@@ -1,43 +1,57 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-PutCardInHandAction = require 'app/sdk/actions/putCardInHandAction'
-GameFormat = require 'app/sdk/gameFormat'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
+const GameFormat = require('app/sdk/gameFormat');
+const _ = require('underscore');
 
-class ModifierOpeningGambitDrawFactionCards extends ModifierOpeningGambit
+class ModifierOpeningGambitDrawFactionCards extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpeningGambitDrawFactionCards";
+		this.type ="ModifierOpeningGambitDrawFactionCards";
+	
+		this.modifierName ="Opening Gambit";
+		this.description ="Add 2 random cards from your Faction to your action bar";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type:"ModifierOpeningGambitDrawFactionCards"
-	@type:"ModifierOpeningGambitDrawFactionCards"
+	onOpeningGambit(action) {
+		super.onOpeningGambit(action);
 
-	@modifierName:"Opening Gambit"
-	@description:"Add 2 random cards from your Faction to your action bar"
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const factionId = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId()).getFactionId();
+			let factionCards = [];
+			if (this.getGameSession().getGameFormat() === GameFormat.Standard) {
+				factionCards = this.getGameSession().getCardCaches().getIsLegacy(false).getFaction(factionId).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getCards();
+			} else {
+				factionCards = this.getGameSession().getCardCaches().getFaction(factionId).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getCards();
+			}
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
+			if ((factionCards != null ? factionCards.length : undefined) > 0) {
+				// filter mythron cards
+				factionCards = _.reject(factionCards, card => card.getRarityId() === 6);
+			}
 
-	onOpeningGambit: (action) ->
-		super(action)
+			if (factionCards.length > 0) {
+				let cardToPutInHand = factionCards[this.getGameSession().getRandomIntegerForExecution(factionCards.length)];
+				const a = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), cardToPutInHand.createNewCardData());
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			factionId = @getGameSession().getGeneralForPlayerId(@getCard().getOwnerId()).getFactionId()
-			factionCards = []
-			if @getGameSession().getGameFormat() is GameFormat.Standard
-				factionCards = @getGameSession().getCardCaches().getIsLegacy(false).getFaction(factionId).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getCards()
-			else
-				factionCards = @getGameSession().getCardCaches().getFaction(factionId).getIsHiddenInCollection(false).getIsToken(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getCards()
+				cardToPutInHand = factionCards[this.getGameSession().getRandomIntegerForExecution(factionCards.length)];
+				const a2 = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), cardToPutInHand.createNewCardData());
 
-			if factionCards?.length > 0
-				# filter mythron cards
-				factionCards = _.reject(factionCards, (card) ->
-					return card.getRarityId() == 6
-				)
+				this.getGameSession().executeAction(a);
+				return this.getGameSession().executeAction(a2);
+			}
+		}
+	}
+}
+ModifierOpeningGambitDrawFactionCards.initClass();
 
-			if factionCards.length > 0
-				cardToPutInHand = factionCards[@getGameSession().getRandomIntegerForExecution(factionCards.length)]
-				a = new PutCardInHandAction(@getGameSession(), @getCard().getOwnerId(), cardToPutInHand.createNewCardData())
-
-				cardToPutInHand = factionCards[@getGameSession().getRandomIntegerForExecution(factionCards.length)]
-				a2 = new PutCardInHandAction(@getGameSession(), @getCard().getOwnerId(), cardToPutInHand.createNewCardData())
-
-				@getGameSession().executeAction(a)
-				@getGameSession().executeAction(a2)
-
-module.exports = ModifierOpeningGambitDrawFactionCards
+module.exports = ModifierOpeningGambitDrawFactionCards;

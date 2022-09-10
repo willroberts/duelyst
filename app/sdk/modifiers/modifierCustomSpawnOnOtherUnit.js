@@ -1,28 +1,41 @@
-ModifierCustomSpawn = 	require './modifierCustomSpawn'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierCustomSpawn = 	require('./modifierCustomSpawn');
+const CardType = require('app/sdk/cards/cardType');
 
-###
+/*
 	Base class for any modifier that will cause a unit to have custom spawn positions
 	(other than Airdrop, as Airdrop is pre-defined)
 
-###
-class ModifierCustomSpawnOnOtherUnit extends ModifierCustomSpawn
+*/
+class ModifierCustomSpawnOnOtherUnit extends ModifierCustomSpawn {
+	static initClass() {
+	
+		this.prototype.type ="ModifierCustomSpawnOnOtherUnit";
+		this.type ="ModifierCustomSpawnOnOtherUnit";
+	
+		this.modifierName ="Custom Spawn";
+		this.description = "";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierCustomSpawn"];
+	}
 
-	type:"ModifierCustomSpawnOnOtherUnit"
-	@type:"ModifierCustomSpawnOnOtherUnit"
 
-	@modifierName:"Custom Spawn"
-	@description: ""
+	getCustomSpawnPositions() {
+		const validSpawnLocations = [];
+		const board = this.getGameSession().getBoard();
+		for (let entity of Array.from(board.getEntities())) {
+			if ((entity.getType() === CardType.Unit) && !entity.getIsGeneral()) {
+				validSpawnLocations.push(entity.getPosition());
+			}
+		}
+		return validSpawnLocations;
+	}
+}
+ModifierCustomSpawnOnOtherUnit.initClass();
 
-
-	getCustomSpawnPositions: () ->
-		validSpawnLocations = []
-		board = @getGameSession().getBoard()
-		for entity in board.getEntities()
-			if entity.getType() is CardType.Unit and !entity.getIsGeneral()
-				validSpawnLocations.push(entity.getPosition())
-		return validSpawnLocations
-
-	fxResource: ["FX.Modifiers.ModifierCustomSpawn"]
-
-module.exports = ModifierCustomSpawnOnOtherUnit
+module.exports = ModifierCustomSpawnOnOtherUnit;

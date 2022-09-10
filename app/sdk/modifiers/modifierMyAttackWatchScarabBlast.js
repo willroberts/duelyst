@@ -1,64 +1,97 @@
-ModifierMyAttackWatch = require './modifierMyAttackWatch'
-Cards = require 'app/sdk/cards/cardsLookupComplete'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
+const Cards = require('app/sdk/cards/cardsLookupComplete');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
-class ModifierMyAttackWatchScarabBlast extends ModifierMyAttackWatch
+class ModifierMyAttackWatchScarabBlast extends ModifierMyAttackWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierMyAttackWatchScarabBlast";
+		this.type ="ModifierMyAttackWatchScarabBlast";
+	}
 
-	type:"ModifierMyAttackWatchScarabBlast"
-	@type:"ModifierMyAttackWatchScarabBlast"
+	onMyAttackWatch(action) {
 
-	onMyAttackWatch: (action) ->
+		const target = action.getTarget();
+		if (target != null) {
+			let spawnPosition;
+			let sameRowRight = false;
+			let sameRowLeft = false;
+			let sameColumnUp = false;
+			let sameColumnDown = false;
 
-		target = action.getTarget()
-		if target?
-			sameRowRight = false
-			sameRowLeft = false
-			sameColumnUp = false
-			sameColumnDown = false
+			const targetPosition = target.getPosition();
+			const myPosition = this.getCard().getPosition();
+			const board = this.getCard().getGameSession().getBoard();
 
-			targetPosition = target.getPosition()
-			myPosition = @getCard().getPosition()
-			board = @getCard().getGameSession().getBoard()
+			if (targetPosition.x === myPosition.x) {
+				if (targetPosition.y < myPosition.y) {
+					sameColumnDown = true;
+				} else { 
+					sameColumnUp = true;
+				}
+			} else if (targetPosition.y === myPosition.y) {
+				if (targetPosition.x < myPosition.x) {
+					sameRowLeft = true;
+				} else { 
+					sameRowRight = true;
+				}
+			}
 
-			if targetPosition.x == myPosition.x
-				if targetPosition.y < myPosition.y
-					sameColumnDown = true
-				else 
-					sameColumnUp = true
-			else if targetPosition.y == myPosition.y
-				if targetPosition.x < myPosition.x
-					sameRowLeft = true
-				else 
-					sameRowRight = true
+			const spawnPositions = [];
 
-			spawnPositions = []
+			if (sameRowRight) {
+				spawnPosition = {x: myPosition.x + 1, y: myPosition.y};
+				while (board.isOnBoard(spawnPosition)) {
+					spawnPositions.push(spawnPosition);
+					spawnPosition = {x: spawnPosition.x + 1, y: spawnPosition.y};
+				}
+			} else if (sameRowLeft) {
+				spawnPosition = {x: myPosition.x - 1, y: myPosition.y};
+				while (board.isOnBoard(spawnPosition)) {
+					spawnPositions.push(spawnPosition);
+					spawnPosition = {x: spawnPosition.x - 1, y: spawnPosition.y};
+				}
+			} else if (sameColumnUp) {
+				spawnPosition = {x: myPosition.x, y: myPosition.y + 1};
+				while (board.isOnBoard(spawnPosition)) {
+					spawnPositions.push(spawnPosition);
+					spawnPosition = {x: spawnPosition.x, y: spawnPosition.y + 1};
+				}
+			} else if (sameColumnDown) {
+				spawnPosition = {x: myPosition.x, y: myPosition.y - 1};
+				while (board.isOnBoard(spawnPosition)) {
+					spawnPositions.push(spawnPosition);
+					spawnPosition = {x: spawnPosition.x, y: spawnPosition.y - 1};
+				}
+			}
 
-			if sameRowRight
-				spawnPosition = {x: myPosition.x + 1, y: myPosition.y}
-				while board.isOnBoard(spawnPosition)
-					spawnPositions.push(spawnPosition)
-					spawnPosition = {x: spawnPosition.x + 1, y: spawnPosition.y}
-			else if sameRowLeft
-				spawnPosition = {x: myPosition.x - 1, y: myPosition.y}
-				while board.isOnBoard(spawnPosition)
-					spawnPositions.push(spawnPosition)
-					spawnPosition = {x: spawnPosition.x - 1, y: spawnPosition.y}
-			else if sameColumnUp
-				spawnPosition = {x: myPosition.x, y: myPosition.y + 1}
-				while board.isOnBoard(spawnPosition)
-					spawnPositions.push(spawnPosition)
-					spawnPosition = {x: spawnPosition.x, y: spawnPosition.y + 1}
-			else if sameColumnDown
-				spawnPosition = {x: myPosition.x, y: myPosition.y - 1}
-				while board.isOnBoard(spawnPosition)
-					spawnPositions.push(spawnPosition)
-					spawnPosition = {x: spawnPosition.x, y: spawnPosition.y - 1}
+			if (spawnPositions.length > 0) {
+				return (() => {
+					const result = [];
+					for (let position of Array.from(spawnPositions)) {
+						if ((position != null) && !((position.x === targetPosition.x) && (position.y === targetPosition.y))) {
+							const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, {id: Cards.Faction3.Scarab});
+							playCardAction.setSource(this.getCard());
+							result.push(this.getGameSession().executeAction(playCardAction));
+						} else {
+							result.push(undefined);
+						}
+					}
+					return result;
+				})();
+			}
+		}
+	}
+}
+ModifierMyAttackWatchScarabBlast.initClass();
 
-			if spawnPositions.length > 0
-				for position in spawnPositions
-					if position? and !(position.x == targetPosition.x and position.y == targetPosition.y)
-						playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getCard().getOwnerId(), position.x, position.y, {id: Cards.Faction3.Scarab})
-						playCardAction.setSource(@getCard())
-						@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierMyAttackWatchScarabBlast
+module.exports = ModifierMyAttackWatchScarabBlast;

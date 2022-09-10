@@ -1,39 +1,57 @@
-ModifierOpponentSummonWatch = require './modifierOpponentSummonWatch'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpponentSummonWatch = require('./modifierOpponentSummonWatch');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class ModifierOpponentSummonWatchDamageEnemyGeneral extends ModifierOpponentSummonWatch
+class ModifierOpponentSummonWatchDamageEnemyGeneral extends ModifierOpponentSummonWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierOpponentSummonWatchDamageEnemyGeneral";
+		this.type ="ModifierOpponentSummonWatchDamageEnemyGeneral";
+	
+		this.modifierName ="Opponent Summon Watch";
+		this.description = "Whenever your opponent summons a minion, deal %X damage to the enemy General";
+	
+		this.prototype.damageAmount = 0;
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpponentSummonWatch", "FX.Modifiers.ModifierGenericDamage"];
+	}
 
-	type:"ModifierOpponentSummonWatchDamageEnemyGeneral"
-	@type:"ModifierOpponentSummonWatchDamageEnemyGeneral"
+	static createContextObject(damageAmount,options) {
+		if (damageAmount == null) { damageAmount = 0; }
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	@modifierName:"Opponent Summon Watch"
-	@description: "Whenever your opponent summons a minion, deal %X damage to the enemy General"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.damageAmount);
+		} else {
+			return this.description;
+		}
+	}
 
-	damageAmount: 0
+	onSummonWatch(action) {
+		const general = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+		if (general != null) {
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setOwnerId(this.getCard().getOwnerId());
+			damageAction.setTarget(general);
+			if (!this.damageAmount) {
+				damageAction.setDamageAmount(this.getCard().getATK());
+			} else {
+				damageAction.setDamageAmount(this.damageAmount);
+			}
+			return this.getGameSession().executeAction(damageAction);
+		}
+	}
+}
+ModifierOpponentSummonWatchDamageEnemyGeneral.initClass();
 
-	fxResource: ["FX.Modifiers.ModifierOpponentSummonWatch", "FX.Modifiers.ModifierGenericDamage"]
-
-	@createContextObject: (damageAmount=0,options) ->
-		contextObject = super(options)
-		contextObject.damageAmount = damageAmount
-		return contextObject
-
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.damageAmount
-		else
-			return @description
-
-	onSummonWatch: (action) ->
-		general = @getGameSession().getGeneralForOpponentOfPlayerId(@getCard().getOwnerId())
-		if general?
-			damageAction = new DamageAction(this.getGameSession())
-			damageAction.setOwnerId(@getCard().getOwnerId())
-			damageAction.setTarget(general)
-			if !@damageAmount
-				damageAction.setDamageAmount(@getCard().getATK())
-			else
-				damageAction.setDamageAmount(@damageAmount)
-			@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierOpponentSummonWatchDamageEnemyGeneral
+module.exports = ModifierOpponentSummonWatchDamageEnemyGeneral;

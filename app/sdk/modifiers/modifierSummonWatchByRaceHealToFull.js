@@ -1,35 +1,50 @@
-ModifierSummonWatch = require './modifierSummonWatch'
-HealAction = require "app/sdk/actions/healAction"
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierSummonWatch = require('./modifierSummonWatch');
+const HealAction = require("app/sdk/actions/healAction");
 
-class ModifierSummonWatchByRaceHealToFull extends ModifierSummonWatch
+class ModifierSummonWatchByRaceHealToFull extends ModifierSummonWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSummonWatchByRaceHealToFull";
+		this.type ="ModifierSummonWatchByRaceHealToFull";
+	
+		this.modifierName ="Summon Watch (by race heal to full)";
+		this.description = "Whenever you summon %X, restore this minion to full health";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericHeal"];
+	}
 
-	type:"ModifierSummonWatchByRaceHealToFull"
-	@type:"ModifierSummonWatchByRaceHealToFull"
+	static createContextObject(targetRaceId, raceName, options) {
+		const contextObject = super.createContextObject(options);
+		contextObject.targetRaceId = targetRaceId;
+		contextObject.raceName = raceName;
+		return contextObject;
+	}
 
-	@modifierName:"Summon Watch (by race heal to full)"
-	@description: "Whenever you summon %X, restore this minion to full health"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			return this.description.replace(/%X/, modifierContextObject.raceName);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericHeal"]
+	onSummonWatch(action) {
+		const healAction = this.getCard().getGameSession().createActionForType(HealAction.type);
+		healAction.setTarget(this.getCard());
+		healAction.setHealAmount(this.getCard().getMaxHP() - this.getCard().getHP());
+		return this.getCard().getGameSession().executeAction(healAction);
+	}
 
-	@createContextObject: (targetRaceId, raceName, options) ->
-		contextObject = super(options)
-		contextObject.targetRaceId = targetRaceId
-		contextObject.raceName = raceName
-		return contextObject
+	getIsCardRelevantToWatcher(card) {
+		return card.getBelongsToTribe(this.targetRaceId);
+	}
+}
+ModifierSummonWatchByRaceHealToFull.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			return @description.replace /%X/, modifierContextObject.raceName
-		else
-			return @description
-
-	onSummonWatch: (action) ->
-		healAction = @getCard().getGameSession().createActionForType(HealAction.type)
-		healAction.setTarget(@getCard())
-		healAction.setHealAmount(@getCard().getMaxHP() - @getCard().getHP())
-		@getCard().getGameSession().executeAction(healAction)
-
-	getIsCardRelevantToWatcher: (card) ->
-		return card.getBelongsToTribe(@targetRaceId)
-
-module.exports = ModifierSummonWatchByRaceHealToFull
+module.exports = ModifierSummonWatchByRaceHealToFull;

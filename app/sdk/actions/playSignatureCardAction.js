@@ -1,28 +1,49 @@
-CONFIG = 		require 'app/common/config'
-Logger = 		require 'app/common/logger'
-PlayCardAction = 		require './playCardAction'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = 		require('app/common/config');
+const Logger = 		require('app/common/logger');
+const PlayCardAction = 		require('./playCardAction');
 
-class PlaySignatureCardAction extends PlayCardAction
+class PlaySignatureCardAction extends PlayCardAction {
+	static initClass() {
+	
+		this.type ="PlaySignatureCardAction";
+	}
 
-	@type:"PlaySignatureCardAction"
+	constructor() {
+		if (this.type == null) { this.type = PlaySignatureCardAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= PlaySignatureCardAction.type
-		super
+	getManaCost() {
+		const card = this.getCard();
+		if (card != null) { return card.getManaCost(); } else { return super.getManaCost(); }
+	}
 
-	getManaCost: () ->
-		card = @getCard()
-		if card? then card.getManaCost() else super()
+	_execute() {
+		super._execute();
 
-	_execute: () ->
-		super()
+		const owner = __guard__(this.getCard(), x => x.getOwner());
+		if (owner != null) {
+			// set signature card as inactive
+			owner.setIsSignatureCardActive(false);
 
-		owner = @getCard()?.getOwner()
-		if owner?
-			# set signature card as inactive
-			owner.setIsSignatureCardActive(false)
+			// generate new signature card
+			return this.getGameSession().executeAction(owner.actionGenerateSignatureCard());
+		}
+	}
+}
+PlaySignatureCardAction.initClass();
 
-			# generate new signature card
-			@getGameSession().executeAction(owner.actionGenerateSignatureCard())
+module.exports = PlaySignatureCardAction;
 
-module.exports = PlaySignatureCardAction
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}

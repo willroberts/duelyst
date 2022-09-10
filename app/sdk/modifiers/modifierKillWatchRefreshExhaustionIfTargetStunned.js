@@ -1,17 +1,30 @@
-ModifierKillWatchRefreshExhaustion = require './modifierKillWatchRefreshExhaustion'
-ModifierStunned = require './modifierStunned'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierKillWatchRefreshExhaustion = require('./modifierKillWatchRefreshExhaustion');
+const ModifierStunned = require('./modifierStunned');
 
-class ModifierKillWatchRefreshExhaustionIfTargetStunned extends ModifierKillWatchRefreshExhaustion
+class ModifierKillWatchRefreshExhaustionIfTargetStunned extends ModifierKillWatchRefreshExhaustion {
+	static initClass() {
+	
+		this.prototype.type ="ModifierKillWatchRefreshExhaustionIfTargetStunned";
+		this.type ="ModifierKillWatchRefreshExhaustionIfTargetStunned";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch"];
+	}
 
-	type:"ModifierKillWatchRefreshExhaustionIfTargetStunned"
-	@type:"ModifierKillWatchRefreshExhaustionIfTargetStunned"
+	onKillWatch(action) {
 
-	fxResource: ["FX.Modifiers.ModifierKillWatch"]
+		const target = action.getTarget();
+		if ((target != null) && target.hasActiveModifierClass(ModifierStunned)) {
+			return super.onKillWatch();
+		}
+	}
+}
+ModifierKillWatchRefreshExhaustionIfTargetStunned.initClass();
 
-	onKillWatch: (action) ->
-
-		target = action.getTarget()
-		if target? and target.hasActiveModifierClass(ModifierStunned)
-			super()
-
-module.exports = ModifierKillWatchRefreshExhaustionIfTargetStunned
+module.exports = ModifierKillWatchRefreshExhaustionIfTargetStunned;

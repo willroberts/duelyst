@@ -1,31 +1,49 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
 
-class ModifierOpeningGambitDrawCopyFromDeck extends ModifierOpeningGambit
+class ModifierOpeningGambitDrawCopyFromDeck extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitDrawCopyFromDeck";
+		this.type = "ModifierOpeningGambitDrawCopyFromDeck";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
+	}
 
-	type: "ModifierOpeningGambitDrawCopyFromDeck"
-	@type: "ModifierOpeningGambitDrawCopyFromDeck"
+	onOpeningGambit() {
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit"]
+		let i;
+		const drawPile = this.getOwner().getDeck().getDrawPile();
+		let indexOfCard = -1;
+		let cardFound = false;
 
-	onOpeningGambit: () ->
+		for (i = 0; i < drawPile.length; i++) {
+			const cardIndex = drawPile[i];
+			const cardAtIndex = this.getGameSession().getCardByIndex(cardIndex);
+			if ((cardAtIndex != null ? cardAtIndex.getBaseCardId() : undefined) === this.getCard().getBaseCardId()) {
+				indexOfCard = i;
+				cardFound = true;
+				break;
+			}
+		}
 
-		drawPile = @getOwner().getDeck().getDrawPile()
-		indexOfCard = -1
-		cardFound = false
+		if (cardFound) {
+			const cardIndexToDraw = drawPile[i];
+			if (cardIndexToDraw != null) {
+				const card = this.getGameSession().getCardByIndex(cardIndexToDraw);
+				const drawCardAction = this.getGameSession().getPlayerById(this.getOwner().getPlayerId()).getDeck().actionDrawCard(cardIndexToDraw);
+				drawCardAction.isDepthFirst = true;
+				return this.getGameSession().executeAction(drawCardAction);
+			}
+		}
+	}
+}
+ModifierOpeningGambitDrawCopyFromDeck.initClass();
 
-		for cardIndex, i in drawPile
-			cardAtIndex = @getGameSession().getCardByIndex(cardIndex)
-			if cardAtIndex?.getBaseCardId() == @getCard().getBaseCardId()
-				indexOfCard = i
-				cardFound = true
-				break
-
-		if cardFound
-			cardIndexToDraw = drawPile[i]
-			if cardIndexToDraw?
-				card = @getGameSession().getCardByIndex(cardIndexToDraw)
-				drawCardAction = @getGameSession().getPlayerById(@getOwner().getPlayerId()).getDeck().actionDrawCard(cardIndexToDraw)
-				drawCardAction.isDepthFirst = true
-				@getGameSession().executeAction(drawCardAction)
-
-module.exports = ModifierOpeningGambitDrawCopyFromDeck
+module.exports = ModifierOpeningGambitDrawCopyFromDeck;

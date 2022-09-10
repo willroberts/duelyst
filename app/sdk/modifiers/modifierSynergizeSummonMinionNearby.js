@@ -1,36 +1,61 @@
-CONFIG = require 'app/common/config'
-ModifierSynergize = require './modifierSynergize'
-UtilsGameSession = require 'app/common/utils/utils_game_session'
-PlayCardSilentlyAction = require 'app/sdk/actions/playCardSilentlyAction'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const ModifierSynergize = require('./modifierSynergize');
+const UtilsGameSession = require('app/common/utils/utils_game_session');
+const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
-class ModifierSynergizeSummonMinionNearby extends ModifierSynergize
+class ModifierSynergizeSummonMinionNearby extends ModifierSynergize {
+	static initClass() {
+	
+		this.prototype.type ="ModifierSynergizeSummonMinionNearby";
+		this.type ="ModifierSynergizeSummonMinionNearby";
+	
+		this.prototype.cardDataOrIndexToSpawn = null;
+		this.prototype.spawnCount = 1;
+	}
 
-	type:"ModifierSynergizeSummonMinionNearby"
-	@type:"ModifierSynergizeSummonMinionNearby"
+	static createContextObject(cardDataOrIndexToSpawn, spawnCount, options) {
+		if (spawnCount == null) { spawnCount = 1; }
+		const contextObject = super.createContextObject(options);
+		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+		contextObject.spawnCount = spawnCount;
+		return contextObject;
+	}
 
-	cardDataOrIndexToSpawn: null
-	spawnCount: 1
+	onSynergize(action) {
+		super.onSynergize(action);
 
-	@createContextObject: (cardDataOrIndexToSpawn, spawnCount=1, options) ->
-		contextObject = super(options)
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn
-		contextObject.spawnCount = spawnCount
-		return contextObject
+		if (this.getGameSession().getIsRunningAsAuthoritative()) {
+			const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+			const spawnLocations = [];
+			const validSpawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), CONFIG.PATTERN_3x3, card, this.getCard(), 8);
+			for (let i = 0, end = this.spawnCount, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+				if (validSpawnLocations.length > 0) {
+					spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+				}
+			}
 
-	onSynergize: (action) ->
-		super(action)
+			return (() => {
+				const result = [];
+				for (let position of Array.from(spawnLocations)) {
+					const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+					playCardAction.setSource(this.getCard());
+					result.push(this.getGameSession().executeAction(playCardAction));
+				}
+				return result;
+			})();
+		}
+	}
+}
+ModifierSynergizeSummonMinionNearby.initClass();
 
-		if @getGameSession().getIsRunningAsAuthoritative()
-			card = @getGameSession().getExistingCardFromIndexOrCachedCardFromData(@cardDataOrIndexToSpawn)
-			spawnLocations = []
-			validSpawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(@getGameSession(), @getCard().getPosition(), CONFIG.PATTERN_3x3, card, @getCard(), 8)
-			for i in [0...@spawnCount]
-				if validSpawnLocations.length > 0
-					spawnLocations.push(validSpawnLocations.splice(@getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0])
-
-			for position in spawnLocations
-				playCardAction = new PlayCardSilentlyAction(@getGameSession(), @getOwnerId(), position.x, position.y, @cardDataOrIndexToSpawn)
-				playCardAction.setSource(@getCard())
-				@getGameSession().executeAction(playCardAction)
-
-module.exports = ModifierSynergizeSummonMinionNearby
+module.exports = ModifierSynergizeSummonMinionNearby;

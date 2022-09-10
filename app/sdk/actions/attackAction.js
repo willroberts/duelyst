@@ -1,45 +1,64 @@
-CONFIG = 		require 'app/common/config'
-DamageAction = 	require './damageAction'
-CardType = 			require 'app/sdk/cards/cardType'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = 		require('app/common/config');
+const DamageAction = 	require('./damageAction');
+const CardType = 			require('app/sdk/cards/cardType');
+const _ = require('underscore');
 
-class AttackAction extends DamageAction
+class AttackAction extends DamageAction {
+	static initClass() {
+	
+		this.type ="AttackAction";
+	}
 
-	@type:"AttackAction"
+	constructor(gameSession) {
+		if (this.type == null) { this.type = AttackAction.type; }
+		super(gameSession);
+	}
 
-	constructor: (gameSession) ->
-		@type ?= AttackAction.type
-		super(gameSession)
+	getPrivateDefaults(gameSession) {
+		const p = super.getPrivateDefaults(gameSession);
 
-	getPrivateDefaults: (gameSession) ->
-		p = super(gameSession)
+		// cache
+		p.isStrikebackAllowed = true; // normally target of attack actions will strike back, but in some cases strike back should be supressed
 
-		# cache
-		p.isStrikebackAllowed = true # normally target of attack actions will strike back, but in some cases strike back should be supressed
+		return p;
+	}
 
-		return p
+	getDamageAmount() {
+		// attack damage amount is always source's atk value
+		const source = this.getSource();
+		if (source != null) { return source.getATK(); } else { return 0; }
+	}
 
-	getDamageAmount: () ->
-		# attack damage amount is always source's atk value
-		source = @getSource()
-		if source? then return source.getATK() else return 0
+	setDamageAmount() {}
+		// does nothing for attacks
 
-	setDamageAmount: () ->
-		# does nothing for attacks
+	setIsStrikebackAllowed(isStrikebackAllowed) {
+		return this._private.isStrikebackAllowed = isStrikebackAllowed;
+	}
 
-	setIsStrikebackAllowed: (isStrikebackAllowed) ->
-		@_private.isStrikebackAllowed = isStrikebackAllowed
+	getIsStrikebackAllowed() {
+		return this._private.isStrikebackAllowed;
+	}
 
-	getIsStrikebackAllowed: () ->
-		return @_private.isStrikebackAllowed
+	_execute() {
 
-	_execute: () ->
+		super._execute();
 
-		super()
+		const attacker = this.getSource();
 
-		attacker = @getSource()
+		if (attacker != null) {
+			if (!this.getIsImplicit()) { return attacker.setAttacksMade(attacker.getAttacksMade() + 1); }
+		}
+	}
+}
+AttackAction.initClass();
 
-		if attacker?
-			if !@getIsImplicit() then attacker.setAttacksMade(attacker.getAttacksMade() + 1)
-
-module.exports = AttackAction
+module.exports = AttackAction;

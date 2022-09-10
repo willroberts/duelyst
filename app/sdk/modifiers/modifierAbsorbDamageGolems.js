@@ -1,51 +1,70 @@
-EVENTS = require 'app/common/event_types'
-Modifier = require './modifier'
-DamageAction = require 'app/sdk/actions/damageAction'
-CardType = require 'app/sdk/cards/cardType'
-Stringifiers = require 'app/sdk/helpers/stringifiers'
-i18next = require 'i18next'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const EVENTS = require('app/common/event_types');
+const Modifier = require('./modifier');
+const DamageAction = require('app/sdk/actions/damageAction');
+const CardType = require('app/sdk/cards/cardType');
+const Stringifiers = require('app/sdk/helpers/stringifiers');
+const i18next = require('i18next');
 
-class ModifierAbsorbDamageGolems extends Modifier
+class ModifierAbsorbDamageGolems extends Modifier {
+	static initClass() {
+	
+		this.prototype.type ="ModifierAbsorbDamageGolems";
+		this.type ="ModifierAbsorbDamageGolems";
+	
+		this.modifierName =i18next.t("modifiers.absorb_damage_golems_name");
+		this.description =i18next.t("modifiers.absorb_damage_golems_def");
+	
+		this.prototype.activeInHand = false;
+		this.prototype.activeInDeck = false;
+		this.prototype.activeInSignatureCards = false;
+		this.prototype.activeOnBoard = true;
+	
+		this.prototype.canAbsorb = true; // can absorb damage from 1 damage action per turn
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierAbsorbDamageGolems"];
+	}
 
-	type:"ModifierAbsorbDamageGolems"
-	@type:"ModifierAbsorbDamageGolems"
+	onEvent(event) {
+		super.onEvent(event);
 
-	@modifierName:i18next.t("modifiers.absorb_damage_golems_name")
-	@description:i18next.t("modifiers.absorb_damage_golems_def")
+		if (this._private.listeningToEvents) {
+			if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
+				return this.onModifyActionForEntitiesInvolvedInAttack(event);
+			}
+		}
+	}
 
-	activeInHand: false
-	activeInDeck: false
-	activeInSignatureCards: false
-	activeOnBoard: true
+	getIsActionRelevant(a) {
+		return a instanceof DamageAction && (a.getTarget() === this.getCard());
+	}
 
-	canAbsorb: true # can absorb damage from 1 damage action per turn
+	_modifyAction(a) {
+		a.setChangedByModifier(this);
+		return a.changeFinalDamageBy(-1);
+	}
 
-	fxResource: ["FX.Modifiers.ModifierAbsorbDamageGolems"]
+	onModifyActionForExecution(actionEvent) {
+		super.onModifyActionForExecution(actionEvent);
 
-	onEvent: (event) ->
-		super(event)
+		const a = actionEvent.action;
+		if (this.getIsActionRelevant(a)) {
+			return this._modifyAction(a);
+		}
+	}
 
-		if @_private.listeningToEvents
-			if event.type == EVENTS.modify_action_for_entities_involved_in_attack
-				@onModifyActionForEntitiesInvolvedInAttack(event)
+	onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
+		const a = actionEvent.action;
+		if (this.getIsActive() && this.getIsActionRelevant(a)) {
+			return this._modifyAction(a);
+		}
+	}
+}
+ModifierAbsorbDamageGolems.initClass();
 
-	getIsActionRelevant: (a) ->
-		return a instanceof DamageAction and a.getTarget() is @getCard()
-
-	_modifyAction: (a) ->
-		a.setChangedByModifier(@)
-		a.changeFinalDamageBy(-1)
-
-	onModifyActionForExecution: (actionEvent) ->
-		super(actionEvent)
-
-		a = actionEvent.action
-		if @getIsActionRelevant(a)
-			@_modifyAction(a)
-
-	onModifyActionForEntitiesInvolvedInAttack: (actionEvent) ->
-		a = actionEvent.action
-		if @getIsActive() and @getIsActionRelevant(a)
-			@_modifyAction(a)
-
-module.exports = ModifierAbsorbDamageGolems
+module.exports = ModifierAbsorbDamageGolems;

@@ -1,26 +1,41 @@
-Logger = 		require 'app/common/logger'
-Action = require './action'
-CardType = 			require 'app/sdk/cards/cardType'
-_ = require 'underscore'
+/*
+ * decaffeinate suggestions:
+ * DS002: Fix invalid constructor
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Logger = 		require('app/common/logger');
+const Action = require('./action');
+const CardType = 			require('app/sdk/cards/cardType');
+const _ = require('underscore');
 
-class KillAction extends Action
+class KillAction extends Action {
+	static initClass() {
+	
+		this.type ="KillAction";
+		this.prototype.damageAmount = null;
+	}
 
-	@type:"KillAction"
-	damageAmount: null
+	constructor() {
+		if (this.type == null) { this.type = KillAction.type; }
+		super(...arguments);
+	}
 
-	constructor: () ->
-		@type ?= KillAction.type
-		super
+	_execute() {
+		super._execute();
 
-	_execute: () ->
-		super()
+		const source = this.getSource();
+		const target = this.getTarget();
 
-		source = @getSource()
-		target = @getTarget()
+		if (target) {
+			//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "#{this.type}::execute - kill #{target.getName()}.".red
+			const dieAction = target.actionDie(source);
+			return this.getGameSession().executeAction(dieAction);
+		}
+	}
+}
+KillAction.initClass();
 
-		if target
-			#Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "#{this.type}::execute - kill #{target.getName()}.".red
-			dieAction = target.actionDie(source)
-			@getGameSession().executeAction(dieAction)
-
-module.exports = KillAction
+module.exports = KillAction;

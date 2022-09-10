@@ -1,150 +1,204 @@
-CONFIG = require 'app/common/config'
-UtilsPosition = require 'app/common/utils/utils_position'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS202: Simplify dynamic range loops
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const CONFIG = require('app/common/config');
+const UtilsPosition = require('app/common/utils/utils_position');
 
-class Range
+class Range {
+	static initClass() {
+	
+		// shared pool of patterns and maps by distance
+		// if the range sub class's pattern step changes, override "getPatternByDistance" and "getPatternMapByDistance"
+		this.patternsByDistance = {};
+		this.patternMapsByDistance = {};
+	
+		// the pattern step used to auto generate the final range pattern
+		// think of it like a stamp that fills out the final pattern until it reaches the max distance
+	
+		// cached valid positions
+		this.prototype._validPositions = null;
+		this.prototype._positionsTestedForValidByIndex = null;
+	}
 
-	# shared pool of patterns and maps by distance
-	# if the range sub class's pattern step changes, override "getPatternByDistance" and "getPatternMapByDistance"
-	@patternsByDistance: {}
-	@patternMapsByDistance: {}
+	constructor(gameSession) {
+		this._gameSession = gameSession;
+	}
 
-	# the pattern step used to auto generate the final range pattern
-	# think of it like a stamp that fills out the final pattern until it reaches the max distance
+	getGameSession() {
+		return this._gameSession;
+	}
 
-	# cached valid positions
-	_validPositions: null
-	_positionsTestedForValidByIndex: null
+	// flushed out any cached state so that the next call to use it will regenerate
+	flushCachedState() {
+		this._validPositions = null;
+		return this._positionsTestedForValidByIndex = null;
+	}
 
-	constructor: (gameSession) ->
-		@_gameSession = gameSession
+	getValidPositions(board, entity) {
+		if ((this._validPositions == null)) {
+			const entityPosition = entity.getPosition();
+			const pattern = entity.getPattern();
 
-	getGameSession: () ->
-		return @_gameSession
+			const validPositions = (this._validPositions = []);
 
-	# flushed out any cached state so that the next call to use it will regenerate
-	flushCachedState: () ->
-		@_validPositions = null
-		@_positionsTestedForValidByIndex = null
+			for (let node of Array.from(pattern)) {
+				const testPosition = {x: entityPosition.x + node.x, y: entityPosition.y + node.y};
+				if (board.isOnBoard( testPosition ) && !((entityPosition.x === testPosition.x) && (entityPosition.y === testPosition.y))) {
+					const entityAtTarget = board.getCardAtPosition( testPosition, entity.getType() );
+					if (!entityAtTarget) {
+						validPositions.push( testPosition );
+					}
+				}
+			}
+		}
 
-	getValidPositions: (board, entity) ->
-		if !@_validPositions?
-			entityPosition = entity.getPosition()
-			pattern = entity.getPattern()
+		return this._validPositions;
+	}
 
-			validPositions = @_validPositions = []
+	getIsPositionValid(board, entity, position) {
+		return (this.getValidPosition(board, entity, position) != null);
+	}
 
-			for node in pattern
-				testPosition = {x: entityPosition.x + node.x, y: entityPosition.y + node.y}
-				if board.isOnBoard( testPosition ) && !(entityPosition.x == testPosition.x && entityPosition.y == testPosition.y)
-					entityAtTarget = board.getCardAtPosition( testPosition, entity.getType() )
-					if !entityAtTarget
-						validPositions.push( testPosition )
+	getValidPosition(board, entity, position) {
+		if (board.isOnBoard(position)) {
+			// if we've already tested this position, return previous result
+			const index = UtilsPosition.getMapIndexFromPosition(board.getColumnCount(), position.x, position.y);
+			if ((this._positionsTestedForValidByIndex == null)) { this._positionsTestedForValidByIndex = {}; }
+			const isValid = this._positionsTestedForValidByIndex[index];
+			if (isValid != null) {
+				if (isValid) { return position; }
+			} else {
+				const pattern = this.getValidPositions(board,entity);
+				for (let patternPosition of Array.from(pattern)) {
+					if ((patternPosition.x === position.x) && (patternPosition.y === position.y)) {
+						// position is valid
+						this._positionsTestedForValidByIndex[index] = true;
+						return position;
+					}
+				}
 
-		return @_validPositions
+				// position is not valid
+				this._positionsTestedForValidByIndex[index] = false;
+			}
+		}
+		return null;
+	}
 
-	getIsPositionValid: (board, entity, position) ->
-		return @getValidPosition(board, entity, position)?
+	getIsPositionInPatternMap(board, patternMap, position) {
+		const rowCount = board.getRowCount();
+		const columnCount = board.getColumnCount();
+		const mapX = position.x + (columnCount - 1);
+		const mapY = position.y + (rowCount - 1);
+		if ((mapX >= 0) && (mapX < ((columnCount * 2) - 1)) && (mapY >= 0) && (mapY < ((rowCount * 2) - 1))) {
+			return (patternMap[mapX][mapY] != null);
+		}
+	}
 
-	getValidPosition: (board, entity, position) ->
-		if board.isOnBoard(position)
-			# if we've already tested this position, return previous result
-			index = UtilsPosition.getMapIndexFromPosition(board.getColumnCount(), position.x, position.y)
-			if !@_positionsTestedForValidByIndex? then @_positionsTestedForValidByIndex = {}
-			isValid = @_positionsTestedForValidByIndex[index]
-			if isValid?
-				if isValid then return position
-			else
-				pattern = @getValidPositions(board,entity)
-				for patternPosition in pattern
-					if patternPosition.x == position.x and patternPosition.y == position.y
-						# position is valid
-						@_positionsTestedForValidByIndex[index] = true
-						return position
+	getPatternByDistance(board, distance) {
+		let pattern = Range.patternsByDistance[distance];
+		if ((pattern == null)) {
+			Range._generateAndCachePatternAndMap(board, distance, CONFIG.RANGE_PATTERN_STEP, Range.patternsByDistance, Range.patternMapsByDistance);
+			pattern = Range.patternsByDistance[distance];
+		}
+		return pattern;
+	}
 
-				# position is not valid
-				@_positionsTestedForValidByIndex[index] = false
-		return null
+	getPatternMapByDistance(board, distance) {
+		let patternMap = Range.patternMapsByDistance[distance];
+		if ((patternMap == null)) {
+			Range._generateAndCachePatternAndMap(board, distance, CONFIG.RANGE_PATTERN_STEP, Range.patternsByDistance, Range.patternMapsByDistance);
+			patternMap = Range.patternMapsByDistance[distance];
+		}
+		return patternMap;
+	}
 
-	getIsPositionInPatternMap: (board, patternMap, position) ->
-		rowCount = board.getRowCount()
-		columnCount = board.getColumnCount()
-		mapX = position.x + (columnCount - 1)
-		mapY = position.y + (rowCount - 1)
-		if mapX >= 0 && mapX < columnCount * 2 - 1 && mapY >= 0 && mapY < rowCount * 2 - 1
-			return patternMap[mapX][mapY]?
+	getPatternMapFromPattern(board, pattern) {
+		const rowCount = board.getRowCount();
+		const rowCount2 = (rowCount * 2) - 1;
+		const rowOffset = rowCount - 1;
+		const columnCount = board.getColumnCount();
+		const columnCount2 = (columnCount * 2) - 1;
+		const columnOffset = columnCount - 1;
+		const patternMap = [];
+		for (let i = 0, end = columnCount2, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+			patternMap[i] = [];
+			patternMap[i].length = rowCount2;
+		}
 
-	getPatternByDistance: (board, distance) ->
-		pattern = Range.patternsByDistance[distance]
-		if !pattern?
-			Range._generateAndCachePatternAndMap(board, distance, CONFIG.RANGE_PATTERN_STEP, Range.patternsByDistance, Range.patternMapsByDistance)
-			pattern = Range.patternsByDistance[distance]
-		return pattern
+		for (let node of Array.from(pattern)) {
+			const mapX = node.x + columnOffset;
+			const mapY = node.y + rowOffset;
+			if ((mapX >= 0) && (mapX < columnCount2) && (mapY >= 0) && (mapY < rowCount2) && (patternMap[mapX][mapY] == null)) {
+				patternMap[mapX][mapY] = node;
+			}
+		}
 
-	getPatternMapByDistance: (board, distance) ->
-		patternMap = Range.patternMapsByDistance[distance]
-		if !patternMap?
-			Range._generateAndCachePatternAndMap(board, distance, CONFIG.RANGE_PATTERN_STEP, Range.patternsByDistance, Range.patternMapsByDistance)
-			patternMap = Range.patternMapsByDistance[distance]
-		return patternMap
+		return patternMap;
+	}
 
-	getPatternMapFromPattern: (board, pattern) ->
-		rowCount = board.getRowCount()
-		rowCount2 = rowCount * 2 - 1
-		rowOffset = rowCount - 1
-		columnCount = board.getColumnCount()
-		columnCount2 = columnCount * 2 - 1
-		columnOffset = columnCount - 1
-		patternMap = []
-		for i in [0...columnCount2]
-			patternMap[i] = []
-			patternMap[i].length = rowCount2
+	static _generateAndCachePatternAndMap(board, distance, step, patternCache, patternMapCache) {
+		const originNode = {x: 0, y: 0};
+		const rowCount = board.getRowCount();
+		const rowCount2 = (rowCount * 2) - 1;
+		const rowOffset = rowCount - 1;
+		const columnCount = board.getColumnCount();
+		const columnCount2 = (columnCount * 2) - 1;
+		const columnOffset = columnCount - 1;
+		const pattern = (patternCache[distance] = []);
+		const patternMap = (patternMapCache[distance] = []);
+		for (let i = 0, end = columnCount2, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
+			patternMap[i] = [];
+			patternMap[i].length = rowCount2;
+		}
+		patternMap[columnOffset][rowOffset] = originNode;
+		let nodesToProcess = [originNode];
+		let nodesToProcessNext = [];
+		let currentDistance = 1;
 
-		for node in pattern
-			mapX = node.x + columnOffset
-			mapY = node.y + rowOffset
-			if mapX >= 0 && mapX < columnCount2 && mapY >= 0 && mapY < rowCount2 and !patternMap[mapX][mapY]?
-				patternMap[mapX][mapY] = node
+		return (() => {
+			const result = [];
+			while (nodesToProcess.length > 0) {
+				const node = nodesToProcess.shift();
+				for (let offset of Array.from(step)) {
+					const nextNodeX = node.x + offset.x;
+					const nextNodeY = node.y + offset.y;
+					const nextNode = {x: nextNodeX, y: nextNodeY};
 
-		return patternMap
+					// node must be within distance and not a duplicate
+					if (currentDistance <= distance) {
+						const mapX = nextNodeX + columnOffset;
+						const mapY = nextNodeY + rowOffset;
+						if ((mapX >= 0) && (mapX < columnCount2) && (mapY >= 0) && (mapY < rowCount2) && (patternMap[mapX][mapY] == null)) {
+							patternMap[mapX][mapY] = nextNode;
+							pattern.push(nextNode);
+							nodesToProcessNext.push(nextNode);
+						}
+					}
+				}
 
-	@_generateAndCachePatternAndMap: (board, distance, step, patternCache, patternMapCache) ->
-		originNode = {x: 0, y: 0}
-		rowCount = board.getRowCount()
-		rowCount2 = rowCount * 2 - 1
-		rowOffset = rowCount - 1
-		columnCount = board.getColumnCount()
-		columnCount2 = columnCount * 2 - 1
-		columnOffset = columnCount - 1
-		pattern = patternCache[distance] = []
-		patternMap = patternMapCache[distance] = []
-		for i in [0...columnCount2]
-			patternMap[i] = []
-			patternMap[i].length = rowCount2
-		patternMap[columnOffset][rowOffset] = originNode
-		nodesToProcess = [originNode]
-		nodesToProcessNext = []
-		currentDistance = 1
+				if (nodesToProcess.length === 0) {
+					currentDistance++;
+					if (nodesToProcessNext.length > 0) {
+						nodesToProcess = nodesToProcessNext;
+						result.push(nodesToProcessNext = []);
+					} else {
+						result.push(undefined);
+					}
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
+Range.initClass();
 
-		while nodesToProcess.length > 0
-			node = nodesToProcess.shift()
-			for offset in step
-				nextNodeX = node.x + offset.x
-				nextNodeY = node.y + offset.y
-				nextNode = {x: nextNodeX, y: nextNodeY}
-
-				# node must be within distance and not a duplicate
-				if currentDistance <= distance
-					mapX = nextNodeX + columnOffset
-					mapY = nextNodeY + rowOffset
-					if mapX >= 0 && mapX < columnCount2 && mapY >= 0 && mapY < rowCount2 and !patternMap[mapX][mapY]?
-						patternMap[mapX][mapY] = nextNode
-						pattern.push(nextNode)
-						nodesToProcessNext.push(nextNode)
-
-			if nodesToProcess.length == 0
-				currentDistance++
-				if nodesToProcessNext.length > 0
-					nodesToProcess = nodesToProcessNext
-					nodesToProcessNext = []
-
-module.exports = Range
+module.exports = Range;

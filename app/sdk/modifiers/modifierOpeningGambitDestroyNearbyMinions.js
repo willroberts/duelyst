@@ -1,44 +1,74 @@
-ModifierOpeningGambit = require './modifierOpeningGambit'
-KillAction = require 'app/sdk/actions/killAction'
-CardType = require 'app/sdk/cards/cardType'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const KillAction = require('app/sdk/actions/killAction');
+const CardType = require('app/sdk/cards/cardType');
 
-class ModifierOpeningGambitDestroyNearbyMinions extends ModifierOpeningGambit
+class ModifierOpeningGambitDestroyNearbyMinions extends ModifierOpeningGambit {
+	static initClass() {
+	
+		this.prototype.type = "ModifierOpeningGambitDestroyNearbyMinions";
+		this.type = "ModifierOpeningGambitDestroyNearbyMinions";
+	
+		this.modifierName = "Opening Gambit";
+		this.description = "Destroy %X";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericChainLightningRed"];
+	}
 
-	type: "ModifierOpeningGambitDestroyNearbyMinions"
-	@type: "ModifierOpeningGambitDestroyNearbyMinions"
+	static createContextObject(includeAllies, options) {
+		if (includeAllies == null) { includeAllies = true; }
+		const contextObject = super.createContextObject();
+		contextObject.includeAllies = includeAllies;
+		return contextObject;
+	}
 
-	@modifierName: "Opening Gambit"
-	@description: "Destroy %X"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			let replaceText;
+			if (modifierContextObject.includeAllies) {
+				replaceText = " ALL nearby minions";
+			} else {
+				replaceText = " all nearby enemy minions";
+			}
+			return this.description.replace(/%X/, replaceText);
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericChainLightningRed"]
+	onOpeningGambit() {
+		let entities;
+		if (this.includeAllies) {
+			entities = this.getGameSession().getBoard().getEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
+		} else {
+			entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
+		}
 
-	@createContextObject: (includeAllies=true, options) ->
-		contextObject = super()
-		contextObject.includeAllies = includeAllies
-		return contextObject
+		return (() => {
+			const result = [];
+			for (let entity of Array.from(entities)) {
+				if (!entity.getIsGeneral()) { // this ability only kills minions, not Generals
+					const killAction = new KillAction(this.getGameSession());
+					killAction.setOwnerId(this.getCard().getOwnerId());
+					killAction.setSource(this.getCard());
+					killAction.setTarget(entity);
+					result.push(this.getGameSession().executeAction(killAction));
+				} else {
+					result.push(undefined);
+				}
+			}
+			return result;
+		})();
+	}
+}
+ModifierOpeningGambitDestroyNearbyMinions.initClass();
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			if modifierContextObject.includeAllies
-				replaceText = " ALL nearby minions"
-			else
-				replaceText = " all nearby enemy minions"
-			return @description.replace /%X/, replaceText
-		else
-			return @description
-
-	onOpeningGambit: () ->
-		if @includeAllies
-			entities = @getGameSession().getBoard().getEntitiesAroundEntity(@getCard(), CardType.Unit, 1)
-		else
-			entities = @getGameSession().getBoard().getEnemyEntitiesAroundEntity(@getCard(), CardType.Unit, 1)
-
-		for entity in entities
-			if !entity.getIsGeneral() # this ability only kills minions, not Generals
-				killAction = new KillAction(@getGameSession())
-				killAction.setOwnerId(@getCard().getOwnerId())
-				killAction.setSource(@getCard())
-				killAction.setTarget(entity)
-				@getGameSession().executeAction(killAction)
-
-module.exports = ModifierOpeningGambitDestroyNearbyMinions
+module.exports = ModifierOpeningGambitDestroyNearbyMinions;

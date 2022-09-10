@@ -1,40 +1,57 @@
-ModifierEndEveryTurnWatch = require './modifierEndEveryTurnWatch'
-CardType = require 'app/sdk/cards/cardType'
-DamageAction = require 'app/sdk/actions/damageAction'
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const ModifierEndEveryTurnWatch = require('./modifierEndEveryTurnWatch');
+const CardType = require('app/sdk/cards/cardType');
+const DamageAction = require('app/sdk/actions/damageAction');
 
-class ModifierEndEveryTurnWatchDamageOwner extends ModifierEndEveryTurnWatch
+class ModifierEndEveryTurnWatchDamageOwner extends ModifierEndEveryTurnWatch {
+	static initClass() {
+	
+		this.prototype.type ="ModifierEndEveryTurnWatchDamageOwner";
+		this.type ="ModifierEndEveryTurnWatchDamageOwner";
+	
+		this.modifierName ="Turn Watch";
+		this.description ="At end of EACH turn, deal %X damage to your General";
+	
+		this.prototype.fxResource = ["FX.Modifiers.ModifierEndTurnWatch", "FX.Modifiers.ModifierGenericDamageEnergySmall"];
+	}
 
-	type:"ModifierEndEveryTurnWatchDamageOwner"
-	@type:"ModifierEndEveryTurnWatchDamageOwner"
+	static createContextObject(damageAmount, options) {
+		if (damageAmount == null) { damageAmount = 0; }
+		const contextObject = super.createContextObject(options);
+		contextObject.damageAmount = damageAmount;
+		return contextObject;
+	}
 
-	@modifierName:"Turn Watch"
-	@description:"At end of EACH turn, deal %X damage to your General"
+	static getDescription(modifierContextObject) {
+		if (modifierContextObject) {
+			const replaceText = this.description.replace(/%X/, modifierContextObject.damageAmount);
+			return replaceText;
+		} else {
+			return this.description;
+		}
+	}
 
-	fxResource: ["FX.Modifiers.ModifierEndTurnWatch", "FX.Modifiers.ModifierGenericDamageEnergySmall"]
+	onTurnWatch(action) {
+		super.onTurnWatch(action);
 
-	@createContextObject: (damageAmount=0, options) ->
-		contextObject = super(options)
-		contextObject.damageAmount = damageAmount
-		return contextObject
+		const myGeneral = this.getGameSession().getGeneralForPlayer(this.getCard().getOwner());
 
-	@getDescription: (modifierContextObject) ->
-		if modifierContextObject
-			replaceText = @description.replace /%X/, modifierContextObject.damageAmount
-			return replaceText
-		else
-			return @description
+		if (myGeneral != null) {
+			const damageAction = new DamageAction(this.getGameSession());
+			damageAction.setOwnerId(this.getCard().getOwnerId());
+			damageAction.setSource(this.getCard());
+			damageAction.setTarget(myGeneral);
+			damageAction.setDamageAmount(this.damageAmount);
+			return this.getGameSession().executeAction(damageAction);
+		}
+	}
+}
+ModifierEndEveryTurnWatchDamageOwner.initClass();
 
-	onTurnWatch: (action) ->
-		super(action)
-
-		myGeneral = @getGameSession().getGeneralForPlayer(@getCard().getOwner())
-
-		if myGeneral?
-			damageAction = new DamageAction(this.getGameSession())
-			damageAction.setOwnerId(@getCard().getOwnerId())
-			damageAction.setSource(@getCard())
-			damageAction.setTarget(myGeneral)
-			damageAction.setDamageAmount(@damageAmount)
-			@getGameSession().executeAction(damageAction)
-
-module.exports = ModifierEndEveryTurnWatchDamageOwner
+module.exports = ModifierEndEveryTurnWatchDamageOwner;
