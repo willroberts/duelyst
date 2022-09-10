@@ -13,7 +13,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const SpellSpawnEntity = require('./spellSpawnEntity');
-const CardType = require('../cards/cardType.coffee');
+const CardType = require('../cards/cardType');
 
 class SpellSpawnEntityInFrontOfGeneral extends SpellSpawnEntity {
   static initClass() {

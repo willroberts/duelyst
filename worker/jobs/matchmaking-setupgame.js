@@ -15,11 +15,11 @@
 Job - Setup Match
 */
 const Promise = require('bluebird');
-const getGameServerAsync = require('../get_gameserver.coffee');
-const createGameAsync = require('../creategame.coffee');
-const DuelystFirebaseModule = require('../../server/lib/duelyst_firebase_module.coffee');
-const FirebasePromises = require('../../server/lib/firebase_promises.coffee');
-const Logger = require('../../app/common/logger.coffee');
+const getGameServerAsync = require('../get_gameserver');
+const createGameAsync = require('../creategame');
+const DuelystFirebaseModule = require('../../server/lib/duelyst_firebase_module');
+const FirebasePromises = require('../../server/lib/firebase_promises');
+const Logger = require('../../app/common/logger');
 
 /**
  * Job - 'matchmaking-setupmatch'

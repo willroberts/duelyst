@@ -42,7 +42,7 @@ const validator = require('validator');
 const uuid = require('node-uuid');
 const moment = require('moment');
 const _ = require('underscore');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require('../../../app/common/logger');
 const fbUtil = require('../../../app/common/utils/utils_firebase.js');
 const DuelystFirebase = require('../duelyst_firebase_module');
 const FirebasePromises = require('../firebase_promises');
@@ -61,10 +61,10 @@ const knex = require('./knex');
 const config = require('../../../config/config.js');
 const generatePushId = require('../../../app/common/generate_push_id');
 const DataAccessHelpers = require('./helpers');
-const hashHelpers = require('../hash_helpers.coffee');
+const hashHelpers = require('../hash_helpers');
 
 Promise.promisifyAll(mail);
-const AnalyticsUtil = require('../../../app/common/analyticsUtil.coffee');
+const AnalyticsUtil = require('../../../app/common/analyticsUtil');
 const { version } = require('../../../version.json');
 
 // redis
@@ -80,7 +80,7 @@ const QuestFactory = require('../../../app/sdk/quests/questFactory');
 const QuestType = require('../../../app/sdk/quests/questTypeLookup');
 const GameType = require('../../../app/sdk/gameType');
 const GameFormat = require('../../../app/sdk/gameFormat');
-const UtilsGameSession = require('../../../app/common/utils/utils_game_session.coffee');
+const UtilsGameSession = require('../../../app/common/utils/utils_game_session');
 const NewPlayerProgressionHelper = require('../../../app/sdk/progression/newPlayerProgressionHelper');
 const NewPlayerProgressionStageEnum = require('../../../app/sdk/progression/newPlayerProgressionStageEnum');
 const NewPlayerProgressionModuleLookup = require('../../../app/sdk/progression/newPlayerProgressionModuleLookup');
@@ -973,7 +973,7 @@ class UsersModule {
 
   /**
 	 * Get the user ID for the specified Steam ID.
-	 * Reference steam.coffee's authenticateUserTicket
+	 * Reference steam's authenticateUserTicket
 	 * @public
 	 * @param	{String}	steamId	User's Steam ID as returned from steam.coffee authenticateUserTicket
 	 * @return	{Promise}				Promise that will return the userId data on completion.

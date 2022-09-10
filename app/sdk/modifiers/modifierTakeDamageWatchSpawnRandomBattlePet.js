@@ -9,8 +9,8 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
-const Races = require('app/sdk/cards/racesLookup.coffee');
+const Factions = require('app/sdk/cards/factionsLookup');
+const Races = require('app/sdk/cards/racesLookup');
 const ModifierTakeDamageWatchSpawnEntity = require('./modifierTakeDamageWatchSpawnEntity');
 
 class ModifierTakeDamageWatchSpawnRandomBattlePet extends ModifierTakeDamageWatchSpawnEntity {

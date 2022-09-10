@@ -12,7 +12,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
-const Races = require('app/sdk/cards/racesLookup.coffee');
+const Races = require('app/sdk/cards/racesLookup');
 const ModifierDyingWish = require('./modifierDyingWish');
 
 class ModifierDyingWishDrawMechazorCard extends ModifierDyingWish {

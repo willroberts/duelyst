@@ -11,7 +11,7 @@ $ ./node_modules/.bin/istanbul report
 
 const path = require('path');
 const coffeeCoverage = require('coffee-coverage');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 
 const projectRoot = path.resolve(__dirname, '../');
 const coverageVar = coffeeCoverage.findIstanbulVariable();
@@ -23,7 +23,7 @@ Logger.module('UNITTEST').log(projectRoot);
 coffeeCoverage.register({
   instrumentor: 'istanbul',
   basePath: projectRoot,
-  exclude: ['/gulpfile.coffee', '/app', '/scripts', '/.tmp', '/public', '/test', '/node_modules', '/.git'],
+  exclude: ['/gulpfile', '/app', '/scripts', '/.tmp', '/public', '/test', '/node_modules', '/.git'],
   coverageVar,
   writeOnExit,
   initAll: true,

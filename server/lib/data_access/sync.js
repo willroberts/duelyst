@@ -43,7 +43,7 @@ const _ = require('underscore');
 const FirebasePromises = require('../firebase_promises');
 const DuelystFirebase = require('../duelyst_firebase_module');
 const fbUtil = require('../../../app/common/utils/utils_firebase.js');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require('../../../app/common/logger');
 const CONFIG = require('../../../app/common/config.js');
 const Errors = require('../custom_errors');
 const mail = require('../../mailer');
@@ -58,7 +58,7 @@ Promise.promisifyAll(mail);
 const SDK = require('../../../app/sdk');
 const QuestFactory = require('../../../app/sdk/quests/questFactory');
 const QuestType = require('../../../app/sdk/quests/questTypeLookup');
-const UtilsGameSession = require('../../../app/common/utils/utils_game_session.coffee');
+const UtilsGameSession = require('../../../app/common/utils/utils_game_session');
 const CosmeticsLookup = require('../../../app/sdk/cosmetics/cosmeticsLookup');
 
 // redis

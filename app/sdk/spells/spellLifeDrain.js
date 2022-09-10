@@ -11,7 +11,7 @@
  */
 const HealAction = require('app/sdk/actions/healAction');
 const UtilsPosition = require('app/common/utils/utils_position');
-const SpellKillTarget = require('./spellKillTarget.coffee');
+const SpellKillTarget = require('./spellKillTarget');
 
 class SpellLifeDrain extends SpellKillTarget {
   onApplyEffectToBoardTile(board, x, y, sourceAction) {

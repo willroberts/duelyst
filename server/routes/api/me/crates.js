@@ -20,10 +20,10 @@ const Promise = require('bluebird');
 const moment = require('moment');
 const knex = require('../../../lib/data_access/knex');
 const CosmeticChestsModule = require('../../../lib/data_access/cosmetic_chests');
-const Logger = require('../../../../app/common/logger.coffee');
+const Logger = require('../../../../app/common/logger');
 const validators = require('../../../validators');
 const DataAccessHelpers = require('../../../lib/data_access/helpers');
-const GiftCrateModule = require('../../../lib/data_access/gift_crate.coffee');
+const GiftCrateModule = require('../../../lib/data_access/gift_crate');
 
 // promisify
 Promise.promisifyAll(zlib);

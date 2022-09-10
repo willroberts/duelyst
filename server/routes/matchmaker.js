@@ -34,9 +34,9 @@ const util = require('util');
 const Promise = require('bluebird');
 const moment = require('moment');
 const t = require('tcomb-validation');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 const CONFIG = require('../../app/common/config');
-const CustomError = require('../lib/custom_errors.coffee');
+const CustomError = require('../lib/custom_errors');
 const isSignedIn = require('../middleware/signed_in');
 const validators = require('../validators');
 
@@ -65,8 +65,8 @@ const CosmeticsFactory = require('../../app/sdk/cosmetics/cosmeticsFactory');
 
 const createSinglePlayerGame = require('../lib/create_single_player_game');
 
-const isMatchmakingActiveAsync = require('../../worker/get_matchmaking_status.coffee');
-const getGameServerAsync = require('../../worker/get_gameserver.coffee');
+const isMatchmakingActiveAsync = require('../../worker/get_matchmaking_status');
+const getGameServerAsync = require('../../worker/get_gameserver');
 
 // redis
 const Redis = require('../redis');

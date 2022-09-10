@@ -39,7 +39,7 @@ const moment = require('moment');
 const _ = require('underscore');
 const FirebasePromises = require('../firebase_promises');
 const DuelystFirebase = require('../duelyst_firebase_module');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require('../../../app/common/logger');
 const InventoryModule = require('./inventory');
 const CosmeticChestsModule = require('./cosmetic_chests');
 const SyncModule = require('./sync');
@@ -59,9 +59,9 @@ const { Redis, Jobs, GameManager } = require('../../redis');
 // SDK imports
 const SDK = require('../../../app/sdk');
 const QuestFactory = require('../../../app/sdk/quests/questFactory');
-const QuestCatchUp = require('../../../app/sdk/quests/questCatchUp.coffee');
+const QuestCatchUp = require('../../../app/sdk/quests/questCatchUp');
 const QuestType = require('../../../app/sdk/quests/questTypeLookup');
-const UtilsGameSession = require('../../../app/common/utils/utils_game_session.coffee');
+const UtilsGameSession = require('../../../app/common/utils/utils_game_session');
 const NewPlayerProgressionHelper = require('../../../app/sdk/progression/newPlayerProgressionHelper');
 const NewPlayerProgressionStageEnum = require('../../../app/sdk/progression/newPlayerProgressionStageEnum');
 

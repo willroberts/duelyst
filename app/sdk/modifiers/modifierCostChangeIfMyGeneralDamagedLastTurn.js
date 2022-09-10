@@ -18,7 +18,7 @@
  */
 const i18next = require('i18next');
 const ModifierManaCostChange = require('./modifierManaCostChange');
-const ModifierMyGeneralDamagedWatch = require('./modifierMyGeneralDamagedWatch.coffee');
+const ModifierMyGeneralDamagedWatch = require('./modifierMyGeneralDamagedWatch');
 
 class ModifierCostChangeIfMyGeneralDamagedLastTurn extends ModifierMyGeneralDamagedWatch {
   static initClass() {

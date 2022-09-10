@@ -15,7 +15,7 @@
  */
 const ModifierWraithlingFury = require('app/sdk/modifiers/modifierWraithlingFury');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
-const SpellShadowspawn = require('./spellShadowspawn.coffee');
+const SpellShadowspawn = require('./spellShadowspawn');
 
 class SpellFuriousLings extends SpellShadowspawn {
   getCardDataOrIndexToSpawn(x, y) {

@@ -13,7 +13,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const ModifierWall = require('app/sdk/modifiers/modifierWall');
-const SpellApplyModifiers = require('./spellApplyModifiers.coffee');
+const SpellApplyModifiers = require('./spellApplyModifiers');
 
 class SpellWintersWake extends SpellApplyModifiers {
   onApplyEffectToBoardTile(board, x, y, sourceAction) {

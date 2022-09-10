@@ -4,8 +4,8 @@
 */
 // TODO: This file was created by bulk-decaffeinate.
 // Fix any style issues and re-enable lint.
-const Cards = require('app/sdk/cards/cardsLookup.coffee');
-const Races = require('app/sdk/cards/racesLookup.coffee');
+const Cards = require('app/sdk/cards/cardsLookup');
+const Races = require('app/sdk/cards/racesLookup');
 const _ = require('underscore');
 const SpellAspectBase = require('./spellAspectBase');
 

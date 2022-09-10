@@ -12,8 +12,8 @@ Job - Update User Seen On
 const Promise = require('bluebird');
 const moment = require('moment');
 const config = require('../../config/config.js');
-const Logger = require('../../app/common/logger.coffee');
-const UsersModule = require('../../server/lib/data_access/users.coffee');
+const Logger = require('../../app/common/logger');
+const UsersModule = require('../../server/lib/data_access/users');
 
 /**
  * Job - 'update-user-seen-on'

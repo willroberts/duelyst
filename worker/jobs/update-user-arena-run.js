@@ -16,7 +16,7 @@ Job - Update User Ranking
 */
 const config = require('../../config/config.js');
 const GauntletModule = require('../../server/lib/data_access/gauntlet');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 
 /**
  * Job - 'update-user-arena-run'

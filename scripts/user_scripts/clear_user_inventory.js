@@ -52,7 +52,7 @@ const clear_user_inventory = (userId) => DuelystFirebase.connect().getRootRef()
   });
 
 // Handle execution as a script
-if (process.argv[1].toString().indexOf('clear_user_inventory.coffee') !== -1) {
+if (process.argv[1].toString().indexOf('clear_user_inventory') !== -1) {
   // Check usage
   if (!process.argv[2]) {
     console.log('Unexpected usage.');

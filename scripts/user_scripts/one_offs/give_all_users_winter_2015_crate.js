@@ -46,15 +46,15 @@ const moment = require('moment');
 const Promise = require('bluebird');
 const ProgressBar = require('progress');
 const knex = require('../../../server/lib/data_access/knex');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require('../../../app/common/logger');
 
 // Firebase secure token for duelyst-dev.firebaseio.com
 const firebaseToken = config.get('firebaseToken');
 const DuelystFirebase = require('../../../server/lib/duelyst_firebase_module');
 const fbUtil = require('../../../app/common/utils/utils_firebase.js');
-const GiftCrateModule = require('../../../server/lib/data_access/gift_crate.coffee');
+const GiftCrateModule = require('../../../server/lib/data_access/gift_crate');
 
-const GiftCrateLookup = require('../../../app/sdk/giftCrates/giftCrateLookup.coffee');
+const GiftCrateLookup = require('../../../app/sdk/giftCrates/giftCrateLookup');
 // endregion Requires
 
 Logger.enabled = false;
@@ -177,7 +177,7 @@ var _processNextSetOfUsers = function (numProcessed) {
 };
 
 // Handle execution as a script
-if (process.argv[1].toString().indexOf('give_all_users_winter_2015_crate.coffee') !== -1) {
+if (process.argv[1].toString().indexOf('give_all_users_winter_2015_crate') !== -1) {
   // Check usage, either must have 2 args (coffee and script name) or third parameter must be commit
   if ((process.argv.length > 3) || ((process.argv[2] !== undefined) && (process.argv[2] !== 'commit'))) {
     console.log('Unexpected usage.');

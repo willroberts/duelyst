@@ -10,7 +10,7 @@
  */
 const colors = require('colors');
 const kue = require('kue');
-const Logger = require('../app/common/logger.coffee');
+const Logger = require('../app/common/logger');
 const worker = require('../server/redis/r-jobs');
 
 /*

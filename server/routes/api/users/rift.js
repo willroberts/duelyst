@@ -17,7 +17,7 @@ const t = require('tcomb-validation');
 const _ = require('underscore');
 const RiftModule = require('../../../lib/data_access/rift');
 const DataAccessHelpers = require('../../../lib/data_access/helpers');
-const Logger = require('../../../../app/common/logger.coffee');
+const Logger = require('../../../../app/common/logger');
 const Errors = require('../../../lib/custom_errors');
 const knex = require('../../../lib/data_access/knex');
 

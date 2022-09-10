@@ -18,9 +18,9 @@
 const CardType = require('app/sdk/cards/cardType');
 const ModifierSilence = 		require('app/sdk/modifiers/modifierSilence');
 const _ = require('underscore');
-const SpellSpawnEntityRandomlyAroundTarget = require('./spellSpawnEntityRandomlyAroundTarget.coffee');
-const Cards = require('../cards/cardsLookupComplete.coffee');
-const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
+const SpellSpawnEntityRandomlyAroundTarget = require('./spellSpawnEntityRandomlyAroundTarget');
+const Cards = require('../cards/cardsLookupComplete');
+const UtilsGameSession = require('../../common/utils/utils_game_session');
 
 class SpellSilenceAndSpawnEntityNearby extends SpellSpawnEntityRandomlyAroundTarget {
   static initClass() {

@@ -12,10 +12,10 @@
 const express = require('express');
 const Promise = require('bluebird');
 const t = require('tcomb-validation');
-const mail = require('../mailer.coffee');
+const mail = require('../mailer');
 
 Promise.promisifyAll(mail);
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 const Errors = require('../lib/custom_errors');
 const DuelystFirebase = require('../lib/duelyst_firebase_module');
 const FirebasePromises = require('../lib/firebase_promises');

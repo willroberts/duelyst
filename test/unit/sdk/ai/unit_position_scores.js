@@ -15,8 +15,8 @@ const positionProximityToGenerals = require('../../../../server/ai/scoring/posit
 const positionShadowTileAvoidance = require('../../../../server/ai/scoring/position/position_shadowTileAvoidance');
 const positionZeal = require('../../../../server/ai/scoring/position/position_zeal');
 const UtilsSDK = require('../../../utils/utils_sdk');
-const SDK = require('../../../../app/sdk.coffee');
-const Logger = require('../../../../app/common/logger.coffee');
+const SDK = require('../../../../app/sdk');
+const Logger = require('../../../../app/common/logger');
 const CONFIG = require('../../../../app/common/config');
 
 // disable the logger for cleaner test output

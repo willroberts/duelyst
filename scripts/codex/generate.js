@@ -59,7 +59,7 @@ let i18next = null;
 // ### Main
 Promise.resolve()
   .bind({})
-  .then(() => require('./localization_index.coffee')).then(() => {
+  .then(() => require('./localization_index')).then(() => {
     i18next = require('i18next');
     return Promise.resolve();
   })

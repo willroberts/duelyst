@@ -34,7 +34,7 @@ const bundlerOpts = {
   debug: development,
   cache: {},
   packageCache: {},
-  extensions: ['.coffee', '.js'],
+  extensions: ['', '.js'],
   // ignoreMissing: true,
   // detectGlobals: false
 };

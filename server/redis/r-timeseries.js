@@ -19,7 +19,7 @@ const Promise = require('bluebird');
 const moment = require('moment');
 const crypto = require('crypto');
 const config = require('../../config/config.js');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 
 const env = config.get('env');
 

@@ -12,7 +12,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Factions = require('app/sdk/cards/factionsLookup');
 const CardType = require('app/sdk/cards/cardType');
 const ModifierManaCostChange = require('app/sdk/modifiers/modifierManaCostChange');
 const GameFormat = require('app/sdk/gameFormat');

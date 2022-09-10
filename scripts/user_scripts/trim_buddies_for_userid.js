@@ -54,7 +54,7 @@ const firebaseToken = config.get('firebaseToken');
 const UsersModule = require('../../server/lib/users_module');
 const DuelystFirebase = require('../../server/lib/duelyst_firebase_module');
 const fbUtil = require('../../app/common/utils/utils_firebase.js');
-const get_conversation_partners_of_userid = require('./get_conversation_partners_of_userid.coffee');
+const get_conversation_partners_of_userid = require('./get_conversation_partners_of_userid');
 // endregion Requires
 
 const displayProgressInterval = 20;
@@ -149,7 +149,7 @@ const trim_buddies_for_userid = function (userId) {
 };
 
 // Handle execution as a script
-if (process.argv[1].toString().indexOf('trim_buddies_for_userid.coffee') !== -1) {
+if (process.argv[1].toString().indexOf('trim_buddies_for_userid') !== -1) {
   // Check usage
   if (!process.argv[2] || (process.argv.length > 3)) {
     console.log('Unexpected usage.');

@@ -123,7 +123,7 @@ const startWorker = function () {
   process.on('SIGQUIT', cleanShutdown);
   process.on('SIGABRT', cleanShutdown);
 
-  const matchmakingSearchRanked = require('../../worker/jobs/matchmaking-search-ranked.coffee');
+  const matchmakingSearchRanked = require('../../worker/jobs/matchmaking-search-ranked');
   return worker.process('matchmaking-search-ranked', matchmakingSearchRanked);
 };
 

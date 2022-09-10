@@ -7,8 +7,8 @@ const Promise = require('bluebird');
 const { expect } = require('chai');
 
 const CONFIG = require('../../../../app/common/config');
-const Logger = require('../../../../app/common/logger.coffee');
-const SDK = require('../../../../app/sdk.coffee');
+const Logger = require('../../../../app/common/logger');
+const SDK = require('../../../../app/sdk');
 const UtilsSDK = require('../../../utils/utils_sdk');
 
 // disable the logger for cleaner test output

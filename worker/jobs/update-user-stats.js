@@ -16,7 +16,7 @@ Job - Update User Stats
 */
 const config = require('../../config/config.js');
 const UsersModule = require('../../server/lib/data_access/users');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 const { GameManager } = require('../../server/redis');
 
 /**

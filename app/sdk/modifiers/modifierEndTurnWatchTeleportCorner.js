@@ -13,7 +13,7 @@
 const RandomTeleportAction = require('app/sdk/actions/randomTeleportAction');
 const CONFIG = require('app/common/config');
 const _ = require('underscore');
-const ModifierEndTurnWatch = require('./modifierEndTurnWatch.coffee');
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
 
 class ModifierEndTurnWatchTeleportCorner extends ModifierEndTurnWatch {
   static initClass() {

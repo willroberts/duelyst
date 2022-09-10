@@ -1,7 +1,7 @@
 require('coffee-script/register');
 const Promise = require('bluebird');
-const NewPlayerProgressionStageEnum = require('../../app/sdk/progression/newPlayerProgressionStageEnum.coffee');
-const NewPlayerProgressionHelper = require('../../app/sdk/progression/newPlayerProgressionHelper.coffee');
+const NewPlayerProgressionStageEnum = require('../../app/sdk/progression/newPlayerProgressionStageEnum');
+const NewPlayerProgressionHelper = require('../../app/sdk/progression/newPlayerProgressionHelper');
 
 exports.up = function (knex, Promise) {
   return Promise.all([

@@ -24,7 +24,7 @@ const util = require('util');
 const _ = require('underscore');
 const url = require('url');
 
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 const config = require('../../config/config.js');
 
 const defaultFirebaseUrl = config.get('firebase.url');

@@ -108,7 +108,7 @@ const highest_rank_for_userid = (userId) => // Retrieve user's top ranking
     });
 
 // Handle execution as a script
-if (process.argv[1].toString().indexOf('highest_rank_for_userid.coffee') !== -1) {
+if (process.argv[1].toString().indexOf('highest_rank_for_userid') !== -1) {
   // Check usage
   if (!process.argv[2]) {
     console.log('Unexpected usage.');

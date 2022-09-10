@@ -9,8 +9,8 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const SwapUnitAllegianceAction = require('app/sdk/actions/swapUnitAllegianceAction.coffee');
-const ModifierEndTurnWatch = require('./modifierEndTurnWatch.coffee');
+const SwapUnitAllegianceAction = require('app/sdk/actions/swapUnitAllegianceAction');
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
 
 class ModifierEndTurnWatchSwapAllegiance extends ModifierEndTurnWatch {
   static initClass() {

@@ -56,7 +56,7 @@ const { version } = require('../../../../version');
 const validators = require('../../../validators');
 const createSinglePlayerGame = require('../../../lib/create_single_player_game');
 const validatorTypes = require('../../../validators/types');
-const UtilsGameSession = require('../../../../app/common/utils/utils_game_session.coffee');
+const UtilsGameSession = require('../../../../app/common/utils/utils_game_session');
 
 const RankDivisionLookup = require('../../../../app/sdk/rank/rankDivisionLookup');
 const RankFactory = require('../../../../app/sdk/rank/rankFactory');

@@ -11,9 +11,9 @@
  * DS101: Remove unnecessary use of Array.from
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('app/sdk/modifiers/modifier.coffee');
+const Modifier = require('app/sdk/modifiers/modifier');
 const _ = require('underscore');
-const SpellKillTarget = require('./spellKillTarget.coffee');
+const SpellKillTarget = require('./spellKillTarget');
 
 class SpellSkyBurial extends SpellKillTarget {
   _postFilterPlayPositions(validPositions) {

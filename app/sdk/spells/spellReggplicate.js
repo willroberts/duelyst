@@ -21,7 +21,7 @@ const ModifierEgg = require('app/sdk/modifiers/modifierEgg');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
 const CardType = require('app/sdk/cards/cardType');
 const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
-const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
+const UtilsGameSession = require('../../common/utils/utils_game_session');
 const SpellSpawnEntity = require('./spellSpawnEntity');
 const CONFIG = require('../../common/config');
 

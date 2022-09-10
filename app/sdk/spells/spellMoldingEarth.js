@@ -27,9 +27,9 @@ const ModifierProvoke = require('app/sdk/modifiers/modifierProvoke');
 const ModifierRanged = require('app/sdk/modifiers/modifierRanged');
 const ModifierRebirth = require('app/sdk/modifiers/modifierRebirth');
 const ModifierFirstBlood = require('app/sdk/modifiers/modifierFirstBlood');
-const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
+const UtilsGameSession = require('../../common/utils/utils_game_session');
 const SpellFilterType = require('./spellFilterType');
-const SpellSpawnEntity = require('./spellSpawnEntity.coffee');
+const SpellSpawnEntity = require('./spellSpawnEntity');
 
 class SpellMoldingEarth extends SpellSpawnEntity {
   static initClass() {

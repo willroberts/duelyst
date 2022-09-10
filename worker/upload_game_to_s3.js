@@ -12,7 +12,7 @@ const AWS 		= require('aws-sdk');
 const Promise 	= require('bluebird');
 const colors		= require('colors');
 const zlib 		= require('zlib');
-const Logger 		= require('../app/common/logger.coffee');
+const Logger 		= require('../app/common/logger');
 const config 		= require('../config/config.js');
 
 AWS.config.update({

@@ -14,8 +14,8 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
-const Races = require('app/sdk/cards/racesLookup.coffee');
+const Factions = require('app/sdk/cards/factionsLookup');
+const Races = require('app/sdk/cards/racesLookup');
 const i18next = require('i18next');
 const ModifierDyingWish = require('./modifierDyingWish');
 

@@ -40,8 +40,8 @@ const _ = require('underscore');
 
 const fbRef = new Firebase(config.get('firebase'));
 const moment = require('moment');
-const Logger = require('../../../app/common/logger.coffee');
-const QuestFactory = require('../../../app/sdk/quests/questFactory.coffee');
+const Logger = require('../../../app/common/logger');
+const QuestFactory = require('../../../app/sdk/quests/questFactory');
 
 // Firebase secure token for duelyst-dev.firebaseio.com
 const firebaseToken = config.get('firebaseToken');

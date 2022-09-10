@@ -37,13 +37,13 @@ const _ = require('underscore');
 
 const fbRef = new Firebase(config.get('firebase'));
 const moment = require('moment');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 
 // Firebase secure token for duelyst-dev.firebaseio.com
 const firebaseToken = config.get('firebaseToken');
 const UsersModule = require('../../server/lib/users_module');
 const DuelystFirebase = require('../../server/lib/duelyst_firebase_module');
-const FirebasePromises = require('../../server/lib/firebase_promises.coffee');
+const FirebasePromises = require('../../server/lib/firebase_promises');
 // endregion Requires
 
 // Resolves to a results object filled with data representing the results of the wipe

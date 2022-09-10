@@ -20,8 +20,8 @@ const util = require('util');
 const Promise = require('bluebird');
 const moment = require('moment');
 const t = require('tcomb-validation');
-const Logger = require('../../app/common/logger.coffee');
-const hashHelpers = require('../lib/hash_helpers.coffee');
+const Logger = require('../../app/common/logger');
+const hashHelpers = require('../lib/hash_helpers');
 const knex = require('../lib/data_access/knex');
 const types = require('../validators/types');
 const UsersModule = require('../lib/data_access/users');
@@ -30,7 +30,7 @@ const UsersModule = require('../lib/data_access/users');
 const mail = require('../mailer');
 
 Promise.promisifyAll(mail);
-const Errors = require('../lib/custom_errors.coffee');
+const Errors = require('../lib/custom_errors');
 
 // Configuration object
 const config = require('../../config/config.js');

@@ -60,21 +60,21 @@ const QuestBeginnerWinTwoPracticeGames = require('./questBeginnerWinTwoPracticeG
 const QuestBeginnerWinOneSeasonGame = require('./questBeginnerWinOneSeasonGame');
 
 // catch up quest
-const QuestCatchUp = require('./questCatchUp.coffee');
+const QuestCatchUp = require('./questCatchUp');
 
 // seasonal quests
-const QuestFrostfire2016 = require('./questFrostfire2016.coffee');
-const QuestSeasonal2017February = require('./questSeasonal2017February.coffee');
-const QuestSeasonal2017March = require('./questSeasonal2017March.coffee');
-const QuestSeasonal2017April = require('./questSeasonal2017April.coffee');
-const QuestSeasonal2017May = require('./questSeasonal2017May.coffee');
-const QuestSeasonal2017October = require('./questSeasonal2017October.coffee');
-const QuestSeasonal2018February = require('./questSeasonal2018February.coffee');
-const QuestFrostfire2017 = require('./questFrostfire2017.coffee');
+const QuestFrostfire2016 = require('./questFrostfire2016');
+const QuestSeasonal2017February = require('./questSeasonal2017February');
+const QuestSeasonal2017March = require('./questSeasonal2017March');
+const QuestSeasonal2017April = require('./questSeasonal2017April');
+const QuestSeasonal2017May = require('./questSeasonal2017May');
+const QuestSeasonal2017October = require('./questSeasonal2017October');
+const QuestSeasonal2018February = require('./questSeasonal2018February');
+const QuestFrostfire2017 = require('./questFrostfire2017');
 const QuestLegacyLaunch = require('./questLegacyLaunch');
 
 // Promo Quests
-const QuestAnniversary2017 = require('./questAnniversary2017.coffee');
+const QuestAnniversary2017 = require('./questAnniversary2017');
 
 
 

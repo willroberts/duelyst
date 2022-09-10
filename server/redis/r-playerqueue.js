@@ -21,7 +21,7 @@ const _ = require('underscore');
 const Promise = require('bluebird');
 const crypto = require('crypto');
 let ts = require('./r-timeseries');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 const config = require('../../config/config.js');
 
 const env = config.get('env');

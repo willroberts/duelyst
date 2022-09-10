@@ -6,7 +6,7 @@
   const helpers = require('../../../scripts/helpers');
   const RSX = require('../resources');
 
-  helpers.readFile('./../../sdk/cards/cardFactory.coffee', (file, contents) => {
+  helpers.readFile('./../../sdk/cards/cardFactory', (file, contents) => {
     // replace soft returns
     contents = contents.replace('\r', '\n');
 
@@ -21,7 +21,7 @@
       return animResources;
     });
 
-    return helpers.writeFile('./../../sdk/cards/cardFactory.coffee', contents);
+    return helpers.writeFile('./../../sdk/cards/cardFactory', contents);
   }).then(() => {
     process.exit(0);
   });
@@ -44,7 +44,7 @@ const RSX = require('../resources');
 const CONFIG = require('../../common/config');
 
 // process cardFactory.coffee
-let cardFactoryCoffee = fs.readFileSync('cardFactory.coffee', 'utf8');
+let cardFactoryCoffee = fs.readFileSync('cardFactory', 'utf8');
 cardFactoryCoffee = cardFactoryCoffee.replace('\r', '\n');
 const cfcParts = cardFactoryCoffee.split(/if[\s]*\([\s]*identifier[\s]*==[\s]*/g);
 const numCFCParts = cfcParts.length;
@@ -55,7 +55,7 @@ for (let i = 1, il = numCFCParts; i < il; i++) {
 }
 
 // save final cardFactory.coffee
-writeFile('../sdk/cards/cardFactory.coffee', newCFC);
+writeFile('../sdk/cards/cardFactory', newCFC);
 
 function parseCFCPart(part) {
   const idEndIndex = part.indexOf(')');

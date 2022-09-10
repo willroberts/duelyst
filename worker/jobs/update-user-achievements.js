@@ -20,11 +20,11 @@ Job - Update User Ranking
 */
 const Promise = require('bluebird');
 const config = require('../../config/config.js');
-const AchievementsModule = require('../../server/lib/data_access/achievements.coffee');
-const DuelystFirebase = require('../../server/lib/duelyst_firebase_module.coffee');
-const Logger = require('../../app/common/logger.coffee');
+const AchievementsModule = require('../../server/lib/data_access/achievements');
+const DuelystFirebase = require('../../server/lib/duelyst_firebase_module');
+const Logger = require('../../app/common/logger');
 const { GameManager } = require('../../server/redis');
-const FirebasePromises = require('../../server/lib/firebase_promises.coffee');
+const FirebasePromises = require('../../server/lib/firebase_promises');
 
 /**
  * Job - 'update-user-achievements'

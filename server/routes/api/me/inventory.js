@@ -26,11 +26,11 @@ const knex = require('../../../lib/data_access/knex');
 const InventoryModule = require('../../../lib/data_access/inventory');
 const GauntletModule = require('../../../lib/data_access/gauntlet');
 const RiftModule = require('../../../lib/data_access/rift');
-const Logger = require('../../../../app/common/logger.coffee');
+const Logger = require('../../../../app/common/logger');
 const config 	= require('../../../../config/config.js');
 const Errors = require('../../../lib/custom_errors');
 const validators = require('../../../validators');
-const hashHelpers = require('../../../lib/hash_helpers.coffee');
+const hashHelpers = require('../../../lib/hash_helpers');
 const validatorTypes = require('../../../validators/types');
 
 // promisify

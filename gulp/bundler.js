@@ -36,14 +36,14 @@ const bundlerOpts = {
   debug: development,
   cache: {},
   packageCache: {},
-  extensions: ['.coffee', '.js'],
+  extensions: ['', '.js'],
   // ignoreMissing: true,
   // detectGlobals: false
 };
 
 const entries = ['./app/index'];
 if (datGUIEditorEnabled) {
-  entries.push('./app/tools/editor.coffee');
+  entries.push('./app/tools/editor');
 }
 
 // gutil.log(`bundler options: ${JSON.stringify(opts)}`)

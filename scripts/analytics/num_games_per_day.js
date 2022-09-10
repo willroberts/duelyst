@@ -39,7 +39,7 @@ const _ = require('underscore');
 const fbRef = new Firebase(config.get('firebase'));
 const moment = require('moment');
 const Promise = require('bluebird');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 
 // Firebase secure token for duelyst-dev.firebaseio.com
 const firebaseToken = config.get('firebaseToken');
@@ -86,7 +86,7 @@ const num_games_per_day = function (numDaysToLookBack) {
 };
 
 // Handle execution as a script
-if (process.argv[1].toString().indexOf('num_games_per_day.coffee') !== -1) {
+if (process.argv[1].toString().indexOf('num_games_per_day') !== -1) {
   let numDaysToLookBack;
   if (process.argv[2]) {
     numDaysToLookBack = parseInt(process.argv[2]);

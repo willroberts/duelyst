@@ -12,9 +12,9 @@ import path from 'path';
 // local modules
 import config from '../config/config';
 import ShopData from '../app/data/shop.json';
-import CosmeticsFactory from '../app/sdk/cosmetics/cosmeticsFactory.coffee';
-import CosmeticsTypeLookup from '../app/sdk/cosmetics/cosmeticsTypeLookup.coffee';
-import RarityFactory from '../app/sdk/cards/rarityFactory.coffee';
+import CosmeticsFactory from '../app/sdk/cosmetics/cosmeticsFactory';
+import CosmeticsTypeLookup from '../app/sdk/cosmetics/cosmeticsTypeLookup';
+import RarityFactory from '../app/sdk/cards/rarityFactory';
 
 // import PaypalExpress from 'paypal-express'
 

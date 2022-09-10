@@ -17,7 +17,7 @@ const Colors 		= require('colors');
 const Promise 	= require('bluebird');
 const request 	= require('superagent');
 const _ 			= require('underscore');
-const Logger 		= require('../app/common/logger.coffee');
+const Logger 		= require('../app/common/logger');
 const config 		= require('../config/config.js');
 const Consul 		= require('../server/lib/consul');
 

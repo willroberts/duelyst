@@ -46,7 +46,7 @@ const zlib 		= require('zlib');
 // create a S3 API client
 const AWS 		= require('aws-sdk');
 const UtilsEnv = require('../../app/common/utils/utils_env');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 const DuelystFirebase = require('../../server/lib/duelyst_firebase_module');
 const FirebasePromises = require('../../server/lib/firebase_promises');
 

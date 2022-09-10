@@ -58,7 +58,7 @@ const reset_fwod_by_userid = (userId) => new Promise((resolve, reject) => Duelys
   }));
 
 // Handle execution as a script
-if (process.argv[1].toString().indexOf('reset_fwod_by_userid.coffee') !== -1) {
+if (process.argv[1].toString().indexOf('reset_fwod_by_userid') !== -1) {
   // Check usage
   if (!process.argv[2] || (process.argv.length > 3)) {
     console.log('Unexpected usage.');

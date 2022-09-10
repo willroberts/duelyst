@@ -15,17 +15,17 @@ const express = require('express');
 const t = require('tcomb-validation');
 const moment = require('moment');
 const AchievementsModule = require('../../../lib/data_access/achievements');
-const Logger = require('../../../../app/common/logger.coffee');
+const Logger = require('../../../../app/common/logger');
 const DataAccessHelpers = require('../../../lib/data_access/helpers');
 
 const knex = require('../../../lib/data_access/knex');
 
-const WartechGeneralFaction1Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction1Achievement.coffee');
-const WartechGeneralFaction2Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction2Achievement.coffee');
-const WartechGeneralFaction3Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction3Achievement.coffee');
-const WartechGeneralFaction4Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction4Achievement.coffee');
-const WartechGeneralFaction5Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction5Achievement.coffee');
-const WartechGeneralFaction6Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction6Achievement.coffee');
+const WartechGeneralFaction1Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction1Achievement');
+const WartechGeneralFaction2Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction2Achievement');
+const WartechGeneralFaction3Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction3Achievement');
+const WartechGeneralFaction4Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction4Achievement');
+const WartechGeneralFaction5Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction5Achievement');
+const WartechGeneralFaction6Achievement = require('../../../../app/sdk/achievements/wartechAchievements/wartechGeneralFaction6Achievement');
 
 const router = express.Router();
 

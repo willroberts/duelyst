@@ -25,9 +25,9 @@ const moment = require('moment');
 const crypto = require('crypto');
 const uuid = require('node-uuid');
 const warlock = require('@counterplay/warlock');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 const config = require('../../config/config.js');
-const GameType = require('../../app/sdk/gameType.coffee');
+const GameType = require('../../app/sdk/gameType');
 
 const env = config.get('env');
 

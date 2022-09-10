@@ -32,7 +32,7 @@ const generatePushId = require('../../app/common/generate_push_id');
 
 // lib Modules
 const isSignedIn = require('../middleware/signed_in');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 const Errors = require('../lib/custom_errors');
 
 // Configuration object

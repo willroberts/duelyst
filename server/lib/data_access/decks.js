@@ -18,7 +18,7 @@ const util = require('util');
 const colors = require('colors');
 const moment = require('moment');
 const crypto = require('crypto');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require('../../../app/common/logger');
 const mail = require('../../mailer');
 const knex = require('./knex');
 const InventoryModule = require('./inventory');
@@ -29,7 +29,7 @@ Promise.promisifyAll(mail);
 
 // SDK imports
 const SDK = require('../../../app/sdk');
-const UtilsGameSession = require('../../../app/common/utils/utils_game_session.coffee');
+const UtilsGameSession = require('../../../app/common/utils/utils_game_session');
 
 class DecksModule {
   /**

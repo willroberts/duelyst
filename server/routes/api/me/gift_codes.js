@@ -14,13 +14,13 @@ const express = require('express');
 const util = require('util');
 const t = require('tcomb-validation');
 const validator = require('validator');
-const UsersModule = require('../../../lib/data_access/users.coffee');
-const ReferralsModule = require('../../../lib/data_access/referrals.coffee');
-const GiftCodesModule = require('../../../lib/data_access/gift_codes.coffee');
+const UsersModule = require('../../../lib/data_access/users');
+const ReferralsModule = require('../../../lib/data_access/referrals');
+const GiftCodesModule = require('../../../lib/data_access/gift_codes');
 const knex = require('../../../lib/data_access/knex');
 const DataAccessHelpers = require('../../../lib/data_access/helpers');
 const Errors = require('../../../lib/custom_errors');
-const Logger = require('../../../../app/common/logger.coffee');
+const Logger = require('../../../../app/common/logger');
 const validators = require('../../../validators');
 const validatorTypes = require('../../../validators/types');
 

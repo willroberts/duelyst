@@ -53,7 +53,7 @@ const SandSisterAchievement = require('./inventoryBasedAchievements/sandSisterAc
 const ShadowSisterAchievement = require('./inventoryBasedAchievements/shadowSisterAchievement');
 const EarthSisterAchievement = require('./inventoryBasedAchievements/earthSisterAchievement');
 const WindSisterAchievement = require('./inventoryBasedAchievements/windSisterAchievement');
-const FirstLootCrateAchievement = require('./inventoryBasedAchievements/firstLootCrateAchievement.coffee');
+const FirstLootCrateAchievement = require('./inventoryBasedAchievements/firstLootCrateAchievement');
 
 // quest based
 const EpicQuestorAchievement = require('./questBasedAchievements/epicQuestorAchievement');
@@ -68,18 +68,18 @@ const SilverDivisionAchievement = require('./rankBasedAchievements/silverDivisio
 const BNPromoAchievement = require('./loginBasedAchievements/bnPromoAchievement');
 const MidAugLoginAchievement = require('./loginBasedAchievements/midAugLoginAchievement');
 const MidNov2017LoginAchievement = require('./loginBasedAchievements/midNov2017LoginAchievement');
-const FrostfirePurchasable2017 = require('./loginBasedAchievements/frostfire2017LoginAchievement.coffee');
-const FrostfireBonus2017 = require('./loginBasedAchievements/frostfire2017BonusLoginAchievement.coffee');
-const EarlyFeb2018LoginAchievement = require('./loginBasedAchievements/earlyFeb2018LoginAchievement.coffee');
-const CoreshatterLoginAchievement = require('./loginBasedAchievements/coreshatterLoginAchievement.coffee');
-const MemorialDayLoginAchievement = require('./loginBasedAchievements/memorialDayLoginAchievement.coffee');
-const FathersDayLoginAchievement = require('./loginBasedAchievements/fathersDayLoginAchievement.coffee');
-const FourthOfJulyLoginAchievement = require('./loginBasedAchievements/fourthOfJulyLoginAchievement.coffee');
-const SummerLoginAchievement = require('./loginBasedAchievements/summerLoginAchievement.coffee');
-const LaborDayLoginAchievement = require('./loginBasedAchievements/laborDayLoginAchievement.coffee');
-const HalloweenLoginAchievement = require('./loginBasedAchievements/halloweenLoginAchievement.coffee');
-const ThanksgivingLoginAchievement = require('./loginBasedAchievements/thanksgivingLoginAchievement.coffee');
-const ChristmasLoginAchievement = require('./loginBasedAchievements/christmasLoginAchievement.coffee');
+const FrostfirePurchasable2017 = require('./loginBasedAchievements/frostfire2017LoginAchievement');
+const FrostfireBonus2017 = require('./loginBasedAchievements/frostfire2017BonusLoginAchievement');
+const EarlyFeb2018LoginAchievement = require('./loginBasedAchievements/earlyFeb2018LoginAchievement');
+const CoreshatterLoginAchievement = require('./loginBasedAchievements/coreshatterLoginAchievement');
+const MemorialDayLoginAchievement = require('./loginBasedAchievements/memorialDayLoginAchievement');
+const FathersDayLoginAchievement = require('./loginBasedAchievements/fathersDayLoginAchievement');
+const FourthOfJulyLoginAchievement = require('./loginBasedAchievements/fourthOfJulyLoginAchievement');
+const SummerLoginAchievement = require('./loginBasedAchievements/summerLoginAchievement');
+const LaborDayLoginAchievement = require('./loginBasedAchievements/laborDayLoginAchievement');
+const HalloweenLoginAchievement = require('./loginBasedAchievements/halloweenLoginAchievement');
+const ThanksgivingLoginAchievement = require('./loginBasedAchievements/thanksgivingLoginAchievement');
+const ChristmasLoginAchievement = require('./loginBasedAchievements/christmasLoginAchievement');
 
 // Wartech general achievements
 const WartechGeneralFaction1Achievement = require('./wartechAchievements/wartechGeneralFaction1Achievement');

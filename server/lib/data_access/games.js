@@ -29,7 +29,7 @@ const moment = require('moment');
 const _ = require('underscore');
 const FirebasePromises = require('../firebase_promises');
 const DuelystFirebase = require('../duelyst_firebase_module');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require('../../../app/common/logger');
 const SyncModule = require('./sync');
 const mail = require('../../mailer');
 const knex = require('./knex');
@@ -41,7 +41,7 @@ Promise.promisifyAll(mail);
 
 // SDK imports
 const SDK = require('../../../app/sdk');
-const UtilsGameSession = require('../../../app/common/utils/utils_game_session.coffee');
+const UtilsGameSession = require('../../../app/common/utils/utils_game_session');
 
 class GamesModule {
   /**

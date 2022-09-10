@@ -7,12 +7,12 @@ const _ = require('underscore');
 const Promise = require('bluebird');
 
 const CONFIG = require('../../../../app/common/config');
-const Logger = require('../../../../app/common/logger.coffee');
-const SDK = require('../../../../app/sdk.coffee');
-const BeginnerFlyingChallenge1 = require('../../../../app/sdk/challenges/tutorial/BeginnerFlyingChallenge1.coffee');
-const Lesson1 = require('../../../../app/sdk/challenges/tutorial/lesson1.coffee');
-const Lesson2 = require('../../../../app/sdk/challenges/tutorial/lesson2.coffee');
-const Lesson4 = require('../../../../app/sdk/challenges/tutorial/lesson4.coffee');
+const Logger = require('../../../../app/common/logger');
+const SDK = require('../../../../app/sdk');
+const BeginnerFlyingChallenge1 = require('../../../../app/sdk/challenges/tutorial/BeginnerFlyingChallenge1');
+const Lesson1 = require('../../../../app/sdk/challenges/tutorial/lesson1');
+const Lesson2 = require('../../../../app/sdk/challenges/tutorial/lesson2');
+const Lesson4 = require('../../../../app/sdk/challenges/tutorial/lesson4');
 const UtilsSDK = require('../../../utils/utils_sdk');
 
 // disable the logger for cleaner test output

@@ -112,7 +112,7 @@ const sanitize_username_index = function () {
 };
 
 // Handle execution as a script
-if (process.argv[1].toString().indexOf('sanitize_username_index.coffee') !== -1) {
+if (process.argv[1].toString().indexOf('sanitize_username_index') !== -1) {
   // check whether a dry run
   if (process.argv[2] === 'commit_changes') {
     dryRun = false;

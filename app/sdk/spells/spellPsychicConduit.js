@@ -14,11 +14,11 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const CardType = require('app/sdk/cards/cardType.coffee');
-const SwapUnitAllegianceAction = require('app/sdk/actions/swapUnitAllegianceAction.coffee');
-const RefreshExhaustionAction =	require('app/sdk/actions/refreshExhaustionAction.coffee');
-const SpellFilterType = require('./spellFilterType.coffee');
-const SpellApplyModifiers =	require('./spellApplyModifiers.coffee');
+const CardType = require('app/sdk/cards/cardType');
+const SwapUnitAllegianceAction = require('app/sdk/actions/swapUnitAllegianceAction');
+const RefreshExhaustionAction =	require('app/sdk/actions/refreshExhaustionAction');
+const SpellFilterType = require('./spellFilterType');
+const SpellApplyModifiers =	require('./spellApplyModifiers');
 
 class SpellPsychicConduit extends SpellApplyModifiers {
   static initClass() {

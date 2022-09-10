@@ -1,8 +1,8 @@
 require('coffee-script/register');
 const _ = require('underscore');
 const moment = require('moment');
-const FirebasePromises = require('../lib/firebase_promises.coffee');
-const DuelystFirebase = require('../lib/duelyst_firebase_module.coffee');
+const FirebasePromises = require('../lib/firebase_promises');
+const DuelystFirebase = require('../lib/duelyst_firebase_module');
 
 exports.up = function (knex, Promise) {
   return Promise.all([

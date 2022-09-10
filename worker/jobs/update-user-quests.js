@@ -16,7 +16,7 @@ Job - Update User Ranking
 */
 const config = require('../../config/config.js');
 const QuestsModule = require('../../server/lib/data_access/quests');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 const { GameManager } = require('../../server/redis');
 
 /**

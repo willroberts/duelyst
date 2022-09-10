@@ -16,7 +16,7 @@ Job - Update User Ranking
 */
 const config = require('../../config/config.js');
 const RankModule = require('../../server/lib/data_access/rank');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 
 // TODO: Can this be removed?
 

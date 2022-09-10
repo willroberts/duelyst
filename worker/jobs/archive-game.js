@@ -16,14 +16,14 @@
 /*
 Job - Archive Game
 */
-const GamesModule = require('../../server/lib/data_access/games.coffee');
+const GamesModule = require('../../server/lib/data_access/games');
 const uploadGameToS3 = require('../upload_game_to_s3');
 const config = require('../../config/config.js');
 
 const env = config.get('env');
 const { GameManager } = require('../../server/redis');
 const Promise = require('bluebird');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 
 /**
  * Job - 'archive-game'

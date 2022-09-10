@@ -13,7 +13,7 @@
  */
 const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 const CardType = require('app/sdk/cards/cardType');
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Factions = require('app/sdk/cards/factionsLookup');
 const ModifierManaCostChange = require('./modifierManaCostChange');
 const ModifierDyingWish = require('./modifierDyingWish');
 

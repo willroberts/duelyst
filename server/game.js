@@ -50,10 +50,10 @@ const request = require('superagent');
 
 // Our modules
 let shutdown = require('./shutdown');
-const SDK = require('../app/sdk.coffee');
-let Logger = require('../app/common/logger.coffee');
+const SDK = require('../app/sdk');
+let Logger = require('../app/common/logger');
 const EVENTS = require('../app/common/event_types');
-const UtilsGameSession = require('../app/common/utils/utils_game_session.coffee');
+const UtilsGameSession = require('../app/common/utils/utils_game_session');
 
 // lib Modules
 const Consul = require('./lib/consul');
@@ -67,7 +67,7 @@ const env = config.get('env');
 // Responds to /health endpoint with status 200
 // Otherwise responds with status 404
 
-Logger 		= require('../app/common/logger.coffee');
+Logger 		= require('../app/common/logger');
 const CONFIG 		= require('../app/common/config');
 const http 		= require('http');
 const url 		= require('url');

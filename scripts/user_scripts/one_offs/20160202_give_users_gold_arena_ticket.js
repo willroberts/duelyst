@@ -49,12 +49,12 @@ const ProgressBar = require('progress');
 const colors = require('colors');
 const fs = require('fs');
 const knex = require('../../../server/lib/data_access/knex');
-const Logger = require('../../../app/common/logger.coffee');
+const Logger = require('../../../app/common/logger');
 
 // Firebase secure token for duelyst-dev.firebaseio.com
 Logger.module('Script').log('loading modules...');
-const GiftCrateModule = require('../../../server/lib/data_access/gift_crate.coffee');
-const GiftCrateLookup = require('../../../app/sdk/giftCrates/giftCrateLookup.coffee');
+const GiftCrateModule = require('../../../server/lib/data_access/gift_crate');
+const GiftCrateLookup = require('../../../app/sdk/giftCrates/giftCrateLookup');
 
 Logger.module('Script').log('loading modules... DONE');
 // endregion Requires

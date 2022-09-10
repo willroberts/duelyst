@@ -20,7 +20,7 @@ const Promise = require('bluebird');
 const UsersModule = require('../../../lib/data_access/users');
 const knex = require('../../../lib/data_access/knex');
 const DataAccessHelpers = require('../../../lib/data_access/helpers');
-const Logger = require('../../../../app/common/logger.coffee');
+const Logger = require('../../../../app/common/logger');
 const Errors = require('../../../lib/custom_errors');
 const mail = require('../../../mailer');
 

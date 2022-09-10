@@ -14,7 +14,7 @@
  */
 
 const i18next = require('i18next');
-const CosmeticsTypeLookup = require('./cosmeticsTypeLookup.coffee');
+const CosmeticsTypeLookup = require('./cosmeticsTypeLookup');
 
 class CosmeticsTypeFactory {
   static cosmeticsTypeForIdentifier(identifier) {

@@ -42,8 +42,8 @@ const RankFactory = require('../../app/sdk/rank/rankFactory');
 const GameType = require('../../app/sdk/gameType');
 const Consul = require('../../server/lib/consul');
 const config = require('../../config/config.js');
-const Logger = require('../../app/common/logger.coffee');
-const Errors = require('../../server/lib/custom_errors.coffee');
+const Logger = require('../../app/common/logger');
+const Errors = require('../../server/lib/custom_errors');
 
 // redis
 const Redis = require('../../server/redis');

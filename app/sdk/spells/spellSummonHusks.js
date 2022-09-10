@@ -15,7 +15,7 @@ const CONFIG = require('app/common/config');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
 const CardType = require('app/sdk/cards/cardType');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
-const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
+const UtilsGameSession = require('../../common/utils/utils_game_session');
 const SpellKillTarget = require('./spellKillTarget');
 
 class SpellSummonHusks extends SpellKillTarget {

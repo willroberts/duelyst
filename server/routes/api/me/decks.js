@@ -19,7 +19,7 @@ const t = require('tcomb-validation');
 const knex = require('../../../lib/data_access/knex');
 const DecksModule = require('../../../lib/data_access/decks');
 const DataAccessHelpers = require('../../../lib/data_access/helpers');
-const Logger = require('../../../../app/common/logger.coffee');
+const Logger = require('../../../../app/common/logger');
 const validators = require('../../../validators');
 
 const router = express.Router();

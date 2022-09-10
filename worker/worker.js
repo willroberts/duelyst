@@ -14,7 +14,7 @@
 const fs = require('fs');
 const os = require('os');
 const Promise = require('bluebird');
-const Logger = require('../app/common/logger.coffee');
+const Logger = require('../app/common/logger');
 const config = require('../config/config.js');
 
 if (config.isDevelopment()) {
@@ -63,20 +63,20 @@ process.on('SIGABRT', cleanShutdown);
 /*
 Setup Jobs
 */
-const archiveGame = require('./jobs/archive-game.coffee');
-const updateUserPostGame = require('./jobs/update-user-post-game.coffee');
-const updateUserAchievements = require('./jobs/update-user-achievements.coffee');
-const updateUserChargeLog = require('./jobs/update-user-charge-log.coffee');
-const matchmakingSetupGame = require('./jobs/matchmaking-setupgame.coffee');
-const matchmakingSearchRanked = require('./jobs/matchmaking-search-ranked.coffee');
-const matchmakingSearchCasual = require('./jobs/matchmaking-search-casual.coffee');
-const matchmakingSearchArena = require('./jobs/matchmaking-search-arena.coffee');
-const matchmakingSearchRift = require('./jobs/matchmaking-search-rift.coffee');
-const dataSyncUserBuddyList = require('./jobs/data-sync-user-buddy-list.coffee');
-const dataSyncSteamFriends = require('./jobs/data-sync-steam-friends.coffee');
-const processUserReferralEvent = require('./jobs/process-user-referral-event.coffee');
-const updateUsersRatings = require('./jobs/update-users-ratings.coffee');
-const updateUserSeenOn = require('./jobs/update-user-seen-on.coffee');
+const archiveGame = require('./jobs/archive-game');
+const updateUserPostGame = require('./jobs/update-user-post-game');
+const updateUserAchievements = require('./jobs/update-user-achievements');
+const updateUserChargeLog = require('./jobs/update-user-charge-log');
+const matchmakingSetupGame = require('./jobs/matchmaking-setupgame');
+const matchmakingSearchRanked = require('./jobs/matchmaking-search-ranked');
+const matchmakingSearchCasual = require('./jobs/matchmaking-search-casual');
+const matchmakingSearchArena = require('./jobs/matchmaking-search-arena');
+const matchmakingSearchRift = require('./jobs/matchmaking-search-rift');
+const dataSyncUserBuddyList = require('./jobs/data-sync-user-buddy-list');
+const dataSyncSteamFriends = require('./jobs/data-sync-steam-friends');
+const processUserReferralEvent = require('./jobs/process-user-referral-event');
+const updateUsersRatings = require('./jobs/update-users-ratings');
+const updateUserSeenOn = require('./jobs/update-user-seen-on');
 
 worker.process('archive-game', 1, archiveGame);
 worker.process('update-user-post-game', 2, updateUserPostGame);

@@ -26,11 +26,11 @@ const helmet = require('helmet');
 const moment = require('moment');
 const _ = require('underscore');
 const Promise = require('bluebird');
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 const Errors = require('../lib/custom_errors');
 const knex = require('../lib/data_access/knex');
 const { Redis, SRankManager, RiftManager } = require('../redis');
-const mail = require('../mailer.coffee');
+const mail = require('../mailer');
 
 Promise.promisifyAll(mail);
 const config = require('../../config/config.js');
