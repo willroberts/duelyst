@@ -1,3 +1,13 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -12,62 +22,61 @@ const Cards = require('app/sdk/cards/cardsLookup');
 const Spell = require('./spell');
 
 class SpellWhisperOfTheSands extends Spell {
+  onApplyOneEffectToBoard(board, x, y, sourceAction) {
+    super.onApplyOneEffectToBoard(board, x, y, sourceAction);
 
-	onApplyOneEffectToBoard(board, x, y, sourceAction) {
-		super.onApplyOneEffectToBoard(board, x, y, sourceAction);
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const ownerId = this.getOwnerId();
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const ownerId = this.getOwnerId();
+      // find cached copy of card to spawn
+      const cardToSpawn = this.getGameSession().getCardCaches().getCardById(Cards.Faction3.Dervish);
+      const cardDataToSpawn = cardToSpawn.createNewCardData();
 
-			// find cached copy of card to spawn
-			const cardToSpawn = this.getGameSession().getCardCaches().getCardById(Cards.Faction3.Dervish);
-			const cardDataToSpawn = cardToSpawn.createNewCardData();
+      // gather all of player's obelysks
+      const obelysks = [];
+      const obelyskPositions = [];
+      for (const unit of Array.from(this.getGameSession().getBoard().getUnits())) {
+        if ((unit.getOwnerId() === ownerId) && this.isObelysk(unit)) {
+          obelysks.push(unit);
+          obelyskPositions.push(unit.getPosition());
+        }
+      }
 
-			// gather all of player's obelysks
-			const obelysks = [];
-			const obelyskPositions = [];
-			for (let unit of Array.from(this.getGameSession().getBoard().getUnits())) {
-				if ((unit.getOwnerId() === ownerId) && this.isObelysk(unit)) {
-					obelysks.push(unit);
-					obelyskPositions.push(unit.getPosition());
-				}
-			}
+      // coordinate spawning near all obelysks
+      // this will generate spawn positions without conflicts whenever possible
+      const spawnPositionsWithSource = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsFromPatterns(this.getGameSession(), obelyskPositions, CONFIG.PATTERN_3x3, cardToSpawn, obelysks);
 
-			// coordinate spawning near all obelysks
-			// this will generate spawn positions without conflicts whenever possible
-			const spawnPositionsWithSource = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsFromPatterns(this.getGameSession(), obelyskPositions, CONFIG.PATTERN_3x3, cardToSpawn, obelysks);
+      return (() => {
+        const result = [];
+        for (const spawnData of Array.from(spawnPositionsWithSource)) {
+          const {
+            spawnPositions,
+          } = spawnData;
+          if (spawnPositions.length > 0) {
+            const spawnPosition = spawnPositions[0];
+            const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataToSpawn);
+            spawnAction.setSource(this);
+            result.push(this.getGameSession().executeAction(spawnAction));
+          } else {
+            result.push(undefined);
+          }
+        }
+        return result;
+      })();
+    }
+  }
 
-			return (() => {
-				const result = [];
-				for (let spawnData of Array.from(spawnPositionsWithSource)) {
-					const {
-                        spawnPositions
-                    } = spawnData;
-					if (spawnPositions.length > 0) {
-						const spawnPosition = spawnPositions[0];
-						const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataToSpawn);
-						spawnAction.setSource(this);
-						result.push(this.getGameSession().executeAction(spawnAction));
-					} else {
-						result.push(undefined);
-					}
-				}
-				return result;
-			})();
-		}
-	}
-
-	isObelysk(unit) {
-		const unitId = unit.getBaseCardId();
-		return (unitId === Cards.Faction3.BrazierRedSand) ||
-				(unitId === Cards.Faction3.BrazierGoldenFlame) ||
-				(unitId === Cards.Faction3.BrazierDuskWind) ||
-				(unitId === Cards.Faction3.SoulburnObelysk) ||
-				(unitId === Cards.Faction3.TrygonObelysk) ||
-				(unitId === Cards.Faction3.LavastormObelysk) ||
-				(unitId === Cards.Faction3.DuplicatorObelysk) ||
-				(unitId === Cards.Faction3.SimulacraObelysk);
-	}
+  isObelysk(unit) {
+    const unitId = unit.getBaseCardId();
+    return (unitId === Cards.Faction3.BrazierRedSand)
+				|| (unitId === Cards.Faction3.BrazierGoldenFlame)
+				|| (unitId === Cards.Faction3.BrazierDuskWind)
+				|| (unitId === Cards.Faction3.SoulburnObelysk)
+				|| (unitId === Cards.Faction3.TrygonObelysk)
+				|| (unitId === Cards.Faction3.LavastormObelysk)
+				|| (unitId === Cards.Faction3.DuplicatorObelysk)
+				|| (unitId === Cards.Faction3.SimulacraObelysk);
+  }
 }
 
 module.exports = SpellWhisperOfTheSands;

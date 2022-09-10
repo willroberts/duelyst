@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,41 +12,39 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierOpponentSummonWatch = require('./modifierOpponentSummonWatch');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const ModifierOpponentSummonWatch = require('./modifierOpponentSummonWatch');
 
 class ModifierOpponentSummonWatchSummonMinionInFront extends ModifierOpponentSummonWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOpponentSummonWatchSummonMinionInFront";
-		this.type ="ModifierOpponentSummonWatchSummonMinionInFront";
-	
-		this.prototype.cardDataOrIndexToSpawn = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpponentSummonWatchSummonMinionInFront';
+    this.type = 'ModifierOpponentSummonWatchSummonMinionInFront';
 
-	static createContextObject(cardDataOrIndexToSpawn, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
-		return contextObject;
-	}
+    this.prototype.cardDataOrIndexToSpawn = null;
+  }
 
-	onSummonWatch(action) {
+  static createContextObject(cardDataOrIndexToSpawn, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+    return contextObject;
+  }
 
-		const unit = action.getTarget();
-		if ((unit != null) && (this.cardDataOrIndexToSpawn != null)) {
-			let playerOffset = 0;
-			if (unit.isOwnedByPlayer1()) { playerOffset = 1; } else { playerOffset = -1; }
-			const inFrontOfPosition = {x:unit.getPosition().x+playerOffset, y:unit.getPosition().y};
+  onSummonWatch(action) {
+    const unit = action.getTarget();
+    if ((unit != null) && (this.cardDataOrIndexToSpawn != null)) {
+      let playerOffset = 0;
+      if (unit.isOwnedByPlayer1()) { playerOffset = 1; } else { playerOffset = -1; }
+      const inFrontOfPosition = { x: unit.getPosition().x + playerOffset, y: unit.getPosition().y };
 
-			const entity = this.getGameSession().getExistingCardFromIndexOrCreateCardFromData(this.cardDataOrIndexToSpawn);
-			const board = this.getGameSession().getBoard();
-			if (board.isOnBoard(inFrontOfPosition) && !board.getObstructionAtPositionForEntity(inFrontOfPosition, entity)) {
-				const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), inFrontOfPosition.x, inFrontOfPosition.y, this.cardDataOrIndexToSpawn);
-				playCardAction.setSource(this.getCard());
-				return this.getGameSession().executeAction(playCardAction);
-			}
-		}
-	}
+      const entity = this.getGameSession().getExistingCardFromIndexOrCreateCardFromData(this.cardDataOrIndexToSpawn);
+      const board = this.getGameSession().getBoard();
+      if (board.isOnBoard(inFrontOfPosition) && !board.getObstructionAtPositionForEntity(inFrontOfPosition, entity)) {
+        const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), inFrontOfPosition.x, inFrontOfPosition.y, this.cardDataOrIndexToSpawn);
+        playCardAction.setSource(this.getCard());
+        return this.getGameSession().executeAction(playCardAction);
+      }
+    }
+  }
 }
 ModifierOpponentSummonWatchSummonMinionInFront.initClass();
 

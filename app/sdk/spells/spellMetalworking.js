@@ -1,3 +1,13 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-tabs,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,57 +17,56 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const Logger = require('app/common/logger');
-const Spell = 	require('./spell');
 const CardType = require('app/sdk/cards/cardType');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const Spell = 	require('./spell');
 
 class SpellMetalworking extends Spell {
-	static initClass() {
-	
-		this.prototype.numArtifacts = 1;
-	}
+  static initClass() {
+    this.prototype.numArtifacts = 1;
+  }
 
-	_findApplyEffectPositions(position, sourceAction) {
-		return [this.getGameSession().getGeneralForPlayerId(this.getOwnerId()).getPosition()];
-	}
+  _findApplyEffectPositions(position, sourceAction) {
+    return [this.getGameSession().getGeneralForPlayerId(this.getOwnerId()).getPosition()];
+  }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
 
-		const potentialArtifacts = [];
-		const artifactsPlayed = this.getGameSession().getArtifactsPlayed(this.getOwnerId());
-		const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
-		// check all played artifact cards
-		for (let artifact of Array.from(artifactsPlayed)) {
-			const modifiersGroupedByArtifactCard = myGeneral.getArtifactModifiersGroupedByArtifactCard();
-			// if no artifact modifiers are stil on the general, all played artifacts are valid to retrieve
-			if (modifiersGroupedByArtifactCard.length === 0) {
-				potentialArtifacts.push(artifact);
-			} else {
-				let skipThisArtifact = false;
-				// if general still has any artifacts, do NOT retrieve those exact artifacts
-				for (let artifactMods of Array.from(modifiersGroupedByArtifactCard)) {
-					// skip any played artifacts that are still active on the General
-					if (artifactMods[0].getSourceCard().getIndex() === artifact.getIndex()) {
-						skipThisArtifact = true;
-						break;
-					}
-				}
-				if (!skipThisArtifact) {
-					potentialArtifacts.push(artifact);
-				}
-			}
-		}
-		if (potentialArtifacts.length > 0) {
-			const artifactToPlay = potentialArtifacts[this.getGameSession().getRandomIntegerForExecution(potentialArtifacts.length)];
+    const potentialArtifacts = [];
+    const artifactsPlayed = this.getGameSession().getArtifactsPlayed(this.getOwnerId());
+    const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+    // check all played artifact cards
+    for (const artifact of Array.from(artifactsPlayed)) {
+      const modifiersGroupedByArtifactCard = myGeneral.getArtifactModifiersGroupedByArtifactCard();
+      // if no artifact modifiers are stil on the general, all played artifacts are valid to retrieve
+      if (modifiersGroupedByArtifactCard.length === 0) {
+        potentialArtifacts.push(artifact);
+      } else {
+        let skipThisArtifact = false;
+        // if general still has any artifacts, do NOT retrieve those exact artifacts
+        for (const artifactMods of Array.from(modifiersGroupedByArtifactCard)) {
+          // skip any played artifacts that are still active on the General
+          if (artifactMods[0].getSourceCard().getIndex() === artifact.getIndex()) {
+            skipThisArtifact = true;
+            break;
+          }
+        }
+        if (!skipThisArtifact) {
+          potentialArtifacts.push(artifact);
+        }
+      }
+    }
+    if (potentialArtifacts.length > 0) {
+      const artifactToPlay = potentialArtifacts[this.getGameSession().getRandomIntegerForExecution(potentialArtifacts.length)];
 
-			if (artifactToPlay != null) {
-				const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getOwnerId(), x, y, artifactToPlay.createNewCardData());
-				playCardAction.setSource(this);
-				return this.getGameSession().executeAction(playCardAction);
-			}
-		}
-	}
+      if (artifactToPlay != null) {
+        const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getOwnerId(), x, y, artifactToPlay.createNewCardData());
+        playCardAction.setSource(this);
+        return this.getGameSession().executeAction(playCardAction);
+      }
+    }
+  }
 }
 SpellMetalworking.initClass();
 

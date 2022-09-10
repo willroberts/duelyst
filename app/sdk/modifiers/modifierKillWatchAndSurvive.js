@@ -1,3 +1,14 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,64 +17,63 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier');
 const CardType = require('app/sdk/cards/cardType');
 const DieAction = require('app/sdk/actions/dieAction');
+const Modifier = require('./modifier');
 
 class ModifierKillWatchAndSurvive extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierKillWatchAndSurvive";
-		this.type ="ModifierKillWatchAndSurvive";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch"];
-	
-		this.prototype.includeAllies = true;
-		this.prototype.includeGenerals = true;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierKillWatchAndSurvive';
+    this.type = 'ModifierKillWatchAndSurvive';
 
-	static createContextObject(includeAllies, includeGenerals, options) {
-		if (includeAllies == null) { includeAllies = true; }
-		if (includeGenerals == null) { includeGenerals = true; }
-		const contextObject = super.createContextObject(options);
-		contextObject.includeAllies = includeAllies;
-		contextObject.includeGenerals = includeGenerals;
-		return contextObject;
-	}
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
 
-	onAfterCleanupAction(e) {
-		super.onAfterCleanupAction(e);
+    this.prototype.fxResource = ['FX.Modifiers.ModifierKillWatch'];
 
-		const {
-            action
-        } = e;
+    this.prototype.includeAllies = true;
+    this.prototype.includeGenerals = true;
+  }
 
-		// when we kill any unit or general
-		if (this.getIsActionRelevant(action)) {
-			return this.onKillWatchAndSurvive(action);
-		}
-	}
+  static createContextObject(includeAllies, includeGenerals, options) {
+    if (includeAllies == null) { includeAllies = true; }
+    if (includeGenerals == null) { includeGenerals = true; }
+    const contextObject = super.createContextObject(options);
+    contextObject.includeAllies = includeAllies;
+    contextObject.includeGenerals = includeGenerals;
+    return contextObject;
+  }
 
-	getIsActionRelevant(action) {
-		if (action instanceof DieAction && (action.getTarget() !== this.getCard()) && (__guard__(action.getTarget(), x => x.type) === CardType.Unit) && (action.getSource() === this.getCard())) { 
-			if (this.includeAllies || (action.getTarget().getOwnerId() !== this.getCard().getOwnerId())) {
-				if (this.includeGenerals || !action.getTarget().getIsGeneral()) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+  onAfterCleanupAction(e) {
+    super.onAfterCleanupAction(e);
 
-	onKillWatchAndSurvive(action) {}
+    const {
+      action,
+    } = e;
+
+    // when we kill any unit or general
+    if (this.getIsActionRelevant(action)) {
+      return this.onKillWatchAndSurvive(action);
+    }
+  }
+
+  getIsActionRelevant(action) {
+    if (action instanceof DieAction && (action.getTarget() !== this.getCard()) && (__guard__(action.getTarget(), (x) => x.type) === CardType.Unit) && (action.getSource() === this.getCard())) {
+      if (this.includeAllies || (action.getTarget().getOwnerId() !== this.getCard().getOwnerId())) {
+        if (this.includeGenerals || !action.getTarget().getIsGeneral()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  onKillWatchAndSurvive(action) {}
 }
 ModifierKillWatchAndSurvive.initClass();
-		// override me in sub classes to implement special behavior
+// override me in sub classes to implement special behavior
 
 module.exports = ModifierKillWatchAndSurvive;
 

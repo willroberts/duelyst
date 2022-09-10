@@ -1,3 +1,14 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-return-assign,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,89 +21,88 @@ const Logger = require('app/common/logger');
 const Modifier = require('./modifier');
 
 class ModifierCollectable extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierCollectable";
-		this.type ="ModifierCollectable";
-	
-		this.modifierName ="Collectable";
-		this.description = "When another entity moves onto this location..";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-		this.prototype.depleted = false; // whether collectable has been used
-		this.prototype.fxResource = ["FX.Modifiers.ModifierCollectable"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierCollectable';
+    this.type = 'ModifierCollectable';
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
+    this.modifierName = 'Collectable';
+    this.description = 'When another entity moves onto this location..';
 
-		p.collectingEntity = null;
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+    this.prototype.depleted = false; // whether collectable has been used
+    this.prototype.fxResource = ['FX.Modifiers.ModifierCollectable'];
+  }
 
-		return p;
-	}
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
 
-	getDepleted(){
-		return this.depleted;
-	}
+    p.collectingEntity = null;
 
-	getCollectingEntity() {
-		const entities = this.getGameSession().getBoard().getEntitiesAtPosition(this.getCard().getPosition());
-		for (let entity of Array.from(entities)) {
-			// get the current obstructing entity at my entity's location
-			// entity must also not be the same team as my entity
-			if (entity.getIsObstructing() && (this.getCard().getIsSameTeamAs(entity) || this.getCard().isOwnedByGameSession())) {
-				return entity;
-			}
-		}
-	}
+    return p;
+  }
 
-	_onActiveChange(e) {
-		super._onActiveChange(e);
-		if (this._private.cachedIsActive && !this.depleted) {
-			// if there is an obstructing entity at my entity's location
-			const collectingEntity = this.getCollectingEntity();
-			if (collectingEntity != null) {
-				this.depleted = true;
+  getDepleted() {
+    return this.depleted;
+  }
 
-				// set self as triggering
-				this.getGameSession().pushTriggeringModifierOntoStack(this);
+  getCollectingEntity() {
+    const entities = this.getGameSession().getBoard().getEntitiesAtPosition(this.getCard().getPosition());
+    for (const entity of Array.from(entities)) {
+      // get the current obstructing entity at my entity's location
+      // entity must also not be the same team as my entity
+      if (entity.getIsObstructing() && (this.getCard().getIsSameTeamAs(entity) || this.getCard().isOwnedByGameSession())) {
+        return entity;
+      }
+    }
+  }
 
-				// set occupant
-				this._private.collectingEntity = collectingEntity;
-				this.getCard().setOccupant(this._private.collectingEntity);
+  _onActiveChange(e) {
+    super._onActiveChange(e);
+    if (this._private.cachedIsActive && !this.depleted) {
+      // if there is an obstructing entity at my entity's location
+      const collectingEntity = this.getCollectingEntity();
+      if (collectingEntity != null) {
+        this.depleted = true;
 
-				// do collection
-				this.onCollect(collectingEntity);
+        // set self as triggering
+        this.getGameSession().pushTriggeringModifierOntoStack(this);
 
-				// deplete
-				this.onDepleted();
+        // set occupant
+        this._private.collectingEntity = collectingEntity;
+        this.getCard().setOccupant(this._private.collectingEntity);
 
-				// stop triggering
-				return this.getGameSession().popTriggeringModifierFromStack();
-			}
-		}
-	}
+        // do collection
+        this.onCollect(collectingEntity);
 
-	onCollect(entity) {}
-		// override me in sub classes to implement special behavior
+        // deplete
+        this.onDepleted();
 
-	onDepleted() {
-		const entity = this.getCard();
-		this.getGameSession().removeModifier(this);
-		if (entity.getNumModifiersOfClass(ModifierCollectable) === 0) {
-			return entity.setDepleted(true);
-		}
-	}
+        // stop triggering
+        return this.getGameSession().popTriggeringModifierFromStack();
+      }
+    }
+  }
 
-	postDeserialize() {
-		super.postDeserialize();
+  onCollect(entity) {}
+  // override me in sub classes to implement special behavior
 
-		// get the current obstructing entity at my entity's location
-		return this._private.collectingEntity = this.getCollectingEntity();
-	}
+  onDepleted() {
+    const entity = this.getCard();
+    this.getGameSession().removeModifier(this);
+    if (entity.getNumModifiersOfClass(ModifierCollectable) === 0) {
+      return entity.setDepleted(true);
+    }
+  }
+
+  postDeserialize() {
+    super.postDeserialize();
+
+    // get the current obstructing entity at my entity's location
+    return this._private.collectingEntity = this.getCollectingEntity();
+  }
 }
 ModifierCollectable.initClass();
 

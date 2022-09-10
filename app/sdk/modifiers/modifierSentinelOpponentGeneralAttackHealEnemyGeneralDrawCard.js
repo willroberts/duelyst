@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,64 +13,61 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierSentinel = require('./modifierSentinel');
 const CardType = require('app/sdk/cards/cardType');
 const AttackAction = require('app/sdk/actions/attackAction');
 const HealAction = require('app/sdk/actions/healAction');
 const DrawCardAction = require('app/sdk/actions/drawCardAction');
 const i18next = require('i18next');
+const ModifierSentinel = require('./modifierSentinel');
 
 class ModifierSentinelOpponentGeneralAttackHealEnemyGeneralDrawCard extends ModifierSentinel {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSentinelOpponentGeneralAttackHealEnemyGeneralDrawCard";
-		this.type ="ModifierSentinelOpponentGeneralAttackHealEnemyGeneralDrawCard";
-	
-		this.description = i18next.t("modifiers.sentinel_general_attack");
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSentinelOpponentGeneralAttackHealEnemyGeneralDrawCard';
+    this.type = 'ModifierSentinelOpponentGeneralAttackHealEnemyGeneralDrawCard';
 
-	static createContextObject(description, transformCardId, healAmount, options) {
-		if (healAmount == null) { healAmount = 5; }
-		const contextObject = super.createContextObject(description, transformCardId, options);
-		contextObject.healAmount = healAmount;
-		return contextObject;
-	}
+    this.description = i18next.t('modifiers.sentinel_general_attack');
+  }
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject != null) {
-			return this.description;
-		} else {
-			return super.getDescription();
-		}
-	}
+  static createContextObject(description, transformCardId, healAmount, options) {
+    if (healAmount == null) { healAmount = 5; }
+    const contextObject = super.createContextObject(description, transformCardId, options);
+    contextObject.healAmount = healAmount;
+    return contextObject;
+  }
 
-	getIsActionRelevant(action) {
-		// watch for opponent General attacking
-		if (action instanceof AttackAction && (action.getSource() === this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId()))) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject != null) {
+      return this.description;
+    }
+    return super.getDescription();
+  }
 
-	onOverwatch(action) {
-		const newUnit = super.onOverwatch(action);
-		if (this.getIsActionRelevant(action)) {
-			if (action.getTarget() === this.getCard()) {
-				action.setTarget(newUnit);
-			}
+  getIsActionRelevant(action) {
+    // watch for opponent General attacking
+    if (action instanceof AttackAction && (action.getSource() === this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId()))) {
+      return true;
+    }
+    return false;
+  }
 
-			const enemyGeneral = this.getCard().getGameSession().getGeneralForPlayerId(this.getGameSession().getOpponentPlayerIdOfPlayerId(this.getCard().getOwnerId()));
+  onOverwatch(action) {
+    const newUnit = super.onOverwatch(action);
+    if (this.getIsActionRelevant(action)) {
+      if (action.getTarget() === this.getCard()) {
+        action.setTarget(newUnit);
+      }
 
-			const healAction2 = new HealAction(this.getGameSession());
-			healAction2.setOwnerId(this.getCard().getOwnerId());
-			healAction2.setTarget(enemyGeneral);
-			healAction2.setHealAmount(this.healAmount);
-			this.getGameSession().executeAction(healAction2);
+      const enemyGeneral = this.getCard().getGameSession().getGeneralForPlayerId(this.getGameSession().getOpponentPlayerIdOfPlayerId(this.getCard().getOwnerId()));
 
-			return this.getGameSession().executeAction(new DrawCardAction(this.getGameSession(), enemyGeneral.getOwnerId()));
-		}
-	}
+      const healAction2 = new HealAction(this.getGameSession());
+      healAction2.setOwnerId(this.getCard().getOwnerId());
+      healAction2.setTarget(enemyGeneral);
+      healAction2.setHealAmount(this.healAmount);
+      this.getGameSession().executeAction(healAction2);
+
+      return this.getGameSession().executeAction(new DrawCardAction(this.getGameSession(), enemyGeneral.getOwnerId()));
+    }
+  }
 }
 ModifierSentinelOpponentGeneralAttackHealEnemyGeneralDrawCard.initClass();
 

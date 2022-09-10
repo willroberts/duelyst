@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,36 +13,34 @@
  */
 const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
+const i18next = require('i18next');
 const ModifierCollectable = 	require('./modifierCollectable');
 
-const i18next = require('i18next');
-
 class ModifierCollectableCard extends ModifierCollectable {
-	static initClass() {
-	
-		this.prototype.type ="ModifierCollectableCard";
-		this.type ="ModifierCollectableCard";
-	
-		//@modifierName: i18next.t("modifiers.bonus_mana_name")
-		//@description: i18next.t("modifiers.bonus_mana_def")
-	
-		this.prototype.isRemovable = false;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierCollectableCard"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierCollectableCard';
+    this.type = 'ModifierCollectableCard';
 
-	static createContextObject(cardDataOrIndex, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndex = cardDataOrIndex;
-		return contextObject;
-	}
+    // @modifierName: i18next.t("modifiers.bonus_mana_name")
+    // @description: i18next.t("modifiers.bonus_mana_def")
 
-	onCollect(entity) {
-		super.onCollect(entity);
+    this.prototype.isRemovable = false;
 
-		const a = new PutCardInHandAction(this.getGameSession(), entity.getOwnerId(), this.cardDataOrIndex);
-		return this.getGameSession().executeAction(a);
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierCollectableCard'];
+  }
+
+  static createContextObject(cardDataOrIndex, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndex = cardDataOrIndex;
+    return contextObject;
+  }
+
+  onCollect(entity) {
+    super.onCollect(entity);
+
+    const a = new PutCardInHandAction(this.getGameSession(), entity.getOwnerId(), this.cardDataOrIndex);
+    return this.getGameSession().executeAction(a);
+  }
 }
 ModifierCollectableCard.initClass();
 

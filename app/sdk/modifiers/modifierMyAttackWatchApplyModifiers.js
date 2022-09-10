@@ -1,3 +1,9 @@
+/* eslint-disable
+    consistent-return,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,38 +16,36 @@
 const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 
 class ModifierMyAttackWatchApplyModifiers extends ModifierMyAttackWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierMyAttackWatchApplyModifiers";
-		this.type ="ModifierMyAttackWatchApplyModifiers";
-	
-		this.prototype.modifiersContextObjects = null;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericBuff"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierMyAttackWatchApplyModifiers';
+    this.type = 'ModifierMyAttackWatchApplyModifiers';
 
-	static createContextObject(modifiersContextObjects, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		return contextObject;
-	}
+    this.prototype.modifiersContextObjects = null;
 
-	onMyAttackWatch(action) {
+    this.prototype.fxResource = ['FX.Modifiers.ModifierGenericBuff'];
+  }
 
-		if (this.modifiersContextObjects != null) {
-			return (() => {
-				const result = [];
-				for (let modifier of Array.from(this.modifiersContextObjects)) {
-					if (modifier != null) {
-						result.push(this.getGameSession().applyModifierContextObject(modifier, this.getCard()));
-					} else {
-						result.push(undefined);
-					}
-				}
-				return result;
-			})();
-		}
-	}
+  static createContextObject(modifiersContextObjects, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    return contextObject;
+  }
+
+  onMyAttackWatch(action) {
+    if (this.modifiersContextObjects != null) {
+      return (() => {
+        const result = [];
+        for (const modifier of Array.from(this.modifiersContextObjects)) {
+          if (modifier != null) {
+            result.push(this.getGameSession().applyModifierContextObject(modifier, this.getCard()));
+          } else {
+            result.push(undefined);
+          }
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierMyAttackWatchApplyModifiers.initClass();
 

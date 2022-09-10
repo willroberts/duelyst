@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,44 +12,42 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('app/common/config');
+const HealAction = require('app/sdk/actions/healAction');
 const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
-const HealAction = require("app/sdk/actions/healAction");
 
 class ModifierEndTurnWatchHealSelf extends ModifierEndTurnWatch {
-	static initClass() {
-	
-		this.prototype.type = "ModifierEndTurnWatchHealSelf";
-		this.type = "ModifierEndTurnWatchHealSelf";
-	
-		this.modifierName = "End Turn Heal";
-		this.description = "Restore %X Health to this minion at the end of your turn";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierEndTurnWatch", "FX.Modifiers.ModifierGenericHeal"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierEndTurnWatchHealSelf';
+    this.type = 'ModifierEndTurnWatchHealSelf';
 
-	static createContextObject(healAmount, options) {
-		if (healAmount == null) { healAmount = 0; }
-		const contextObject = super.createContextObject(options);
-		contextObject.healAmount = healAmount;
-		return contextObject;
-	}
+    this.modifierName = 'End Turn Heal';
+    this.description = 'Restore %X Health to this minion at the end of your turn';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			return this.description.replace(/%X/, modifierContextObject.healAmount);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierEndTurnWatch', 'FX.Modifiers.ModifierGenericHeal'];
+  }
 
-	onTurnWatch() {
-		super.onTurnWatch();
+  static createContextObject(healAmount, options) {
+    if (healAmount == null) { healAmount = 0; }
+    const contextObject = super.createContextObject(options);
+    contextObject.healAmount = healAmount;
+    return contextObject;
+  }
 
-		const healAction1 = this.getGameSession().createActionForType(HealAction.type);
-		healAction1.setTarget(this.getCard());
-		healAction1.setHealAmount(this.healAmount);
-		return this.getGameSession().executeAction(healAction1);
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      return this.description.replace(/%X/, modifierContextObject.healAmount);
+    }
+    return this.description;
+  }
+
+  onTurnWatch() {
+    super.onTurnWatch();
+
+    const healAction1 = this.getGameSession().createActionForType(HealAction.type);
+    healAction1.setTarget(this.getCard());
+    healAction1.setHealAmount(this.healAmount);
+    return this.getGameSession().executeAction(healAction1);
+  }
 }
 ModifierEndTurnWatchHealSelf.initClass();
 

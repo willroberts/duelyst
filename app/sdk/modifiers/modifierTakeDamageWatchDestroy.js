@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,38 +14,37 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierTakeDamageWatch = require('./modifierTakeDamageWatch');
 const KillAction = require('app/sdk/actions/killAction');
 const CardType = require('app/sdk/cards/cardType');
+const ModifierTakeDamageWatch = require('./modifierTakeDamageWatch');
 
 class ModifierTakeDamageWatchDestroy extends ModifierTakeDamageWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierTakeDamageWatchDestroy";
-		this.type ="ModifierTakeDamageWatchDestroy";
-	
-		this.modifierName ="Take Damage Watch";
-		this.description ="Destroy any minion that deals damage to this one";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierTakeDamageWatch"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierTakeDamageWatchDestroy';
+    this.type = 'ModifierTakeDamageWatchDestroy';
 
-	onDamageTaken(action) {
-		super.onDamageTaken(action);
+    this.modifierName = 'Take Damage Watch';
+    this.description = 'Destroy any minion that deals damage to this one';
 
-		// go back to closest source card that is a unit
-		const sourceCard = __guard__(action.getSource(), x => x.getAncestorCardOfType(CardType.Unit));
+    this.prototype.fxResource = ['FX.Modifiers.ModifierTakeDamageWatch'];
+  }
 
-		// kill any minion that damages this one
-		if ((sourceCard != null) && !sourceCard.getIsGeneral()) {
-			const target = sourceCard;
-			const killAction = new KillAction(this.getGameSession());
-			killAction.setOwnerId(this.getCard().getOwnerId());
-			killAction.setSource(this.getCard());
-			killAction.setTarget(target);
-			return this.getGameSession().executeAction(killAction);
-		}
-	}
+  onDamageTaken(action) {
+    super.onDamageTaken(action);
+
+    // go back to closest source card that is a unit
+    const sourceCard = __guard__(action.getSource(), (x) => x.getAncestorCardOfType(CardType.Unit));
+
+    // kill any minion that damages this one
+    if ((sourceCard != null) && !sourceCard.getIsGeneral()) {
+      const target = sourceCard;
+      const killAction = new KillAction(this.getGameSession());
+      killAction.setOwnerId(this.getCard().getOwnerId());
+      killAction.setSource(this.getCard());
+      killAction.setTarget(target);
+      return this.getGameSession().executeAction(killAction);
+    }
+  }
 }
 ModifierTakeDamageWatchDestroy.initClass();
 

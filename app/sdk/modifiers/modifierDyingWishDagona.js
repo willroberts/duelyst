@@ -1,3 +1,8 @@
+/* eslint-disable
+    no-return-assign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,36 +13,34 @@
 const ModifierDyingWishSpawnEntity = require('./modifierDyingWishSpawnEntity');
 
 class ModifierDyingWishDagona extends ModifierDyingWishSpawnEntity {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDyingWishDagona";
-		this.type ="ModifierDyingWishDagona";
-	
-		this.prototype.spawnOwnerId = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDyingWishDagona';
+    this.type = 'ModifierDyingWishDagona';
 
-	createContextObjectForClone(contextObject) {
-		const cloneContextObject = super.createContextObjectForClone(contextObject);
-		cloneContextObject.spawnOwnerId = this.spawnOwnerId;
-		cloneContextObject.cardDataOrIndexToSpawn = this.cardDataOrIndexToSpawn;
-		return cloneContextObject;
-	}
+    this.prototype.spawnOwnerId = null;
+  }
 
-	setCardDataOrIndexToSpawn(cardDataOrIndexToSpawn) {
-		return this.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
-	}
+  createContextObjectForClone(contextObject) {
+    const cloneContextObject = super.createContextObjectForClone(contextObject);
+    cloneContextObject.spawnOwnerId = this.spawnOwnerId;
+    cloneContextObject.cardDataOrIndexToSpawn = this.cardDataOrIndexToSpawn;
+    return cloneContextObject;
+  }
 
-	setSpawnOwnerId(ownerId) {
-		return this.spawnOwnerId = ownerId;
-	}
+  setCardDataOrIndexToSpawn(cardDataOrIndexToSpawn) {
+    return this.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+  }
 
-	getSpawnOwnerId(action) {
-		if (this.spawnOwnerId != null) {
-			return this.spawnOwnerId;
-		} else {
-			return super.getSpawnOwnerId(action);
-		}
-	}
+  setSpawnOwnerId(ownerId) {
+    return this.spawnOwnerId = ownerId;
+  }
+
+  getSpawnOwnerId(action) {
+    if (this.spawnOwnerId != null) {
+      return this.spawnOwnerId;
+    }
+    return super.getSpawnOwnerId(action);
+  }
 }
 ModifierDyingWishDagona.initClass();
 

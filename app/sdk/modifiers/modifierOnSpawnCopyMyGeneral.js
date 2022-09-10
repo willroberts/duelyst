@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,67 +15,66 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier');
 const ModifierSilence = 	require('app/sdk/modifiers/modifierSilence');
+const Modifier = require('./modifier');
 
 class ModifierOnSpawnCopyMyGeneral extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOnSpawnCopyMyGeneral";
-		this.type ="ModifierOnSpawnCopyMyGeneral";
-	
-		this.modifierName ="ModifierOnSpawnCopyMyGeneral";
-		this.description = "Become a copy of your General";
-	
-		this.isHiddenToUI = true;
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOnSpawnCopyMyGeneral';
+    this.type = 'ModifierOnSpawnCopyMyGeneral';
 
-	onApplyToCardBeforeSyncState() {
-		super.onApplyToCardBeforeSyncState();
+    this.modifierName = 'ModifierOnSpawnCopyMyGeneral';
+    this.description = 'Become a copy of your General';
 
-		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
-		const myCard = this.getCard();
+    this.isHiddenToUI = true;
 
-		// set the max hp of the clone to the current hp of the general
-		// instead of using getHP (the current hp), we have to use the base max - damage taken
-		// as we'll clone all modifiers from the general next, which could boost the clone's max hp
-		myCard.maxHP = general.maxHP - general.getDamage();
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
 
-		// flush cached maxHP attribute on clone
-		// this is necessary as no modifier is changing the attribute value via the expected methods
-		myCard.flushCachedAttribute("maxHP");
+    this.prototype.fxResource = ['FX.Modifiers.ModifierOpeningGambit', 'FX.Modifiers.ModifierGenericSpawn'];
+  }
 
-		// clone all modifiers from general
-		return (() => {
-			const result = [];
-			for (let modifier of Array.from(general.getModifiers())) {
-				if ((modifier != null) && !modifier.getIsAdditionalInherent() && modifier.getIsCloneable() && !(modifier instanceof ModifierSilence)) {
-					const contextObject = modifier.createContextObjectForClone();
+  onApplyToCardBeforeSyncState() {
+    super.onApplyToCardBeforeSyncState();
 
-					// convert artifact modifiers into "plain" modifiers
-					if (contextObject.maxDurability > 0) {
-						contextObject.durability = 0;
-						contextObject.maxDurability = 0;
-						contextObject.isRemovable = true;
-					}
+    const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+    const myCard = this.getCard();
 
-					// hide all modifiers applied to this copy (prevents weird names from showing up)
-					contextObject.isHiddenToUI = true;
-					result.push(this.getCard().getGameSession().applyModifierContextObject(contextObject, this.getCard()));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    // set the max hp of the clone to the current hp of the general
+    // instead of using getHP (the current hp), we have to use the base max - damage taken
+    // as we'll clone all modifiers from the general next, which could boost the clone's max hp
+    myCard.maxHP = general.maxHP - general.getDamage();
+
+    // flush cached maxHP attribute on clone
+    // this is necessary as no modifier is changing the attribute value via the expected methods
+    myCard.flushCachedAttribute('maxHP');
+
+    // clone all modifiers from general
+    return (() => {
+      const result = [];
+      for (const modifier of Array.from(general.getModifiers())) {
+        if ((modifier != null) && !modifier.getIsAdditionalInherent() && modifier.getIsCloneable() && !(modifier instanceof ModifierSilence)) {
+          const contextObject = modifier.createContextObjectForClone();
+
+          // convert artifact modifiers into "plain" modifiers
+          if (contextObject.maxDurability > 0) {
+            contextObject.durability = 0;
+            contextObject.maxDurability = 0;
+            contextObject.isRemovable = true;
+          }
+
+          // hide all modifiers applied to this copy (prevents weird names from showing up)
+          contextObject.isHiddenToUI = true;
+          result.push(this.getCard().getGameSession().applyModifierContextObject(contextObject, this.getCard()));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 ModifierOnSpawnCopyMyGeneral.initClass();
 

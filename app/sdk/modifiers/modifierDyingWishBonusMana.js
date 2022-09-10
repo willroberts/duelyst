@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,36 +14,35 @@
  */
 const Cards = require('app/sdk/cards/cardsLookupComplete');
 const CardType = require('app/sdk/cards/cardType');
-const ModifierDyingWish = 	require('./modifierDyingWish');
 const BonusManaAction = 	require('app/sdk/actions/bonusManaAction');
+const ModifierDyingWish = 	require('./modifierDyingWish');
 
 class ModifierDyingWishBonusMana extends ModifierDyingWish {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDyingWishBonusMana";
-		this.type ="ModifierDyingWishBonusMana";
-	
-		this.modifierName = "Bonus Mana";
-		this.description = "When this entity dies, its owner gains bonus mana";
-	
-		this.prototype.bonusMana = 1;
-		this.prototype.bonusDuration = 1;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDyingWishBonusMana';
+    this.type = 'ModifierDyingWishBonusMana';
 
-	onDyingWish() {
-		super.onDyingWish();
+    this.modifierName = 'Bonus Mana';
+    this.description = 'When this entity dies, its owner gains bonus mana';
 
-		// it is possible that this entity will be owned by the game session
-		// but lets try to target the player's general
-		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
-		if (general != null) {
-			const action = this.getGameSession().createActionForType(BonusManaAction.type);
-			action.setTarget(general);
-			action.bonusMana = this.bonusMana;
-			action.bonusDuration = this.bonusDuration;
-			return this.getGameSession().executeAction(action);
-		}
-	}
+    this.prototype.bonusMana = 1;
+    this.prototype.bonusDuration = 1;
+  }
+
+  onDyingWish() {
+    super.onDyingWish();
+
+    // it is possible that this entity will be owned by the game session
+    // but lets try to target the player's general
+    const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+    if (general != null) {
+      const action = this.getGameSession().createActionForType(BonusManaAction.type);
+      action.setTarget(general);
+      action.bonusMana = this.bonusMana;
+      action.bonusDuration = this.bonusDuration;
+      return this.getGameSession().executeAction(action);
+    }
+  }
 }
 ModifierDyingWishBonusMana.initClass();
 

@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,85 +16,84 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const EVENTS = require('app/common/event_types');
-const Modifier = require('./modifier');
-const ModifierQuestBuffAbyssian = require('./modifierQuestBuffAbyssian');
-const ModifierQuestBuffNeutral = require('./modifierQuestBuffNeutral');
-const ModifierQuestBuffVanar = require('./modifierQuestBuffVanar');
 const PlayerModifierEmblem = require('app/sdk/playerModifiers/playerModifierEmblem');
 const SwapGeneralAction = require('app/sdk/actions/swapGeneralAction');
 const CardType = require('app/sdk/cards/cardType');
 const _ = require('underscore');
+const Modifier = require('./modifier');
+const ModifierQuestBuffAbyssian = require('./modifierQuestBuffAbyssian');
+const ModifierQuestBuffNeutral = require('./modifierQuestBuffNeutral');
+const ModifierQuestBuffVanar = require('./modifierQuestBuffVanar');
 
 class ModifierBackupGeneral extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBackupGeneral";
-		this.type ="ModifierBackupGeneral";
-	
-		this.description = "";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBackupGeneral';
+    this.type = 'ModifierBackupGeneral';
 
-	onEvent(event) {
-		super.onEvent(event);
+    this.description = '';
+  }
 
-		if (this._private.listeningToEvents) {
-			if (event.type === EVENTS.validate_game_over) {
-				return this._onValidateGameOver(event);
-			}
-		}
-	}
+  onEvent(event) {
+    super.onEvent(event);
 
-	_onValidateGameOver(event) {
-		if (this.getGameSession().getIsRunningAsAuthoritative() && this._private.cachedIsActive) {
-			// find general
-			const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
-			if ((general != null) && general.getIsRemoved()) {
-				// check for backup generals
-				const activeUnits = this.getGameSession().getBoard().getFriendlyEntitiesForEntity(general, CardType.Unit);
-				const backupGenerals = [];
-				for (let unit of Array.from(activeUnits)) {
-					if (!unit.getIsGeneral() && unit.getIsActive() && unit.getIsSameTeamAs(general) && unit.hasActiveModifierClass(ModifierBackupGeneral)) {
-						backupGenerals.push(unit);
-					}
-				}
+    if (this._private.listeningToEvents) {
+      if (event.type === EVENTS.validate_game_over) {
+        return this._onValidateGameOver(event);
+      }
+    }
+  }
 
-				if (backupGenerals.length > 0) {
-					// choose one backup general at random
-					let modifier;
-					const backupGeneral = backupGenerals[this.getGameSession().getRandomIntegerForExecution(backupGenerals.length)];
-					const backupGeneralModifier = backupGeneral.getModifierByClass(ModifierBackupGeneral);
+  _onValidateGameOver(event) {
+    if (this.getGameSession().getIsRunningAsAuthoritative() && this._private.cachedIsActive) {
+      // find general
+      const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+      if ((general != null) && general.getIsRemoved()) {
+        // check for backup generals
+        const activeUnits = this.getGameSession().getBoard().getFriendlyEntitiesForEntity(general, CardType.Unit);
+        const backupGenerals = [];
+        for (const unit of Array.from(activeUnits)) {
+          if (!unit.getIsGeneral() && unit.getIsActive() && unit.getIsSameTeamAs(general) && unit.hasActiveModifierClass(ModifierBackupGeneral)) {
+            backupGenerals.push(unit);
+          }
+        }
 
-					// set backup general modifier as triggering
-					this.getGameSession().pushTriggeringModifierOntoStack(backupGeneralModifier);
+        if (backupGenerals.length > 0) {
+          // choose one backup general at random
+          let modifier;
+          const backupGeneral = backupGenerals[this.getGameSession().getRandomIntegerForExecution(backupGenerals.length)];
+          const backupGeneralModifier = backupGeneral.getModifierByClass(ModifierBackupGeneral);
 
-					// remove backup general modifiers from new general
-					for (modifier of Array.from(backupGeneral.getModifiersByClass(ModifierBackupGeneral))) {
-						this.getGameSession().removeModifier(modifier);
-					}
+          // set backup general modifier as triggering
+          this.getGameSession().pushTriggeringModifierOntoStack(backupGeneralModifier);
 
-					// remove modifiers applied from existing emblems
-					for (modifier of Array.from(backupGeneral.getModifiers())) {
-						if (modifier != null) {
-							if (modifier instanceof ModifierQuestBuffAbyssian || modifier instanceof ModifierQuestBuffNeutral || modifier instanceof ModifierQuestBuffVanar) {
-								this.getGameSession().removeModifier(modifier);
-							}
-						}
-					}
+          // remove backup general modifiers from new general
+          for (modifier of Array.from(backupGeneral.getModifiersByClass(ModifierBackupGeneral))) {
+            this.getGameSession().removeModifier(modifier);
+          }
 
-					// swap generals with depth first action
-					// so the swap can take place before anything else reacts
-					const swapGeneralAction = new SwapGeneralAction(this.getGameSession());
-					swapGeneralAction.setIsDepthFirst(true);
-					swapGeneralAction.setSource(general);
-					swapGeneralAction.setTarget(backupGeneral);
-					this.getGameSession().executeAction(swapGeneralAction);
+          // remove modifiers applied from existing emblems
+          for (modifier of Array.from(backupGeneral.getModifiers())) {
+            if (modifier != null) {
+              if (modifier instanceof ModifierQuestBuffAbyssian || modifier instanceof ModifierQuestBuffNeutral || modifier instanceof ModifierQuestBuffVanar) {
+                this.getGameSession().removeModifier(modifier);
+              }
+            }
+          }
 
-					// stop triggering backup general modifier
-					return this.getGameSession().popTriggeringModifierFromStack();
-				}
-			}
-		}
-	}
+          // swap generals with depth first action
+          // so the swap can take place before anything else reacts
+          const swapGeneralAction = new SwapGeneralAction(this.getGameSession());
+          swapGeneralAction.setIsDepthFirst(true);
+          swapGeneralAction.setSource(general);
+          swapGeneralAction.setTarget(backupGeneral);
+          this.getGameSession().executeAction(swapGeneralAction);
+
+          // stop triggering backup general modifier
+          return this.getGameSession().popTriggeringModifierFromStack();
+        }
+      }
+    }
+  }
 }
 ModifierBackupGeneral.initClass();
 

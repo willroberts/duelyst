@@ -1,3 +1,9 @@
+/* eslint-disable
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -8,24 +14,22 @@ const SpellRefreshExhaustion = require('./spellRefreshExhaustion');
 const SpellFilterType = require('./spellFilterType');
 
 class SpellTimeMaelstrom extends SpellRefreshExhaustion {
-	static initClass() {
-	
-		this.prototype.spellFilterType = SpellFilterType.AllyIndirect;
-		this.prototype.canTargetGeneral = true;
-	}
+  static initClass() {
+    this.prototype.spellFilterType = SpellFilterType.AllyIndirect;
+    this.prototype.canTargetGeneral = true;
+  }
 
-	_postFilterApplyPositions(validPositions) {
-		const ownGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
-		const finalPositions = [];
-		for (let position of Array.from(validPositions)) {
-			if (this.getGameSession().getBoard().getCardAtPosition(position) === ownGeneral) {
-				finalPositions.push(position);
-			}
-		}
-		return finalPositions;
-	}
+  _postFilterApplyPositions(validPositions) {
+    const ownGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+    const finalPositions = [];
+    for (const position of Array.from(validPositions)) {
+      if (this.getGameSession().getBoard().getCardAtPosition(position) === ownGeneral) {
+        finalPositions.push(position);
+      }
+    }
+    return finalPositions;
+  }
 }
 SpellTimeMaelstrom.initClass();
-
 
 module.exports = SpellTimeMaelstrom;

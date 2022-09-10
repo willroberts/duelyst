@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/no-unresolved,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,15 +12,14 @@ const Modifier = require('app/sdk/modifiers/modifier');
 const SpellApplyModifiers = require('app/sdk/spells/spellApplyModifiers');
 
 class SpellVaathsSpirit extends SpellApplyModifiers {
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
-
-		const general = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
-		const statContextObject = Modifier.createContextObjectWithAttributeBuffs(1);
-		statContextObject.appliedName = "Immortal Strength";
-		return this.getGameSession().applyModifierContextObject(statContextObject, general);
-	}
+    const general = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+    const statContextObject = Modifier.createContextObjectWithAttributeBuffs(1);
+    statContextObject.appliedName = 'Immortal Strength';
+    return this.getGameSession().applyModifierContextObject(statContextObject, general);
+  }
 }
 
 module.exports = SpellVaathsSpirit;

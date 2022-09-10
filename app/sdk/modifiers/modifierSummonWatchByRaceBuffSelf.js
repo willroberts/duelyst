@@ -1,3 +1,9 @@
+/* eslint-disable
+    max-len,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -9,30 +15,29 @@ const ModifierSummonWatch = require('./modifierSummonWatch');
 const Modifier = require('./modifier');
 
 class ModifierSummonWatchByRaceBuffSelf extends ModifierSummonWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSummonWatchByRaceBuffSelf";
-		this.type ="ModifierSummonWatchByRaceBuffSelf";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSummonWatchByRaceBuffSelf';
+    this.type = 'ModifierSummonWatchByRaceBuffSelf';
 
-	static createContextObject(attackBuff, maxHPBuff, targetRaceId, buffAppliedName, options) {
-		if (attackBuff == null) { attackBuff = 0; }
-		if (maxHPBuff == null) { maxHPBuff = 0; }
-		const contextObject = super.createContextObject(options);
-		contextObject.targetRaceId = targetRaceId;
-		contextObject.modifiersContextObjects = [Modifier.createContextObjectWithAttributeBuffs(attackBuff,maxHPBuff, {appliedName: buffAppliedName})];
-		return contextObject;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch', 'FX.Modifiers.ModifierGenericBuff'];
+  }
 
-	onSummonWatch(action) {
-		return this.applyManagedModifiersFromModifiersContextObjects(this.modifiersContextObjects, this.getCard());
-	}
+  static createContextObject(attackBuff, maxHPBuff, targetRaceId, buffAppliedName, options) {
+    if (attackBuff == null) { attackBuff = 0; }
+    if (maxHPBuff == null) { maxHPBuff = 0; }
+    const contextObject = super.createContextObject(options);
+    contextObject.targetRaceId = targetRaceId;
+    contextObject.modifiersContextObjects = [Modifier.createContextObjectWithAttributeBuffs(attackBuff, maxHPBuff, { appliedName: buffAppliedName })];
+    return contextObject;
+  }
 
-	getIsCardRelevantToWatcher(card) {
-		return card.getBelongsToTribe(this.targetRaceId);
-	}
+  onSummonWatch(action) {
+    return this.applyManagedModifiersFromModifiersContextObjects(this.modifiersContextObjects, this.getCard());
+  }
+
+  getIsCardRelevantToWatcher(card) {
+    return card.getBelongsToTribe(this.targetRaceId);
+  }
 }
 ModifierSummonWatchByRaceBuffSelf.initClass();
 

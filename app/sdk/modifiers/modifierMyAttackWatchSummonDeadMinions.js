@@ -1,3 +1,13 @@
+/* eslint-disable
+    consistent-return,
+    func-names,
+    import/no-unresolved,
+    max-len,
+    no-plusplus,
+    no-var,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,59 +17,58 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 
-var ModifierMyAttackWatchSummonDeadMinions = (function() {
-	let numMinions = undefined;
-	ModifierMyAttackWatchSummonDeadMinions = class ModifierMyAttackWatchSummonDeadMinions extends ModifierMyAttackWatch {
-		static initClass() {
-	
-			this.prototype.type ="ModifierMyAttackWatchSummonDeadMinions";
-			this.type ="ModifierMyAttackWatchSummonDeadMinions";
-	
-			numMinions = 0;
-		}
+var ModifierMyAttackWatchSummonDeadMinions = (function () {
+  let numMinions;
+  ModifierMyAttackWatchSummonDeadMinions = class ModifierMyAttackWatchSummonDeadMinions extends ModifierMyAttackWatch {
+    static initClass() {
+      this.prototype.type = 'ModifierMyAttackWatchSummonDeadMinions';
+      this.type = 'ModifierMyAttackWatchSummonDeadMinions';
 
-		static createContextObject(numMinions,options) {
-			const contextObject = super.createContextObject(options);
-			contextObject.numMinions = numMinions;
-			return contextObject;
-		}
+      numMinions = 0;
+    }
 
-		onMyAttackWatch(action) {
-			if (this.getGameSession().getIsRunningAsAuthoritative()) {
-				const deadMinions = this.getGameSession().getDeadUnits(this.getCard().getOwnerId());
-				if ((deadMinions != null) && (deadMinions.length > 0)) {
-					let numToSpawn = this.numMinions;
-					if (deadMinions.length < numToSpawn) {
-						numToSpawn = deadMinions.length;
-					}
-					return (() => {
-						const result = [];
-						for (let i = 0, end = numToSpawn, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-							const minion = deadMinions.splice(this.getGameSession().getRandomIntegerForExecution(deadMinions.length), 1)[0];
-							const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, CONFIG.ALL_BOARD_POSITIONS, minion);
-							if (validSpawnLocations.length > 0) {
-								const location = validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0];
-								const cardData = minion.createNewCardData();
-								const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), location.x, location.y, cardData);
-								playCardAction.setSource(this.getCard());
-								result.push(this.getGameSession().executeAction(playCardAction));
-							} else {
-								result.push(undefined);
-							}
-						}
-						return result;
-					})();
-				}
-			}
-		}
-	};
-	ModifierMyAttackWatchSummonDeadMinions.initClass();
-	return ModifierMyAttackWatchSummonDeadMinions;
-})();
+    static createContextObject(numMinions, options) {
+      const contextObject = super.createContextObject(options);
+      contextObject.numMinions = numMinions;
+      return contextObject;
+    }
+
+    onMyAttackWatch(action) {
+      if (this.getGameSession().getIsRunningAsAuthoritative()) {
+        const deadMinions = this.getGameSession().getDeadUnits(this.getCard().getOwnerId());
+        if ((deadMinions != null) && (deadMinions.length > 0)) {
+          let numToSpawn = this.numMinions;
+          if (deadMinions.length < numToSpawn) {
+            numToSpawn = deadMinions.length;
+          }
+          return (() => {
+            const result = [];
+            for (let i = 0, end = numToSpawn, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+              const minion = deadMinions.splice(this.getGameSession().getRandomIntegerForExecution(deadMinions.length), 1)[0];
+              const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), { x: 0, y: 0 }, CONFIG.ALL_BOARD_POSITIONS, minion);
+              if (validSpawnLocations.length > 0) {
+                const location = validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0];
+                const cardData = minion.createNewCardData();
+                const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), location.x, location.y, cardData);
+                playCardAction.setSource(this.getCard());
+                result.push(this.getGameSession().executeAction(playCardAction));
+              } else {
+                result.push(undefined);
+              }
+            }
+            return result;
+          })();
+        }
+      }
+    }
+  };
+  ModifierMyAttackWatchSummonDeadMinions.initClass();
+  return ModifierMyAttackWatchSummonDeadMinions;
+}());
 
 module.exports = ModifierMyAttackWatchSummonDeadMinions;

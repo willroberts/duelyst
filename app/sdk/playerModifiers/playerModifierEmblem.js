@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/no-unresolved,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -6,16 +11,15 @@
 const PlayerModifier = require('app/sdk/playerModifiers/playerModifier');
 
 class PlayerModifierEmblem extends PlayerModifier {
-	static initClass() {
-	
-		this.prototype.type ="PlayerModifierEmblem";
-		this.type ="PlayerModifierEmblem";
-	
-		// emblems should be visible
-		this.isHiddenToUI = false;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierEmblem"];
-	}
+  static initClass() {
+    this.prototype.type = 'PlayerModifierEmblem';
+    this.type = 'PlayerModifierEmblem';
+
+    // emblems should be visible
+    this.isHiddenToUI = false;
+
+    this.prototype.fxResource = ['FX.Modifiers.ModifierEmblem'];
+  }
 }
 PlayerModifierEmblem.initClass();
 

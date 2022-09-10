@@ -1,3 +1,10 @@
+/* eslint-disable
+    class-methods-use-this,
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,52 +12,50 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier');
 const ApplyCardToBoardAction = require('app/sdk/actions/applyCardToBoardAction');
+const Modifier = require('./modifier');
 
 class ModifierIntensify extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierIntensify";
-		this.type ="ModifierIntensify";
-	
-		this.isKeyworded = true;
-		this.modifierName = "Intensify";
-		this.description = null;
-		this.keywordDefinition = "Effect is boosted each time you play it.";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierIntensify';
+    this.type = 'ModifierIntensify';
 
-	getIsActionRelevant(action) {
-		// watch for instances of playing this card
-		if (action instanceof ApplyCardToBoardAction && (action.getOwnerId() === this.getOwnerId()) && (action.getCard().getBaseCardId() === this.getCard().getBaseCardId())) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    this.isKeyworded = true;
+    this.modifierName = 'Intensify';
+    this.description = null;
+    this.keywordDefinition = 'Effect is boosted each time you play it.';
 
-	getIntensifyAmount() {
-		let amount = 0;
-		const relevantActions = this.getGameSession().filterActions(this.getIsActionRelevant.bind(this));
-		if (relevantActions != null) {
-			amount = relevantActions.length;
-		}
-		return amount;
-	}
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+  }
 
-	onActivate() {
-		super.onActivate();
-		return this.onIntensify();
-	}
+  getIsActionRelevant(action) {
+    // watch for instances of playing this card
+    if (action instanceof ApplyCardToBoardAction && (action.getOwnerId() === this.getOwnerId()) && (action.getCard().getBaseCardId() === this.getCard().getBaseCardId())) {
+      return true;
+    }
+    return false;
+  }
 
-	onIntensify() {}
+  getIntensifyAmount() {
+    let amount = 0;
+    const relevantActions = this.getGameSession().filterActions(this.getIsActionRelevant.bind(this));
+    if (relevantActions != null) {
+      amount = relevantActions.length;
+    }
+    return amount;
+  }
+
+  onActivate() {
+    super.onActivate();
+    return this.onIntensify();
+  }
+
+  onIntensify() {}
 }
 ModifierIntensify.initClass();
-		// override me in sub classes to implement special behavior
+// override me in sub classes to implement special behavior
 
 module.exports = ModifierIntensify;

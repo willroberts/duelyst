@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -6,47 +14,45 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const Logger = require('app/common/logger');
-const Spell = require('./spell');
 const CardType = require('app/sdk/cards/cardType');
-const SpellFilterType = require('./spellFilterType');
 const TeleportAction = require('app/sdk/actions/teleportAction');
 const CONFIG = require('app/common/config');
 const _ = require('underscore');
+const SpellFilterType = require('./spellFilterType');
+const Spell = require('./spell');
 
 class SpellMistWalking extends Spell {
-	static initClass() {
-	
-		this.prototype.spellFilterType = SpellFilterType.None;
-		this.prototype.targetType = CardType.Unit;
-	}
+  static initClass() {
+    this.prototype.spellFilterType = SpellFilterType.None;
+    this.prototype.targetType = CardType.Unit;
+  }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
-		const applyEffectPosition = {x, y};
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
+    const applyEffectPosition = { x, y };
 
-		//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "SpellMistWalking::onApplyEffectToBoardTile "
-		const source = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
-		const teleAction = new TeleportAction(this.getGameSession());
-		teleAction.setOwnerId(this.getOwnerId());
-		teleAction.setSource(source);
-		teleAction.setTargetPosition({x, y});
-		teleAction.setFXResource(_.union(teleAction.getFXResource(), this.getFXResource()));
-		return this.getGameSession().executeAction(teleAction);
-	}
+    // Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "SpellMistWalking::onApplyEffectToBoardTile "
+    const source = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+    const teleAction = new TeleportAction(this.getGameSession());
+    teleAction.setOwnerId(this.getOwnerId());
+    teleAction.setSource(source);
+    teleAction.setTargetPosition({ x, y });
+    teleAction.setFXResource(_.union(teleAction.getFXResource(), this.getFXResource()));
+    return this.getGameSession().executeAction(teleAction);
+  }
 
-
-	_filterPlayPositions(spellPositions) {
-		const validPositions = [];
-		const generalPosition = this.getGameSession().getGeneralForPlayerId(this.getOwnerId()).getPosition();
-		const board = this.getGameSession().getBoard();
-		for (let position of Array.from(CONFIG.PATTERN_2SPACES)) {
-			const pos = {x:generalPosition.x+position.x, y:generalPosition.y+position.y};
-			if (!board.getCardAtPosition(pos, CardType.Unit) && board.isOnBoard(pos)) {
-				validPositions.push(pos);
-			}
-		}
-		return validPositions;
-	}
+  _filterPlayPositions(spellPositions) {
+    const validPositions = [];
+    const generalPosition = this.getGameSession().getGeneralForPlayerId(this.getOwnerId()).getPosition();
+    const board = this.getGameSession().getBoard();
+    for (const position of Array.from(CONFIG.PATTERN_2SPACES)) {
+      const pos = { x: generalPosition.x + position.x, y: generalPosition.y + position.y };
+      if (!board.getCardAtPosition(pos, CardType.Unit) && board.isOnBoard(pos)) {
+        validPositions.push(pos);
+      }
+    }
+    return validPositions;
+  }
 }
 SpellMistWalking.initClass();
 

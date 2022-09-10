@@ -1,3 +1,9 @@
+/* eslint-disable
+    class-methods-use-this,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -11,23 +17,21 @@ const Modifier = 	require('./modifier');
 
 */
 class ModifierCustomSpawn extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierCustomSpawn";
-		this.type ="ModifierCustomSpawn";
-	
-		this.modifierName ="Custom Spawn";
-		this.description = "";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierCustomSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierCustomSpawn';
+    this.type = 'ModifierCustomSpawn';
 
+    this.modifierName = 'Custom Spawn';
+    this.description = '';
 
-	getCustomSpawnPositions() {
-		// return an array of valid spawn positions
-		// override this is sub-class with actual spawn positions
-		return [];
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierCustomSpawn'];
+  }
+
+  getCustomSpawnPositions() {
+    // return an array of valid spawn positions
+    // override this is sub-class with actual spawn positions
+    return [];
+  }
 }
 ModifierCustomSpawn.initClass();
 

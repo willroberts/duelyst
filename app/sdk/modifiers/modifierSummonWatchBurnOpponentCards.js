@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-plusplus,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,37 +15,36 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+const BurnCardAction = require('app/sdk/actions/burnCardAction');
 const ModifierSummonWatch = require('./modifierSummonWatch');
-const BurnCardAction =  require('app/sdk/actions/burnCardAction');
 
 class ModifierSummonWatchBurnOpponentCards extends ModifierSummonWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSummonWatchBurnOpponentCards";
-		this.type ="ModifierSummonWatchBurnOpponentCards";
-	
-		this.prototype.cardsToBurn = 1;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSummonWatchBurnOpponentCards';
+    this.type = 'ModifierSummonWatchBurnOpponentCards';
 
-	static createContextObject(cardsToBurn, options) {
-		if (cardsToBurn == null) { cardsToBurn = 1; }
-		const contextObject = super.createContextObject(options);
-		contextObject.cardsToBurn = cardsToBurn;
-		return contextObject;
-	}
+    this.prototype.cardsToBurn = 1;
 
-	onSummonWatch(action) {
-		return (() => {
-			const result = [];
-			for (let i = 1, end = this.cardsToBurn, asc = 1 <= end; asc ? i <= end : i >= end; asc ? i++ : i--) {
-				const burnCardAction = new BurnCardAction(this.getGameSession(), this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId()).getOwnerId());
-				result.push(this.getGameSession().executeAction(burnCardAction));
-			}
-			return result;
-		})();
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch'];
+  }
+
+  static createContextObject(cardsToBurn, options) {
+    if (cardsToBurn == null) { cardsToBurn = 1; }
+    const contextObject = super.createContextObject(options);
+    contextObject.cardsToBurn = cardsToBurn;
+    return contextObject;
+  }
+
+  onSummonWatch(action) {
+    return (() => {
+      const result = [];
+      for (let i = 1, end = this.cardsToBurn, asc = end >= 1; asc ? i <= end : i >= end; asc ? i++ : i--) {
+        const burnCardAction = new BurnCardAction(this.getGameSession(), this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId()).getOwnerId());
+        result.push(this.getGameSession().executeAction(burnCardAction));
+      }
+      return result;
+    })();
+  }
 }
 ModifierSummonWatchBurnOpponentCards.initClass();
 

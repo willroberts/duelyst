@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-use-before-define,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -8,50 +19,48 @@
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const UtilsPosition = require('app/common/utils/utils_position');
-const ModifierDyingWish = require('./modifierDyingWish');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const DamageAction = require('app/sdk/actions/damageAction');
 const CardType = require('app/sdk/cards/cardType');
-
+const ModifierDyingWish = require('./modifierDyingWish');
 
 class ModifierDyingWishCorpseCombustion extends ModifierDyingWish {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDyingWishCorpseCombustion";
-		this.type ="ModifierDyingWishCorpseCombustion";
-	
-		this.modifierName ="Dying Wish";
-		this.description = "Resummon this minion and deal 3 damage to all nearby enemies";
-	
-		this.prototype.damageAmount = 3;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn", "FX.Modifiers.ModifierGenericDamage"];
-		this.prototype.cardDataOrIndexToSpawn = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDyingWishCorpseCombustion';
+    this.type = 'ModifierDyingWishCorpseCombustion';
 
-	onDyingWish(action) {
-		super.onDyingWish(action);
+    this.modifierName = 'Dying Wish';
+    this.description = 'Resummon this minion and deal 3 damage to all nearby enemies';
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			// deal damage to nearby enemies
-			this.getGameSession().executeAction(playCardAction);
-			const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
-			for (let entity of Array.from(entities)) {
-				const damageAction = new DamageAction(this.getGameSession());
-				damageAction.setOwnerId(this.getCard().getOwnerId());
-				damageAction.setSource(this.getCard());
-				damageAction.setTarget(entity);
-				damageAction.setDamageAmount(this.damageAmount);
-				this.getGameSession().executeAction(damageAction);
-			}
+    this.prototype.damageAmount = 3;
 
-			// respawn original card
-			const cardData = {id: this.getCard().getId()};
-			var playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, cardData);
-			playCardAction.setSource(this.getCard());
-			return this.getGameSession().executeAction(playCardAction);
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierDyingWish', 'FX.Modifiers.ModifierGenericSpawn', 'FX.Modifiers.ModifierGenericDamage'];
+    this.prototype.cardDataOrIndexToSpawn = null;
+  }
+
+  onDyingWish(action) {
+    super.onDyingWish(action);
+
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      // deal damage to nearby enemies
+      this.getGameSession().executeAction(playCardAction);
+      const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
+      for (const entity of Array.from(entities)) {
+        const damageAction = new DamageAction(this.getGameSession());
+        damageAction.setOwnerId(this.getCard().getOwnerId());
+        damageAction.setSource(this.getCard());
+        damageAction.setTarget(entity);
+        damageAction.setDamageAmount(this.damageAmount);
+        this.getGameSession().executeAction(damageAction);
+      }
+
+      // respawn original card
+      const cardData = { id: this.getCard().getId() };
+      var playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, cardData);
+      playCardAction.setSource(this.getCard());
+      return this.getGameSession().executeAction(playCardAction);
+    }
+  }
 }
 ModifierDyingWishCorpseCombustion.initClass();
 

@@ -1,3 +1,10 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,70 +15,68 @@
 const Modifier = require('./modifier');
 
 class ModifierCostEqualGeneralHealth extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierCostEqualGeneralHealth";
-		this.type ="ModifierCostEqualGeneralHealth";
-	
-		this.modifierName = "Raging Taura";
-		this.description ="This minion's cost is equal to your General's Health";
-	
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInHand = true;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.maxStacks = 1;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierCostEqualGeneralHealth';
+    this.type = 'ModifierCostEqualGeneralHealth';
 
-	constructor(gameSession) {
-		super(gameSession);
-		this.attributeBuffsAbsolute = ["manaCost"];
-		this.attributeBuffsFixed = ["manaCost"];
-	}
+    this.modifierName = 'Raging Taura';
+    this.description = 'This minion\'s cost is equal to your General\'s Health';
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInHand = true;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
 
-		p.cachedManaCost = 0;
+    this.prototype.maxStacks = 1;
+  }
 
-		return p;
-	}
+  constructor(gameSession) {
+    super(gameSession);
+    this.attributeBuffsAbsolute = ['manaCost'];
+    this.attributeBuffsFixed = ['manaCost'];
+  }
 
-	getBuffedAttribute(attributeValue, buffKey) {
-		if (buffKey === "manaCost") {
-			return this._private.cachedManaCost;
-		} else {
-			return super.getBuffedAttribute(attributeValue, buffKey);
-		}
-	}
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
 
-	getBuffsAttributes() {
-		return true;
-	}
+    p.cachedManaCost = 0;
 
-	getBuffsAttribute(buffKey) {
-		return (buffKey === "manaCost") || super.getBuffsAttribute(buffKey);
-	}
+    return p;
+  }
 
-	updateCachedStateAfterActive() {
-		super.updateCachedStateAfterActive();
+  getBuffedAttribute(attributeValue, buffKey) {
+    if (buffKey === 'manaCost') {
+      return this._private.cachedManaCost;
+    }
+    return super.getBuffedAttribute(attributeValue, buffKey);
+  }
 
-		const card = this.getCard();
-		const owner = card != null ? card.getOwner() : undefined;
-		const general = this.getGameSession().getGeneralForPlayer(owner);
-		let manaCost = 0;
-		if (general != null) {
-			manaCost = Math.max(0, general.getHP());
-		} else {
-			manaCost = 0;
-		}
+  getBuffsAttributes() {
+    return true;
+  }
 
-		if (this._private.cachedManaCost !== manaCost) {
-			this._private.cachedManaCost = manaCost;
-			return this.getCard().flushCachedAttribute("manaCost");
-		}
-	}
+  getBuffsAttribute(buffKey) {
+    return (buffKey === 'manaCost') || super.getBuffsAttribute(buffKey);
+  }
+
+  updateCachedStateAfterActive() {
+    super.updateCachedStateAfterActive();
+
+    const card = this.getCard();
+    const owner = card != null ? card.getOwner() : undefined;
+    const general = this.getGameSession().getGeneralForPlayer(owner);
+    let manaCost = 0;
+    if (general != null) {
+      manaCost = Math.max(0, general.getHP());
+    } else {
+      manaCost = 0;
+    }
+
+    if (this._private.cachedManaCost !== manaCost) {
+      this._private.cachedManaCost = manaCost;
+      return this.getCard().flushCachedAttribute('manaCost');
+    }
+  }
 }
 ModifierCostEqualGeneralHealth.initClass();
 

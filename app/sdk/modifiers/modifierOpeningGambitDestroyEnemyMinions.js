@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,39 +14,37 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('app/common/config');
-const ModifierOpeningGambit = require('./modifierOpeningGambit');
 const KillAction = require('app/sdk/actions/killAction');
 const CardType = require('app/sdk/cards/cardType');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
 
 class ModifierOpeningGambitDestroyEnemyMinions extends ModifierOpeningGambit {
-	static initClass() {
-	
-		this.prototype.type = "ModifierOpeningGambitDestroyEnemyMinions";
-		this.type = "ModifierOpeningGambitDestroyEnemyMinions";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpeningGambitDestroyEnemyMinions';
+    this.type = 'ModifierOpeningGambitDestroyEnemyMinions';
 
-	onOpeningGambit() {
+    this.prototype.fxResource = ['FX.Modifiers.ModifierOpeningGambit'];
+  }
 
-		const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, CONFIG.WHOLE_BOARD_RADIUS);
+  onOpeningGambit() {
+    const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, CONFIG.WHOLE_BOARD_RADIUS);
 
-		return (() => {
-			const result = [];
-			for (let entity of Array.from(entities)) {
-				if (!entity.getIsGeneral()) { // this ability only kills minions, not Generals
-					const killAction = new KillAction(this.getGameSession());
-					killAction.setOwnerId(this.getCard().getOwnerId());
-					killAction.setSource(this.getCard());
-					killAction.setTarget(entity);
-					result.push(this.getGameSession().executeAction(killAction));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    return (() => {
+      const result = [];
+      for (const entity of Array.from(entities)) {
+        if (!entity.getIsGeneral()) { // this ability only kills minions, not Generals
+          const killAction = new KillAction(this.getGameSession());
+          killAction.setOwnerId(this.getCard().getOwnerId());
+          killAction.setSource(this.getCard());
+          killAction.setTarget(entity);
+          result.push(this.getGameSession().executeAction(killAction));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 ModifierOpeningGambitDestroyEnemyMinions.initClass();
 

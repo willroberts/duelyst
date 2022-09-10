@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-restricted-syntax,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -11,28 +18,27 @@ const i18next = require('i18next');
 // Given when a player loses 15 games
 
 class TheArtOfWarAchievement extends Achievement {
-	static initClass() {
-		this.id = "theArtOfWarAchievement";
-		this.title = i18next.t("achievements.art_of_war_title");
-		this.description = i18next.t("achievements.art_of_war_desc");
-		this.progressRequired = 50;
-		this.rewards =
-			{gold: 100};
-	}
+  static initClass() {
+    this.id = 'theArtOfWarAchievement';
+    this.title = i18next.t('achievements.art_of_war_title');
+    this.description = i18next.t('achievements.art_of_war_desc');
+    this.progressRequired = 50;
+    this.rewards =			{ gold: 100 };
+  }
 
-	static progressForGameDataForPlayerId(gameData,playerId,isUnscored,isDraw) {
-		if (isUnscored || !GameType.isFactionXPGameType(gameData.gameType)) {
-			return 0;
-		}
+  static progressForGameDataForPlayerId(gameData, playerId, isUnscored, isDraw) {
+    if (isUnscored || !GameType.isFactionXPGameType(gameData.gameType)) {
+      return 0;
+    }
 
-		for (let player of Array.from(gameData.players)) {
-			if (player.playerId === playerId) {
-				return 1;
-			}
-		}
+    for (const player of Array.from(gameData.players)) {
+      if (player.playerId === playerId) {
+        return 1;
+      }
+    }
 
-		return 0;
-	}
+    return 0;
+  }
 }
 TheArtOfWarAchievement.initClass();
 

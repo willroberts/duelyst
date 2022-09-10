@@ -1,3 +1,22 @@
+/* eslint-disable
+    func-names,
+    implicit-arrow-linebreak,
+    import/no-extraneous-dependencies,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-return-assign,
+    no-tabs,
+    no-underscore-dangle,
+    no-use-before-define,
+    no-useless-escape,
+    no-var,
+    prefer-destructuring,
+    radix,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -26,120 +45,126 @@ const _ = require('underscore');
 const helpers = require('scripts/helpers');
 const fs = require('fs');
 
-UtilsLocalization.PATH_TO_LOCALES = "../../app/localization/locales";
+UtilsLocalization.PATH_TO_LOCALES = '../../app/localization/locales';
 
+UtilsLocalization.createBlankJsonForKeys = function (keys, defaultTo) {
+  const jsonData = {};
+  _.each(keys, (key) => {
+    const splitKeyVals = key.split('.');
+    jsonData[splitKeyVals[0]] = jsonData[splitKeyVals[0]] || {};
+    if (__guard__(defaultTo != null ? defaultTo[splitKeyVals[0]] : undefined, (x) => x[splitKeyVals[1]]) != null) {
+      return jsonData[splitKeyVals[0]][splitKeyVals[1]] = defaultTo[splitKeyVals[0]][splitKeyVals[1]];
+    }
+    return jsonData[splitKeyVals[0]][splitKeyVals[1]] = '';
+  });
 
-
-UtilsLocalization.createBlankJsonForKeys = function(keys,defaultTo) {
-	const jsonData = {};
-	_.each(keys, function(key){
-		const splitKeyVals = key.split(".");
-		jsonData[splitKeyVals[0]] = jsonData[splitKeyVals[0]] || {};
-		if (__guard__(defaultTo != null ? defaultTo[splitKeyVals[0]] : undefined, x => x[splitKeyVals[1]]) != null) {
-			return jsonData[splitKeyVals[0]][splitKeyVals[1]] = defaultTo[splitKeyVals[0]][splitKeyVals[1]];
-		} else {
-			return jsonData[splitKeyVals[0]][splitKeyVals[1]] = "";
-		}
-	});
-
-	return jsonData;
+  return jsonData;
 };
 
-UtilsLocalization.getAllKeysFromLocalizationJsonData = jsonData => _.reduce(jsonData, (memo, val, key) => memo.concat(_.reduce(val,function(innerMemo,innerVal,innerKey) {
-    innerMemo.push(`${key}.${innerKey}`);
-    return innerMemo;
-}
-,[]))
-,[]);
+UtilsLocalization.getAllKeysFromLocalizationJsonData = (jsonData) => _.reduce(
+  jsonData,
+  (memo, val, key) => memo.concat(_.reduce(
+    val,
+    (innerMemo, innerVal, innerKey) => {
+      innerMemo.push(`${key}.${innerKey}`);
+      return innerMemo;
+    },
+    [],
+  )),
+  [],
+);
 
-UtilsLocalization.readFileToJsonData = fileName => new Promise( (resolve, reject) => fs.readFile(fileName, function(err,contents) {
-    if (err) {
-        reject(err);
-}
-    return resolve(contents);
-})).then(fileContents => Promise.resolve(JSON.parse(fileContents)));
+UtilsLocalization.readFileToJsonData = (fileName) => new Promise((resolve, reject) => fs.readFile(fileName, (err, contents) => {
+  if (err) {
+    reject(err);
+  }
+  return resolve(contents);
+})).then((fileContents) => Promise.resolve(JSON.parse(fileContents)));
 
-UtilsLocalization.writeMissingTranslationFiles = function(languageKey, englishData, translationData) {
-	const englishKeys = UtilsLocalization.getAllKeysFromLocalizationJsonData(englishData);
-	const translationKeys = UtilsLocalization.getAllKeysFromLocalizationJsonData(translationData);
+UtilsLocalization.writeMissingTranslationFiles = function (languageKey, englishData, translationData) {
+  const englishKeys = UtilsLocalization.getAllKeysFromLocalizationJsonData(englishData);
+  const translationKeys = UtilsLocalization.getAllKeysFromLocalizationJsonData(translationData);
 
-	const missingKeysFromTranslation = _.difference(englishKeys,translationKeys);
+  const missingKeysFromTranslation = _.difference(englishKeys, translationKeys);
 
-	const emptyJsonForMissingTranslationKeys = UtilsLocalization.createBlankJsonForKeys(missingKeysFromTranslation);
-	const missingTranslationKeysStr = JSON.stringify(emptyJsonForMissingTranslationKeys,null,2);
+  const emptyJsonForMissingTranslationKeys = UtilsLocalization.createBlankJsonForKeys(missingKeysFromTranslation);
+  const missingTranslationKeysStr = JSON.stringify(emptyJsonForMissingTranslationKeys, null, 2);
 
-	const defaultedJsonForMissingTranslationKeys = UtilsLocalization.createBlankJsonForKeys(missingKeysFromTranslation,englishData);
-	const missingGermanKeysDefaultedStr = JSON.stringify(defaultedJsonForMissingTranslationKeys,null,2);
+  const defaultedJsonForMissingTranslationKeys = UtilsLocalization.createBlankJsonForKeys(missingKeysFromTranslation, englishData);
+  const missingGermanKeysDefaultedStr = JSON.stringify(defaultedJsonForMissingTranslationKeys, null, 2);
 
-	return Promise.all([
-		helpers.writeFile(`./localization_output/missing_${languageKey}_translations_empty.json`,missingTranslationKeysStr),
-		helpers.writeFile(`./localization_output/missing_${languageKey}_translations_with_english.json`,missingGermanKeysDefaultedStr)
-	]);
+  return Promise.all([
+    helpers.writeFile(`./localization_output/missing_${languageKey}_translations_empty.json`, missingTranslationKeysStr),
+    helpers.writeFile(`./localization_output/missing_${languageKey}_translations_with_english.json`, missingGermanKeysDefaultedStr),
+  ]);
 };
 
-UtilsLocalization.generateLastUpdatedDataForKeys = function(languageKey,translationKeys){
+UtilsLocalization.generateLastUpdatedDataForKeys = function (languageKey, translationKeys) {
 //	return Promise.map(translationKeys.slice(0,15),(key)->
-	const bar = new ProgressBar(`processing ${languageKey} [:bar] :current/:total :percent :etas :elapsed`, {
-		complete: '=',
-		incomplete: ' ',
-		width: 20,
-		total: translationKeys.length
-	});
-	return Promise.map(translationKeys,key => UtilsLocalization.getLastUpdatedCommitForTranslation(languageKey,key)
-    .then(function(lastUpdatedCommitMsg){
-        const splitMsg = lastUpdatedCommitMsg.split(",");
+  const bar = new ProgressBar(`processing ${languageKey} [:bar] :current/:total :percent :etas :elapsed`, {
+    complete: '=',
+    incomplete: ' ',
+    width: 20,
+    total: translationKeys.length,
+  });
+  return Promise.map(
+    translationKeys,
+    (key) => UtilsLocalization.getLastUpdatedCommitForTranslation(languageKey, key)
+      .then((lastUpdatedCommitMsg) => {
+        const splitMsg = lastUpdatedCommitMsg.split(',');
         const lastUpdateData = {
-            committed_at: parseInt(splitMsg[0])*1000,
-            commit_hash: splitMsg[1]
+          committed_at: parseInt(splitMsg[0]) * 1000,
+          commit_hash: splitMsg[1],
         };
         bar.tick();
-        return Promise.resolve([key,lastUpdateData]);
-    })
-	,{concurrency:10})
-	.then(function(keyValuePairsOfLastUpdates){
-	//	console.log("here #{JSON.stringify(keyValuePairsOfLastUpdates,null,2)}")
-		const lastUpdatedData = _.reduce(keyValuePairsOfLastUpdates,function(memo,pair){
-			memo[pair[0]] = pair[1];
-			return memo;
-		}
-		,{});
-//		console.log("here #{JSON.stringify(lastUpdatedData,null,2)}")
-		return Promise.resolve(lastUpdatedData);
-	});
+        return Promise.resolve([key, lastUpdateData]);
+      }),
+    { concurrency: 10 },
+  )
+    .then((keyValuePairsOfLastUpdates) => {
+      //	console.log("here #{JSON.stringify(keyValuePairsOfLastUpdates,null,2)}")
+      const lastUpdatedData = _.reduce(
+        keyValuePairsOfLastUpdates,
+        (memo, pair) => {
+          memo[pair[0]] = pair[1];
+          return memo;
+        },
+        {},
+      );
+      //		console.log("here #{JSON.stringify(lastUpdatedData,null,2)}")
+      return Promise.resolve(lastUpdatedData);
+    });
 };
 
 UtilsLocalization.getLastUpdatedCommitForTranslation = (languageKey, translationKey) => //    git log -G "win_streak_message" --pretty=oneline --max-count=1 ./rank.json
-runCommand(buildLastCommitCommandStrForTranslation(languageKey,translationKey))
-.then(
-    result => //        console.log("here last time #{translationKey} was update is: " + result)
-    Promise.resolve(result)
-);
+  runCommand(buildLastCommitCommandStrForTranslation(languageKey, translationKey))
+    .then(
+      (result) => //        console.log("here last time #{translationKey} was update is: " + result)
+        Promise.resolve(result),
+    );
 
-UtilsLocalization.getTranslationFromFullKey = (translationData, fullTranslationKey) => translationData[fullTranslationKey.split(".")[0]][fullTranslationKey.split(".")[1]];
-
+UtilsLocalization.getTranslationFromFullKey = (translationData, fullTranslationKey) => translationData[fullTranslationKey.split('.')[0]][fullTranslationKey.split('.')[1]];
 
 // Sub helpers
-var runCommand = commandStr => new Promise( (resolve, reject) => npmRun(commandStr,{},function(err,stdOut,stdErr){
-    if (err != null) {
-        return reject(err);
-    } else {
-        return resolve(stdOut);
-    }
+var runCommand = (commandStr) => new Promise((resolve, reject) => npmRun(commandStr, {}, (err, stdOut, stdErr) => {
+  if (err != null) {
+    return reject(err);
+  }
+  return resolve(stdOut);
 }));
 
-var buildLastCommitCommandStrForTranslation = function(languageKey,translationKey) {
-	const splitTranslationKey = translationKey.split(".");
-	const categoryName = splitTranslationKey[0];
-	const subTranslationKey = splitTranslationKey[1];
-	// TODO: need to perform a regex that will only look within a category
-	// See https://git-scm.com/docs/git-log#_pretty_formats for different formats
-	if (languageKey === "en") {
-//		return "git log -G \"#{subTranslationKey}\" --pretty=oneline --max-count=1 #{UtilsLocalization.PATH_TO_LOCALES}/#{languageKey}/#{categoryName}.json"
-		return `git log -G \"${subTranslationKey}\" --pretty=format:%at,%H --max-count=1 ${UtilsLocalization.PATH_TO_LOCALES}/${languageKey}/${categoryName}.json`;
-	} else {
-//		return "git log -G \"#{subTranslationKey}\" --pretty=oneline --max-count=1 #{UtilsLocalization.PATH_TO_LOCALES}/#{languageKey}/index.json"
-		return `git log -G \"${subTranslationKey}\" --pretty=format:%at,%H --max-count=1 ${UtilsLocalization.PATH_TO_LOCALES}/${languageKey}/index.json`;
-	}
+var buildLastCommitCommandStrForTranslation = function (languageKey, translationKey) {
+  const splitTranslationKey = translationKey.split('.');
+  const categoryName = splitTranslationKey[0];
+  const subTranslationKey = splitTranslationKey[1];
+  // TODO: need to perform a regex that will only look within a category
+  // See https://git-scm.com/docs/git-log#_pretty_formats for different formats
+  if (languageKey === 'en') {
+    //		return "git log -G \"#{subTranslationKey}\" --pretty=oneline --max-count=1 #{UtilsLocalization.PATH_TO_LOCALES}/#{languageKey}/#{categoryName}.json"
+    return `git log -G \"${subTranslationKey}\" --pretty=format:%at,%H --max-count=1 ${UtilsLocalization.PATH_TO_LOCALES}/${languageKey}/${categoryName}.json`;
+  }
+  //		return "git log -G \"#{subTranslationKey}\" --pretty=oneline --max-count=1 #{UtilsLocalization.PATH_TO_LOCALES}/#{languageKey}/index.json"
+  return `git log -G \"${subTranslationKey}\" --pretty=format:%at,%H --max-count=1 ${UtilsLocalization.PATH_TO_LOCALES}/${languageKey}/index.json`;
 };
 
 // end sub helpers

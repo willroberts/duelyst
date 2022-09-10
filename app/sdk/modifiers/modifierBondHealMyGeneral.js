@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/no-unresolved,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,41 +10,39 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('app/common/config');
-const Modifier = require('./modifier');
-const ModifierBond = require('./modifierBond');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const CardType = require('app/sdk/cards/cardType');
 const HealAction = require('app/sdk/actions/healAction');
 const _ = require('underscore');
+const ModifierBond = require('./modifierBond');
+const Modifier = require('./modifier');
 
 class ModifierBondHealMyGeneral extends ModifierBond {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBondHealMyGeneral";
-		this.type ="ModifierBondHealMyGeneral";
-	
-		this.description = "Heal your General";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierBond"];
-	
-		this.prototype.healAmount = 0;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBondHealMyGeneral';
+    this.type = 'ModifierBondHealMyGeneral';
 
-	static createContextObject(healAmount) {
-		const contextObject = super.createContextObject();
-		contextObject.healAmount = healAmount;
-		return contextObject;
-	}
+    this.description = 'Heal your General';
 
-	onBond() {
+    this.prototype.fxResource = ['FX.Modifiers.ModifierBond'];
 
-		const healAction = new HealAction(this.getGameSession());
-		healAction.setOwnerId(this.getCard().getOwnerId());
-		healAction.setTarget(this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId()));
-		healAction.setHealAmount(this.healAmount);
+    this.prototype.healAmount = 0;
+  }
 
-		return this.getGameSession().executeAction(healAction);
-	}
+  static createContextObject(healAmount) {
+    const contextObject = super.createContextObject();
+    contextObject.healAmount = healAmount;
+    return contextObject;
+  }
+
+  onBond() {
+    const healAction = new HealAction(this.getGameSession());
+    healAction.setOwnerId(this.getCard().getOwnerId());
+    healAction.setTarget(this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId()));
+    healAction.setHealAmount(this.healAmount);
+
+    return this.getGameSession().executeAction(healAction);
+  }
 }
 ModifierBondHealMyGeneral.initClass();
 

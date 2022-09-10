@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-plusplus,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,51 +16,50 @@
  */
 const Cards = require('app/sdk/cards/cardsLookupComplete');
 const CardType = require('app/sdk/cards/cardType');
-const Spell = require('./spell');
 const DamageAction = require('app/sdk/actions/damageAction');
 const HealAction = require('app/sdk/actions/healAction');
+const Spell = require('./spell');
 
 class SpellTickleTendril extends Spell {
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+    const position = { x, y };
+    const entity = board.getUnitAtPosition(position);
 
-		const position = {x, y};
-		const entity = board.getUnitAtPosition(position);
+    if (entity != null) {
+      let maxDamageAmount = 0;
+      for (const card of Array.from(this.getGameSession().getBoard().getCards(CardType.Tile, true))) {
+        if ((card.getBaseCardId() === Cards.Tile.Shadow) && card.isOwnedBy(this.getOwner())) {
+          maxDamageAmount++; // increase damage of spell
+        }
+      }
 
-		if (entity != null) {
-			let maxDamageAmount = 0;
-			for (let card of Array.from(this.getGameSession().getBoard().getCards(CardType.Tile, true))) {
-				if ((card.getBaseCardId() === Cards.Tile.Shadow) && card.isOwnedBy(this.getOwner())) {
-					maxDamageAmount++; //increase damage of spell
-				}
-			}
+      if (maxDamageAmount > 0) {
+        let finalDamageAmount = 0;
+        if (maxDamageAmount < entity.getHP()) {
+          finalDamageAmount = maxDamageAmount;
+        } else {
+          finalDamageAmount = entity.getHP();
+        }
 
-			if (maxDamageAmount > 0) {
-				let finalDamageAmount = 0;
-				if (maxDamageAmount < entity.getHP()) {
-					finalDamageAmount = maxDamageAmount;
-				} else {
-					finalDamageAmount = entity.getHP();
-				}
+        // heal my general
+        const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+        const healAction = new HealAction(this.getGameSession());
+        healAction.setOwnerId(this.getOwnerId());
+        healAction.setTarget(myGeneral);
+        healAction.setHealAmount(finalDamageAmount);
+        this.getGameSession().executeAction(healAction);
 
-				// heal my general
-				const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
-				const healAction = new HealAction(this.getGameSession());
-				healAction.setOwnerId(this.getOwnerId());
-				healAction.setTarget(myGeneral);
-				healAction.setHealAmount(finalDamageAmount);
-				this.getGameSession().executeAction(healAction);
-
-				// damage enemy minion
-				const damageAction = new DamageAction(this.getGameSession());
-				damageAction.setOwnerId(this.getOwnerId());
-				damageAction.setTarget(entity);
-				damageAction.setDamageAmount(finalDamageAmount);
-				return this.getGameSession().executeAction(damageAction);
-			}
-		}
-	}
+        // damage enemy minion
+        const damageAction = new DamageAction(this.getGameSession());
+        damageAction.setOwnerId(this.getOwnerId());
+        damageAction.setTarget(entity);
+        damageAction.setDamageAmount(finalDamageAmount);
+        return this.getGameSession().executeAction(damageAction);
+      }
+    }
+  }
 }
 
 module.exports = SpellTickleTendril;

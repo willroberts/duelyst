@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/no-unresolved,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -8,39 +13,38 @@ const CardsLookup = require('app/sdk/cards/cardsLookup');
 const i18next = require('i18next');
 
 class ShopAchievement extends Achievement {
-	static initClass() {
-		this.id = "bronze_special_purchased";
-		this.title = i18next.t("achievements.bronze_starter_bundle_title");
-		this.description = i18next.t("achievements.bronze_starter_bundle_desc");
-		this.progressRequired = 1;
-		this.rewards = {
-			cards: [
-				{
-					"rarity":4,
-					"count":3,
-					"cardSet":1,
-					"sample": [
-						CardsLookup.Neutral.Pandora,
-						CardsLookup.Neutral.Spelljammer,
-						CardsLookup.Neutral.ArchonSpellbinder,
-						CardsLookup.Neutral.RedSynja,
-						CardsLookup.Neutral.DarkNemesis,
-						CardsLookup.Neutral.JaxTruesight
-					],
-					"factionId":[100]
-				}
-			]
-		};
-		this.enabled = true;
-	}
+  static initClass() {
+    this.id = 'bronze_special_purchased';
+    this.title = i18next.t('achievements.bronze_starter_bundle_title');
+    this.description = i18next.t('achievements.bronze_starter_bundle_desc');
+    this.progressRequired = 1;
+    this.rewards = {
+      cards: [
+        {
+          rarity: 4,
+          count: 3,
+          cardSet: 1,
+          sample: [
+            CardsLookup.Neutral.Pandora,
+            CardsLookup.Neutral.Spelljammer,
+            CardsLookup.Neutral.ArchonSpellbinder,
+            CardsLookup.Neutral.RedSynja,
+            CardsLookup.Neutral.DarkNemesis,
+            CardsLookup.Neutral.JaxTruesight,
+          ],
+          factionId: [100],
+        },
+      ],
+    };
+    this.enabled = true;
+  }
 
-	static progressForArmoryTransaction(armoryTransactionSku) {
-		if (armoryTransactionSku.indexOf("BRONZE_DIVISION_STARTER_SPECIAL") !== -1) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
+  static progressForArmoryTransaction(armoryTransactionSku) {
+    if (armoryTransactionSku.indexOf('BRONZE_DIVISION_STARTER_SPECIAL') !== -1) {
+      return 1;
+    }
+    return 0;
+  }
 }
 ShopAchievement.initClass();
 

@@ -1,3 +1,12 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,76 +19,79 @@ const CONFIG = require('app/common/config');
 const UtilsJavascript = require('app/common/utils/utils_javascript');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const UtilsPosition = require('app/common/utils/utils_position');
-const ModifierSummonWatch = require('./modifierSummonWatch');
 const CardType = require('app/sdk/cards/cardType');
 const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
-const ModifierOpponentSummonWatch = require('./modifierOpponentSummonWatch');
 const CloneEntityAsTransformAction = require('app/sdk/actions/cloneEntityAsTransformAction');
-const Modifier = require('./modifier');
 const RemoveAction = require('app/sdk/actions/removeAction');
 const Factions = require('app/sdk/cards/factionsLookup');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
+const Modifier = require('./modifier');
+const ModifierOpponentSummonWatch = require('./modifierOpponentSummonWatch');
+const ModifierSummonWatch = require('./modifierSummonWatch');
 
 class ModifierOpponentSummonWatchRandomTransform extends ModifierOpponentSummonWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOpponentSummonWatchRandomTransform";
-		this.type ="ModifierOpponentSummonWatchRandomTransform";
-	
-		this.modifierName ="Opponent Summon Watch";
-		this.description ="Whenever an enemy summons a minion, transform it into a random minion of the same cost";
-	
-		this.prototype.cardDataOrIndexToSpawn = null;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpponentSummonWatchRandomTransform';
+    this.type = 'ModifierOpponentSummonWatchRandomTransform';
 
-	static createContextObject(options) {
-		const contextObject = super.createContextObject(options);
+    this.modifierName = 'Opponent Summon Watch';
+    this.description = 'Whenever an enemy summons a minion, transform it into a random minion of the same cost';
 
-		return contextObject;
-	}
+    this.prototype.cardDataOrIndexToSpawn = null;
 
-	onSummonWatch(action) {
-		super.onSummonWatch(action);
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch', 'FX.Modifiers.ModifierGenericSpawn'];
+  }
 
-		const targetUnit = action.getTarget();
-		const targetManaCost = targetUnit.getManaCost();
-		const targetOwnerId = targetUnit.getOwnerId();
-		const targetPosition = targetUnit.getPosition();
+  static createContextObject(options) {
+    const contextObject = super.createContextObject(options);
 
-		if (targetUnit != null) {
-			// find valid minions
-			let card;
-			const cardCache = this.getGameSession().getCardCaches().getIsHiddenInCollection(false).getIsGeneral(false).getIsPrismatic(false).getIsSkinned(false).getType(CardType.Unit).getCards();
-			const cards = [];
-			for (card of Array.from(cardCache)) {
-				if (card.getManaCost() === targetManaCost) {
-					cards.push(card);
-				}
-			}
+    return contextObject;
+  }
 
-			if (cards.length > 0) {
-				// remove original entity
-				const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
-				removeOriginalEntityAction.setOwnerId(this.getOwnerId());
-				removeOriginalEntityAction.setTarget(targetUnit);
-				this.getGameSession().executeAction(removeOriginalEntityAction);
+  onSummonWatch(action) {
+    super.onSummonWatch(action);
 
-				// pick randomly from among the units we found with right mana cost
-				card = cards[this.getGameSession().getRandomIntegerForExecution(cards.length)];
-				this.cardDataOrIndexToSpawn = card.createNewCardData();
+    const targetUnit = action.getTarget();
+    const targetManaCost = targetUnit.getManaCost();
+    const targetOwnerId = targetUnit.getOwnerId();
+    const targetPosition = targetUnit.getPosition();
 
-				const spawnEntityAction = new PlayCardAsTransformAction(this.getCard().getGameSession(), targetOwnerId, targetPosition.x, targetPosition.y, this.cardDataOrIndexToSpawn);
-				return this.getGameSession().executeAction(spawnEntityAction);
-			}
-		}
-	}
+    if (targetUnit != null) {
+      // find valid minions
+      let card;
+      const cardCache = this.getGameSession().getCardCaches().getIsHiddenInCollection(false).getIsGeneral(false)
+        .getIsPrismatic(false)
+        .getIsSkinned(false)
+        .getType(CardType.Unit)
+        .getCards();
+      const cards = [];
+      for (card of Array.from(cardCache)) {
+        if (card.getManaCost() === targetManaCost) {
+          cards.push(card);
+        }
+      }
 
-	getIsCardRelevantToWatcher(card) {
-		return true;
-	}
+      if (cards.length > 0) {
+        // remove original entity
+        const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
+        removeOriginalEntityAction.setOwnerId(this.getOwnerId());
+        removeOriginalEntityAction.setTarget(targetUnit);
+        this.getGameSession().executeAction(removeOriginalEntityAction);
+
+        // pick randomly from among the units we found with right mana cost
+        card = cards[this.getGameSession().getRandomIntegerForExecution(cards.length)];
+        this.cardDataOrIndexToSpawn = card.createNewCardData();
+
+        const spawnEntityAction = new PlayCardAsTransformAction(this.getCard().getGameSession(), targetOwnerId, targetPosition.x, targetPosition.y, this.cardDataOrIndexToSpawn);
+        return this.getGameSession().executeAction(spawnEntityAction);
+      }
+    }
+  }
+
+  getIsCardRelevantToWatcher(card) {
+    return true;
+  }
 }
-ModifierOpponentSummonWatchRandomTransform.initClass(); //default when no card restrictions are needed
+ModifierOpponentSummonWatchRandomTransform.initClass(); // default when no card restrictions are needed
 
 module.exports = ModifierOpponentSummonWatchRandomTransform;

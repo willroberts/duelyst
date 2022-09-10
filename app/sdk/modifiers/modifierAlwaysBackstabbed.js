@@ -1,63 +1,69 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier');
-const ModifierBackstab = require('./modifierBackstab');
 const EVENTS = require('app/common/event_types');
 const AttackAction = require('app/sdk/actions/attackAction');
+const Modifier = require('./modifier');
+const ModifierBackstab = require('./modifierBackstab');
 
 class ModifierAlwaysBackstabbed extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierAlwaysBackstabbed";
-		this.type ="ModifierAlwaysBackstabbed";
-	
-		this.isHiddenToUI = false;
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierAlwaysBackstabbed"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierAlwaysBackstabbed';
+    this.type = 'ModifierAlwaysBackstabbed';
 
-	onEvent(event) {
-		super.onEvent(event);
+    this.isHiddenToUI = false;
 
-		if (this._private.listeningToEvents) {
-			if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
-				return this.onModifyActionForEntitiesInvolvedInAttack(event);
-			}
-		}
-	}
-		
-	getIsActionRelevant(a) {
-		return a instanceof AttackAction && (a.getTarget() === this.getCard());
-	}
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
 
-	_modifyAction(a) {
-		a.setChangedByModifier(this);
-		return a.setIsStrikebackAllowed(false); // backstab attacker does not suffer strikeback
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierAlwaysBackstabbed'];
+  }
 
-	onModifyActionForExecution(actionEvent) {
-		super.onModifyActionForExecution(actionEvent);
-		const a = actionEvent.action;
-		if (this.getIsActionRelevant(a)) {
-			return this._modifyAction(a);
-		}
-	}
+  onEvent(event) {
+    super.onEvent(event);
 
-	onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
-		const a = actionEvent.action;
-		if (this.getIsActive() && this.getIsActionRelevant(a)) {
-			return this._modifyAction(a);
-		}
-	}
+    if (this._private.listeningToEvents) {
+      if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
+        return this.onModifyActionForEntitiesInvolvedInAttack(event);
+      }
+    }
+  }
+
+  getIsActionRelevant(a) {
+    return a instanceof AttackAction && (a.getTarget() === this.getCard());
+  }
+
+  _modifyAction(a) {
+    a.setChangedByModifier(this);
+    return a.setIsStrikebackAllowed(false); // backstab attacker does not suffer strikeback
+  }
+
+  onModifyActionForExecution(actionEvent) {
+    super.onModifyActionForExecution(actionEvent);
+    const a = actionEvent.action;
+    if (this.getIsActionRelevant(a)) {
+      return this._modifyAction(a);
+    }
+  }
+
+  onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
+    const a = actionEvent.action;
+    if (this.getIsActive() && this.getIsActionRelevant(a)) {
+      return this._modifyAction(a);
+    }
+  }
 }
 ModifierAlwaysBackstabbed.initClass();
 

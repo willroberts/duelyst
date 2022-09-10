@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/no-unresolved,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -10,30 +15,30 @@ const CosmeticsTypeLookup = require('app/sdk/cosmetics/cosmeticsTypeLookup');
 const _ = require('underscore');
 
 class HomeTurfAchievement extends Achievement {
-	static initClass() {
-		this.id = "homeTurf";
-		this.title = "Home Turf";
-		this.description = "You've won 5 games as Player One. Enjoy a free Premium Battle Map on us!";
-		this.progressRequired = 5;
-		this.enabled = false;
-		this.rewards = {
-			newRandomCosmetics: [
-				{ type: CosmeticsTypeLookup.BattleMap }
-			]
-		};
-	}
+  static initClass() {
+    this.id = 'homeTurf';
+    this.title = 'Home Turf';
+    this.description = 'You\'ve won 5 games as Player One. Enjoy a free Premium Battle Map on us!';
+    this.progressRequired = 5;
+    this.enabled = false;
+    this.rewards = {
+      newRandomCosmetics: [
+        { type: CosmeticsTypeLookup.BattleMap },
+      ],
+    };
+  }
 
-	static progressForGameDataForPlayerId(gameData,playerId,isUnscored,isDraw) {
-		if (isUnscored || !GameType.isFactionXPGameType(gameData.gameType)) {
-			return 0;
-		}
+  static progressForGameDataForPlayerId(gameData, playerId, isUnscored, isDraw) {
+    if (isUnscored || !GameType.isFactionXPGameType(gameData.gameType)) {
+      return 0;
+    }
 
-		if ((gameData.players[0].playerId === playerId) && gameData.players[0].isWinner) {
-			return 1;
-		}
+    if ((gameData.players[0].playerId === playerId) && gameData.players[0].isWinner) {
+      return 1;
+    }
 
-		return 0;
-	}
+    return 0;
+  }
 }
 HomeTurfAchievement.initClass();
 

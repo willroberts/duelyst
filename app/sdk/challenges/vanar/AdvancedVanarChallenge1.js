@@ -1,3 +1,13 @@
+/* eslint-disable
+    class-methods-use-this,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-tabs,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -5,7 +15,7 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Challenge = require("app/sdk/challenges/challenge");
+const Challenge = require('app/sdk/challenges/challenge');
 const Instruction 	= require('app/sdk/challenges/instruction');
 const MoveAction 		= require('app/sdk/actions/moveAction');
 const AttackAction 	= require('app/sdk/actions/attackAction');
@@ -25,117 +35,112 @@ const i18next = require('i18next');
 // http://forums.duelyst.com/t/starter-challenge-vanar/7519
 
 class AdvancedVanarChallenge1 extends Challenge {
-	static initClass() {
-	
-		this.type = "AdvancedVanarChallenge1";
-		this.prototype.type = "AdvancedVanarChallenge1";
-		this.prototype.categoryType = ChallengeCategory.contest2.type;
-	
-		this.prototype.name = i18next.t("challenges.advanced_vanar_1_title");
-		this.prototype.description =i18next.t("challenges.advanced_vanar_1_description");
-		this.prototype.iconUrl = RSX.speech_portrait_vanar.img;
-	
-		this.prototype._musicOverride = RSX.music_battlemap_vanar.audio;
-	
-		this.prototype.otkChallengeStartMessage = i18next.t("challenges.advanced_vanar_1_start");
-		this.prototype.otkChallengeFailureMessages = [
-			i18next.t("challenges.advanced_vanar_1_fail")
-		];
-	
-		this.prototype.battleMapTemplateIndex = 3;
-		this.prototype.snapShotOnPlayerTurn = 0;
-		this.prototype.startingManaPlayer = CONFIG.MAX_MANA;
-		this.prototype.startingHandSizePlayer = 6;
-	}
+  static initClass() {
+    this.type = 'AdvancedVanarChallenge1';
+    this.prototype.type = 'AdvancedVanarChallenge1';
+    this.prototype.categoryType = ChallengeCategory.contest2.type;
 
-	getMyPlayerDeckData(gameSession){
-		return [
-			{id: Cards.Faction6.General},
-			{id: Cards.Spell.AspectOfTheWolf},
-			{id: Cards.Spell.IceCage},
-			{id: Cards.Spell.RitualOfTheWind},
-			{id: Cards.Spell.IceCage},
-			{id: Cards.Spell.RitualOfTheWind},
-			{id: Cards.Neutral.ZenRui}
-		];
-	}
+    this.prototype.name = i18next.t('challenges.advanced_vanar_1_title');
+    this.prototype.description = i18next.t('challenges.advanced_vanar_1_description');
+    this.prototype.iconUrl = RSX.speech_portrait_vanar.img;
 
-	getOpponentPlayerDeckData(gameSession){
-		return [
-			{id: Cards.Faction2.General},
-			{id: Cards.TutorialSpell.TutorialFireOrb}
-		];
-	}
+    this.prototype._musicOverride = RSX.music_battlemap_vanar.audio;
 
-	setupBoard(gameSession) {
-		let modifierContextObject;
-		super.setupBoard(gameSession);
+    this.prototype.otkChallengeStartMessage = i18next.t('challenges.advanced_vanar_1_start');
+    this.prototype.otkChallengeFailureMessages = [
+      i18next.t('challenges.advanced_vanar_1_fail'),
+    ];
 
-		const myPlayerId = gameSession.getMyPlayerId();
-		const opponentPlayerId = gameSession.getOpponentPlayerId();
+    this.prototype.battleMapTemplateIndex = 3;
+    this.prototype.snapShotOnPlayerTurn = 0;
+    this.prototype.startingManaPlayer = CONFIG.MAX_MANA;
+    this.prototype.startingHandSizePlayer = 6;
+  }
 
-		const general1 = gameSession.getGeneralForPlayerId(myPlayerId);
-		general1.setPosition({x: 7, y:0});
-		general1.maxHP = 25;
-		general1.setDamage(25-1);
-		const general2 = gameSession.getGeneralForPlayerId(opponentPlayerId);
-		general2.setPosition({x: 1, y: 4});
-		general2.maxHP = 25;
-		general2.setDamage(25-7);
+  getMyPlayerDeckData(gameSession) {
+    return [
+      { id: Cards.Faction6.General },
+      { id: Cards.Spell.AspectOfTheWolf },
+      { id: Cards.Spell.IceCage },
+      { id: Cards.Spell.RitualOfTheWind },
+      { id: Cards.Spell.IceCage },
+      { id: Cards.Spell.RitualOfTheWind },
+      { id: Cards.Neutral.ZenRui },
+    ];
+  }
 
-		this.applyCardToBoard({id: Cards.Neutral.Manaforger}, 5, 1, myPlayerId);
-		// buff mana forger
-		this.applyCardToBoard({id: Cards.Spell.PermafrostShield},5,1,myPlayerId);
+  getOpponentPlayerDeckData(gameSession) {
+    return [
+      { id: Cards.Faction2.General },
+      { id: Cards.TutorialSpell.TutorialFireOrb },
+    ];
+  }
 
-		this.applyCardToBoard({id: Cards.Faction6.HearthSister}, 8, 3, myPlayerId);
-		this.applyCardToBoard({id: Cards.Neutral.Manaforger}, 8, 1, myPlayerId);
-		//@applyCardToBoard({id: Cards.Neutral.Manaforger}, 8, 2, myPlayerId)
-		this.applyCardToBoard({id: Cards.Faction6.ArcticRhyno}, 8, 0, myPlayerId);
+  setupBoard(gameSession) {
+    let modifierContextObject;
+    super.setupBoard(gameSession);
 
+    const myPlayerId = gameSession.getMyPlayerId();
+    const opponentPlayerId = gameSession.getOpponentPlayerId();
 
-		const ladyLocke = this.applyCardToBoard({id: Cards.Neutral.LadyLocke},2,4,opponentPlayerId);
-		const chakri1 = this.applyCardToBoard({id: Cards.Faction2.ChakriAvatar},1,2,opponentPlayerId);
-		const manaForger = this.applyCardToBoard({id: Cards.Neutral.Manaforger},2,3,opponentPlayerId);
-		const owlbeast = this.applyCardToBoard({id: Cards.Neutral.OwlbeastSage},2,2,opponentPlayerId);
-		const chakri2 = this.applyCardToBoard({id: Cards.Faction2.ChakriAvatar},3,2,opponentPlayerId);
-		this.applyCardToBoard({id: Cards.Neutral.LadyLocke},2,1,opponentPlayerId);
+    const general1 = gameSession.getGeneralForPlayerId(myPlayerId);
+    general1.setPosition({ x: 7, y: 0 });
+    general1.maxHP = 25;
+    general1.setDamage(25 - 1);
+    const general2 = gameSession.getGeneralForPlayerId(opponentPlayerId);
+    general2.setPosition({ x: 1, y: 4 });
+    general2.maxHP = 25;
+    general2.setDamage(25 - 7);
 
-		// give lady lockes buffs to enemy manaforger, owlbeast, and both chakris
-		const lockPlayerModifier = ladyLocke.getModifierByType(ModifierOpeningGambitApplyPlayerModifiers.type);
-		for (modifierContextObject of Array.from(lockPlayerModifier.modifiersContextObjects[0].modifiersContextObjects)) {
-			gameSession.applyModifierContextObject(modifierContextObject, chakri1);
-		}
-		for (modifierContextObject of Array.from(lockPlayerModifier.modifiersContextObjects[0].modifiersContextObjects)) {
-			gameSession.applyModifierContextObject(modifierContextObject, manaForger);
-		}
-		for (modifierContextObject of Array.from(lockPlayerModifier.modifiersContextObjects[0].modifiersContextObjects)) {
-			gameSession.applyModifierContextObject(modifierContextObject, owlbeast);
-		}
-		for (modifierContextObject of Array.from(lockPlayerModifier.modifiersContextObjects[0].modifiersContextObjects)) {
-			gameSession.applyModifierContextObject(modifierContextObject, chakri2);
-		}
+    this.applyCardToBoard({ id: Cards.Neutral.Manaforger }, 5, 1, myPlayerId);
+    // buff mana forger
+    this.applyCardToBoard({ id: Cards.Spell.PermafrostShield }, 5, 1, myPlayerId);
 
-		// mana orbs
-		return this.applyCardToBoard({id: Cards.Tile.BonusMana},4,0);
-	}
+    this.applyCardToBoard({ id: Cards.Faction6.HearthSister }, 8, 3, myPlayerId);
+    this.applyCardToBoard({ id: Cards.Neutral.Manaforger }, 8, 1, myPlayerId);
+    // @applyCardToBoard({id: Cards.Neutral.Manaforger}, 8, 2, myPlayerId)
+    this.applyCardToBoard({ id: Cards.Faction6.ArcticRhyno }, 8, 0, myPlayerId);
 
-	setupOpponentAgent(gameSession) {
-		super.setupOpponentAgent(gameSession);
+    const ladyLocke = this.applyCardToBoard({ id: Cards.Neutral.LadyLocke }, 2, 4, opponentPlayerId);
+    const chakri1 = this.applyCardToBoard({ id: Cards.Faction2.ChakriAvatar }, 1, 2, opponentPlayerId);
+    const manaForger = this.applyCardToBoard({ id: Cards.Neutral.Manaforger }, 2, 3, opponentPlayerId);
+    const owlbeast = this.applyCardToBoard({ id: Cards.Neutral.OwlbeastSage }, 2, 2, opponentPlayerId);
+    const chakri2 = this.applyCardToBoard({ id: Cards.Faction2.ChakriAvatar }, 3, 2, opponentPlayerId);
+    this.applyCardToBoard({ id: Cards.Neutral.LadyLocke }, 2, 1, opponentPlayerId);
 
-		this._opponentAgent.addActionForTurn(0,AgentActions.createAgentSoftActionShowInstructionLabels([{
-			label:i18next.t("challenges.advanced_vanar_1_taunt"),
-			isSpeech:true,
-			yPosition:.7,
-			isPersistent: true,
-			isOpponent: true
-		}
-		]));
-		return this._opponentAgent.addActionForTurn(0,AgentActions.createAgentActionPlayCardFindPosition(0,() => {
-			return [GameSession.getInstance().getGeneralForPlayer1().getPosition()];
-		}));
-	}
+    // give lady lockes buffs to enemy manaforger, owlbeast, and both chakris
+    const lockPlayerModifier = ladyLocke.getModifierByType(ModifierOpeningGambitApplyPlayerModifiers.type);
+    for (modifierContextObject of Array.from(lockPlayerModifier.modifiersContextObjects[0].modifiersContextObjects)) {
+      gameSession.applyModifierContextObject(modifierContextObject, chakri1);
+    }
+    for (modifierContextObject of Array.from(lockPlayerModifier.modifiersContextObjects[0].modifiersContextObjects)) {
+      gameSession.applyModifierContextObject(modifierContextObject, manaForger);
+    }
+    for (modifierContextObject of Array.from(lockPlayerModifier.modifiersContextObjects[0].modifiersContextObjects)) {
+      gameSession.applyModifierContextObject(modifierContextObject, owlbeast);
+    }
+    for (modifierContextObject of Array.from(lockPlayerModifier.modifiersContextObjects[0].modifiersContextObjects)) {
+      gameSession.applyModifierContextObject(modifierContextObject, chakri2);
+    }
+
+    // mana orbs
+    return this.applyCardToBoard({ id: Cards.Tile.BonusMana }, 4, 0);
+  }
+
+  setupOpponentAgent(gameSession) {
+    super.setupOpponentAgent(gameSession);
+
+    this._opponentAgent.addActionForTurn(0, AgentActions.createAgentSoftActionShowInstructionLabels([{
+      label: i18next.t('challenges.advanced_vanar_1_taunt'),
+      isSpeech: true,
+      yPosition: 0.7,
+      isPersistent: true,
+      isOpponent: true,
+    },
+    ]));
+    return this._opponentAgent.addActionForTurn(0, AgentActions.createAgentActionPlayCardFindPosition(0, () => [GameSession.getInstance().getGeneralForPlayer1().getPosition()]));
+  }
 }
 AdvancedVanarChallenge1.initClass();
-
 
 module.exports = AdvancedVanarChallenge1;

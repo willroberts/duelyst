@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -9,24 +15,23 @@ const ModifierBanding = require('./modifierBanding');
 const ModifierBandedFlying = require('./modifierBandedFlying');
 
 class ModifierBandingFlying extends ModifierBanding {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBandingFlying";
-		this.type ="ModifierBandingFlying";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierZeal", "FX.Modifiers.ModifierFlying"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBandingFlying';
+    this.type = 'ModifierBandingFlying';
 
-	static createContextObject(options) {
-		if (options == null) { options = undefined; }
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = [ModifierBandedFlying.createContextObject()];
-		return contextObject;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierZeal', 'FX.Modifiers.ModifierFlying'];
+  }
 
-	static getDescription(modifierContextObject) {
-		return this.description;
-	}
+  static createContextObject(options) {
+    if (options == null) { options = undefined; }
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = [ModifierBandedFlying.createContextObject()];
+    return contextObject;
+  }
+
+  static getDescription(modifierContextObject) {
+    return this.description;
+  }
 }
 ModifierBandingFlying.initClass();
 

@@ -1,3 +1,5 @@
+// TODO: This file was created by bulk-decaffeinate.
+// Sanity-check the conversion and remove this comment.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -6,13 +8,12 @@
 const Modifier = require('./modifier');
 
 class ModifierQuestBuffVanar extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierQuestBuffVanar";
-		this.type ="ModifierQuestBuffVanar";
-	
-		this.prototype.maxStacks = 1;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierQuestBuffVanar';
+    this.type = 'ModifierQuestBuffVanar';
+
+    this.prototype.maxStacks = 1;
+  }
 }
 ModifierQuestBuffVanar.initClass();
 

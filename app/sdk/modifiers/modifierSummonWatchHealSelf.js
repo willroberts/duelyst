@@ -1,3 +1,10 @@
+/* eslint-disable
+    class-methods-use-this,
+    import/no-unresolved,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,44 +12,43 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierSummonWatch = require('./modifierSummonWatch');
-const HealAction =  require('app/sdk/actions/healAction');
+const HealAction = require('app/sdk/actions/healAction');
 const CardType = require('app/sdk/cards/cardType');
 const CONFIG = require('app/common/config');
+const ModifierSummonWatch = require('./modifierSummonWatch');
 
 class ModifierSummonWatchHealSelf extends ModifierSummonWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSummonWatchHealSelf";
-		this.type ="ModifierSummonWatchHealSelf";
-	
-		this.prototype.name ="Summon Watch Heal Self";
-		this.prototype.description = "Whenever you summon a minion, heal this unit";
-	
-		this.prototype.healAmount = 0;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericHeal"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSummonWatchHealSelf';
+    this.type = 'ModifierSummonWatchHealSelf';
 
-	static createContextObject(healAmount, options) {
-		if (healAmount == null) { healAmount = 0; }
-		const contextObject = super.createContextObject(options);
-		contextObject.healAmount = healAmount;
-		return contextObject;
-	}
+    this.prototype.name = 'Summon Watch Heal Self';
+    this.prototype.description = 'Whenever you summon a minion, heal this unit';
 
-	onSummonWatch(action) {
-		const healAction = new HealAction(this.getCard().getGameSession());
-		healAction.setHealAmount(this.healAmount);
-		healAction.setSource(this.getCard());
-		healAction.setTarget(this.getCard());
-		return this.getCard().getGameSession().executeAction(healAction);
-	}
+    this.prototype.healAmount = 0;
 
-	getIsCardRelevantToWatcher(card) {
-		return card.getDamage() > 0;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch', 'FX.Modifiers.ModifierGenericHeal'];
+  }
+
+  static createContextObject(healAmount, options) {
+    if (healAmount == null) { healAmount = 0; }
+    const contextObject = super.createContextObject(options);
+    contextObject.healAmount = healAmount;
+    return contextObject;
+  }
+
+  onSummonWatch(action) {
+    const healAction = new HealAction(this.getCard().getGameSession());
+    healAction.setHealAmount(this.healAmount);
+    healAction.setSource(this.getCard());
+    healAction.setTarget(this.getCard());
+    return this.getCard().getGameSession().executeAction(healAction);
+  }
+
+  getIsCardRelevantToWatcher(card) {
+    return card.getDamage() > 0;
+  }
 }
-ModifierSummonWatchHealSelf.initClass(); //only heal if unit is currently damaged
+ModifierSummonWatchHealSelf.initClass(); // only heal if unit is currently damaged
 
 module.exports = ModifierSummonWatchHealSelf;

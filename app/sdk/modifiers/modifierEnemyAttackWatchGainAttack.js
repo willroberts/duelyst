@@ -1,3 +1,9 @@
+/* eslint-disable
+    consistent-return,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,33 +14,31 @@
 const ModifierEnemyAttackWatch = require('./modifierEnemyAttackWatch');
 const Modifier = require('./modifier');
 
-class  ModifierEnemyAttackWatchGainAttack extends ModifierEnemyAttackWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierEnemyAttackWatchGainAttack";
-		this.type ="ModifierEnemyAttackWatchGainAttack";
-	
-		this.prototype.attackBuff = 0;
-		this.prototype.buffName = null;
-	}
+class ModifierEnemyAttackWatchGainAttack extends ModifierEnemyAttackWatch {
+  static initClass() {
+    this.prototype.type = 'ModifierEnemyAttackWatchGainAttack';
+    this.type = 'ModifierEnemyAttackWatchGainAttack';
 
-	static createContextObject(attackBuff, buffName, options) {
-		if (attackBuff == null) { attackBuff = 0; }
-		const contextObject = super.createContextObject(options);
-		contextObject.attackBuff = attackBuff;
-		contextObject.buffName = buffName;
-		return contextObject;
-	}
+    this.prototype.attackBuff = 0;
+    this.prototype.buffName = null;
+  }
 
-	onEnemyAttackWatch(action) {
+  static createContextObject(attackBuff, buffName, options) {
+    if (attackBuff == null) { attackBuff = 0; }
+    const contextObject = super.createContextObject(options);
+    contextObject.attackBuff = attackBuff;
+    contextObject.buffName = buffName;
+    return contextObject;
+  }
 
-		const target = action.getTarget();
-		if ((target != null) && (target === this.getCard())) {
-			const statContextObject = Modifier.createContextObjectWithAttributeBuffs(this.attackBuff);
-			statContextObject.appliedName = this.buffName;
-			return this.getGameSession().applyModifierContextObject(statContextObject, this.getCard());
-		}
-	}
+  onEnemyAttackWatch(action) {
+    const target = action.getTarget();
+    if ((target != null) && (target === this.getCard())) {
+      const statContextObject = Modifier.createContextObjectWithAttributeBuffs(this.attackBuff);
+      statContextObject.appliedName = this.buffName;
+      return this.getGameSession().applyModifierContextObject(statContextObject, this.getCard());
+    }
+  }
 }
 ModifierEnemyAttackWatchGainAttack.initClass();
 

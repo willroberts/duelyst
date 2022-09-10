@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/extensions,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -5,29 +10,27 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const ModifierOverwatch = require('./modifierOverwatch');
-const DieAction = require('./../actions/dieAction');
+const DieAction = require('../actions/dieAction');
 
 class ModifierOverwatchDestroyed extends ModifierOverwatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOverwatchDestroyed";
-		this.type ="ModifierOverwatchDestroyed";
-	
-		this.description = "When this minion is destroyed, %X";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOverwatchDestroyed';
+    this.type = 'ModifierOverwatchDestroyed';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject != null) {
-			return this.description.replace(/%X/, modifierContextObject.description);
-		} else {
-			return super.getDescription();
-		}
-	}
+    this.description = 'When this minion is destroyed, %X';
+  }
 
-	getIsActionRelevant(action) {
-		// watch for this unit dying
-		return action instanceof DieAction && (action.getTarget() === this.getCard());
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject != null) {
+      return this.description.replace(/%X/, modifierContextObject.description);
+    }
+    return super.getDescription();
+  }
+
+  getIsActionRelevant(action) {
+    // watch for this unit dying
+    return action instanceof DieAction && (action.getTarget() === this.getCard());
+  }
 }
 ModifierOverwatchDestroyed.initClass();
 

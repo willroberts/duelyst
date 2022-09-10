@@ -1,3 +1,9 @@
+/* eslint-disable
+    no-restricted-syntax,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -8,26 +14,25 @@
 const Spell =	require('./spell');
 
 class SpellAncestralDivination extends Spell {
+  onApplyOneEffectToBoard(board, x, y, sourceAction) {
+    super.onApplyOneEffectToBoard(board, x, y, sourceAction);
 
-	onApplyOneEffectToBoard(board,x,y,sourceAction) {
-		super.onApplyOneEffectToBoard(board,x,y,sourceAction);
+    const player = this.getGameSession().getPlayerById(this.getOwnerId());
 
-		const player = this.getGameSession().getPlayerById(this.getOwnerId());
-
-		// draw one card for each friendly minion on the board
-		return (() => {
-			const result = [];
-			for (let unit of Array.from(this.getGameSession().getBoard().getUnits())) {
-				if ((unit.getOwnerId() === this.getOwnerId()) && !unit.getIsGeneral()) {
-					const action = player.getDeck().actionDrawCard();
-					result.push(this.getGameSession().executeAction(action));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    // draw one card for each friendly minion on the board
+    return (() => {
+      const result = [];
+      for (const unit of Array.from(this.getGameSession().getBoard().getUnits())) {
+        if ((unit.getOwnerId() === this.getOwnerId()) && !unit.getIsGeneral()) {
+          const action = player.getDeck().actionDrawCard();
+          result.push(this.getGameSession().executeAction(action));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 
 module.exports = SpellAncestralDivination;

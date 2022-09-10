@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-param-reassign,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -15,59 +22,58 @@ const UtilsGameSession = require('app/common/utils/utils_game_session');
 // Play your first 20 Season Ranked games.
 
 class WartechGeneralFaction2Achievement extends Achievement {
-	static initClass() {
-		this.id = "wartechGeneralFaction2Achievement";
-		this.title = i18next.t("achievements.wartech_general_achievement_title",{faction_name:i18next.t("factions.faction_2_abbreviated_name")});
-		this.description = i18next.t("achievements.wartech_general_achievement_desc",{faction_name:i18next.t("factions.faction_2_abbreviated_name")});
-		this.progressRequired = 10;
-		this.rewards = {
-			cards: [
-				Cards.Faction2.ThirdGeneral
-			]
-		};
-		this.tracksProgress = true;
-	}
+  static initClass() {
+    this.id = 'wartechGeneralFaction2Achievement';
+    this.title = i18next.t('achievements.wartech_general_achievement_title', { faction_name: i18next.t('factions.faction_2_abbreviated_name') });
+    this.description = i18next.t('achievements.wartech_general_achievement_desc', { faction_name: i18next.t('factions.faction_2_abbreviated_name') });
+    this.progressRequired = 10;
+    this.rewards = {
+      cards: [
+        Cards.Faction2.ThirdGeneral,
+      ],
+    };
+    this.tracksProgress = true;
+  }
 
-	static progressForGameDataForPlayerId(gameData,playerId,isUnscored,isDraw) {
-		if (!GameType.isCompetitiveGameType(gameData.gameType)) {
-			return 0;
-		}
+  static progressForGameDataForPlayerId(gameData, playerId, isUnscored, isDraw) {
+    if (!GameType.isCompetitiveGameType(gameData.gameType)) {
+      return 0;
+    }
 
-		if (isUnscored) {
-			return 0;
-		}
+    if (isUnscored) {
+      return 0;
+    }
 
-		const playerSetupData = UtilsGameSession.getPlayerSetupDataForPlayerId(gameData, playerId);
-		const playerFactionId = playerSetupData.factionId;
-		if (playerFactionId !== Factions.Faction2) {
-			return 0;
-		}
+    const playerSetupData = UtilsGameSession.getPlayerSetupDataForPlayerId(gameData, playerId);
+    const playerFactionId = playerSetupData.factionId;
+    if (playerFactionId !== Factions.Faction2) {
+      return 0;
+    }
 
-		if (UtilsGameSession.getWinningPlayerId(gameData) !== playerId) {
-			return 0;
-		}
+    if (UtilsGameSession.getWinningPlayerId(gameData) !== playerId) {
+      return 0;
+    }
 
-		// If the above all are passed 1 progress made
-		return 1;
-	}
+    // If the above all are passed 1 progress made
+    return 1;
+  }
 
-	static progressForArmoryTransaction(armoryTransactionSku) {
-		if (armoryTransactionSku.indexOf("WARTECH_PREORDER_35") !== -1) {
-			return 10;
-		} else {
-			return 0;
-		}
-	}
+  static progressForArmoryTransaction(armoryTransactionSku) {
+    if (armoryTransactionSku.indexOf('WARTECH_PREORDER_35') !== -1) {
+      return 10;
+    }
+    return 0;
+  }
 
-	static rewardUnlockMessage(progressMade){
-		if ((progressMade == null)) {
-			progressMade = 0;
-		}
+  static rewardUnlockMessage(progressMade) {
+    if ((progressMade == null)) {
+      progressMade = 0;
+    }
 
-		const progressNeeded = 	Math.max(this.progressRequired - progressMade,0);
+    const progressNeeded = 	Math.max(this.progressRequired - progressMade, 0);
 
-		return `Win ${progressNeeded} more online matches with Songhai to unlock.`;
-	}
+    return `Win ${progressNeeded} more online matches with Songhai to unlock.`;
+  }
 }
 WartechGeneralFaction2Achievement.initClass();
 

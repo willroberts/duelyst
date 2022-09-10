@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/no-unresolved,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -8,20 +13,19 @@ const PlayerModifier = require('app/sdk/playerModifiers/playerModifier');
 const ModifierAirdrop = require('app/sdk/modifiers/modifierAirdrop');
 
 class PlayerModiferCanSummonAnywhere extends PlayerModifier {
-	static initClass() {
-	
-		this.prototype.type ="PlayerModiferCanSummonAnywhere";
-		this.type ="PlayerModiferCanSummonAnywhere";
-	
-		this.prototype.isAura = true;
-		this.prototype.auraIncludeAlly = true;
-		this.prototype.auraIncludeBoard = false;
-		this.prototype.auraIncludeEnemy = false;
-		this.prototype.auraIncludeGeneral = false;
-		this.prototype.auraIncludeHand = true;
-		this.prototype.auraIncludeSelf = false;
-		this.prototype.modifiersContextObjects = [ModifierAirdrop.createContextObject()];
-	}
+  static initClass() {
+    this.prototype.type = 'PlayerModiferCanSummonAnywhere';
+    this.type = 'PlayerModiferCanSummonAnywhere';
+
+    this.prototype.isAura = true;
+    this.prototype.auraIncludeAlly = true;
+    this.prototype.auraIncludeBoard = false;
+    this.prototype.auraIncludeEnemy = false;
+    this.prototype.auraIncludeGeneral = false;
+    this.prototype.auraIncludeHand = true;
+    this.prototype.auraIncludeSelf = false;
+    this.prototype.modifiersContextObjects = [ModifierAirdrop.createContextObject()];
+  }
 }
 PlayerModiferCanSummonAnywhere.initClass();
 

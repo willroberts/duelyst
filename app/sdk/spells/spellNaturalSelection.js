@@ -1,3 +1,12 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -12,32 +21,30 @@ const SpellKillTarget = require('./spellKillTarget');
   Spell that kills any 1 unit with lowest attack anywhere on the board (your choice which one when tied).
 */
 class SpellNaturalSelection extends SpellKillTarget {
+  _postFilterPlayPositions(validPositions) {
+    // use super filter play positions
+    validPositions = super._postFilterPlayPositions(validPositions);
+    let filteredValidPositions = [];
 
-	_postFilterPlayPositions(validPositions) {
-		// use super filter play positions
-		validPositions = super._postFilterPlayPositions(validPositions);
-		let filteredValidPositions = [];
+    // find all units with lowest attack value on the board
+    let lowestAttack = CONFIG.INFINITY;
+    for (const position of Array.from(validPositions)) {
+      const unit = this.getGameSession().getBoard().getUnitAtPosition(position);
+      if (unit != null) {
+        const atk = unit.getATK();
+        if (atk < lowestAttack) {
+          lowestAttack = atk;
+          // reset list of valid positions starting with the first unit that has the lowest atk
+          filteredValidPositions = [unit.getPosition()];
+        } else if (atk === lowestAttack) {
+          // add unit position to valid positions as this unit matches current lowest atk
+          filteredValidPositions.push(unit.getPosition());
+        }
+      }
+    }
 
-		// find all units with lowest attack value on the board
-		let lowestAttack = CONFIG.INFINITY;
-		for (let position of Array.from(validPositions)) {
-			const unit = this.getGameSession().getBoard().getUnitAtPosition(position);
-			if (unit != null) {
-				const atk = unit.getATK();
-				if (atk < lowestAttack) {
-					lowestAttack = atk;
-					// reset list of valid positions starting with the first unit that has the lowest atk
-					filteredValidPositions = [unit.getPosition()];
-				} else if (atk === lowestAttack) {
-					// add unit position to valid positions as this unit matches current lowest atk
-					filteredValidPositions.push(unit.getPosition());
-				}
-			}
-		}
-
-		return filteredValidPositions;
-	}
+    return filteredValidPositions;
+  }
 }
-
 
 module.exports = SpellNaturalSelection;

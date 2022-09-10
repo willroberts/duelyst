@@ -1,3 +1,13 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,43 +15,42 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const PlayerModifierEmblem = require('./playerModifierEmblem');
 const CardType = require('app/sdk/cards/cardType');
 const ApplyCardToBoardAction = require('app/sdk/actions/applyCardToBoardAction');
 const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
 const CloneEntityAsTransformAction = require('app/sdk/actions/cloneEntityAsTransformAction');
+const PlayerModifierEmblem = require('./playerModifierEmblem');
 
 class PlayerModifierEmblemSummonWatch extends PlayerModifierEmblem {
-	static initClass() {
-	
-		this.prototype.type ="PlayerModifierEmblemSummonWatch";
-		this.type ="PlayerModifierEmblemSummonWatch";
-	}
+  static initClass() {
+    this.prototype.type = 'PlayerModifierEmblemSummonWatch';
+    this.type = 'PlayerModifierEmblemSummonWatch';
+  }
 
-	onAction(e) {
-		super.onAction(e);
+  onAction(e) {
+    super.onAction(e);
 
-		const {
-            action
-        } = e;
+    const {
+      action,
+    } = e;
 
-		if (this.getIsActionRelevant(action)) {
-			return this.onSummonWatch(action);
-		}
-	}
+    if (this.getIsActionRelevant(action)) {
+      return this.onSummonWatch(action);
+    }
+  }
 
-	getIsActionRelevant(action) {
-		// watch for a unit being summoned in any way by the player who owns this entity
-		if (action instanceof ApplyCardToBoardAction && (action.getOwnerId() === this.getCard().getOwnerId()) && (__guard__(action.getCard(), x => x.type) === CardType.Unit) && !(action instanceof PlayCardAsTransformAction || action instanceof CloneEntityAsTransformAction)) {
-			return true;
-		}
-		return false;
-	}
+  getIsActionRelevant(action) {
+    // watch for a unit being summoned in any way by the player who owns this entity
+    if (action instanceof ApplyCardToBoardAction && (action.getOwnerId() === this.getCard().getOwnerId()) && (__guard__(action.getCard(), (x) => x.type) === CardType.Unit) && !(action instanceof PlayCardAsTransformAction || action instanceof CloneEntityAsTransformAction)) {
+      return true;
+    }
+    return false;
+  }
 
-	onSummonWatch(action) {}
+  onSummonWatch(action) {}
 }
 PlayerModifierEmblemSummonWatch.initClass();
-		// override me in sub classes to implement special behavior
+// override me in sub classes to implement special behavior
 
 module.exports = PlayerModifierEmblemSummonWatch;
 

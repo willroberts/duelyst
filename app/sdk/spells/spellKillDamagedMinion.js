@@ -1,3 +1,9 @@
+/* eslint-disable
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,20 +13,18 @@
 const SpellKillTarget = require('./spellKillTarget');
 
 class SpellKillDamagedMinion extends SpellKillTarget {
+  _postFilterPlayPositions(validPositions) {
+    const damagedMinionsPositions = [];
 
-	_postFilterPlayPositions(validPositions) {
-		const damagedMinionsPositions = [];
+    for (const position of Array.from(validPositions)) {
+      const unit = this.getGameSession().getBoard().getUnitAtPosition(position);
+      if ((unit != null) && (unit.getHP() < unit.getMaxHP())) {
+        damagedMinionsPositions.push(position);
+      }
+    }
 
-		for (let position of Array.from(validPositions)) {
-			const unit = this.getGameSession().getBoard().getUnitAtPosition(position);
-			if ((unit != null) && (unit.getHP() < unit.getMaxHP())) {
-				damagedMinionsPositions.push(position);
-			}
-		}
-
-		return damagedMinionsPositions;
-	}
+    return damagedMinionsPositions;
+  }
 }
-
 
 module.exports = SpellKillDamagedMinion;

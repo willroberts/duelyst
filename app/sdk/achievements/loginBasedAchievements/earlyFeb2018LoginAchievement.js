@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -9,28 +15,26 @@ const GiftCrateLookup = require('app/sdk/giftCrates/giftCrateLookup');
 const i18next = require('i18next');
 
 class EarlyFeb2018LoginAchievement extends Achievement {
-	static initClass() {
-		this.id = "earlyFeb2018LoginAchievement";
-		this.title = i18next.t("achievements.early_feb_2018_login_achievement_title");
-		this.description = i18next.t("achievements.early_feb_2018_login_achievement_desc");
-		this.progressRequired = 1;
-		this.rewards =
-			{giftChests: [GiftCrateLookup.EarlyFebruary2018Login]};
-	
-		this.enabled = true;
-	}
+  static initClass() {
+    this.id = 'earlyFeb2018LoginAchievement';
+    this.title = i18next.t('achievements.early_feb_2018_login_achievement_title');
+    this.description = i18next.t('achievements.early_feb_2018_login_achievement_desc');
+    this.progressRequired = 1;
+    this.rewards =			{ giftChests: [GiftCrateLookup.EarlyFebruary2018Login] };
 
-	static progressForLoggingIn(currentLoginMoment) {
-		if ((currentLoginMoment !== null) && currentLoginMoment.isAfter(moment.utc("2018-01-29")) && currentLoginMoment.isBefore(moment.utc("2018-03-01"))) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
+    this.enabled = true;
+  }
 
-	static getLoginAchievementStartsMoment() {
-		return moment.utc("2018-01-29");
-	}
+  static progressForLoggingIn(currentLoginMoment) {
+    if ((currentLoginMoment !== null) && currentLoginMoment.isAfter(moment.utc('2018-01-29')) && currentLoginMoment.isBefore(moment.utc('2018-03-01'))) {
+      return 1;
+    }
+    return 0;
+  }
+
+  static getLoginAchievementStartsMoment() {
+    return moment.utc('2018-01-29');
+  }
 }
 EarlyFeb2018LoginAchievement.initClass();
 

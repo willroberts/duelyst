@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,63 +12,61 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierStartTurnWatchBuffSelf = require('./modifierStartTurnWatchBuffSelf');
 const DamageAction = require('app/sdk/actions/damageAction');
 const Stringifiers = require('app/sdk/helpers/stringifiers');
 
 const CONFIG = require('app/common/config');
+const ModifierStartTurnWatchBuffSelf = require('./modifierStartTurnWatchBuffSelf');
 
 class ModifierStartTurnWatchDamageEnemyGeneralBuffSelf extends ModifierStartTurnWatchBuffSelf {
-	static initClass() {
-	
-		this.prototype.type ="ModifierStartTurnWatchDamageEnemyGeneralBuffSelf";
-		this.type ="ModifierStartTurnWatchDamageEnemyGeneralBuffSelf";
-	
-		this.modifierName ="Turn Watch";
-		this.description ="At the start of your turn, deal %X damage to the enemy General and this minion gains %Y";
-	
-		this.prototype.damageAmount = 0;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericDamageFire", "FX.Modifiers.ModifierGenericBuff"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierStartTurnWatchDamageEnemyGeneralBuffSelf';
+    this.type = 'ModifierStartTurnWatchDamageEnemyGeneralBuffSelf';
 
-	static createContextObject(attackBuff, maxHPBuff, damageAmount, options) {
-		if (attackBuff == null) { attackBuff = 0; }
-		if (maxHPBuff == null) { maxHPBuff = 0; }
-		const contextObject = super.createContextObject(attackBuff, maxHPBuff, options);
-		contextObject.damageAmount = damageAmount;
+    this.modifierName = 'Turn Watch';
+    this.description = 'At the start of your turn, deal %X damage to the enemy General and this minion gains %Y';
 
-		return contextObject;
-	}
+    this.prototype.damageAmount = 0;
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			const subContextObject = modifierContextObject.modifiersContextObjects[0];
-			const replaceText = this.description.replace(/%Y/, Stringifiers.stringifyAttackHealthBuff(subContextObject.attributeBuffs.atk,subContextObject.attributeBuffs.maxHP));
-			return replaceText.replace(/%X/, modifierContextObject.damageAmount);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierStartTurnWatch', 'FX.Modifiers.ModifierGenericDamageFire', 'FX.Modifiers.ModifierGenericBuff'];
+  }
 
-	onTurnWatch(action) {
-		// damage enemy General
-		const general = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
-		if (general != null) {
-			const damageAction = new DamageAction(this.getGameSession());
-			damageAction.setOwnerId(this.getCard().getOwnerId());
-			damageAction.setSource(this.getCard());
-			damageAction.setTarget(general);
-			if (!this.damageAmount) {
-				damageAction.setDamageAmount(this.getCard().getATK());
-			} else {
-				damageAction.setDamageAmount(this.damageAmount);
-			}
-			this.getGameSession().executeAction(damageAction);
-		}
+  static createContextObject(attackBuff, maxHPBuff, damageAmount, options) {
+    if (attackBuff == null) { attackBuff = 0; }
+    if (maxHPBuff == null) { maxHPBuff = 0; }
+    const contextObject = super.createContextObject(attackBuff, maxHPBuff, options);
+    contextObject.damageAmount = damageAmount;
 
-		return super.onTurnWatch(action);
-	}
+    return contextObject;
+  }
+
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      const subContextObject = modifierContextObject.modifiersContextObjects[0];
+      const replaceText = this.description.replace(/%Y/, Stringifiers.stringifyAttackHealthBuff(subContextObject.attributeBuffs.atk, subContextObject.attributeBuffs.maxHP));
+      return replaceText.replace(/%X/, modifierContextObject.damageAmount);
+    }
+    return this.description;
+  }
+
+  onTurnWatch(action) {
+    // damage enemy General
+    const general = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+    if (general != null) {
+      const damageAction = new DamageAction(this.getGameSession());
+      damageAction.setOwnerId(this.getCard().getOwnerId());
+      damageAction.setSource(this.getCard());
+      damageAction.setTarget(general);
+      if (!this.damageAmount) {
+        damageAction.setDamageAmount(this.getCard().getATK());
+      } else {
+        damageAction.setDamageAmount(this.damageAmount);
+      }
+      this.getGameSession().executeAction(damageAction);
+    }
+
+    return super.onTurnWatch(action);
+  }
 }
 ModifierStartTurnWatchDamageEnemyGeneralBuffSelf.initClass(); // then buff self
 

@@ -1,3 +1,11 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,58 +15,56 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+const i18next = require('i18next');
 const Modifier = require('./modifier');
 
-const i18next = require('i18next');
-
 class ModifierBond extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBond";
-		this.type ="ModifierBond";
-	
-		this.modifierName ="ModifierBond";
-		this.description = "Bond";
-	
-		this.isKeyworded = true;
-		this.modifierName = i18next.t("modifiers.bond_name");
-		this.description = null;
-		this.keywordDefinition = i18next.t("modifiers.bond_def");
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierBond"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBond';
+    this.type = 'ModifierBond';
 
-	onActivate() {
-		super.onActivate();
+    this.modifierName = 'ModifierBond';
+    this.description = 'Bond';
 
-		// make sure this card has a tribe
-		const thisCardTribe = this.getCard().getRaceId();
-		if (thisCardTribe != null) {
-			// check for any friendly minion on the board that has same tribe as this card
-			return (() => {
-				const result = [];
-				for (let friendlyMinion of Array.from(this.getGameSession().getBoard().getFriendlyEntitiesForEntity(this.getCard()))) {
-					if (friendlyMinion.getBelongsToTribe(thisCardTribe)) {
-						// if we find a friendly minion with same tribe, activate bond effect once
-						this.onBond();
-						break;
-					} else {
-						result.push(undefined);
-					}
-				}
-				return result;
-			})();
-		}
-	}
+    this.isKeyworded = true;
+    this.modifierName = i18next.t('modifiers.bond_name');
+    this.description = null;
+    this.keywordDefinition = i18next.t('modifiers.bond_def');
 
-	onBond() {}
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+
+    this.prototype.fxResource = ['FX.Modifiers.ModifierBond'];
+  }
+
+  onActivate() {
+    super.onActivate();
+
+    // make sure this card has a tribe
+    const thisCardTribe = this.getCard().getRaceId();
+    if (thisCardTribe != null) {
+      // check for any friendly minion on the board that has same tribe as this card
+      return (() => {
+        const result = [];
+        for (const friendlyMinion of Array.from(this.getGameSession().getBoard().getFriendlyEntitiesForEntity(this.getCard()))) {
+          if (friendlyMinion.getBelongsToTribe(thisCardTribe)) {
+            // if we find a friendly minion with same tribe, activate bond effect once
+            this.onBond();
+            break;
+          } else {
+            result.push(undefined);
+          }
+        }
+        return result;
+      })();
+    }
+  }
+
+  onBond() {}
 }
 ModifierBond.initClass();
-		// override me in sub classes to implement special behavior
+// override me in sub classes to implement special behavior
 
 module.exports = ModifierBond;

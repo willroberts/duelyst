@@ -1,3 +1,5 @@
+// TODO: This file was created by bulk-decaffeinate.
+// Sanity-check the conversion and remove this comment.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,18 +9,17 @@
 const ModifierOverwatchMovedNearby = require('./modifierOverwatchMovedNearby');
 
 class ModifierOverwatchMovedNearbyAttack extends ModifierOverwatchMovedNearby {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOverwatchMovedNearbyAttack";
-		this.type ="ModifierOverwatchMovedNearbyAttack";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOverwatchMovedNearbyAttack';
+    this.type = 'ModifierOverwatchMovedNearbyAttack';
+  }
 
-	onOverwatch(action) {
-		const source = action.getSource();
-		const attackAction = this.getCard().actionAttack(source);
-		attackAction.setIsStrikebackAllowed(false);
-		return this.getGameSession().executeAction(attackAction);
-	}
+  onOverwatch(action) {
+    const source = action.getSource();
+    const attackAction = this.getCard().actionAttack(source);
+    attackAction.setIsStrikebackAllowed(false);
+    return this.getGameSession().executeAction(attackAction);
+  }
 }
 ModifierOverwatchMovedNearbyAttack.initClass();
 

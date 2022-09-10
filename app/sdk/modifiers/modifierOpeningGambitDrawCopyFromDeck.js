@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    max-len,
+    no-plusplus,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,41 +15,39 @@
 const ModifierOpeningGambit = require('./modifierOpeningGambit');
 
 class ModifierOpeningGambitDrawCopyFromDeck extends ModifierOpeningGambit {
-	static initClass() {
-	
-		this.prototype.type = "ModifierOpeningGambitDrawCopyFromDeck";
-		this.type = "ModifierOpeningGambitDrawCopyFromDeck";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpeningGambitDrawCopyFromDeck';
+    this.type = 'ModifierOpeningGambitDrawCopyFromDeck';
 
-	onOpeningGambit() {
+    this.prototype.fxResource = ['FX.Modifiers.ModifierOpeningGambit'];
+  }
 
-		let i;
-		const drawPile = this.getOwner().getDeck().getDrawPile();
-		let indexOfCard = -1;
-		let cardFound = false;
+  onOpeningGambit() {
+    let i;
+    const drawPile = this.getOwner().getDeck().getDrawPile();
+    let indexOfCard = -1;
+    let cardFound = false;
 
-		for (i = 0; i < drawPile.length; i++) {
-			const cardIndex = drawPile[i];
-			const cardAtIndex = this.getGameSession().getCardByIndex(cardIndex);
-			if ((cardAtIndex != null ? cardAtIndex.getBaseCardId() : undefined) === this.getCard().getBaseCardId()) {
-				indexOfCard = i;
-				cardFound = true;
-				break;
-			}
-		}
+    for (i = 0; i < drawPile.length; i++) {
+      const cardIndex = drawPile[i];
+      const cardAtIndex = this.getGameSession().getCardByIndex(cardIndex);
+      if ((cardAtIndex != null ? cardAtIndex.getBaseCardId() : undefined) === this.getCard().getBaseCardId()) {
+        indexOfCard = i;
+        cardFound = true;
+        break;
+      }
+    }
 
-		if (cardFound) {
-			const cardIndexToDraw = drawPile[i];
-			if (cardIndexToDraw != null) {
-				const card = this.getGameSession().getCardByIndex(cardIndexToDraw);
-				const drawCardAction = this.getGameSession().getPlayerById(this.getOwner().getPlayerId()).getDeck().actionDrawCard(cardIndexToDraw);
-				drawCardAction.isDepthFirst = true;
-				return this.getGameSession().executeAction(drawCardAction);
-			}
-		}
-	}
+    if (cardFound) {
+      const cardIndexToDraw = drawPile[i];
+      if (cardIndexToDraw != null) {
+        const card = this.getGameSession().getCardByIndex(cardIndexToDraw);
+        const drawCardAction = this.getGameSession().getPlayerById(this.getOwner().getPlayerId()).getDeck().actionDrawCard(cardIndexToDraw);
+        drawCardAction.isDepthFirst = true;
+        return this.getGameSession().executeAction(drawCardAction);
+      }
+    }
+  }
 }
 ModifierOpeningGambitDrawCopyFromDeck.initClass();
 

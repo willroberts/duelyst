@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,36 +17,34 @@
 const ModifierEntersBattlefieldWatch = require('./modifierEntersBattlefieldWatch');
 
 class ModifierEntersBattlefieldWatchApplyModifiers extends ModifierEntersBattlefieldWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierEntersBattlefieldWatchApplyModifiers";
-		this.type ="ModifierEntersBattlefieldWatchApplyModifiers";
-	
-		this.prototype.modifiersContextObjects = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierEntersBattlefieldWatchApplyModifiers';
+    this.type = 'ModifierEntersBattlefieldWatchApplyModifiers';
 
-	static createContextObject(modifiersContextObjects, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		return contextObject;
-	}
+    this.prototype.modifiersContextObjects = null;
+  }
 
-	onEntersBattlefield() {
+  static createContextObject(modifiersContextObjects, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    return contextObject;
+  }
 
-		if (this.modifiersContextObjects != null) {
-			return (() => {
-				const result = [];
-				for (let modifiersContextObject of Array.from(this.modifiersContextObjects)) {
-					if (modifiersContextObject != null) {
-						result.push(this.getGameSession().applyModifierContextObject(modifiersContextObject, this.getCard()));
-					} else {
-						result.push(undefined);
-					}
-				}
-				return result;
-			})();
-		}
-	}
+  onEntersBattlefield() {
+    if (this.modifiersContextObjects != null) {
+      return (() => {
+        const result = [];
+        for (const modifiersContextObject of Array.from(this.modifiersContextObjects)) {
+          if (modifiersContextObject != null) {
+            result.push(this.getGameSession().applyModifierContextObject(modifiersContextObject, this.getCard()));
+          } else {
+            result.push(undefined);
+          }
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierEntersBattlefieldWatchApplyModifiers.initClass();
 

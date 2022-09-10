@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-mixed-spaces-and-tabs,
+    no-param-reassign,
+    no-plusplus,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,7 +18,6 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const DamageAction = require('app/sdk/actions/damageAction');
 const Stringifiers = require('app/sdk/helpers/stringifiers');
@@ -15,45 +25,45 @@ const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction')
 const CardType = require('app/sdk/cards/cardType');
 const CONFIG = require('app/common/config');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
-const Factions = require('app/sdk/cards/factionsLookup.coffee');
+const Factions = require('app/sdk/cards/factionsLookup');
 const _ = require('underscore');
 const i18next = require('i18next');
+const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
 
 class ModifierStartTurnWatchEquipArtifact extends ModifierStartTurnWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierStartTurnWatchEquipArtifact";
-		this.type ="ModifierStartTurnWatchEquipArtifact";
-	
-		this.description =i18next.t("modifiers.start_turn_watch_equip_artifact_def");
-	
-		this.prototype.amount = 1;
+  static initClass() {
+    this.prototype.type = 'ModifierStartTurnWatchEquipArtifact';
+    this.type = 'ModifierStartTurnWatchEquipArtifact';
+
+    this.description = i18next.t('modifiers.start_turn_watch_equip_artifact_def');
+
+    this.prototype.amount = 1;
 		 // number of artifacts to equip
-	}
+  }
 
-	static createContextObject(amount, includedCards, options) {
-		if (amount == null) { amount = 1; }
-		const contextObject = super.createContextObject(options);
-		contextObject.amount = amount;
-		contextObject.includedCards = includedCards;
-		return contextObject;
-	}
+  static createContextObject(amount, includedCards, options) {
+    if (amount == null) { amount = 1; }
+    const contextObject = super.createContextObject(options);
+    contextObject.amount = amount;
+    contextObject.includedCards = includedCards;
+    return contextObject;
+  }
 
-	onTurnWatch(action) {
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			return (() => {
-				const result = [];
-				for (let i = 0, end = this.amount, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-					const artifactCard = this.includedCards[this.getGameSession().getRandomIntegerForExecution(this.includedCards.length)]; // random artifact
-					const cardDataOrIndexToPutInHand = artifactCard;
-					const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, cardDataOrIndexToPutInHand);
-					playCardAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(playCardAction));
-				}
-				return result;
-			})();
-		}
-	}
+  onTurnWatch(action) {
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      return (() => {
+        const result = [];
+        for (let i = 0, end = this.amount, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+          const artifactCard = this.includedCards[this.getGameSession().getRandomIntegerForExecution(this.includedCards.length)]; // random artifact
+          const cardDataOrIndexToPutInHand = artifactCard;
+          const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, cardDataOrIndexToPutInHand);
+          playCardAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(playCardAction));
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierStartTurnWatchEquipArtifact.initClass();
 

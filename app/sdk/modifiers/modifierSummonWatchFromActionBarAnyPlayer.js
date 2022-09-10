@@ -1,3 +1,13 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,55 +15,53 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier');
 const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
 const CardType = require('app/sdk/cards/cardType');
 const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
 const CloneEntityAsTransformAction = require('app/sdk/actions/cloneEntityAsTransformAction');
+const Modifier = require('./modifier');
 
 class ModifierSummonWatchFromActionBarAnyPlayer extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSummonWatchFromActionBarAnyPlayer";
-		this.type ="ModifierSummonWatchFromActionBarAnyPlayer";
-	
-		this.modifierName ="Summon Watch Any Player";
-		this.description = "Summon Watch Any Player";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSummonWatchFromActionBarAnyPlayer';
+    this.type = 'ModifierSummonWatchFromActionBarAnyPlayer';
 
-	onAction(e) {
-		super.onAction(e);
+    this.modifierName = 'Summon Watch Any Player';
+    this.description = 'Summon Watch Any Player';
 
-		const {
-            action
-        } = e;
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
 
-		// watch for a unit being summoned in any way by any player, but don't react to transforms
-		if (this.getIsActionRelevant(action) && this.getIsCardRelevantToWatcher(action.getCard())) {
-			return this.onSummonWatch(action);
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch'];
+  }
 
-	getIsActionRelevant(action) {
-		return action instanceof PlayCardFromHandAction && (__guard__(action.getCard(), x => x.type) === CardType.Unit) && (action.getCard() !== this.getCard()) && !(action instanceof PlayCardAsTransformAction || action instanceof CloneEntityAsTransformAction);
-	}
+  onAction(e) {
+    super.onAction(e);
 
-	onSummonWatch(action) {}
-		// override me in sub classes to implement special behavior
+    const {
+      action,
+    } = e;
 
-	getIsCardRelevantToWatcher(card) {
-		return true;
-	}
+    // watch for a unit being summoned in any way by any player, but don't react to transforms
+    if (this.getIsActionRelevant(action) && this.getIsCardRelevantToWatcher(action.getCard())) {
+      return this.onSummonWatch(action);
+    }
+  }
+
+  getIsActionRelevant(action) {
+    return action instanceof PlayCardFromHandAction && (__guard__(action.getCard(), (x) => x.type) === CardType.Unit) && (action.getCard() !== this.getCard()) && !(action instanceof PlayCardAsTransformAction || action instanceof CloneEntityAsTransformAction);
+  }
+
+  onSummonWatch(action) {}
+  // override me in sub classes to implement special behavior
+
+  getIsCardRelevantToWatcher(card) {
+    return true;
+  }
 }
 ModifierSummonWatchFromActionBarAnyPlayer.initClass(); // override me in sub classes to implement special behavior
-
 
 module.exports = ModifierSummonWatchFromActionBarAnyPlayer;
 

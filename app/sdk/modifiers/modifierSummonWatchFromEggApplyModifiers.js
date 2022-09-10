@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,61 +16,58 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier');
 const ApplyCardToBoardAction = require('app/sdk/actions/applyCardToBoardAction');
 const CardType = require('app/sdk/cards/cardType');
+const Modifier = require('./modifier');
 const ModifierEgg = require('./modifierEgg');
 
 class ModifierSummonWatchFromEggApplyModifiers extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSummonWatchFromEggApplyModifiers";
-		this.type ="ModifierSummonWatchFromEggApplyModifiers";
-	
-		this.modifierName ="Summon Watch";
-		this.description = "Friendly minions that hatch from Eggs %X";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSummonWatchFromEggApplyModifiers';
+    this.type = 'ModifierSummonWatchFromEggApplyModifiers';
 
-	static createContextObject(modifiersContextObjects, buffDescription, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		contextObject.buffDescription = buffDescription;
-		return contextObject;
-	}
+    this.modifierName = 'Summon Watch';
+    this.description = 'Friendly minions that hatch from Eggs %X';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			return this.description.replace(/%X/, modifierContextObject.buffDescription);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
 
-	onAction(e) {
-		super.onAction(e);
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch'];
+  }
 
-		const {
-            action
-        } = e;
+  static createContextObject(modifiersContextObjects, buffDescription, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    contextObject.buffDescription = buffDescription;
+    return contextObject;
+  }
 
-		// watch for a unit being summoned from an egg by the player who owns this entity
-		if (action instanceof ApplyCardToBoardAction && (action.getOwnerId() === this.getCard().getOwnerId()) && (__guard__(action.getCard(), x => x.type) === CardType.Unit) && (action.getCard() !== this.getCard())) {
-			if (action.getTriggeringModifier() instanceof ModifierEgg) {
-				const entity = action.getTarget();
-				if (entity != null) {
-					return Array.from(this.modifiersContextObjects).map((modifierContextObject) =>
-						this.getGameSession().applyModifierContextObject(modifierContextObject, entity));
-				}
-			}
-		}
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      return this.description.replace(/%X/, modifierContextObject.buffDescription);
+    }
+    return this.description;
+  }
+
+  onAction(e) {
+    super.onAction(e);
+
+    const {
+      action,
+    } = e;
+
+    // watch for a unit being summoned from an egg by the player who owns this entity
+    if (action instanceof ApplyCardToBoardAction && (action.getOwnerId() === this.getCard().getOwnerId()) && (__guard__(action.getCard(), (x) => x.type) === CardType.Unit) && (action.getCard() !== this.getCard())) {
+      if (action.getTriggeringModifier() instanceof ModifierEgg) {
+        const entity = action.getTarget();
+        if (entity != null) {
+          return Array.from(this.modifiersContextObjects).map((modifierContextObject) => this.getGameSession().applyModifierContextObject(modifierContextObject, entity));
+        }
+      }
+    }
+  }
 }
 ModifierSummonWatchFromEggApplyModifiers.initClass();
 

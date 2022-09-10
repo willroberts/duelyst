@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -8,24 +14,23 @@ const ModifierBanding = 	require('./modifierBanding');
 const ModifierBandedHeal = 		require('./modifierBandedHeal');
 
 class ModifierBandingApplyModifiers extends ModifierBanding {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBandingApplyModifiers";
-		this.type ="ModifierBandingApplyModifiers";
-	
-		this.prototype.maxStacks = 1;
-	
-		this.description = "Apply buffs";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierZeal"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBandingApplyModifiers';
+    this.type = 'ModifierBandingApplyModifiers';
 
-	static createContextObject(modifiersContextObjects, description, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		contextObject.description = description;
-		return contextObject;
-	}
+    this.prototype.maxStacks = 1;
+
+    this.description = 'Apply buffs';
+
+    this.prototype.fxResource = ['FX.Modifiers.ModifierZeal'];
+  }
+
+  static createContextObject(modifiersContextObjects, description, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    contextObject.description = description;
+    return contextObject;
+  }
 }
 ModifierBandingApplyModifiers.initClass();
 

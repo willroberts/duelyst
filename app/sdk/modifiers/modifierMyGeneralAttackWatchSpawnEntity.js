@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-plusplus,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,55 +16,53 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierMyGeneralAttackWatch = require('./modifierMyGeneralAttackWatch');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
+const ModifierMyGeneralAttackWatch = require('./modifierMyGeneralAttackWatch');
 
 class ModifierMyGeneralAttackWatchSpawnEntity extends ModifierMyGeneralAttackWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierMyGeneralAttackWatchSpawnEntity";
-		this.type ="ModifierMyGeneralAttackWatchSpawnEntity";
-	
-		this.modifierName ="ModifierMyGeneralAttackWatchSpawnEntity";
-		this.description ="Whenever a my General attacks, spawn an entity";
-	
-		this.prototype.cardDataOrIndexToSpawn = null;
-		this.prototype.spawnCount = 0;
-		this.prototype.spawnPattern = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierMyGeneralAttackWatchSpawnEntity';
+    this.type = 'ModifierMyGeneralAttackWatchSpawnEntity';
 
-	static createContextObject(cardDataOrIndexToSpawn, spawnCount, spawnPattern, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
-		contextObject.spawnCount = spawnCount;
-		contextObject.spawnPattern = spawnPattern;
-		return contextObject;
-	}
+    this.modifierName = 'ModifierMyGeneralAttackWatchSpawnEntity';
+    this.description = 'Whenever a my General attacks, spawn an entity';
 
-	onMyGeneralAttackWatch(action) {
+    this.prototype.cardDataOrIndexToSpawn = null;
+    this.prototype.spawnCount = 0;
+    this.prototype.spawnPattern = null;
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
-			const spawnLocations = [];
-			const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), this.spawnPattern, card);
-			for (let i = 0, end = this.spawnCount, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-				if (validSpawnLocations.length > 0) {
-					spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
-				}
-			}
+  static createContextObject(cardDataOrIndexToSpawn, spawnCount, spawnPattern, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+    contextObject.spawnCount = spawnCount;
+    contextObject.spawnPattern = spawnPattern;
+    return contextObject;
+  }
 
-			return (() => {
-				const result = [];
-				for (let position of Array.from(spawnLocations)) {
-					const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
-					playCardAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(playCardAction));
-				}
-				return result;
-			})();
-		}
-	}
+  onMyGeneralAttackWatch(action) {
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+      const spawnLocations = [];
+      const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), this.spawnPattern, card);
+      for (let i = 0, end = this.spawnCount, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+        if (validSpawnLocations.length > 0) {
+          spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+        }
+      }
+
+      return (() => {
+        const result = [];
+        for (const position of Array.from(spawnLocations)) {
+          const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+          playCardAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(playCardAction));
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierMyGeneralAttackWatchSpawnEntity.initClass();
 

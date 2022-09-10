@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-extraneous-dependencies,
+    import/no-unresolved,
+    no-console,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -16,17 +23,14 @@ const fs = require('fs');
 const helpers = require('scripts/helpers');
 const UtilsLocalization = require('scripts/localization/utils_localization');
 
-
 // git log -G "win_streak_message" --pretty=oneline ./rank.json
 
-
 Promise.resolve()
-.bind({})
-.then(() => Promise.all([
-    UtilsLocalization.readFileToJsonData(UtilsLocalization.PATH_TO_LOCALES + "/en/index.json")
+  .bind({})
+  .then(() => Promise.all([
+    UtilsLocalization.readFileToJsonData(`${UtilsLocalization.PATH_TO_LOCALES}/en/index.json`),
     // UtilsLocalization.readFileToJsonData(UtilsLocalization.PATH_TO_LOCALES + "/de/index.json")
-])).then(function(){
-
-	console.log("Complete.");
-	return process.exit(1);
-});
+  ])).then(() => {
+    console.log('Complete.');
+    return process.exit(1);
+  });

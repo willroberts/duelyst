@@ -1,3 +1,13 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,52 +17,49 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierSummonWatch = require('./modifierSummonWatch');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const Stringifiers = require('app/sdk/helpers/stringifiers');
+const ModifierSummonWatch = require('./modifierSummonWatch');
 
 class ModifierSummonWatchApplyModifiers extends ModifierSummonWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSummonWatchApplyModifiers";
-		this.type ="ModifierSummonWatchApplyModifiers";
-	
-		this.description = "Other minions you summon %X";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSummonWatchApplyModifiers';
+    this.type = 'ModifierSummonWatchApplyModifiers';
 
-	static createContextObject(modifiersContextObjects, buffDescription, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		contextObject.buffDescription = buffDescription;
-		return contextObject;
-	}
+    this.description = 'Other minions you summon %X';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			return this.description.replace(/%X/, modifierContextObject.buffDescription);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch', 'FX.Modifiers.ModifierGenericBuff'];
+  }
 
-	onSummonWatch(action) {
-		const summonedUnitPosition = __guard__(action.getTarget(), x => x.getPosition());
+  static createContextObject(modifiersContextObjects, buffDescription, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    contextObject.buffDescription = buffDescription;
+    return contextObject;
+  }
 
-		if ((this.modifiersContextObjects != null) && this.getIsValidBuffPosition(summonedUnitPosition)) {
-			const entity = action.getTarget();
-			if (entity != null) {
-				return Array.from(this.modifiersContextObjects).map((modifierContextObject) =>
-					this.getGameSession().applyModifierContextObject(modifierContextObject, entity));
-			}
-		}
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      return this.description.replace(/%X/, modifierContextObject.buffDescription);
+    }
+    return this.description;
+  }
 
-	getIsValidBuffPosition(summonedUnitPosition) {
-		// override this in subclass to filter by position
-		return true;
-	}
+  onSummonWatch(action) {
+    const summonedUnitPosition = __guard__(action.getTarget(), (x) => x.getPosition());
+
+    if ((this.modifiersContextObjects != null) && this.getIsValidBuffPosition(summonedUnitPosition)) {
+      const entity = action.getTarget();
+      if (entity != null) {
+        return Array.from(this.modifiersContextObjects).map((modifierContextObject) => this.getGameSession().applyModifierContextObject(modifierContextObject, entity));
+      }
+    }
+  }
+
+  getIsValidBuffPosition(summonedUnitPosition) {
+    // override this in subclass to filter by position
+    return true;
+  }
 }
 ModifierSummonWatchApplyModifiers.initClass();
 

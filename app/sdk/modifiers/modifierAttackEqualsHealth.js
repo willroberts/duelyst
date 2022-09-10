@@ -1,3 +1,10 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,69 +12,67 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier');
 const i18next = require('i18next');
+const Modifier = require('./modifier');
 
 class ModifierAttackEqualsHealth extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierAttackEqualsHealth";
-		this.type ="ModifierAttackEqualsHealth";
-	
-		this.prototype.name =i18next.t("modifiers.attack_equals_health_name");
-		this.prototype.description =i18next.t("modifiers.attack_equals_health_def");
-	
-		this.prototype.maxStacks = 1;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierAttackEqualsHealth"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierAttackEqualsHealth';
+    this.type = 'ModifierAttackEqualsHealth';
 
-	constructor(gameSession) {
-		super(gameSession);
-		this.attributeBuffsAbsolute = ["atk"];
-		this.attributeBuffsFixed = ["atk"];
-	}
+    this.prototype.name = i18next.t('modifiers.attack_equals_health_name');
+    this.prototype.description = i18next.t('modifiers.attack_equals_health_def');
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
+    this.prototype.maxStacks = 1;
 
-		p.cachedHP = 0;
+    this.prototype.fxResource = ['FX.Modifiers.ModifierAttackEqualsHealth'];
+  }
 
-		return p;
-	}
+  constructor(gameSession) {
+    super(gameSession);
+    this.attributeBuffsAbsolute = ['atk'];
+    this.attributeBuffsFixed = ['atk'];
+  }
 
-	getBuffedAttribute(attributeValue, buffKey) {
-		if (buffKey === "atk") {
-			return this._private.cachedHP;
-		} else {
-			return super.getBuffedAttribute(attributeValue, buffKey);
-		}
-	}
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
 
-	getBuffsAttributes() {
-		return true;
-	}
+    p.cachedHP = 0;
 
-	getBuffsAttribute(buffKey) {
-		return (buffKey === "atk") || super.getBuffsAttribute(buffKey);
-	}
+    return p;
+  }
 
-	updateCachedStateAfterActive() {
-		let hp;
-		super.updateCachedStateAfterActive();
+  getBuffedAttribute(attributeValue, buffKey) {
+    if (buffKey === 'atk') {
+      return this._private.cachedHP;
+    }
+    return super.getBuffedAttribute(attributeValue, buffKey);
+  }
 
-		const card = this.getCard();
-		if (card != null) {
-			hp = Math.max(0, card.getHP());
-		} else {
-			hp = 0;
-		}
+  getBuffsAttributes() {
+    return true;
+  }
 
-		if (this._private.cachedHP !== hp) {
-			this._private.cachedHP = hp;
-			return this.getCard().flushCachedAttribute("atk");
-		}
-	}
+  getBuffsAttribute(buffKey) {
+    return (buffKey === 'atk') || super.getBuffsAttribute(buffKey);
+  }
+
+  updateCachedStateAfterActive() {
+    let hp;
+    super.updateCachedStateAfterActive();
+
+    const card = this.getCard();
+    if (card != null) {
+      hp = Math.max(0, card.getHP());
+    } else {
+      hp = 0;
+    }
+
+    if (this._private.cachedHP !== hp) {
+      this._private.cachedHP = hp;
+      return this.getCard().flushCachedAttribute('atk');
+    }
+  }
 }
 ModifierAttackEqualsHealth.initClass();
 

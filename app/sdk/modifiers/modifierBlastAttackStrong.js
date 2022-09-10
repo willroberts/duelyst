@@ -1,3 +1,5 @@
+// TODO: This file was created by bulk-decaffeinate.
+// Sanity-check the conversion and remove this comment.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -6,13 +8,12 @@
 const ModifierBlastAttack = require('./modifierBlastAttack');
 
 class ModifierBlastAttackStrong extends ModifierBlastAttack {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBlastAttackStrong";
-		this.type ="ModifierBlastAttackStrong";
-	
-		this.prototype.cardFXResource = ["FX.Cards.Faction3.BlastStrong"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBlastAttackStrong';
+    this.type = 'ModifierBlastAttackStrong';
+
+    this.prototype.cardFXResource = ['FX.Cards.Faction3.BlastStrong'];
+  }
 }
 ModifierBlastAttackStrong.initClass();
 

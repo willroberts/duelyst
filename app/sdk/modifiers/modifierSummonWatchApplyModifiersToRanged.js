@@ -1,3 +1,8 @@
+/* eslint-disable
+    class-methods-use-this,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -8,18 +13,16 @@ const ModifierSummonWatchApplyModifiers = require('./modifierSummonWatchApplyMod
 const ModifierRanged = require('./modifierRanged');
 
 class ModifierSummonWatchApplyModifiersToRanged extends ModifierSummonWatchApplyModifiers {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSummonWatchApplyModifiersToRanged";
-		this.type ="ModifierSummonWatchApplyModifiersToRanged";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSummonWatchApplyModifiersToRanged';
+    this.type = 'ModifierSummonWatchApplyModifiersToRanged';
 
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch', 'FX.Modifiers.ModifierGenericBuff'];
+  }
 
-	getIsCardRelevantToWatcher(card) {
-		return card.hasActiveModifierClass(ModifierRanged);
-	}
+  getIsCardRelevantToWatcher(card) {
+    return card.hasActiveModifierClass(ModifierRanged);
+  }
 }
 ModifierSummonWatchApplyModifiersToRanged.initClass();
 

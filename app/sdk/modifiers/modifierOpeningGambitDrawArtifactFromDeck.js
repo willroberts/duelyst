@@ -1,3 +1,15 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-plusplus,
+    no-restricted-syntax,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -11,82 +23,80 @@
  */
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
-const ModifierOpeningGambit = require('./modifierOpeningGambit');
 const DieAction = require('app/sdk/actions/dieAction');
 const CardType = require('app/sdk/cards/cardType');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
 
 class ModifierOpeningGambitDrawArtifactFromDeck extends ModifierOpeningGambit {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOpeningGambitDrawArtifactFromDeck";
-		this.type ="ModifierOpeningGambitDrawArtifactFromDeck";
-	
-		this.description = "Draw %X from your deck";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpeningGambitDrawArtifactFromDeck';
+    this.type = 'ModifierOpeningGambitDrawArtifactFromDeck';
 
-	static createContextObject(numArtifacts) {
-		if (numArtifacts == null) { numArtifacts = 1; }
-		const contextObject = super.createContextObject();
-		contextObject.numArtifacts = numArtifacts;
-		return contextObject;
-	}
+    this.description = 'Draw %X from your deck';
+  }
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-				if (modifierContextObject.numArtifacts <= 1) {
-					return this.description.replace(/%X/, "a random artifact");
-				} else {
-					return this.description.replace(/%X/, "up to "+modifierContextObject.numArtifacts+" Artifacts");
-				}
-		} else {
-			return this.description;
-		}
-	}
+  static createContextObject(numArtifacts) {
+    if (numArtifacts == null) { numArtifacts = 1; }
+    const contextObject = super.createContextObject();
+    contextObject.numArtifacts = numArtifacts;
+    return contextObject;
+  }
 
-	onOpeningGambit() {
-		super.onOpeningGambit();
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      if (modifierContextObject.numArtifacts <= 1) {
+        return this.description.replace(/%X/, 'a random artifact');
+      }
+      return this.description.replace(/%X/, `up to ${modifierContextObject.numArtifacts} Artifacts`);
+    }
+    return this.description;
+  }
 
-		const gameSession = this.getGameSession();
-		if (gameSession.getIsRunningAsAuthoritative()) {
-			// calculate artifacts to draw on the server, since only the server knows contents of both decks
-			let cardIndex, cardIndicesToDraw;
-			if (!cardIndicesToDraw) {
-				cardIndicesToDraw = [];
+  onOpeningGambit() {
+    super.onOpeningGambit();
 
-				// find indices of artifacts
-				const drawPile = this.getCard().getOwner().getDeck().getDrawPile();
-				const indexOfArtifacts = [];
-				for (let i = 0; i < drawPile.length; i++) {
-					cardIndex = drawPile[i];
-					if (__guard__(gameSession.getCardByIndex(cardIndex), x => x.getType()) === CardType.Artifact) {
-						indexOfArtifacts.push(i);
-					}
-				}
+    const gameSession = this.getGameSession();
+    if (gameSession.getIsRunningAsAuthoritative()) {
+      // calculate artifacts to draw on the server, since only the server knows contents of both decks
+      let cardIndex; let
+        cardIndicesToDraw;
+      if (!cardIndicesToDraw) {
+        cardIndicesToDraw = [];
 
-				// find X random artifacts
-				for (let j = 0, end = this.numArtifacts, asc = 0 <= end; asc ? j < end : j > end; asc ? j++ : j--) {
-					if (indexOfArtifacts.length > 0) {
-						const artifactIndexToRemove = this.getGameSession().getRandomIntegerForExecution(indexOfArtifacts.length);
-						const indexOfCardInDeck = indexOfArtifacts[artifactIndexToRemove];
-						indexOfArtifacts.splice(artifactIndexToRemove,1);
-						cardIndicesToDraw.push(drawPile[indexOfCardInDeck]);
-					}
-				}
-			}
+        // find indices of artifacts
+        const drawPile = this.getCard().getOwner().getDeck().getDrawPile();
+        const indexOfArtifacts = [];
+        for (let i = 0; i < drawPile.length; i++) {
+          cardIndex = drawPile[i];
+          if (__guard__(gameSession.getCardByIndex(cardIndex), (x) => x.getType()) === CardType.Artifact) {
+            indexOfArtifacts.push(i);
+          }
+        }
 
-			// put the random artifacts from deck into hand
-			if (cardIndicesToDraw && (cardIndicesToDraw.length > 0)) {
-				return (() => {
-					const result = [];
-					for (cardIndex of Array.from(cardIndicesToDraw)) {
-						const drawCardAction =  this.getGameSession().getPlayerById(this.getCard().getOwnerId()).getDeck().actionDrawCard(cardIndex);
-						result.push(this.getGameSession().executeAction(drawCardAction));
-					}
-					return result;
-				})();
-			}
-		}
-	}
+        // find X random artifacts
+        for (let j = 0, end = this.numArtifacts, asc = end >= 0; asc ? j < end : j > end; asc ? j++ : j--) {
+          if (indexOfArtifacts.length > 0) {
+            const artifactIndexToRemove = this.getGameSession().getRandomIntegerForExecution(indexOfArtifacts.length);
+            const indexOfCardInDeck = indexOfArtifacts[artifactIndexToRemove];
+            indexOfArtifacts.splice(artifactIndexToRemove, 1);
+            cardIndicesToDraw.push(drawPile[indexOfCardInDeck]);
+          }
+        }
+      }
+
+      // put the random artifacts from deck into hand
+      if (cardIndicesToDraw && (cardIndicesToDraw.length > 0)) {
+        return (() => {
+          const result = [];
+          for (cardIndex of Array.from(cardIndicesToDraw)) {
+            const drawCardAction = this.getGameSession().getPlayerById(this.getCard().getOwnerId()).getDeck().actionDrawCard(cardIndex);
+            result.push(this.getGameSession().executeAction(drawCardAction));
+          }
+          return result;
+        })();
+      }
+    }
+  }
 }
 ModifierOpeningGambitDrawArtifactFromDeck.initClass();
 

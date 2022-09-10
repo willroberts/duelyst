@@ -1,3 +1,13 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-plusplus,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,55 +15,53 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierOpeningGambit = require('./modifierOpeningGambit');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const CardType = require('app/sdk/cards/cardType');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
 
 class ModifierOpeningGambitAlabasterTitan extends ModifierOpeningGambit {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOpeningGambitAlabasterTitan";
-		this.type ="ModifierOpeningGambitAlabasterTitan";
-	
-		this.description ="If you have no spells in your deck, equip a full set of armor";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpeningGambitAlabasterTitan';
+    this.type = 'ModifierOpeningGambitAlabasterTitan';
 
-	onOpeningGambit(action) {
+    this.description = 'If you have no spells in your deck, equip a full set of armor';
 
-		const gameSession = this.getGameSession();
+    this.prototype.fxResource = ['FX.Modifiers.ModifierOpeningGambit'];
+  }
 
-		let hasSpells = false;
+  onOpeningGambit(action) {
+    const gameSession = this.getGameSession();
 
-		const drawPile = this.getCard().getOwner().getDeck().getDrawPile();
-		for (let i = 0; i < drawPile.length; i++) {
-			const cardIndex = drawPile[i];
-			if (__guard__(gameSession.getCardByIndex(cardIndex), x => x.getType()) === CardType.Spell) {
-				hasSpells = true;
-				break;
-			}
-		}
-		
-		if (!hasSpells) {
-			const artifact1 = {id: Cards.Artifact.ArclyteRegalia};
-			const artifact2 = {id: Cards.Artifact.IndomitableWill};
-			const artifact3 = {id: Cards.Artifact.HaloBulwark};
+    let hasSpells = false;
 
-			const playCardAction1 = new PlayCardSilentlyAction(gameSession, this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, artifact1);
-			const playCardAction2 = new PlayCardSilentlyAction(gameSession, this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, artifact2);
-			const playCardAction3 = new PlayCardSilentlyAction(gameSession, this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, artifact3);
+    const drawPile = this.getCard().getOwner().getDeck().getDrawPile();
+    for (let i = 0; i < drawPile.length; i++) {
+      const cardIndex = drawPile[i];
+      if (__guard__(gameSession.getCardByIndex(cardIndex), (x) => x.getType()) === CardType.Spell) {
+        hasSpells = true;
+        break;
+      }
+    }
 
-			playCardAction1.setSource(this.getCard());
-			playCardAction2.setSource(this.getCard());
-			playCardAction3.setSource(this.getCard());
+    if (!hasSpells) {
+      const artifact1 = { id: Cards.Artifact.ArclyteRegalia };
+      const artifact2 = { id: Cards.Artifact.IndomitableWill };
+      const artifact3 = { id: Cards.Artifact.HaloBulwark };
 
-			gameSession.executeAction(playCardAction1);
-			gameSession.executeAction(playCardAction2);
-			return gameSession.executeAction(playCardAction3);
-		}
-	}
+      const playCardAction1 = new PlayCardSilentlyAction(gameSession, this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, artifact1);
+      const playCardAction2 = new PlayCardSilentlyAction(gameSession, this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, artifact2);
+      const playCardAction3 = new PlayCardSilentlyAction(gameSession, this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, artifact3);
+
+      playCardAction1.setSource(this.getCard());
+      playCardAction2.setSource(this.getCard());
+      playCardAction3.setSource(this.getCard());
+
+      gameSession.executeAction(playCardAction1);
+      gameSession.executeAction(playCardAction2);
+      return gameSession.executeAction(playCardAction3);
+    }
+  }
 }
 ModifierOpeningGambitAlabasterTitan.initClass();
 

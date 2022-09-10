@@ -1,3 +1,8 @@
+/* eslint-disable
+    class-methods-use-this,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -6,15 +11,14 @@
 const ModifierKillWatchSpawnEntity = require('./modifierKillWatchSpawnEntity');
 
 class ModifierKillWatchSpawnEnemyEntity extends ModifierKillWatchSpawnEntity {
-	static initClass() {
-	
-		this.prototype.type ="ModifierKillWatchSpawnEnemyEntity";
-		this.type ="ModifierKillWatchSpawnEnemyEntity";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierKillWatchSpawnEnemyEntity';
+    this.type = 'ModifierKillWatchSpawnEnemyEntity';
+  }
 
-	getSpawnOwnerId(action) {
-		return action.getTarget().getOwnerId();
-	}
+  getSpawnOwnerId(action) {
+    return action.getTarget().getOwnerId();
+  }
 }
 ModifierKillWatchSpawnEnemyEntity.initClass();
 

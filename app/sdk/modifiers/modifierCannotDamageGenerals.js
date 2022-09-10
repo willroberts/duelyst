@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,55 +13,54 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const EVENTS = require('app/common/event_types');
-const ModifierCannot = require('./modifierCannot');
 const DamageAction = require('app/sdk/actions/damageAction');
+const ModifierCannot = require('./modifierCannot');
 
 class ModifierCannotDamageGenerals extends ModifierCannot {
-	static initClass() {
-	
-		this.prototype.type ="ModifierCannotDamageGenerals";
-		this.type ="ModifierCannotDamageGenerals";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierCannotDamageGenerals';
+    this.type = 'ModifierCannotDamageGenerals';
 
-	onEvent(event) {
-		super.onEvent(event);
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+  }
 
-		if (this._private.listeningToEvents) {
-			if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
-				return this.onModifyActionForEntitiesInvolvedInAttack(event);
-			}
-		}
-	}
+  onEvent(event) {
+    super.onEvent(event);
 
-	getIsActionRelevant(a) {
-		return a instanceof DamageAction && a.getTarget().getIsGeneral() && (a.getSource() === this.getCard());
-	}
+    if (this._private.listeningToEvents) {
+      if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
+        return this.onModifyActionForEntitiesInvolvedInAttack(event);
+      }
+    }
+  }
 
-	_modifyAction(a) {
-		a.setChangedByModifier(this);
-		return a.setDamageMultiplier(0);
-	}
+  getIsActionRelevant(a) {
+    return a instanceof DamageAction && a.getTarget().getIsGeneral() && (a.getSource() === this.getCard());
+  }
 
-	onModifyActionForExecution(actionEvent) {
-		super.onModifyActionForExecution(actionEvent);
+  _modifyAction(a) {
+    a.setChangedByModifier(this);
+    return a.setDamageMultiplier(0);
+  }
 
-		const a = actionEvent.action;
-		if (this.getIsActionRelevant(a)) {
-			return this._modifyAction(a);
-		}
-	}
+  onModifyActionForExecution(actionEvent) {
+    super.onModifyActionForExecution(actionEvent);
 
-	onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
-		const a = actionEvent.action;
-		if (this.getIsActive() && this.getIsActionRelevant(a)) {
-			return this._modifyAction(a);
-		}
-	}
+    const a = actionEvent.action;
+    if (this.getIsActionRelevant(a)) {
+      return this._modifyAction(a);
+    }
+  }
+
+  onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
+    const a = actionEvent.action;
+    if (this.getIsActive() && this.getIsActionRelevant(a)) {
+      return this._modifyAction(a);
+    }
+  }
 }
 ModifierCannotDamageGenerals.initClass();
 

@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/extensions,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 const Errors = require('../lib/custom_errors');
 
 // catch all middleware

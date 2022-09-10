@@ -1,3 +1,13 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-return-assign,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -9,54 +19,53 @@
 const RandomTeleportAction = require('app/sdk/actions/randomTeleportAction');
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
-const ModifierDealOrTakeDamageWatch = require('./modifierDealOrTakeDamageWatch');
 const CardType = require('app/sdk/cards/cardType');
 const _ = require('underscore');
+const ModifierDealOrTakeDamageWatch = require('./modifierDealOrTakeDamageWatch');
 
 class ModifierDealOrTakeDamageWatchRandomTeleportOther extends ModifierDealOrTakeDamageWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDealOrTakeDamageWatchRandomTeleportOther";
-		this.type ="ModifierDealOrTakeDamageWatchRandomTeleportOther";
-	
-		this.description ="Whenever an enemy damages or takes damage from this, teleport that enemy to a random location";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDealOrTakeDamageWatchRandomTeleportOther';
+    this.type = 'ModifierDealOrTakeDamageWatchRandomTeleportOther';
 
-	onDealOrTakeDamage(action) {
-		let targetToTeleport;
-		super.onDealOrTakeDamage(action);
+    this.description = 'Whenever an enemy damages or takes damage from this, teleport that enemy to a random location';
+  }
 
-		// if the target of the action is this unit, the unit is receiving the damage
-		if (action.getTarget() === this.getCard()) {
-			targetToTeleport = __guard__(action.getSource(), x => x.getAncestorCardOfType(CardType.Unit));
-			if (!targetToTeleport) { // If we couldn't find a unit that dealt the damage, assume the source of damage was spell, in which case teleport the general
-				targetToTeleport = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
-			}
-		} else if (action.getTarget().getOwnerId() !== this.getCard().getOwnerId()) { // else we are dealing damage
-				targetToTeleport = action.getTarget();
-			}
+  onDealOrTakeDamage(action) {
+    let targetToTeleport;
+    super.onDealOrTakeDamage(action);
 
-		if ((targetToTeleport != null) && !_.contains(this._private.cardIndicesTeleported, targetToTeleport.getIndex())) {
-			this._private.cardIndicesTeleported.push(targetToTeleport.getIndex());
-			const randomTeleportAction = new RandomTeleportAction(this.getGameSession());
-			randomTeleportAction.setOwnerId(this.getCard().getOwnerId());
-			randomTeleportAction.setSource(targetToTeleport);
-			randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), this.getFXResource()));
-			return this.getGameSession().executeAction(randomTeleportAction);
-		}
-	}
+    // if the target of the action is this unit, the unit is receiving the damage
+    if (action.getTarget() === this.getCard()) {
+      targetToTeleport = __guard__(action.getSource(), (x) => x.getAncestorCardOfType(CardType.Unit));
+      if (!targetToTeleport) { // If we couldn't find a unit that dealt the damage, assume the source of damage was spell, in which case teleport the general
+        targetToTeleport = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+      }
+    } else if (action.getTarget().getOwnerId() !== this.getCard().getOwnerId()) { // else we are dealing damage
+      targetToTeleport = action.getTarget();
+    }
 
-	updateCachedState() {
-		super.updateCachedState();
-		return this._private.cardIndicesTeleported.length = 0;
-	}
+    if ((targetToTeleport != null) && !_.contains(this._private.cardIndicesTeleported, targetToTeleport.getIndex())) {
+      this._private.cardIndicesTeleported.push(targetToTeleport.getIndex());
+      const randomTeleportAction = new RandomTeleportAction(this.getGameSession());
+      randomTeleportAction.setOwnerId(this.getCard().getOwnerId());
+      randomTeleportAction.setSource(targetToTeleport);
+      randomTeleportAction.setFXResource(_.union(randomTeleportAction.getFXResource(), this.getFXResource()));
+      return this.getGameSession().executeAction(randomTeleportAction);
+    }
+  }
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
-		p.cardIndicesTeleported = [];
+  updateCachedState() {
+    super.updateCachedState();
+    return this._private.cardIndicesTeleported.length = 0;
+  }
 
-		return p;
-	}
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
+    p.cardIndicesTeleported = [];
+
+    return p;
+  }
 }
 ModifierDealOrTakeDamageWatchRandomTeleportOther.initClass();
 

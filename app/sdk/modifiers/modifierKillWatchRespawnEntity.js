@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,65 +21,64 @@
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const UtilsPosition = require('app/common/utils/utils_position');
-const ModifierKillWatch = require('./modifierKillWatch');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const PlayCardAction = require('app/sdk/actions/playCardAction');
+const ModifierKillWatch = require('./modifierKillWatch');
 
 class ModifierKillWatchRespawnEntity extends ModifierKillWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierKillWatchRespawnEntity";
-		this.type ="ModifierKillWatchRespawnEntity";
-	
-		this.description ="Whenever Monolith Guardian destroys an enemy, it assimilates them";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericSpawn"];
-		this.prototype.cardDataOrIndexToSpawn = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierKillWatchRespawnEntity';
+    this.type = 'ModifierKillWatchRespawnEntity';
 
-	static createContextObject(spawnCount, spawnPattern, spawnSilently, options) {
-		if (spawnCount == null) { spawnCount = 1; }
-		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_1x1; }
-		if (spawnSilently == null) { spawnSilently = true; }
-		const contextObject = super.createContextObject(false, false, options);
-		contextObject.spawnCount = spawnCount;
-		contextObject.spawnPattern = spawnPattern;
-		contextObject.spawnSilently = spawnSilently;
-		return contextObject;
-	}
+    this.description = 'Whenever Monolith Guardian destroys an enemy, it assimilates them';
 
-	static getDescription(modifierContextObject) {
-		return this.description;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierKillWatch', 'FX.Modifiers.ModifierGenericSpawn'];
+    this.prototype.cardDataOrIndexToSpawn = null;
+  }
 
-	onKillWatch(action) {
-		super.onKillWatch(action);
+  static createContextObject(spawnCount, spawnPattern, spawnSilently, options) {
+    if (spawnCount == null) { spawnCount = 1; }
+    if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_1x1; }
+    if (spawnSilently == null) { spawnSilently = true; }
+    const contextObject = super.createContextObject(false, false, options);
+    contextObject.spawnCount = spawnCount;
+    contextObject.spawnPattern = spawnPattern;
+    contextObject.spawnSilently = spawnSilently;
+    return contextObject;
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const ownerId = this.getSpawnOwnerId(action);
-			const cardDataOrIndexToSpawn = action.getTarget().createNewCardData();
-			const cardToSpawn = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(cardDataOrIndexToSpawn);
-			const spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), action.getTargetPosition(), this.spawnPattern, cardToSpawn, this.getCard(), this.spawnCount);
-			return (() => {
-				const result = [];
-				for (let spawnPosition of Array.from(spawnPositions)) {
-					var spawnAction;
-					if (this.spawnSilently) {
-						spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
-					} else {
-						spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
-					}
-					spawnAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(spawnAction));
-				}
-				return result;
-			})();
-		}
-	}
+  static getDescription(modifierContextObject) {
+    return this.description;
+  }
 
-	getSpawnOwnerId(action) {
-		return this.getCard().getOwnerId();
-	}
+  onKillWatch(action) {
+    super.onKillWatch(action);
+
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const ownerId = this.getSpawnOwnerId(action);
+      const cardDataOrIndexToSpawn = action.getTarget().createNewCardData();
+      const cardToSpawn = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(cardDataOrIndexToSpawn);
+      const spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), action.getTargetPosition(), this.spawnPattern, cardToSpawn, this.getCard(), this.spawnCount);
+      return (() => {
+        const result = [];
+        for (const spawnPosition of Array.from(spawnPositions)) {
+          var spawnAction;
+          if (this.spawnSilently) {
+            spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+          } else {
+            spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+          }
+          spawnAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(spawnAction));
+        }
+        return result;
+      })();
+    }
+  }
+
+  getSpawnOwnerId(action) {
+    return this.getCard().getOwnerId();
+  }
 }
 ModifierKillWatchRespawnEntity.initClass();
 

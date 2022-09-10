@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,90 +15,88 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
+const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 
 class ModifierMyAttackWatchScarabBlast extends ModifierMyAttackWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierMyAttackWatchScarabBlast";
-		this.type ="ModifierMyAttackWatchScarabBlast";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierMyAttackWatchScarabBlast';
+    this.type = 'ModifierMyAttackWatchScarabBlast';
+  }
 
-	onMyAttackWatch(action) {
+  onMyAttackWatch(action) {
+    const target = action.getTarget();
+    if (target != null) {
+      let spawnPosition;
+      let sameRowRight = false;
+      let sameRowLeft = false;
+      let sameColumnUp = false;
+      let sameColumnDown = false;
 
-		const target = action.getTarget();
-		if (target != null) {
-			let spawnPosition;
-			let sameRowRight = false;
-			let sameRowLeft = false;
-			let sameColumnUp = false;
-			let sameColumnDown = false;
+      const targetPosition = target.getPosition();
+      const myPosition = this.getCard().getPosition();
+      const board = this.getCard().getGameSession().getBoard();
 
-			const targetPosition = target.getPosition();
-			const myPosition = this.getCard().getPosition();
-			const board = this.getCard().getGameSession().getBoard();
+      if (targetPosition.x === myPosition.x) {
+        if (targetPosition.y < myPosition.y) {
+          sameColumnDown = true;
+        } else {
+          sameColumnUp = true;
+        }
+      } else if (targetPosition.y === myPosition.y) {
+        if (targetPosition.x < myPosition.x) {
+          sameRowLeft = true;
+        } else {
+          sameRowRight = true;
+        }
+      }
 
-			if (targetPosition.x === myPosition.x) {
-				if (targetPosition.y < myPosition.y) {
-					sameColumnDown = true;
-				} else { 
-					sameColumnUp = true;
-				}
-			} else if (targetPosition.y === myPosition.y) {
-				if (targetPosition.x < myPosition.x) {
-					sameRowLeft = true;
-				} else { 
-					sameRowRight = true;
-				}
-			}
+      const spawnPositions = [];
 
-			const spawnPositions = [];
+      if (sameRowRight) {
+        spawnPosition = { x: myPosition.x + 1, y: myPosition.y };
+        while (board.isOnBoard(spawnPosition)) {
+          spawnPositions.push(spawnPosition);
+          spawnPosition = { x: spawnPosition.x + 1, y: spawnPosition.y };
+        }
+      } else if (sameRowLeft) {
+        spawnPosition = { x: myPosition.x - 1, y: myPosition.y };
+        while (board.isOnBoard(spawnPosition)) {
+          spawnPositions.push(spawnPosition);
+          spawnPosition = { x: spawnPosition.x - 1, y: spawnPosition.y };
+        }
+      } else if (sameColumnUp) {
+        spawnPosition = { x: myPosition.x, y: myPosition.y + 1 };
+        while (board.isOnBoard(spawnPosition)) {
+          spawnPositions.push(spawnPosition);
+          spawnPosition = { x: spawnPosition.x, y: spawnPosition.y + 1 };
+        }
+      } else if (sameColumnDown) {
+        spawnPosition = { x: myPosition.x, y: myPosition.y - 1 };
+        while (board.isOnBoard(spawnPosition)) {
+          spawnPositions.push(spawnPosition);
+          spawnPosition = { x: spawnPosition.x, y: spawnPosition.y - 1 };
+        }
+      }
 
-			if (sameRowRight) {
-				spawnPosition = {x: myPosition.x + 1, y: myPosition.y};
-				while (board.isOnBoard(spawnPosition)) {
-					spawnPositions.push(spawnPosition);
-					spawnPosition = {x: spawnPosition.x + 1, y: spawnPosition.y};
-				}
-			} else if (sameRowLeft) {
-				spawnPosition = {x: myPosition.x - 1, y: myPosition.y};
-				while (board.isOnBoard(spawnPosition)) {
-					spawnPositions.push(spawnPosition);
-					spawnPosition = {x: spawnPosition.x - 1, y: spawnPosition.y};
-				}
-			} else if (sameColumnUp) {
-				spawnPosition = {x: myPosition.x, y: myPosition.y + 1};
-				while (board.isOnBoard(spawnPosition)) {
-					spawnPositions.push(spawnPosition);
-					spawnPosition = {x: spawnPosition.x, y: spawnPosition.y + 1};
-				}
-			} else if (sameColumnDown) {
-				spawnPosition = {x: myPosition.x, y: myPosition.y - 1};
-				while (board.isOnBoard(spawnPosition)) {
-					spawnPositions.push(spawnPosition);
-					spawnPosition = {x: spawnPosition.x, y: spawnPosition.y - 1};
-				}
-			}
-
-			if (spawnPositions.length > 0) {
-				return (() => {
-					const result = [];
-					for (let position of Array.from(spawnPositions)) {
-						if ((position != null) && !((position.x === targetPosition.x) && (position.y === targetPosition.y))) {
-							const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, {id: Cards.Faction3.Scarab});
-							playCardAction.setSource(this.getCard());
-							result.push(this.getGameSession().executeAction(playCardAction));
-						} else {
-							result.push(undefined);
-						}
-					}
-					return result;
-				})();
-			}
-		}
-	}
+      if (spawnPositions.length > 0) {
+        return (() => {
+          const result = [];
+          for (const position of Array.from(spawnPositions)) {
+            if ((position != null) && !((position.x === targetPosition.x) && (position.y === targetPosition.y))) {
+              const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, { id: Cards.Faction3.Scarab });
+              playCardAction.setSource(this.getCard());
+              result.push(this.getGameSession().executeAction(playCardAction));
+            } else {
+              result.push(undefined);
+            }
+          }
+          return result;
+        })();
+      }
+    }
+  }
 }
 ModifierMyAttackWatchScarabBlast.initClass();
 

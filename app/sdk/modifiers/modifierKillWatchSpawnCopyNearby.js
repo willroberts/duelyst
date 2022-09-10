@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,39 +17,38 @@
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const UtilsPosition = require('app/common/utils/utils_position');
-const ModifierKillWatch = require('./modifierKillWatch');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const Rarity = require('app/sdk/cards/rarityLookup');
+const ModifierKillWatch = require('./modifierKillWatch');
 
 class ModifierKillWatchSpawnCopyNearby extends ModifierKillWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierKillWatchSpawnCopyNearby";
-		this.type ="ModifierKillWatchSpawnCopyNearby";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierKillWatchSpawnCopyNearby';
+    this.type = 'ModifierKillWatchSpawnCopyNearby';
 
-	onKillWatch(action) {
-		super.onKillWatch(action);
+    this.prototype.fxResource = ['FX.Modifiers.ModifierKillWatch', 'FX.Modifiers.ModifierGenericSpawn'];
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const cardDataOrIndexToSpawn = action.getTarget().createNewCardData();
-			const cardToSpawn = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(cardDataOrIndexToSpawn);
-			if (!cardToSpawn.getWasGeneral()) {
-				const spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), CONFIG.PATTERN_3x3, cardToSpawn, this.getCard(), 1);
-				return (() => {
-					const result = [];
-					for (let spawnPosition of Array.from(spawnPositions)) {
-						const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
-						spawnAction.setSource(this.getCard());
-						result.push(this.getGameSession().executeAction(spawnAction));
-					}
-					return result;
-				})();
-			}
-		}
-	}
+  onKillWatch(action) {
+    super.onKillWatch(action);
+
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const cardDataOrIndexToSpawn = action.getTarget().createNewCardData();
+      const cardToSpawn = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(cardDataOrIndexToSpawn);
+      if (!cardToSpawn.getWasGeneral()) {
+        const spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), CONFIG.PATTERN_3x3, cardToSpawn, this.getCard(), 1);
+        return (() => {
+          const result = [];
+          for (const spawnPosition of Array.from(spawnPositions)) {
+            const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+            spawnAction.setSource(this.getCard());
+            result.push(this.getGameSession().executeAction(spawnAction));
+          }
+          return result;
+        })();
+      }
+    }
+  }
 }
 ModifierKillWatchSpawnCopyNearby.initClass();
 

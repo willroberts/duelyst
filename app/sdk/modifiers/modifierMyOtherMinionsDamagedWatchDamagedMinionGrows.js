@@ -1,3 +1,10 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,20 +17,17 @@ const ModifierMyOtherMinionsDamagedWatch = require('./modifierMyOtherMinionsDama
 const ModifierGrow = require('./modifierGrow');
 
 class ModifierMyOtherMinionsDamagedWatchDamagedMinionGrows extends ModifierMyOtherMinionsDamagedWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierMyOtherMinionsDamagedWatchDamagedMinionGrows";
-		this.type ="ModifierMyOtherMinionsDamagedWatchDamagedMinionGrows";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierMyOtherMinionsDamagedWatchDamagedMinionGrows';
+    this.type = 'ModifierMyOtherMinionsDamagedWatchDamagedMinionGrows';
+  }
 
-	onDamageDealtToMinion(action) {
-
-		const minion = action.getTarget();
-		if ((minion != null) && minion.hasActiveModifierClass(ModifierGrow)) {
-			return Array.from(minion.getActiveModifiersByClass(ModifierGrow)).map((mod) =>
-				mod.activateGrow());
-		}
-	}
+  onDamageDealtToMinion(action) {
+    const minion = action.getTarget();
+    if ((minion != null) && minion.hasActiveModifierClass(ModifierGrow)) {
+      return Array.from(minion.getActiveModifiersByClass(ModifierGrow)).map((mod) => mod.activateGrow());
+    }
+  }
 }
 ModifierMyOtherMinionsDamagedWatchDamagedMinionGrows.initClass(); // activate each instance of Grow on the minion
 

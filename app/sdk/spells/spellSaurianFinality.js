@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -12,59 +20,56 @@ const ModifierStunned = require('app/sdk/modifiers/modifierStunned');
 const Spell = require('./spell');
 
 class SpellSaurianFinality extends Spell {
-	static initClass() {
-	
-		this.prototype.appliedName = null;
-	}
+  static initClass() {
+    this.prototype.appliedName = null;
+  }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		let removeManaCoreAction;
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    let removeManaCoreAction;
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
 
-		const position = {x, y};
-		const entity = board.getCardAtPosition(position, this.targetType);
+    const position = { x, y };
+    const entity = board.getCardAtPosition(position, this.targetType);
 
-		if ((entity != null) && (entity === this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId()))) { // enemy general
-			removeManaCoreAction = new RemoveManaCoreAction(this.getGameSession(), 3);
-			removeManaCoreAction.setSource(this);
-			removeManaCoreAction.setOwnerId(this.getGameSession().getOpponentPlayerIdOfPlayerId(this.getOwnerId()));
-			this.getGameSession().executeAction(removeManaCoreAction);
+    if ((entity != null) && (entity === this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId()))) { // enemy general
+      removeManaCoreAction = new RemoveManaCoreAction(this.getGameSession(), 3);
+      removeManaCoreAction.setSource(this);
+      removeManaCoreAction.setOwnerId(this.getGameSession().getOpponentPlayerIdOfPlayerId(this.getOwnerId()));
+      this.getGameSession().executeAction(removeManaCoreAction);
 
-			const stunnedObject = ModifierStunned.createContextObject();
-			return this.getGameSession().applyModifierContextObject(stunnedObject, this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId()));
+      const stunnedObject = ModifierStunned.createContextObject();
+      return this.getGameSession().applyModifierContextObject(stunnedObject, this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId()));
+    } if ((entity != null) && (entity === this.getGameSession().getGeneralForPlayerId(this.getOwnerId()))) { // my general
+      removeManaCoreAction = new RemoveManaCoreAction(this.getGameSession(), 3);
+      removeManaCoreAction.setSource(this);
+      removeManaCoreAction.setOwnerId(this.getOwnerId());
+      this.getGameSession().executeAction(removeManaCoreAction);
 
-		} else if ((entity != null) && (entity === this.getGameSession().getGeneralForPlayerId(this.getOwnerId()))) { // my general
-			removeManaCoreAction = new RemoveManaCoreAction(this.getGameSession(), 3);
-			removeManaCoreAction.setSource(this);
-			removeManaCoreAction.setOwnerId(this.getOwnerId());
-			this.getGameSession().executeAction(removeManaCoreAction);
+      const ownGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+      const healAction = new HealAction(this.getGameSession());
+      healAction.setOwnerId(this.getOwnerId());
+      healAction.setTarget(ownGeneral);
+      healAction.setHealAmount(10);
+      this.getGameSession().executeAction(healAction);
 
-			const ownGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
-			const healAction = new HealAction(this.getGameSession());
-			healAction.setOwnerId(this.getOwnerId());
-			healAction.setTarget(ownGeneral);
-			healAction.setHealAmount(10);
-			this.getGameSession().executeAction(healAction);
+      const generalBuff = Modifier.createContextObjectWithAttributeBuffs(3, 0);
+      generalBuff.appliedName = this.appliedName;
+      return this.getGameSession().applyModifierContextObject(generalBuff, ownGeneral);
+    }
+  }
 
-			const generalBuff = Modifier.createContextObjectWithAttributeBuffs(3,0);
-			generalBuff.appliedName = this.appliedName;
-			return this.getGameSession().applyModifierContextObject(generalBuff, ownGeneral);
-		}
-	}
+  _findApplyEffectPositions(position, sourceAction) {
+    const applyEffectPositions = [];
 
-	_findApplyEffectPositions(position, sourceAction) {
-		const applyEffectPositions = [];
+    // affects both generals
+    const enemyGeneral = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId());
+    if (enemyGeneral != null) { applyEffectPositions.push(enemyGeneral.getPosition()); }
+    const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+    if (myGeneral != null) { applyEffectPositions.push(myGeneral.getPosition()); }
 
-		// affects both generals
-		const enemyGeneral = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId());
-		if (enemyGeneral != null) { applyEffectPositions.push(enemyGeneral.getPosition()); }
-		const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
-		if (myGeneral != null) { applyEffectPositions.push(myGeneral.getPosition()); }
-
-		return applyEffectPositions;
-	}
+    return applyEffectPositions;
+  }
 }
 SpellSaurianFinality.initClass();
-
 
 module.exports = SpellSaurianFinality;

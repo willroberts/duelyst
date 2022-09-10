@@ -1,3 +1,8 @@
+/* eslint-disable
+    consistent-return,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -9,21 +14,19 @@ const ModifierKillWatchRefreshExhaustion = require('./modifierKillWatchRefreshEx
 const ModifierStunned = require('./modifierStunned');
 
 class ModifierKillWatchRefreshExhaustionIfTargetStunned extends ModifierKillWatchRefreshExhaustion {
-	static initClass() {
-	
-		this.prototype.type ="ModifierKillWatchRefreshExhaustionIfTargetStunned";
-		this.type ="ModifierKillWatchRefreshExhaustionIfTargetStunned";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierKillWatchRefreshExhaustionIfTargetStunned';
+    this.type = 'ModifierKillWatchRefreshExhaustionIfTargetStunned';
 
-	onKillWatch(action) {
+    this.prototype.fxResource = ['FX.Modifiers.ModifierKillWatch'];
+  }
 
-		const target = action.getTarget();
-		if ((target != null) && target.hasActiveModifierClass(ModifierStunned)) {
-			return super.onKillWatch();
-		}
-	}
+  onKillWatch(action) {
+    const target = action.getTarget();
+    if ((target != null) && target.hasActiveModifierClass(ModifierStunned)) {
+      return super.onKillWatch();
+    }
+  }
 }
 ModifierKillWatchRefreshExhaustionIfTargetStunned.initClass();
 

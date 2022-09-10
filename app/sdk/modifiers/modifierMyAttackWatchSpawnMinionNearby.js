@@ -1,3 +1,15 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-undef,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,76 +21,74 @@
  */
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
-const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const CardType = require('app/sdk/cards/cardType');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
+const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 
 class ModifierMyAttackWatchSpawnMinionNearby extends ModifierMyAttackWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierMyAttackWatchSpawnMinionNearby";
-		this.type ="ModifierMyAttackWatchSpawnMinionNearby";
-	
-		this.modifierName ="Attack Watch and Spawn Minion";
-		this.description ="Whenever this minion attacks, summon %X nearby";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericSpawn"];
-		this.prototype.cardDataOrIndexToSpawn = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierMyAttackWatchSpawnMinionNearby';
+    this.type = 'ModifierMyAttackWatchSpawnMinionNearby';
 
-	static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently,options) {
-		if (spawnDescription == null) { spawnDescription = ""; }
-		if (spawnCount == null) { spawnCount = 1; }
-		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
-		if (spawnSilently == null) { spawnSilently = true; }
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
-		contextObject.spawnDescription = spawnDescription;
-		contextObject.spawnCount = spawnCount;
-		contextObject.spawnPattern = spawnPattern;
-		contextObject.spawnSilently = spawnSilently;
-		return contextObject;
-	}
+    this.modifierName = 'Attack Watch and Spawn Minion';
+    this.description = 'Whenever this minion attacks, summon %X nearby';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			return this.description.replace(/%X/, modifierContextObject.spawnDescription);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierGenericSpawn'];
+    this.prototype.cardDataOrIndexToSpawn = null;
+  }
 
-	onMyAttackWatch(action) {
-		super.onMyAttackWatch(action);
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const ownerId = this.getSpawnOwnerId(action);
-			const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierMyAttackWatchSpawnMinionNearby);
-			return (() => {
-				const result = [];
-				for (let spawnPosition of Array.from(spawnPositions)) {
-					var spawnAction;
-					const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
-					if (this.spawnSilently) {
-						spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
-					} else {
-						spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
-					}
-					spawnAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(spawnAction));
-				}
-				return result;
-			})();
-		}
-	}
+  static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently, options) {
+    if (spawnDescription == null) { spawnDescription = ''; }
+    if (spawnCount == null) { spawnCount = 1; }
+    if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
+    if (spawnSilently == null) { spawnSilently = true; }
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+    contextObject.spawnDescription = spawnDescription;
+    contextObject.spawnCount = spawnCount;
+    contextObject.spawnPattern = spawnPattern;
+    contextObject.spawnSilently = spawnSilently;
+    return contextObject;
+  }
 
-	getCardDataOrIndexToSpawn() {
-		return this.cardDataOrIndexToSpawn;
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      return this.description.replace(/%X/, modifierContextObject.spawnDescription);
+    }
+    return this.description;
+  }
 
-	getSpawnOwnerId(action) {
-		return this.getCard().getOwnerId();
-	}
+  onMyAttackWatch(action) {
+    super.onMyAttackWatch(action);
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const ownerId = this.getSpawnOwnerId(action);
+      const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierMyAttackWatchSpawnMinionNearby);
+      return (() => {
+        const result = [];
+        for (const spawnPosition of Array.from(spawnPositions)) {
+          var spawnAction;
+          const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
+          if (this.spawnSilently) {
+            spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+          } else {
+            spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+          }
+          spawnAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(spawnAction));
+        }
+        return result;
+      })();
+    }
+  }
+
+  getCardDataOrIndexToSpawn() {
+    return this.cardDataOrIndexToSpawn;
+  }
+
+  getSpawnOwnerId(action) {
+    return this.getCard().getOwnerId();
+  }
 }
 ModifierMyAttackWatchSpawnMinionNearby.initClass();
 

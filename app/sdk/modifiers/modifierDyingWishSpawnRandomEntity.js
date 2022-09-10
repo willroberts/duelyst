@@ -1,3 +1,10 @@
+/* eslint-disable
+    max-len,
+    no-mixed-spaces-and-tabs,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -6,24 +13,23 @@
 const ModifierDyingWishSpawnEntity = require('./modifierDyingWishSpawnEntity');
 
 class ModifierDyingWishSpawnRandomEntity extends ModifierDyingWishSpawnEntity {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDyingWishSpawnRandomEntity";
-		this.type ="ModifierDyingWishSpawnRandomEntity";
-	
-		this.prototype.cardDataOrIndicesToSpawn = null;
+  static initClass() {
+    this.prototype.type = 'ModifierDyingWishSpawnRandomEntity';
+    this.type = 'ModifierDyingWishSpawnRandomEntity';
+
+    this.prototype.cardDataOrIndicesToSpawn = null;
 		 // array of card data objects or indices to pick randomly from
-	}
+  }
 
-	static createContextObject(cardDataOrIndicesToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently, options) {
-		const contextObject = super.createContextObject(cardDataOrIndicesToSpawn[0], spawnDescription, spawnCount, spawnPattern, spawnSilently, options);
-		contextObject.cardDataOrIndicesToSpawn = cardDataOrIndicesToSpawn;
-		return contextObject;
-	}
+  static createContextObject(cardDataOrIndicesToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently, options) {
+    const contextObject = super.createContextObject(cardDataOrIndicesToSpawn[0], spawnDescription, spawnCount, spawnPattern, spawnSilently, options);
+    contextObject.cardDataOrIndicesToSpawn = cardDataOrIndicesToSpawn;
+    return contextObject;
+  }
 
-	getCardDataOrIndexToSpawn() {
-		return this.cardDataOrIndicesToSpawn[this.getGameSession().getRandomIntegerForExecution(this.cardDataOrIndicesToSpawn.length)];
-	}
+  getCardDataOrIndexToSpawn() {
+    return this.cardDataOrIndicesToSpawn[this.getGameSession().getRandomIntegerForExecution(this.cardDataOrIndicesToSpawn.length)];
+  }
 }
 ModifierDyingWishSpawnRandomEntity.initClass();
 

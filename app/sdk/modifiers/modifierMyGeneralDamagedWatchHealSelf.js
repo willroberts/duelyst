@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,50 +13,48 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('app/common/config');
-const ModifierMyGeneralDamagedWatch = require('./modifierMyGeneralDamagedWatch');
 const HealAction = require('app/sdk/actions/healAction');
+const ModifierMyGeneralDamagedWatch = require('./modifierMyGeneralDamagedWatch');
 
 class ModifierMyGeneralDamagedWatchHealSelf extends ModifierMyGeneralDamagedWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierMyGeneralDamagedWatchHealSelf";
-		this.type ="ModifierMyGeneralDamagedWatchHealSelf";
-	
-		this.modifierName ="My General Damage Watch Heal Self";
-		this.description ="Whenever your General takes damage, %X";
-	
-		this.prototype.healAmount = 0;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierMyGeneralDamagedWatch", "FX.Modifiers.ModifierGenericHeal"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierMyGeneralDamagedWatchHealSelf';
+    this.type = 'ModifierMyGeneralDamagedWatchHealSelf';
 
-	static createContextObject(healAmount, options) {
-		if (healAmount == null) { healAmount = 0; }
-		const contextObject = super.createContextObject(options);
-		contextObject.healAmount = healAmount;
-		return contextObject;
-	}
+    this.modifierName = 'My General Damage Watch Heal Self';
+    this.description = 'Whenever your General takes damage, %X';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject.healAmount > 0) {
-			return this.description.replace(/%X/, "restore "+modifierContextObject.healAmount+" Health to this minion");
-		} else {
-			return this.description.replace(/%X/, "fully heal this minion");
-		}
-	}
+    this.prototype.healAmount = 0;
 
-	onDamageDealtToGeneral(action) {
-		if (this.getCard().getHP() < this.getCard().getMaxHP()) {
-			const healAction = this.getCard().getGameSession().createActionForType(HealAction.type);
-			healAction.setTarget(this.getCard());
-			if (this.healAmount === 0) { // default, heal to full
-				healAction.setHealAmount(this.getCard().getMaxHP() - this.getCard().getHP());
-			} else {
-				healAction.setHealAmount(this.healAmount);
-			}
-			return this.getCard().getGameSession().executeAction(healAction);
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierMyGeneralDamagedWatch', 'FX.Modifiers.ModifierGenericHeal'];
+  }
+
+  static createContextObject(healAmount, options) {
+    if (healAmount == null) { healAmount = 0; }
+    const contextObject = super.createContextObject(options);
+    contextObject.healAmount = healAmount;
+    return contextObject;
+  }
+
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject.healAmount > 0) {
+      return this.description.replace(/%X/, `restore ${modifierContextObject.healAmount} Health to this minion`);
+    }
+    return this.description.replace(/%X/, 'fully heal this minion');
+  }
+
+  onDamageDealtToGeneral(action) {
+    if (this.getCard().getHP() < this.getCard().getMaxHP()) {
+      const healAction = this.getCard().getGameSession().createActionForType(HealAction.type);
+      healAction.setTarget(this.getCard());
+      if (this.healAmount === 0) { // default, heal to full
+        healAction.setHealAmount(this.getCard().getMaxHP() - this.getCard().getHP());
+      } else {
+        healAction.setHealAmount(this.healAmount);
+      }
+      return this.getCard().getGameSession().executeAction(healAction);
+    }
+  }
 }
 ModifierMyGeneralDamagedWatchHealSelf.initClass();
 

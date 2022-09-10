@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -9,23 +15,21 @@ const QuestFactory = require('app/sdk/quests/questFactory');
 const i18next = require('i18next');
 
 class IndomitableSpiritAchievement extends Achievement {
-	static initClass() {
-		this.id = "indominatableSpirit";
-		this.title = i18next.t("achievements.indomitable_spirit_title");
-		this.description = i18next.t("achievements.indomitable_spirit_desc");
-		this.progressRequired = 100;
-		this.rewards =
-			{gold: 100};
-	}
+  static initClass() {
+    this.id = 'indominatableSpirit';
+    this.title = i18next.t('achievements.indomitable_spirit_title');
+    this.description = i18next.t('achievements.indomitable_spirit_desc');
+    this.progressRequired = 100;
+    this.rewards =			{ gold: 100 };
+  }
 
-	static progressForCompletingQuestId(questId) {
-		const sdkQuest = QuestFactory.questForIdentifier(questId);
-		if ((sdkQuest != null) && !sdkQuest.isBeginner) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
+  static progressForCompletingQuestId(questId) {
+    const sdkQuest = QuestFactory.questForIdentifier(questId);
+    if ((sdkQuest != null) && !sdkQuest.isBeginner) {
+      return 1;
+    }
+    return 0;
+  }
 }
 IndomitableSpiritAchievement.initClass();
 

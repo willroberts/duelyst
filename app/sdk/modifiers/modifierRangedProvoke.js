@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-tabs,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,52 +16,51 @@
  */
 const CONFIG = 		require('app/common/config');
 const Logger = require('app/common/logger');
-const Modifier = 	require('./modifier');
 const AttackAction = 	require('app/sdk/actions/attackAction');
-const ModifierRangedProvoked = 	require('./modifierRangedProvoked');
-const ModifierRanged = require('./modifierRanged');
 const _ = require('underscore');
 const i18next = require('i18next');
+const Modifier = 	require('./modifier');
+const ModifierRangedProvoked = 	require('./modifierRangedProvoked');
+const ModifierRanged = require('./modifierRanged');
 
 class ModifierRangedProvoke extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierRangedProvoke";
-		this.type ="ModifierRangedProvoke";
-	
-		this.prototype.maxStacks = 1;
-	
-		this.modifierName =i18next.t("modifiers.ranged_provoke_name");
-		this.description =i18next.t("modifiers.ranged_provoke_def");
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.isAura = true;
-		this.prototype.auraRadius = CONFIG.WHOLE_BOARD_RADIUS;
-		this.prototype.auraIncludeSelf = false;
-		this.prototype.auraIncludeAlly = false;
-		this.prototype.auraIncludeEnemy = true;
-	
-		this.prototype.modifiersContextObjects = [ModifierRangedProvoked.createContextObject()];
-		this.prototype.fxResource = ["FX.Modifiers.ModifierProvoke"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierRangedProvoke';
+    this.type = 'ModifierRangedProvoke';
 
-	onValidateAction(actionEvent) {
-		const a = actionEvent.action;
-		if ((this.getCard() != null) && a instanceof AttackAction && !a.getIsImplicit() && a.getIsValid() && !this.getCard().getIsSameTeamAs(a.getSource()) && _.contains(this.getEntitiesInAura(), a.getSource()) && !a.getTarget().hasModifierType(ModifierRangedProvoke.type)) {
-			// in the case of attacking melee provoker, don't invalidate
-			if (!(a.getSource().getIsProvoked() && _.contains(a.getTarget().getEntitiesProvoked(),a.getSource()))) {
-				return this.invalidateAction(a, this.getCard().getPosition(), "Provoked - must first attack the Provoker.");
-			}
-		}
-	}
+    this.prototype.maxStacks = 1;
 
-	_filterPotentialCardInAura(card) {
-		return card.hasActiveModifierClass(ModifierRanged) && super._filterPotentialCardInAura(card);
-	}
+    this.modifierName = i18next.t('modifiers.ranged_provoke_name');
+    this.description = i18next.t('modifiers.ranged_provoke_def');
+
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+
+    this.prototype.isAura = true;
+    this.prototype.auraRadius = CONFIG.WHOLE_BOARD_RADIUS;
+    this.prototype.auraIncludeSelf = false;
+    this.prototype.auraIncludeAlly = false;
+    this.prototype.auraIncludeEnemy = true;
+
+    this.prototype.modifiersContextObjects = [ModifierRangedProvoked.createContextObject()];
+    this.prototype.fxResource = ['FX.Modifiers.ModifierProvoke'];
+  }
+
+  onValidateAction(actionEvent) {
+    const a = actionEvent.action;
+    if ((this.getCard() != null) && a instanceof AttackAction && !a.getIsImplicit() && a.getIsValid() && !this.getCard().getIsSameTeamAs(a.getSource()) && _.contains(this.getEntitiesInAura(), a.getSource()) && !a.getTarget().hasModifierType(ModifierRangedProvoke.type)) {
+      // in the case of attacking melee provoker, don't invalidate
+      if (!(a.getSource().getIsProvoked() && _.contains(a.getTarget().getEntitiesProvoked(), a.getSource()))) {
+        return this.invalidateAction(a, this.getCard().getPosition(), 'Provoked - must first attack the Provoker.');
+      }
+    }
+  }
+
+  _filterPotentialCardInAura(card) {
+    return card.hasActiveModifierClass(ModifierRanged) && super._filterPotentialCardInAura(card);
+  }
 }
 ModifierRangedProvoke.initClass();
 

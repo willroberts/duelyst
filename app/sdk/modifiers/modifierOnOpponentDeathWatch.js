@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/no-unresolved,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -8,18 +13,17 @@ const UtilsGameSession = require('app/common/utils/utils_game_session');
 const ModifierDeathWatch = require('./modifierDeathWatch');
 
 class ModifierOnOpponentDeathWatch extends ModifierDeathWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOnOpponentDeathWatch";
-		this.type ="ModifierOnOpponentDeathWatch";
-	
-		this.modifierName ="ModifierOnOpponentDeathWatch";
-		this.description ="Summon a %X on a random nearby space";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOnOpponentDeathWatch';
+    this.type = 'ModifierOnOpponentDeathWatch';
 
-	getIsActionRelevant(action) {
-		return super.getIsActionRelevant(action) && !action.getTarget().getIsSameTeamAs(this.getCard());
-	}
+    this.modifierName = 'ModifierOnOpponentDeathWatch';
+    this.description = 'Summon a %X on a random nearby space';
+  }
+
+  getIsActionRelevant(action) {
+    return super.getIsActionRelevant(action) && !action.getTarget().getIsSameTeamAs(this.getCard());
+  }
 }
 ModifierOnOpponentDeathWatch.initClass();
 

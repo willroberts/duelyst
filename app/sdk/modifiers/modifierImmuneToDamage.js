@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,57 +15,56 @@
  */
 const EVENTS = require('app/common/event_types');
 const Logger = require('app/common/logger');
-const ModifierImmune = require('./modifierImmune');
 const DamageAction = require('app/sdk/actions/damageAction');
+const ModifierImmune = require('./modifierImmune');
 
 /*
   Modifier that reduces all damage dealt to this unit to 0.
 */
 
 class ModifierImmuneToDamage extends ModifierImmune {
-	static initClass() {
-	
-		this.prototype.type = "ModifierImmuneToDamage";
-		this.type = "ModifierImmuneToDamage";
-	
-		this.modifierName = "Damage Immunity";
-		this.description = "Takes no damage";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierAntiMagicField"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierImmuneToDamage';
+    this.type = 'ModifierImmuneToDamage';
 
-	onEvent(event) {
-		super.onEvent(event);
+    this.modifierName = 'Damage Immunity';
+    this.description = 'Takes no damage';
 
-		if (this._private.listeningToEvents) {
-			if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
-				return this.onModifyActionForEntitiesInvolvedInAttack(event);
-			}
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierAntiMagicField'];
+  }
 
-	getIsActionRelevant(a) {
-		return (this.getCard() != null) && a instanceof DamageAction && (this.getCard() === a.getTarget());
-	}
+  onEvent(event) {
+    super.onEvent(event);
 
-	_modifyAction(a) {
-		a.setChangedByModifier(this);
-		return a.setDamageMultiplier(0);
-	}
+    if (this._private.listeningToEvents) {
+      if (event.type === EVENTS.modify_action_for_entities_involved_in_attack) {
+        return this.onModifyActionForEntitiesInvolvedInAttack(event);
+      }
+    }
+  }
 
-	onModifyActionForExecution(event) {
-		const a = event.action;
-		if (this.getIsActionRelevant(a)) {
-			return this._modifyAction(a);
-		}
-	}
+  getIsActionRelevant(a) {
+    return (this.getCard() != null) && a instanceof DamageAction && (this.getCard() === a.getTarget());
+  }
 
-	onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
-		const a = actionEvent.action;
-		if (this.getIsActive() && this.getIsActionRelevant(a)) {
-			return this._modifyAction(a);
-		}
-	}
+  _modifyAction(a) {
+    a.setChangedByModifier(this);
+    return a.setDamageMultiplier(0);
+  }
+
+  onModifyActionForExecution(event) {
+    const a = event.action;
+    if (this.getIsActionRelevant(a)) {
+      return this._modifyAction(a);
+    }
+  }
+
+  onModifyActionForEntitiesInvolvedInAttack(actionEvent) {
+    const a = actionEvent.action;
+    if (this.getIsActive() && this.getIsActionRelevant(a)) {
+      return this._modifyAction(a);
+    }
+  }
 }
 ModifierImmuneToDamage.initClass();
 

@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,34 +14,33 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier');
 const AttackAction = require('app/sdk/actions/attackAction');
 const KillAction = require('app/sdk/actions/killAction');
+const Modifier = require('./modifier');
 
 class ModifierWhenAttackedDestroyThis extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierWhenAttackedDestroyThis";
-		this.type ="ModifierWhenAttackedDestroyThis";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierWhenAttackedDestroyThis';
+    this.type = 'ModifierWhenAttackedDestroyThis';
+  }
 
-	onAfterAction(event) {
-		super.onAfterAction(event);
-		const {
-            action
-        } = event;
+  onAfterAction(event) {
+    super.onAfterAction(event);
+    const {
+      action,
+    } = event;
 
-		// when attacked, remove self immediately
-		if (action instanceof AttackAction && (action.getTarget() === this.getCard()) && !action.getIsImplicit()) {
-			if (__guard__(this.getCard(), x => x.getIsActive())) {
-				const killAction = new KillAction(this.getGameSession());
-				killAction.setOwnerId(this.getCard().getOwnerId());
-				killAction.setSource(this.getCard());
-				killAction.setTarget(this.getCard());
-				return this.getGameSession().executeAction(killAction);
-			}
-		}
-	}
+    // when attacked, remove self immediately
+    if (action instanceof AttackAction && (action.getTarget() === this.getCard()) && !action.getIsImplicit()) {
+      if (__guard__(this.getCard(), (x) => x.getIsActive())) {
+        const killAction = new KillAction(this.getGameSession());
+        killAction.setOwnerId(this.getCard().getOwnerId());
+        killAction.setSource(this.getCard());
+        killAction.setTarget(this.getCard());
+        return this.getGameSession().executeAction(killAction);
+      }
+    }
+  }
 }
 ModifierWhenAttackedDestroyThis.initClass();
 

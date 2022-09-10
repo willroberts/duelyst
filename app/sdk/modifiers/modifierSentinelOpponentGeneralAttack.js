@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,44 +12,41 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierSentinel = require('./modifierSentinel');
 const CardType = require('app/sdk/cards/cardType');
 const AttackAction = require('app/sdk/actions/attackAction');
 
 const i18next = require('i18next');
+const ModifierSentinel = require('./modifierSentinel');
 
 class ModifierSentinelOpponentGeneralAttack extends ModifierSentinel {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSentinelOpponentGeneralAttack";
-		this.type ="ModifierSentinelOpponentGeneralAttack";
-	
-		this.description = i18next.t("modifiers.sentinel_general_attack");
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSentinelOpponentGeneralAttack';
+    this.type = 'ModifierSentinelOpponentGeneralAttack';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject != null) {
-			return this.description;
-		} else {
-			return super.getDescription();
-		}
-	}
+    this.description = i18next.t('modifiers.sentinel_general_attack');
+  }
 
-	getIsActionRelevant(action) {
-		// watch for opponent General attacking
-		if (action instanceof AttackAction && (action.getSource() === this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId()))) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject != null) {
+      return this.description;
+    }
+    return super.getDescription();
+  }
 
-	onOverwatch(action) {
-		const newUnit = super.onOverwatch(action);
-		if (this.getIsActionRelevant(action) && (action.getTarget() === this.getCard())) {
-			return action.setTarget(newUnit);
-		}
-	}
+  getIsActionRelevant(action) {
+    // watch for opponent General attacking
+    if (action instanceof AttackAction && (action.getSource() === this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId()))) {
+      return true;
+    }
+    return false;
+  }
+
+  onOverwatch(action) {
+    const newUnit = super.onOverwatch(action);
+    if (this.getIsActionRelevant(action) && (action.getTarget() === this.getCard())) {
+      return action.setTarget(newUnit);
+    }
+  }
 }
 ModifierSentinelOpponentGeneralAttack.initClass();
 

@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,14 +13,13 @@ const PlayerModifierCardDrawModifier = require('app/sdk/playerModifiers/playerMo
 const SpellDamage = require('app/sdk/spells/spellDamage');
 
 class SpellGotatsu extends SpellDamage {
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
-
-		const ownerId = this.getOwnerId();
-		const general = this.getGameSession().getGeneralForPlayerId(ownerId);
-		return this.getGameSession().applyModifierContextObject(PlayerModifierCardDrawModifier.createContextObject(1,1), general);
-	}
+    const ownerId = this.getOwnerId();
+    const general = this.getGameSession().getGeneralForPlayerId(ownerId);
+    return this.getGameSession().applyModifierContextObject(PlayerModifierCardDrawModifier.createContextObject(1, 1), general);
+  }
 }
 
 module.exports = SpellGotatsu;

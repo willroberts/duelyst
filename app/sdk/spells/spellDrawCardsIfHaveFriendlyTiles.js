@@ -1,3 +1,10 @@
+/* eslint-disable
+    max-len,
+    no-plusplus,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,39 +17,38 @@
 const Spell = require('./spell');
 
 class SpellDrawCardsIfHaveFriendlyTiles extends Spell {
-	static initClass() {
-	
-		this.prototype.numCardsToDraw = 0;
-		this.prototype.numTilesRequired = 0;
-		this.prototype.tileId = null;
-	}
+  static initClass() {
+    this.prototype.numCardsToDraw = 0;
+    this.prototype.numTilesRequired = 0;
+    this.prototype.tileId = null;
+  }
 
-	onApplyOneEffectToBoard(board,x,y,sourceAction) {
-		super.onApplyOneEffectToBoard(board,x,y,sourceAction);
+  onApplyOneEffectToBoard(board, x, y, sourceAction) {
+    super.onApplyOneEffectToBoard(board, x, y, sourceAction);
 
-		let numTiles = 0;
-		return (() => {
-			const result = [];
-			for (let tile of Array.from(board.getTiles(true, false))) {
-				if ((tile.getOwnerId() === this.getOwnerId()) && (tile.getBaseCardId() === this.tileId)) {
-					numTiles++;
-					if (numTiles >= this.numTilesRequired) {
-						const player = this.getGameSession().getPlayerById(this.getOwnerId());
-						for (let i = 0, end = this.numCardsToDraw, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-							const drawAction = player.getDeck().actionDrawCard();
-							this.getGameSession().executeAction(drawAction);
-						}
-						break;
-					} else {
-						result.push(undefined);
-					}
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    let numTiles = 0;
+    return (() => {
+      const result = [];
+      for (const tile of Array.from(board.getTiles(true, false))) {
+        if ((tile.getOwnerId() === this.getOwnerId()) && (tile.getBaseCardId() === this.tileId)) {
+          numTiles++;
+          if (numTiles >= this.numTilesRequired) {
+            const player = this.getGameSession().getPlayerById(this.getOwnerId());
+            for (let i = 0, end = this.numCardsToDraw, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+              const drawAction = player.getDeck().actionDrawCard();
+              this.getGameSession().executeAction(drawAction);
+            }
+            break;
+          } else {
+            result.push(undefined);
+          }
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 SpellDrawCardsIfHaveFriendlyTiles.initClass();
 

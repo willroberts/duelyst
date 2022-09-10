@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,59 +20,58 @@
  */
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
-const ModifierDyingWish = require('./modifierDyingWish');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const PlayCardAction = require('app/sdk/actions/playCardAction');
 const UtilsPosition = require('app/common/utils/utils_position');
 const _ = require('underscore');
+const ModifierDyingWish = require('./modifierDyingWish');
 
 class ModifierDyingWishReSpawnEntityAnywhere extends ModifierDyingWish {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDyingWishReSpawnEntityAnywhere";
-		this.type ="ModifierDyingWishReSpawnEntityAnywhere";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn"];
-	
-		this.prototype.spawnCount = 1;
-		this.prototype.spawnSilently = true;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDyingWishReSpawnEntityAnywhere';
+    this.type = 'ModifierDyingWishReSpawnEntityAnywhere';
 
-	static createContextObject(spawnCount, spawnSilently, options) {
-		if (spawnCount == null) { spawnCount = 1; }
-		if (spawnSilently == null) { spawnSilently = true; }
-		const contextObject = super.createContextObject(options);
-		contextObject.spawnCount = spawnCount;
-		contextObject.spawnSilently = spawnSilently;
-		return contextObject;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierDyingWish', 'FX.Modifiers.ModifierGenericSpawn'];
 
-	onDyingWish(action) {
-		super.onDyingWish(action);
+    this.prototype.spawnCount = 1;
+    this.prototype.spawnSilently = true;
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS;
-			const cardData = this.getCard().createNewCardData();
-			const thisEntityPosition = this.getCard().getPosition();
-			const validPositions = _.reject(wholeBoardPattern, position => UtilsPosition.getPositionsAreEqual(position, thisEntityPosition));
-			const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, validPositions, this.getCard(), this.getCard(), this.spawnCount);
+  static createContextObject(spawnCount, spawnSilently, options) {
+    if (spawnCount == null) { spawnCount = 1; }
+    if (spawnSilently == null) { spawnSilently = true; }
+    const contextObject = super.createContextObject(options);
+    contextObject.spawnCount = spawnCount;
+    contextObject.spawnSilently = spawnSilently;
+    return contextObject;
+  }
 
-			return (() => {
-				const result = [];
-				for (let position of Array.from(spawnLocations)) {
-					var playCardAction;
-					if (!this.spawnSilently) {
-						playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, cardData);
-					} else {
-						playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, cardData);
-					}
-					playCardAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(playCardAction));
-				}
-				return result;
-			})();
-		}
-	}
+  onDyingWish(action) {
+    super.onDyingWish(action);
+
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS;
+      const cardData = this.getCard().createNewCardData();
+      const thisEntityPosition = this.getCard().getPosition();
+      const validPositions = _.reject(wholeBoardPattern, (position) => UtilsPosition.getPositionsAreEqual(position, thisEntityPosition));
+      const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), { x: 0, y: 0 }, validPositions, this.getCard(), this.getCard(), this.spawnCount);
+
+      return (() => {
+        const result = [];
+        for (const position of Array.from(spawnLocations)) {
+          var playCardAction;
+          if (!this.spawnSilently) {
+            playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, cardData);
+          } else {
+            playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, cardData);
+          }
+          playCardAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(playCardAction));
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierDyingWishReSpawnEntityAnywhere.initClass();
 

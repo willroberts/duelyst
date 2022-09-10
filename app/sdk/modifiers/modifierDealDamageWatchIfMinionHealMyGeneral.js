@@ -1,3 +1,8 @@
+/* eslint-disable
+    consistent-return,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,24 +13,22 @@
 const ModifierDealDamageWatchHealMyGeneral = require('./modifierDealDamageWatchHealMyGeneral');
 
 class ModifierDealDamageWatchIfMinionHealMyGeneral extends ModifierDealDamageWatchHealMyGeneral {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDealDamageWatchIfMinionHealMyGeneral";
-		this.type ="ModifierDealDamageWatchIfMinionHealMyGeneral";
-	
-		this.modifierName ="Deal Damage Watch";
-		this.description ="Whenever this minion deals damage to a minion, restore Health to your General";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierDealDamageWatch", "FX.Modifiers.ModifierGenericHeal"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDealDamageWatchIfMinionHealMyGeneral';
+    this.type = 'ModifierDealDamageWatchIfMinionHealMyGeneral';
 
-	onDealDamage(action) {
+    this.modifierName = 'Deal Damage Watch';
+    this.description = 'Whenever this minion deals damage to a minion, restore Health to your General';
 
-		const target = action.getTarget();
-		if ((target != null) && !target.getIsGeneral()) {
-			return super.onDealDamage(action);
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierDealDamageWatch', 'FX.Modifiers.ModifierGenericHeal'];
+  }
+
+  onDealDamage(action) {
+    const target = action.getTarget();
+    if ((target != null) && !target.getIsGeneral()) {
+      return super.onDealDamage(action);
+    }
+  }
 }
 ModifierDealDamageWatchIfMinionHealMyGeneral.initClass();
 

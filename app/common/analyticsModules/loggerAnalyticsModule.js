@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -9,40 +15,37 @@ const Logger = require('app/common/logger');
 const AnalyticsEventPriority = require('./analyticsEventPriority');
 
 class LoggerAnalyticsModule {
-	static initClass() {
-	
-		this._deactivate = true;
-	}
+  static initClass() {
+    this._deactivate = true;
+  }
 
-	static isActive() {
-		if (!this._deactivate) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+  static isActive() {
+    if (!this._deactivate) {
+      return true;
+    }
+    return false;
+  }
 
-	static identify(id,params) {
-		return Logger.module("Analytics").log(`identify() -> id: ${id}. params: ${JSON.stringify(params)}`);
-	}
+  static identify(id, params) {
+    return Logger.module('Analytics').log(`identify() -> id: ${id}. params: ${JSON.stringify(params)}`);
+  }
 
-	static page(title,params) {
-		return Logger.module("Analytics").log(`page() -> title: ${title}. params: ${JSON.stringify(params)}`);
-	}
+  static page(title, params) {
+    return Logger.module('Analytics').log(`page() -> title: ${title}. params: ${JSON.stringify(params)}`);
+  }
 
-	static screen(title,params) {
-		return Logger.module("Analytics").log(`screen() -> title: ${title}. params: ${JSON.stringify(params)}`);
-	}
+  static screen(title, params) {
+    return Logger.module('Analytics').log(`screen() -> title: ${title}. params: ${JSON.stringify(params)}`);
+  }
 
-	static track(eventName,params) {
-		return Logger.module("Analytics").log(`track() -> eventName: ${eventName}. params: ${JSON.stringify(params)}`);
-	}
+  static track(eventName, params) {
+    return Logger.module('Analytics').log(`track() -> eventName: ${eventName}. params: ${JSON.stringify(params)}`);
+  }
 
-	static reset() {
-		return Logger.module("Analytics").log("reset().");
-	}
+  static reset() {
+    return Logger.module('Analytics').log('reset().');
+  }
 }
 LoggerAnalyticsModule.initClass();
-
 
 module.exports = LoggerAnalyticsModule;

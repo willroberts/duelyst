@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,117 +18,116 @@
  */
 const EVENTS = require('app/common/event_types');
 const CONFIG = require('app/common/config');
-const Modifier = require('./modifier');
 const AttackAction = require('app/sdk/actions/attackAction');
 const CardType = require('app/sdk/cards/cardType');
 const _ = require('underscore');
 const i18next = require('i18next');
+const Modifier = require('./modifier');
 
 class ModifierBlastAttack extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBlastAttack";
-		this.type ="ModifierBlastAttack";
-	
-		this.isKeyworded = true;
-		this.keywordDefinition =i18next.t("modifiers.blast_def");
-	
-		this.modifierName =i18next.t("modifiers.blast_name");
-		this.description =null;
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.maxStacks = 1;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierBlast"];
-		this.prototype.cardFXResource = ["FX.Cards.Faction3.Blast"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBlastAttack';
+    this.type = 'ModifierBlastAttack';
 
-	onEvent(event) {
-		super.onEvent(event);
+    this.isKeyworded = true;
+    this.keywordDefinition = i18next.t('modifiers.blast_def');
 
-		if (this._private.listeningToEvents) {
-			if (event.type === EVENTS.entities_involved_in_attack) {
-				return this.onEntitiesInvolvedInAttack(event);
-			}
-		}
-	}
+    this.modifierName = i18next.t('modifiers.blast_name');
+    this.description = null;
 
-	onActivate() {
-		super.onActivate();
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
 
-		// override the attack pattern with blast
-		return this.getCard().setCustomAttackPattern(CONFIG.PATTERN_BLAST);
-	}
+    this.prototype.maxStacks = 1;
 
-	onDeactivate() {
-		super.onDeactivate();
+    this.prototype.fxResource = ['FX.Modifiers.ModifierBlast'];
+    this.prototype.cardFXResource = ['FX.Cards.Faction3.Blast'];
+  }
 
-		this.getCard().setCustomAttackPattern(null); //entity can no longer attack whole row if blast is dispelled
-		return this.getCard().setReach(CONFIG.REACH_MELEE); //turn it into a plain melee unit
-	}
+  onEvent(event) {
+    super.onEvent(event);
 
-	getIsActionRelevant(a) {
-		// when this unit initially attacks (only blast on explicit initial attacks, not on strike backs or other implicit attacks)
-		return a instanceof AttackAction && (a.getSource() === this.getCard()) && !a.getIsImplicit();
-	}
+    if (this._private.listeningToEvents) {
+      if (event.type === EVENTS.entities_involved_in_attack) {
+        return this.onEntitiesInvolvedInAttack(event);
+      }
+    }
+  }
 
-	getAttackableEntities(a) {
-		const entities = [];
-		const target = a.getTarget();
+  onActivate() {
+    super.onActivate();
 
-		if (target != null) {
-			// find all other attackable enemy entities
-			for (let entity of Array.from(this.getGameSession().getBoard().getEnemyEntitiesOnCardinalAxisFromEntityToPosition(this.getCard(), target.getPosition(), CardType.Unit, false))) {
-				if (entity !== target) {
-					entities.push(entity);
-				}
-			}
-		}
+    // override the attack pattern with blast
+    return this.getCard().setCustomAttackPattern(CONFIG.PATTERN_BLAST);
+  }
 
-		return entities;
-	}
+  onDeactivate() {
+    super.onDeactivate();
 
-	onBeforeAction(event) {
-		super.onBeforeAction(event);
-		const a = event.action;
-		if (this.getIsActionRelevant(a)) {
-			return (() => {
-				const result = [];
-				for (let entity of Array.from(this.getAttackableEntities(a))) {
-					const attackAction = this.getCard().actionAttack(entity);
-					result.push(this.getGameSession().executeAction(attackAction));
-				}
-				return result;
-			})();
-		}
-	}
+    this.getCard().setCustomAttackPattern(null); // entity can no longer attack whole row if blast is dispelled
+    return this.getCard().setReach(CONFIG.REACH_MELEE); // turn it into a plain melee unit
+  }
 
-	onEntitiesInvolvedInAttack(actionEvent) {
-		const a = actionEvent.action;
-		if (this.getIsActive() && this.getIsActionRelevant(a)) {
-			return (() => {
-				const result = [];
-				for (let entity of Array.from(this.getAttackableEntities(a))) {
-					const attackAction = this.getCard().actionAttack(entity);
-					attackAction.setTriggeringModifier(this);
-					result.push(actionEvent.actions.push(attackAction));
-				}
-				return result;
-			})();
-		}
-	}
+  getIsActionRelevant(a) {
+    // when this unit initially attacks (only blast on explicit initial attacks, not on strike backs or other implicit attacks)
+    return a instanceof AttackAction && (a.getSource() === this.getCard()) && !a.getIsImplicit();
+  }
 
-	postDeserialize() {
-		super.postDeserialize();
-		if ((this.getCard() != null) && this._private.cachedIsActive) {
-			// override the attack pattern with blast
-			return this.getCard().setCustomAttackPattern(CONFIG.PATTERN_BLAST);
-		}
-	}
+  getAttackableEntities(a) {
+    const entities = [];
+    const target = a.getTarget();
+
+    if (target != null) {
+      // find all other attackable enemy entities
+      for (const entity of Array.from(this.getGameSession().getBoard().getEnemyEntitiesOnCardinalAxisFromEntityToPosition(this.getCard(), target.getPosition(), CardType.Unit, false))) {
+        if (entity !== target) {
+          entities.push(entity);
+        }
+      }
+    }
+
+    return entities;
+  }
+
+  onBeforeAction(event) {
+    super.onBeforeAction(event);
+    const a = event.action;
+    if (this.getIsActionRelevant(a)) {
+      return (() => {
+        const result = [];
+        for (const entity of Array.from(this.getAttackableEntities(a))) {
+          const attackAction = this.getCard().actionAttack(entity);
+          result.push(this.getGameSession().executeAction(attackAction));
+        }
+        return result;
+      })();
+    }
+  }
+
+  onEntitiesInvolvedInAttack(actionEvent) {
+    const a = actionEvent.action;
+    if (this.getIsActive() && this.getIsActionRelevant(a)) {
+      return (() => {
+        const result = [];
+        for (const entity of Array.from(this.getAttackableEntities(a))) {
+          const attackAction = this.getCard().actionAttack(entity);
+          attackAction.setTriggeringModifier(this);
+          result.push(actionEvent.actions.push(attackAction));
+        }
+        return result;
+      })();
+    }
+  }
+
+  postDeserialize() {
+    super.postDeserialize();
+    if ((this.getCard() != null) && this._private.cachedIsActive) {
+      // override the attack pattern with blast
+      return this.getCard().setCustomAttackPattern(CONFIG.PATTERN_BLAST);
+    }
+  }
 }
 ModifierBlastAttack.initClass();
 

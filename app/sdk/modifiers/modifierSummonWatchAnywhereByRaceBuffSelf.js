@@ -1,3 +1,9 @@
+/* eslint-disable
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,35 +15,34 @@
 const ModifierSummonWatchByRaceBuffSelf = require('./modifierSummonWatchByRaceBuffSelf');
 
 class ModifierSummonWatchAnywhereByRaceBuffSelf extends ModifierSummonWatchByRaceBuffSelf {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSummonWatchAnywhereByRaceBuffSelf";
-		this.type ="ModifierSummonWatchAnywhereByRaceBuffSelf";
-	
-		this.prototype.activeInHand = true;
-		this.prototype.activeInDeck = true;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSummonWatchAnywhereByRaceBuffSelf';
+    this.type = 'ModifierSummonWatchAnywhereByRaceBuffSelf';
 
-	onActivate() {
-		// special check on activation in case this card is created mid-game
-		// need to check all actions that occured this gamesession for triggers
-		const summonMinionActions = this.getGameSession().filterActions(this.getIsActionRelevant.bind(this));
-		return (() => {
-			const result = [];
-			for (let action of Array.from(summonMinionActions)) {
-				if (this.getIsCardRelevantToWatcher(action.getCard()) && (action.getCard() !== this.getCard())) {
-					result.push(this.onSummonWatch(action));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    this.prototype.activeInHand = true;
+    this.prototype.activeInDeck = true;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch', 'FX.Modifiers.ModifierGenericBuff'];
+  }
+
+  onActivate() {
+    // special check on activation in case this card is created mid-game
+    // need to check all actions that occured this gamesession for triggers
+    const summonMinionActions = this.getGameSession().filterActions(this.getIsActionRelevant.bind(this));
+    return (() => {
+      const result = [];
+      for (const action of Array.from(summonMinionActions)) {
+        if (this.getIsCardRelevantToWatcher(action.getCard()) && (action.getCard() !== this.getCard())) {
+          result.push(this.onSummonWatch(action));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 ModifierSummonWatchAnywhereByRaceBuffSelf.initClass();
 
