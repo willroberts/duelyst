@@ -1,3 +1,12 @@
+/* eslint-disable
+    func-names,
+    import/extensions,
+    import/no-unresolved,
+    max-len,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -16,36 +25,37 @@ const Logger = require('../../app/common/logger.coffee');
  * @param	{Object} job		Kue job
  * @param	{Function} done 	Callback when job is complete
  */
-module.exports = function(job, done) {
-	const gameId = job.data.gameId || null;
-	const player1UserId = job.data.player1UserId || null;
-	const player1IsRanked = job.data.player1IsRanked || false;
-	const player2UserId = job.data.player2UserId || null;
-	const player2IsRanked = job.data.player2IsRanked || false;
-	const {
-        player1IsWinner
-    } = job.data;
-	const {
-        isDraw
-    } = job.data;
+module.exports = function (job, done) {
+  const gameId = job.data.gameId || null;
+  const player1UserId = job.data.player1UserId || null;
+  const player1IsRanked = job.data.player1IsRanked || false;
+  const player2UserId = job.data.player2UserId || null;
+  const player2IsRanked = job.data.player2IsRanked || false;
+  const {
+    player1IsWinner,
+  } = job.data;
+  const {
+    isDraw,
+  } = job.data;
 
-	if (!gameId) {
-		return done(new Error("Game ID is not defined."));
-	}
-	if (!player1UserId) {
-		return done(new Error("Player 1 User ID is not defined."));
-	}
-	if (!player2UserId) {
-		return done(new Error("Player 2 User ID is not defined."));
-	}
-	if ((player1IsWinner == null)) {
-		return done(new Error("player1IsWinner is not defined."));
-	}
+  if (!gameId) {
+    return done(new Error('Game ID is not defined.'));
+  }
+  if (!player1UserId) {
+    return done(new Error('Player 1 User ID is not defined.'));
+  }
+  if (!player2UserId) {
+    return done(new Error('Player 2 User ID is not defined.'));
+  }
+  if ((player1IsWinner == null)) {
+    return done(new Error('player1IsWinner is not defined.'));
+  }
 
-	Logger.module("JOB").debug(`[J:${job.id}] Update Users [${player1UserId},${player2UserId}] Ratings for game ${gameId} starting`);
+  Logger.module('JOB').debug(`[J:${job.id}] Update Users [${player1UserId},${player2UserId}] Ratings for game ${gameId} starting`);
 
-	return RankModule.updateUsersRatingsWithGameOutcome(player1UserId,player2UserId,player1IsWinner,gameId,isDraw,player1IsRanked,player2IsRanked)
-	.then(function() {
-		Logger.module("JOB").debug(`[J:${job.id}] Update Users [${player1UserId},${player2UserId}] Ratings for game ${gameId} done()`);
-		return done();}).catch(error => done(error));
+  return RankModule.updateUsersRatingsWithGameOutcome(player1UserId, player2UserId, player1IsWinner, gameId, isDraw, player1IsRanked, player2IsRanked)
+    .then(() => {
+      Logger.module('JOB').debug(`[J:${job.id}] Update Users [${player1UserId},${player2UserId}] Ratings for game ${gameId} done()`);
+      return done();
+    }).catch((error) => done(error));
 };

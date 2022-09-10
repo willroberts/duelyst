@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,25 +16,24 @@ const Logger = require('app/common/logger');
 const SpellRefreshExhaustion = require('./spellRefreshExhaustion');
 
 class SpellInnerFocus extends SpellRefreshExhaustion {
-	static initClass() {
-	
-		this.prototype.maxAttack = -1;
-	}
+  static initClass() {
+    this.prototype.maxAttack = -1;
+  }
 
-	_postFilterPlayPositions(validPositions) {
-		const validTargetPositions = [];
+  _postFilterPlayPositions(validPositions) {
+    const validTargetPositions = [];
 
-		if (this.maxAttack >= 0) { // if maxAttack < 0, then any card is a valid target
-			for (let position of Array.from(validPositions)) {
-				const unit = this.getGameSession().getBoard().getUnitAtPosition(position);
-				if ((unit != null) && (unit.getATK() <= this.maxAttack) && !unit.getIsBattlePet()) {
-					validTargetPositions.push(position);
-				}
-			}
-		}
+    if (this.maxAttack >= 0) { // if maxAttack < 0, then any card is a valid target
+      for (const position of Array.from(validPositions)) {
+        const unit = this.getGameSession().getBoard().getUnitAtPosition(position);
+        if ((unit != null) && (unit.getATK() <= this.maxAttack) && !unit.getIsBattlePet()) {
+          validTargetPositions.push(position);
+        }
+      }
+    }
 
-		return validTargetPositions;
-	}
+    return validTargetPositions;
+  }
 }
 SpellInnerFocus.initClass();
 

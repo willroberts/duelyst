@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    no-this-before-super,
+    no-underscore-dangle,
+    prefer-rest-params,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -6,31 +15,30 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Action = require('./action');
 const CardType = require('app/sdk/cards/cardType');
+const Action = require('./action');
 
 class SetDamageAction extends Action {
-	static initClass() {
-	
-		this.type ="SetDamageAction";
-		this.prototype.damageValue = 0;
-	}
+  static initClass() {
+    this.type = 'SetDamageAction';
+    this.prototype.damageValue = 0;
+  }
 
-	constructor() {
-		if (this.type == null) { this.type = SetDamageAction.type; }
-		super(...arguments);
-	}
+  constructor() {
+    if (this.type == null) { this.type = SetDamageAction.type; }
+    super(...arguments);
+  }
 
-	_execute() {
-		super._execute();
+  _execute() {
+    super._execute();
 
-		const source = this.getSource();
-		const target = this.getTarget();
+    const source = this.getSource();
+    const target = this.getTarget();
 
-		if (target != null) {
-			return target.setDamage(this.damageValue);
-		}
-	}
+    if (target != null) {
+      return target.setDamage(this.damageValue);
+    }
+  }
 }
 SetDamageAction.initClass();
 

@@ -1,3 +1,16 @@
+/* eslint-disable
+    camelcase,
+    func-names,
+    implicit-arrow-linebreak,
+    max-len,
+    no-param-reassign,
+    no-return-assign,
+    no-tabs,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,7 +19,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const Promise = require('bluebird');
-const generatePushId = require('./../../app/common/generate_push_id');
+const generatePushId = require('../../app/common/generate_push_id');
 const Errors = require('./custom_errors');
 const Logger = require('../../app/common/logger');
 
@@ -18,12 +31,11 @@ const Logger = require('../../app/common/logger');
  * @param	{String}	eventName	One of the following strings: "value", "child_added", "child_changed", "child_removed", or "child_moved."
  * @return	{Promise}				Promise that will resolve with the Firebase snapshot, or reject with an error if the query fails.
  */
-module.exports.once = (ref, eventName) => new Promise(function(resolve, reject) {
-    const onLoaded = snapshot => resolve(snapshot);
-    const onError = err => reject(err);
-    return ref.once(eventName, onLoaded, onError);
+module.exports.once = (ref, eventName) => new Promise((resolve, reject) => {
+  const onLoaded = (snapshot) => resolve(snapshot);
+  const onError = (err) => reject(err);
+  return ref.once(eventName, onLoaded, onError);
 });
-
 
 /**
  * Sets data to a firebase location.
@@ -35,13 +47,12 @@ module.exports.once = (ref, eventName) => new Promise(function(resolve, reject) 
  */
 module.exports.set = (ref, value) => // console.log("FIREBASE::set",ref.toString())
 
-new Promise((resolve, reject) => ref.set(value, function(err) {
+  new Promise((resolve, reject) => ref.set(value, (err) => {
     if (err) {
-        return reject(new Error("Firebase.set error " + err.message));
-    } else {
-        return resolve(value);
+      return reject(new Error(`Firebase.set error ${err.message}`));
     }
-}));
+    return resolve(value);
+  }));
 
 /**
  * Sets data to a firebase location with a priority for ordering.
@@ -54,13 +65,12 @@ new Promise((resolve, reject) => ref.set(value, function(err) {
  */
 module.exports.setWithPriority = (ref, value, priority) => // console.log("FIREBASE::setWithPriority",ref.toString())
 
-new Promise((resolve, reject) => ref.setWithPriority(value, priority, function(err) {
+  new Promise((resolve, reject) => ref.setWithPriority(value, priority, (err) => {
     if (err) {
-        return reject(new Error("Firebase.setWithPriority error " + err.message));
-    } else {
-        return resolve(value);
+      return reject(new Error(`Firebase.setWithPriority error ${err.message}`));
     }
-}));
+    return resolve(value);
+  }));
 
 /**
  * Update data on a firebase location without touching other data at the same location
@@ -72,13 +82,12 @@ new Promise((resolve, reject) => ref.setWithPriority(value, priority, function(e
  */
 module.exports.update = (ref, value) => // console.log("FIREBASE::update",ref.toString())
 
-new Promise((resolve, reject) => ref.update(value, function(err) {
+  new Promise((resolve, reject) => ref.update(value, (err) => {
     if (err) {
-        return reject(new Error("Firebase.update error " + err.message));
-    } else {
-        return resolve(value);
+      return reject(new Error(`Firebase.update error ${err.message}`));
     }
-}));
+    return resolve(value);
+  }));
 
 /**
  * Push data on to a firebase location without touching other data at the same location
@@ -88,15 +97,14 @@ new Promise((resolve, reject) => ref.update(value, function(err) {
  * @param	{Object}				value		The data to push to this location.
  * @return	{Promise}							Promise that will resolve with a firebase reference to the location of the push, or reject with an error if the operation fails.
  */
-module.exports.push = (ref, value) => new Promise(function(resolve, reject) {
-    let pushedRef;
-    return pushedRef = ref.push(value, function(err) {
-        if (err) {
-            return reject(new Error("Firebase.push error " + err.message));
-        } else {
-            return resolve(pushedRef);
-        }
-    });
+module.exports.push = (ref, value) => new Promise((resolve, reject) => {
+  let pushedRef;
+  return pushedRef = ref.push(value, (err) => {
+    if (err) {
+      return reject(new Error(`Firebase.push error ${err.message}`));
+    }
+    return resolve(pushedRef);
+  });
 });
 
 /**
@@ -108,13 +116,12 @@ module.exports.push = (ref, value) => new Promise(function(resolve, reject) {
  */
 module.exports.remove = (ref, value) => // console.log("FIREBASE::remove",ref.toString())
 
-new Promise((resolve, reject) => ref.remove(function(err) {
+  new Promise((resolve, reject) => ref.remove((err) => {
     if (err) {
-        return reject(new Error("Firebase.remove error " + err.message));
-    } else {
-        return resolve(value);
+      return reject(new Error(`Firebase.remove error ${err.message}`));
     }
-}));
+    return resolve(value);
+  }));
 
 /**
  * Execute a custom reliable transaction on a firebase location to update data.
@@ -124,70 +131,65 @@ new Promise((resolve, reject) => ref.remove(function(err) {
  * @param	{Function}	updateFn	Function that transforms the data, returns undefined to
  * @return	{Promise}				Promise that will resolve with the Firebase snapshot, or reject with an error if the transaction fails.
  */
-module.exports.safeTransaction = function(ref,updateFn) {
+module.exports.safeTransaction = function (ref, updateFn) {
+  // console.log("FIREBASE::safeTransaction",ref.toString())
 
-	// console.log("FIREBASE::safeTransaction",ref.toString())
+  if ((ref == null)) {
+    return Promise.reject(new Error('firebase ref is null or not defined'));
+  }
 
-	if ((ref == null)) {
-		return Promise.reject(new Error("firebase ref is null or not defined"));
-	}
+  if ((updateFn == null)) {
+    return Promise.reject(new Error('transaction updateFn is null or not defined'));
+  }
 
-	if ((updateFn == null)) {
-		return Promise.reject(new Error("transaction updateFn is null or not defined"));
-	}
+  return new Promise((resolve, reject) => {
+    // generate a lexically increasing transaction id
+    const tx_id = generatePushId();
+    let innerError = null;
+    Logger.module('FB').time(`Firebase transaction for /${ref} (${tx_id})`);
 
-	return new Promise(function(resolve,reject){
+    const txUpdateData = function (data) {
+      let updatedData;
+      innerError = null;
+      // clone the data so if the update function modifies it it before failing it doesn't write half modified data back
+      const dataIn = JSON.parse(JSON.stringify(data));
+      // update data
+      try {
+        updatedData = updateFn(dataIn);
+        if (updatedData instanceof Error) {
+          innerError = updatedData;
+        }
+      } catch (err) {
+        innerError = err;
+      }
 
-		// generate a lexically increasing transaction id
-		const tx_id = generatePushId();
-		let innerError = null;
-		Logger.module("FB").time(`Firebase transaction for /${ref} (${tx_id})`);
+      // if transaction does not return undefined
+      if (!innerError && (typeof updatedData !== 'undefined')) {
+        // replace data var
+        data = updatedData;
+        // mark with transaction id
+        if (data != null) {
+          data.tx_id = tx_id;
+        }
+      }
 
-		const txUpdateData = function(data){
+      return data;
+    };
 
-			let updatedData;
-			innerError = null;
-			// clone the data so if the update function modifies it it before failing it doesn't write half modified data back
-			const dataIn = JSON.parse(JSON.stringify(data));
-			// update data
-			try {
-				updatedData = updateFn(dataIn);
-				if (updatedData instanceof Error) {
-					innerError = updatedData;
-				}
-			} catch (err) {
-				innerError = err;
-			}
+    const onTxUpdateComplete = function (error, committed, snapshot) {
+      Logger.module('FB').timeEnd(`Firebase transaction for /${ref} (${tx_id})`);
+      if (error) {
+        return reject(error);
+      } if (committed && (__guard__(snapshot.val(), (x) => x.tx_id) === tx_id)) {
+        return resolve(snapshot);
+      } if (committed) {
+        return reject(innerError || new Errors.FirebaseTransactionDidNotCommitError('transaction ID indicates a failed update'));
+      }
+      return reject(new Errors.FirebaseTransactionDidNotCommitError());
+    };
 
-			// if transaction does not return undefined
-			if (!innerError && (typeof updatedData !== "undefined")) {
-				// replace data var
-				data = updatedData;
-				// mark with transaction id
-				if (data != null) {
-					data.tx_id = tx_id;
-				}
-			}
-
-			return data;
-		};
-
-		const onTxUpdateComplete = function(error,committed,snapshot){
-			Logger.module("FB").timeEnd(`Firebase transaction for /${ref} (${tx_id})`);
-			if (error) {
-				return reject(error);
-			} else if (committed && (__guard__(snapshot.val(), x => x.tx_id) === tx_id)) {
-				return resolve(snapshot);
-			} else if (committed) {
-				return reject(innerError || new Errors.FirebaseTransactionDidNotCommitError("transaction ID indicates a failed update"));
-			} else {
-				return reject(new Errors.FirebaseTransactionDidNotCommitError());
-			}
-		};
-
-
-		return ref.transaction(txUpdateData,onTxUpdateComplete);
-	});
+    return ref.transaction(txUpdateData, onTxUpdateComplete);
+  });
 };
 
 function __guard__(value, transform) {

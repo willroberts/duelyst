@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-param-reassign,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -9,28 +16,27 @@ const ModifierBanding = 	require('./modifierBanding');
 const ModifierBandedRanged = 		require('./modifierBandedRanged');
 
 class ModifierBandingRanged extends ModifierBanding {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBandingRanged";
-		this.type ="ModifierBandingRanged";
-	
-		//@modifierName:"Zeal"
-	
-		//maxStacks: 1
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierZeal", "FX.Modifiers.ModifierZealRanged"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBandingRanged';
+    this.type = 'ModifierBandingRanged';
 
-	static createContextObject(options) {
-		if (options == null) { options = undefined; }
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = [ModifierBandedRanged.createContextObject()];
-		return contextObject;
-	}
+    // @modifierName:"Zeal"
 
-	static getDescription(modifierContextObject) {
-		return this.description;
-	}
+    // maxStacks: 1
+
+    this.prototype.fxResource = ['FX.Modifiers.ModifierZeal', 'FX.Modifiers.ModifierZealRanged'];
+  }
+
+  static createContextObject(options) {
+    if (options == null) { options = undefined; }
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = [ModifierBandedRanged.createContextObject()];
+    return contextObject;
+  }
+
+  static getDescription(modifierContextObject) {
+    return this.description;
+  }
 }
 ModifierBandingRanged.initClass();
 

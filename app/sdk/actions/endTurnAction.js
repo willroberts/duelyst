@@ -1,3 +1,13 @@
+/* eslint-disable
+    class-methods-use-this,
+    import/no-unresolved,
+    no-tabs,
+    no-this-before-super,
+    no-underscore-dangle,
+    prefer-rest-params,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -7,27 +17,26 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = 		require('app/common/config');
-const Action = 		require('./action');
 const Logger = 		require('app/common/logger');
+const Action = 		require('./action');
 
 class EndTurnAction extends Action {
-	static initClass() {
-	
-		this.type ="EndTurnAction";
-	}
+  static initClass() {
+    this.type = 'EndTurnAction';
+  }
 
-	constructor() {
-		if (this.type == null) { this.type = EndTurnAction.type; }
-		super(...arguments);
-	}
+  constructor() {
+    if (this.type == null) { this.type = EndTurnAction.type; }
+    super(...arguments);
+  }
 
-	isRemovableDuringScrubbing() {
-		return false;
-	}
+  isRemovableDuringScrubbing() {
+    return false;
+  }
 
-	_execute() {
-		return this.getGameSession().p_endTurn();
-	}
+  _execute() {
+    return this.getGameSession().p_endTurn();
+  }
 }
 EndTurnAction.initClass();
 

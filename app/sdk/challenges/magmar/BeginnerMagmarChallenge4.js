@@ -1,10 +1,19 @@
+/* eslint-disable
+    class-methods-use-this,
+    import/no-unresolved,
+    max-len,
+    no-tabs,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Challenge = require("app/sdk/challenges/challenge");
+const Challenge = require('app/sdk/challenges/challenge');
 const Instruction 	= require('app/sdk/challenges/instruction');
 const MoveAction 		= require('app/sdk/actions/moveAction');
 const AttackAction 	= require('app/sdk/actions/attackAction');
@@ -19,96 +28,91 @@ const RSX = require('app/data/resources');
 const ChallengeCategory = require('app/sdk/challenges/challengeCategory');
 const i18next = require('i18next');
 
-
 // http://forums.duelyst.com/t/shattered-memories-basic-otk-gate-2-slot-5/12275
 
 class BeginnerMagmarChallenge4 extends Challenge {
-	static initClass() {
-	
-		this.type = "BeginnerMagmarChallenge4";
-		this.prototype.type = "BeginnerMagmarChallenge4";
-		this.prototype.categoryType = ChallengeCategory.beginner.type;
-	
-		this.prototype.name = i18next.t("challenges.beginner_magmar_4_title");
-		this.prototype.description =i18next.t("challenges.beginner_magmar_4_description");
-		this.prototype.iconUrl = RSX.speech_portrait_magmar.img;
-	
-		this.prototype._musicOverride = RSX.music_gauntlet.audio;
-	
-		this.prototype.otkChallengeStartMessage = i18next.t("challenges.beginner_magmar_4_start");
-		this.prototype.otkChallengeFailureMessages = [
-			i18next.t("challenges.beginner_magmar_4_fail")
-		];
-	
-		this.prototype.battleMapTemplateIndex = 0;
-		this.prototype.snapShotOnPlayerTurn = 0;
-		this.prototype.startingManaPlayer = 9;
-		this.prototype.startingHandSizePlayer = 6;
-	}
+  static initClass() {
+    this.type = 'BeginnerMagmarChallenge4';
+    this.prototype.type = 'BeginnerMagmarChallenge4';
+    this.prototype.categoryType = ChallengeCategory.beginner.type;
 
-	getMyPlayerDeckData(gameSession){
-		return [
-			{id: Cards.Faction5.General},
-			{id: Cards.Spell.PlasmaStorm},
-			{id: Cards.Neutral.CoiledCrawler},
-			{id: Cards.Spell.NaturalSelection}
-		];
-	}
+    this.prototype.name = i18next.t('challenges.beginner_magmar_4_title');
+    this.prototype.description = i18next.t('challenges.beginner_magmar_4_description');
+    this.prototype.iconUrl = RSX.speech_portrait_magmar.img;
 
-	getOpponentPlayerDeckData(gameSession){
-		return [
-			{id: Cards.Faction4.General},
-			{id: Cards.TutorialSpell.TutorialFrozenFinisher}
-		];
-	}
+    this.prototype._musicOverride = RSX.music_gauntlet.audio;
 
-	setupBoard(gameSession) {
-		super.setupBoard(gameSession);
+    this.prototype.otkChallengeStartMessage = i18next.t('challenges.beginner_magmar_4_start');
+    this.prototype.otkChallengeFailureMessages = [
+      i18next.t('challenges.beginner_magmar_4_fail'),
+    ];
 
-		const myPlayerId = gameSession.getMyPlayerId();
-		const opponentPlayerId = gameSession.getOpponentPlayerId();
+    this.prototype.battleMapTemplateIndex = 0;
+    this.prototype.snapShotOnPlayerTurn = 0;
+    this.prototype.startingManaPlayer = 9;
+    this.prototype.startingHandSizePlayer = 6;
+  }
 
-		const general1 = gameSession.getGeneralForPlayerId(myPlayerId);
-		general1.setPosition({x: 2, y:2});
-		general1.maxHP = 25;
-		general1.setDamage(25-3);
-		const general2 = gameSession.getGeneralForPlayerId(opponentPlayerId);
-		general2.setPosition({x: 5, y: 2});
-		general2.maxHP = 25;
-		general2.setDamage(25-13);
+  getMyPlayerDeckData(gameSession) {
+    return [
+      { id: Cards.Faction5.General },
+      { id: Cards.Spell.PlasmaStorm },
+      { id: Cards.Neutral.CoiledCrawler },
+      { id: Cards.Spell.NaturalSelection },
+    ];
+  }
 
-		this.applyCardToBoard({id: Cards.Faction5.Phalanxar},2,3,myPlayerId);
-		this.applyCardToBoard({id: Cards.Faction5.Elucidator},2,1,myPlayerId);
+  getOpponentPlayerDeckData(gameSession) {
+    return [
+      { id: Cards.Faction4.General },
+      { id: Cards.TutorialSpell.TutorialFrozenFinisher },
+    ];
+  }
 
-		this.applyCardToBoard({id: Cards.Artifact.SpectralBlade},3,2,opponentPlayerId);
+  setupBoard(gameSession) {
+    super.setupBoard(gameSession);
 
-		this.applyCardToBoard({id: Cards.Faction4.BlackSolus},3,2,opponentPlayerId);
-		this.applyCardToBoard({id: Cards.Faction4.Wraithling},4,3,opponentPlayerId);
-		this.applyCardToBoard({id: Cards.Faction4.BloodmoonPriestess},4,2,opponentPlayerId);
-		this.applyCardToBoard({id: Cards.Faction4.Wraithling},4,1,opponentPlayerId);
-		this.applyCardToBoard({id: Cards.Faction4.NightsorrowAssassin},5,3,opponentPlayerId);
-		this.applyCardToBoard({id: Cards.Faction4.NightsorrowAssassin},5,1,opponentPlayerId);
-		this.applyCardToBoard({id: Cards.Faction4.GloomChaser},6,3,opponentPlayerId);
-		return this.applyCardToBoard({id: Cards.Faction4.GloomChaser},6,1,opponentPlayerId);
-	}
+    const myPlayerId = gameSession.getMyPlayerId();
+    const opponentPlayerId = gameSession.getOpponentPlayerId();
 
-	setupOpponentAgent(gameSession) {
-		super.setupOpponentAgent(gameSession);
+    const general1 = gameSession.getGeneralForPlayerId(myPlayerId);
+    general1.setPosition({ x: 2, y: 2 });
+    general1.maxHP = 25;
+    general1.setDamage(25 - 3);
+    const general2 = gameSession.getGeneralForPlayerId(opponentPlayerId);
+    general2.setPosition({ x: 5, y: 2 });
+    general2.maxHP = 25;
+    general2.setDamage(25 - 13);
 
-		this._opponentAgent.addActionForTurn(0,AgentActions.createAgentSoftActionShowInstructionLabels([{
-			label:i18next.t("challenges.beginner_magmar_4_taunt"),
-			isSpeech:true,
-			isPersistent:true,
-			yPosition:.6,
-			isOpponent: true
-		}
-		]));
-		return this._opponentAgent.addActionForTurn(0,AgentActions.createAgentActionPlayCardFindPosition(0,() => {
-			return [GameSession.getInstance().getGeneralForPlayer1().getPosition()];
-		}));
-	}
+    this.applyCardToBoard({ id: Cards.Faction5.Phalanxar }, 2, 3, myPlayerId);
+    this.applyCardToBoard({ id: Cards.Faction5.Elucidator }, 2, 1, myPlayerId);
+
+    this.applyCardToBoard({ id: Cards.Artifact.SpectralBlade }, 3, 2, opponentPlayerId);
+
+    this.applyCardToBoard({ id: Cards.Faction4.BlackSolus }, 3, 2, opponentPlayerId);
+    this.applyCardToBoard({ id: Cards.Faction4.Wraithling }, 4, 3, opponentPlayerId);
+    this.applyCardToBoard({ id: Cards.Faction4.BloodmoonPriestess }, 4, 2, opponentPlayerId);
+    this.applyCardToBoard({ id: Cards.Faction4.Wraithling }, 4, 1, opponentPlayerId);
+    this.applyCardToBoard({ id: Cards.Faction4.NightsorrowAssassin }, 5, 3, opponentPlayerId);
+    this.applyCardToBoard({ id: Cards.Faction4.NightsorrowAssassin }, 5, 1, opponentPlayerId);
+    this.applyCardToBoard({ id: Cards.Faction4.GloomChaser }, 6, 3, opponentPlayerId);
+    return this.applyCardToBoard({ id: Cards.Faction4.GloomChaser }, 6, 1, opponentPlayerId);
+  }
+
+  setupOpponentAgent(gameSession) {
+    super.setupOpponentAgent(gameSession);
+
+    this._opponentAgent.addActionForTurn(0, AgentActions.createAgentSoftActionShowInstructionLabels([{
+      label: i18next.t('challenges.beginner_magmar_4_taunt'),
+      isSpeech: true,
+      isPersistent: true,
+      yPosition: 0.6,
+      isOpponent: true,
+    },
+    ]));
+    return this._opponentAgent.addActionForTurn(0, AgentActions.createAgentActionPlayCardFindPosition(0, () => [GameSession.getInstance().getGeneralForPlayer1().getPosition()]));
+  }
 }
 BeginnerMagmarChallenge4.initClass();
-
 
 module.exports = BeginnerMagmarChallenge4;

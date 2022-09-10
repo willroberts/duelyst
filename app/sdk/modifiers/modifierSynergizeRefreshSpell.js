@@ -1,3 +1,5 @@
+// TODO: This file was created by bulk-decaffeinate.
+// Sanity-check the conversion and remove this comment.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,22 +9,21 @@
 const ModifierSynergize = require('./modifierSynergize');
 
 class ModifierSynergizeRefreshSpell extends ModifierSynergize {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSynergizeRefreshSpell";
-		this.type ="ModifierSynergizeRefreshSpell";
-	
-		this.description ="Refresh your Bloodbound spell";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSynergizeRefreshSpell';
+    this.type = 'ModifierSynergizeRefreshSpell';
 
-	onSynergize(action) {
-		super.onSynergize(action);
+    this.description = 'Refresh your Bloodbound spell';
 
-		const player = this.getCard().getGameSession().getPlayerById(this.getCard().getOwnerId());
-		return this.getGameSession().executeAction(player.actionActivateSignatureCard());
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSpellWatch'];
+  }
+
+  onSynergize(action) {
+    super.onSynergize(action);
+
+    const player = this.getCard().getGameSession().getPlayerById(this.getCard().getOwnerId());
+    return this.getGameSession().executeAction(player.actionActivateSignatureCard());
+  }
 }
 ModifierSynergizeRefreshSpell.initClass();
 

@@ -1,3 +1,15 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    import/order,
+    max-len,
+    no-param-reassign,
+    no-plusplus,
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -19,114 +31,113 @@ const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction')
 const _ = require('underscore');
 
 class ModifierOpeningGambitLifeGive extends ModifierOpeningGambit {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOpeningGambitLifeGive";
-		this.type ="ModifierOpeningGambitLifeGive";
-	
-		this.modifierName ="Opening Gambit";
-		this.description = "Summon all friendly non-token minions destroyed on your opponent\'s last turn on random spaces";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpeningGambitLifeGive';
+    this.type = 'ModifierOpeningGambitLifeGive';
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
+    this.modifierName = 'Opening Gambit';
+    this.description = 'Summon all friendly non-token minions destroyed on your opponent\'s last turn on random spaces';
 
-		p.deadUnitIds = null;
+    this.prototype.fxResource = ['FX.Modifiers.ModifierOpeningGambit', 'FX.Modifiers.ModifierGenericSpawn'];
+  }
 
-		return p;
-	}
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
 
-	getAllActionsFromParentAction(action) {
-		let actions = [action];
+    p.deadUnitIds = null;
 
-		const subActions = action.getSubActions();
-		if ((subActions != null) && (subActions.length > 0)) {
-			for (let i = 0; i < subActions.length; i++) {
-				action = subActions[i];
-				actions = actions.concat(this.getAllActionsFromParentAction(subActions[i]));
-			}
-		}
-		return actions;
-	}
+    return p;
+  }
 
-	getdeadUnitIds() {
-		let deadUnitIds;
-		if ((this._private.deadUnitIds == null)) {
-			let turn;
-			deadUnitIds = [];
-			const turnsToCheck = [];
-			// find opponent's last turn
-			const iterable = this.getGameSession().getTurns();
-			for (let i = iterable.length - 1; i >= 0; i--) {
-				turn = iterable[i];
-				if (turn.playerId !== this.getCard().getOwnerId()) {
-					turnsToCheck.push(turn);
-					break;
-				}
-			}
+  getAllActionsFromParentAction(action) {
+    let actions = [action];
 
-			let actions = [];
-			for (turn of Array.from(turnsToCheck)) {
-				for (let step of Array.from(turn.steps)) {
-					actions = actions.concat(this.getAllActionsFromParentAction(step.getAction()));
-				}
-			}
+    const subActions = action.getSubActions();
+    if ((subActions != null) && (subActions.length > 0)) {
+      for (let i = 0; i < subActions.length; i++) {
+        action = subActions[i];
+        actions = actions.concat(this.getAllActionsFromParentAction(subActions[i]));
+      }
+    }
+    return actions;
+  }
 
-			for (let action of Array.from(actions)) {
-				if (action.type === DieAction.type) {
-					const card = action.getTarget();
-					// find all friendly non-token units that died
-					if (((card != null ? card.getOwnerId() : undefined) === this.getCard().getOwnerId()) && ((card != null ? card.getType() : undefined) === CardType.Unit) && card.getIsRemoved() && !(card.getRarityId() === Rarity.TokenUnit) && !card.getWasGeneral()) {
-						deadUnitIds.push(card.getId());
-					}
-				}
-			}
-			this._private.deadUnitIds = deadUnitIds;
-			return deadUnitIds;
-		} else {
-			return this._private.deadUnitIds;
-		}
-	}
+  getdeadUnitIds() {
+    let deadUnitIds;
+    if ((this._private.deadUnitIds == null)) {
+      let turn;
+      deadUnitIds = [];
+      const turnsToCheck = [];
+      // find opponent's last turn
+      const iterable = this.getGameSession().getTurns();
+      for (let i = iterable.length - 1; i >= 0; i--) {
+        turn = iterable[i];
+        if (turn.playerId !== this.getCard().getOwnerId()) {
+          turnsToCheck.push(turn);
+          break;
+        }
+      }
 
-	onOpeningGambit() {
-		super.onOpeningGambit();
+      let actions = [];
+      for (turn of Array.from(turnsToCheck)) {
+        for (const step of Array.from(turn.steps)) {
+          actions = actions.concat(this.getAllActionsFromParentAction(step.getAction()));
+        }
+      }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const deadUnitIds = this.getdeadUnitIds();
-			if (deadUnitIds.length > 0) {
-				let i;
-				let asc, end;
-				const wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS;
-				// use first dead unit as entity to test valid positions for spawns
-				const cardId = deadUnitIds[0];
+      for (const action of Array.from(actions)) {
+        if (action.type === DieAction.type) {
+          const card = action.getTarget();
+          // find all friendly non-token units that died
+          if (((card != null ? card.getOwnerId() : undefined) === this.getCard().getOwnerId()) && ((card != null ? card.getType() : undefined) === CardType.Unit) && card.getIsRemoved() && !(card.getRarityId() === Rarity.TokenUnit) && !card.getWasGeneral()) {
+            deadUnitIds.push(card.getId());
+          }
+        }
+      }
+      this._private.deadUnitIds = deadUnitIds;
+      return deadUnitIds;
+    }
+    return this._private.deadUnitIds;
+  }
 
-				// create one random spawn location per dead unit
-				const spawnLocations = [];
-				const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData({id: this.getCard().getId()});
-				const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, wholeBoardPattern, card);
-				_.shuffle(deadUnitIds);
-				for (i = 0, end = deadUnitIds.length, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-					if (validSpawnLocations.length > 0) {
-						spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
-					}
-				}
+  onOpeningGambit() {
+    super.onOpeningGambit();
 
-				return (() => {
-					const result = [];
-					for (i = 0; i < spawnLocations.length; i++) {
-					// respawn each dead unit as a fresh copy
-						const position = spawnLocations[i];
-						const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, {id: deadUnitIds[i]});
-						playCardAction.setSource(this.getCard());
-						result.push(this.getGameSession().executeAction(playCardAction));
-					}
-					return result;
-				})();
-			}
-		}
-	}
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const deadUnitIds = this.getdeadUnitIds();
+      if (deadUnitIds.length > 0) {
+        let i;
+        let asc; let
+          end;
+        const wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS;
+        // use first dead unit as entity to test valid positions for spawns
+        const cardId = deadUnitIds[0];
+
+        // create one random spawn location per dead unit
+        const spawnLocations = [];
+        const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData({ id: this.getCard().getId() });
+        const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), { x: 0, y: 0 }, wholeBoardPattern, card);
+        _.shuffle(deadUnitIds);
+        for (i = 0, end = deadUnitIds.length, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+          if (validSpawnLocations.length > 0) {
+            spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+          }
+        }
+
+        return (() => {
+          const result = [];
+          for (i = 0; i < spawnLocations.length; i++) {
+            // respawn each dead unit as a fresh copy
+            const position = spawnLocations[i];
+            const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, { id: deadUnitIds[i] });
+            playCardAction.setSource(this.getCard());
+            result.push(this.getGameSession().executeAction(playCardAction));
+          }
+          return result;
+        })();
+      }
+    }
+  }
 }
 ModifierOpeningGambitLifeGive.initClass();
 

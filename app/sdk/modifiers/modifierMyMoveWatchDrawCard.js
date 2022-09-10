@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-plusplus,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -12,47 +20,43 @@ const CardType = require('app/sdk/cards/cardType');
 const ModifierMyMoveWatch = require('./modifierMyMoveWatch');
 
 class ModifierMyMoveWatchDrawCard extends ModifierMyMoveWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierMyMoveWatchDrawCard";
-		this.type ="ModifierMyMoveWatchDrawCard";
-	
-		this.description = "After this moves, draw %X";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierMyMoveWatchDrawCard';
+    this.type = 'ModifierMyMoveWatchDrawCard';
 
-	static createContextObject(numCards) {
-		if (numCards == null) { numCards = 1; }
-		const contextObject = super.createContextObject();
-		contextObject.numCards = numCards;
-		return contextObject;
-	}
+    this.description = 'After this moves, draw %X';
+  }
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-				if (modifierContextObject.numCards <= 1) {
-					return this.description.replace(/%X/, "a card");
-				} else {
-					return this.description.replace(/%X/, modifierContextObject.numCards+" cards");
-				}
-		} else {
-			return this.description;
-		}
-	}
+  static createContextObject(numCards) {
+    if (numCards == null) { numCards = 1; }
+    const contextObject = super.createContextObject();
+    contextObject.numCards = numCards;
+    return contextObject;
+  }
 
-	onMyMoveWatch(action) {
-		super.onMyMoveWatch();
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      if (modifierContextObject.numCards <= 1) {
+        return this.description.replace(/%X/, 'a card');
+      }
+      return this.description.replace(/%X/, `${modifierContextObject.numCards} cards`);
+    }
+    return this.description;
+  }
 
-		return (() => {
-			const result = [];
-			for (let i = 0, end = this.numCards, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-				const deck = this.getGameSession().getPlayerById(this.getCard().getOwnerId()).getDeck();
-				result.push(this.getCard().getGameSession().executeAction(deck.actionDrawCard()));
-			}
-			return result;
-		})();
-	}
+  onMyMoveWatch(action) {
+    super.onMyMoveWatch();
+
+    return (() => {
+      const result = [];
+      for (let i = 0, end = this.numCards, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+        const deck = this.getGameSession().getPlayerById(this.getCard().getOwnerId()).getDeck();
+        result.push(this.getCard().getGameSession().executeAction(deck.actionDrawCard()));
+      }
+      return result;
+    })();
+  }
 }
 ModifierMyMoveWatchDrawCard.initClass();
-
 
 module.exports = ModifierMyMoveWatchDrawCard;

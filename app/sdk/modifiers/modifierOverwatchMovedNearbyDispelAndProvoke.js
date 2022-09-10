@@ -1,3 +1,8 @@
+/* eslint-disable
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -9,20 +14,19 @@ const ModifierSilence = require('./modifierSilence');
 const ModifierProvoke = require('./modifierProvoke');
 
 class ModifierOverwatchMovedNearbyDispelAndProvoke extends ModifierOverwatchMovedNearby {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOverwatchMovedNearbyDispelAndProvoke";
-		this.type ="ModifierOverwatchMovedNearbyDispelAndProvoke";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOverwatchMovedNearbyDispelAndProvoke';
+    this.type = 'ModifierOverwatchMovedNearbyDispelAndProvoke';
+  }
 
-	onOverwatch(action) {
-		// dispel enemy
-		const source = action.getSource();
-		this.getGameSession().applyModifierContextObject(ModifierSilence.createContextObject(), source);
+  onOverwatch(action) {
+    // dispel enemy
+    const source = action.getSource();
+    this.getGameSession().applyModifierContextObject(ModifierSilence.createContextObject(), source);
 
-		// give provoke to self
-		return this.getGameSession().applyModifierContextObject(ModifierProvoke.createContextObject(), this.getCard());
-	}
+    // give provoke to self
+    return this.getGameSession().applyModifierContextObject(ModifierProvoke.createContextObject(), this.getCard());
+  }
 }
 ModifierOverwatchMovedNearbyDispelAndProvoke.initClass();
 

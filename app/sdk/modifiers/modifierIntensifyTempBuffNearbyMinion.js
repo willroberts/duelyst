@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -6,52 +14,50 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+const CardType = require('app/sdk/cards/cardType');
 const ModifierIntensify = require('./modifierIntensify');
 const Modifier = require('./modifier');
-const CardType = require('app/sdk/cards/cardType');
 
 class ModifierIntensifyTempBuffNearbyMinion extends ModifierIntensify {
-	static initClass() {
-	
-		this.prototype.type ="ModifierIntensifyTempBuffNearbyMinion";
-		this.type ="ModifierIntensifyTempBuffNearbyMinion";
-	
-		this.prototype.attackBuff = 0;
-		this.prototype.healthBuff = 0;
-		this.prototype.modifierName = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierIntensifyTempBuffNearbyMinion';
+    this.type = 'ModifierIntensifyTempBuffNearbyMinion';
 
-	static createContextObject(attackBuff, healthBuff, modifierName, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.attackBuff = attackBuff;
-		contextObject.healthBuff = healthBuff;
-		contextObject.modifierName = modifierName;
-		return contextObject;
-	}
+    this.prototype.attackBuff = 0;
+    this.prototype.healthBuff = 0;
+    this.prototype.modifierName = null;
+  }
 
-	onIntensify() {
+  static createContextObject(attackBuff, healthBuff, modifierName, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.attackBuff = attackBuff;
+    contextObject.healthBuff = healthBuff;
+    contextObject.modifierName = modifierName;
+    return contextObject;
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const totalAttackBuff = this.getIntensifyAmount() * this.attackBuff;
-			const totalHealthBuff = this.getIntensifyAmount() * this.healthBuff;
-			const statContextObject = Modifier.createContextObjectWithAttributeBuffs(totalAttackBuff, totalHealthBuff);
-			statContextObject.appliedName = this.modifierName;
-			statContextObject.durationEndTurn = 1;
+  onIntensify() {
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const totalAttackBuff = this.getIntensifyAmount() * this.attackBuff;
+      const totalHealthBuff = this.getIntensifyAmount() * this.healthBuff;
+      const statContextObject = Modifier.createContextObjectWithAttributeBuffs(totalAttackBuff, totalHealthBuff);
+      statContextObject.appliedName = this.modifierName;
+      statContextObject.durationEndTurn = 1;
 
-			const entities = this.getGameSession().getBoard().getFriendlyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
-			const nearbyMinions = [];
-			for (let entity of Array.from(entities)) {
-				if ((entity != null) && !entity.getIsGeneral()) {
-					nearbyMinions.push(entity);
-				}
-			}
+      const entities = this.getGameSession().getBoard().getFriendlyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
+      const nearbyMinions = [];
+      for (const entity of Array.from(entities)) {
+        if ((entity != null) && !entity.getIsGeneral()) {
+          nearbyMinions.push(entity);
+        }
+      }
 
-			if (nearbyMinions.length > 0) {
-				const minionToBuff = nearbyMinions[this.getGameSession().getRandomIntegerForExecution(nearbyMinions.length)];
-				return this.getGameSession().applyModifierContextObject(statContextObject, minionToBuff);
-			}
-		}
-	}
+      if (nearbyMinions.length > 0) {
+        const minionToBuff = nearbyMinions[this.getGameSession().getRandomIntegerForExecution(nearbyMinions.length)];
+        return this.getGameSession().applyModifierContextObject(statContextObject, minionToBuff);
+      }
+    }
+  }
 }
 ModifierIntensifyTempBuffNearbyMinion.initClass();
 

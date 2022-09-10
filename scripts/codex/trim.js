@@ -1,3 +1,19 @@
+/* eslint-disable
+    consistent-return,
+    func-names,
+    implicit-arrow-linebreak,
+    import/no-extraneous-dependencies,
+    import/no-unresolved,
+    max-len,
+    no-console,
+    no-empty,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-tabs,
+    no-useless-escape,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -11,225 +27,231 @@ require('app-module-path').addPath(path.join(__dirname, '../../'));
 const Promise = require('bluebird');
 const Canvas = require('canvas');
 const moment = require('moment');
-const CanvasText = require('./CanvasText-0.4.1');
+
 const {
-    Image
+  Image,
 } = Canvas;
 const {
-    Font
+  Font,
 } = Canvas;
 const fs = require('fs');
-path = require("path");
-const SDK = require('../../app/sdk');
-const RSX = require('../../app/data/resources');
+path = require('path');
 const colors = require('colors');
 const prettyjson = require('prettyjson');
 const plist = require('plist');
 const GIFEncoder = require('gifencoder');
 const _ = require('underscore');
 const {
-    exec
+  exec,
 } = require('child_process');
 const ProgressBar = require('progress');
+const RSX = require('../../app/data/resources');
+const SDK = require('../../app/sdk');
+const CanvasText = require('./CanvasText-0.4.1');
 
 Promise.promisifyAll(fs);
 
-const exportAnimatedGIF = function(animationRsxKey){
+const exportAnimatedGIF = function (animationRsxKey) {
+  const scaleFactor = 1.0;
+  const padding = 0;
 
-	const scaleFactor = 1.0;
-	const padding = 0;
+  // grab the animation resource
+  const animationResource = RSX[animationRsxKey];
 
-	// grab the animation resource
-	const animationResource = RSX[animationRsxKey];
+  if ((animationResource == null)) {
+    console.log(`ERROR loading anim resourse for key ${animationRsxKey}`);
+    return Promise.resolve();
+  }
 
-	if ((animationResource == null)) {
-		console.log(`ERROR loading anim resourse for key ${animationRsxKey}`);
-		return Promise.resolve();
-	}
+  // where to save the file
+  const filePath = `${process.cwd()}/${animationResource.framePrefix.slice(0, -1)}.gif`;
+  const tmpFilePath = `${process.cwd()}/${animationResource.framePrefix.slice(0, -1)}.gif~`;
 
-	// where to save the file
-	const filePath = process.cwd() + `/${animationResource.framePrefix.slice(0,-1)}.gif`;
-	const tmpFilePath = process.cwd() + `/${animationResource.framePrefix.slice(0,-1)}.gif~`;
+  // if file already exists, skip
+  try {
+    if (fs.statSync(filePath)) {
+      return Promise.resolve(filePath);
+    }
+  } catch (error) {}
 
-	// if file already exists, skip
-	try {
-		if (fs.statSync(filePath)) {
-			return Promise.resolve(filePath);
-		}
-	} catch (error) {}
+  // console.log "saving #{filePath}"
 
-	// console.log "saving #{filePath}"
+  // GIF encoder
+  let gifencoder = null;
+  if (fs.existsSync(tmpFilePath)) {
+    fs.unlinkSync(tmpFilePath);
+  }
+  const writeStream = fs.createWriteStream(tmpFilePath);
 
-	// GIF encoder
-	let gifencoder = null;
-	if (fs.existsSync(tmpFilePath)) {
-		fs.unlinkSync(tmpFilePath);
-	}
-	const writeStream = fs.createWriteStream(tmpFilePath);
+  // start by loading the PLIST file for the animation resource
+  return fs.readFileAsync(`${__dirname}/../../app/${animationResource.plist}`, 'utf-8')
+    .then((plistFileXml) => Promise.all([
+      plist.parse(plistFileXml),
+      fs.readFileAsync(`${__dirname}/../../app/${animationResource.img}`),
+    ])).spread((animationData, spriteSheetImage) => {
+      // console.log "parsed data for #{filePath}"
 
-	// start by loading the PLIST file for the animation resource
-	return fs.readFileAsync(`${__dirname}/../../app/${animationResource.plist}`,'utf-8')
-	.then(plistFileXml => Promise.all([
-        plist.parse(plistFileXml),
-        fs.readFileAsync(`${__dirname}/../../app/${animationResource.img}`)
-    ])).spread(function(animationData,spriteSheetImage){
+      const cardImg = new Image();
+      cardImg.src = spriteSheetImage;
 
-		// console.log "parsed data for #{filePath}"
+      _.chain(animationData.frames).keys().each((k) => {
+        if ((k.indexOf(animationResource.framePrefix) !== 0) || (k.replace(animationResource.framePrefix, '').length > 8)) {
+          return delete animationData.frames[k];
+        }
+      });
 
-		const cardImg = new Image;
-		cardImg.src = spriteSheetImage;
+      const allFrameKeys = _.keys(animationData.frames);
 
-		_.chain(animationData["frames"]).keys().each(function(k){
-			if ((k.indexOf(animationResource.framePrefix) !== 0) || (k.replace(animationResource.framePrefix,"").length > 8)) {
-				return delete animationData["frames"][k];
-			}});
+      if (!animationData.frames[allFrameKeys[0]]) {
+        console.log(`ERROR: ${animationResource.framePrefix} missing`);
+        return Promise.resolve();
+      }
 
-		const allFrameKeys = _.keys(animationData["frames"]);
+      const frameSize = JSON.parse(animationData.frames[allFrameKeys[0]].sourceSize.replace(/{/g, '[').replace(/}/g, ']'));
 
-		if (!animationData["frames"][allFrameKeys[0]]) {
-			console.log(`ERROR: ${animationResource.framePrefix} missing`);
-			return Promise.resolve();
-		}
+      const width = frameSize[0];
+      const height = frameSize[1];
 
-		const frameSize = JSON.parse(animationData["frames"][allFrameKeys[0]].sourceSize.replace(/{/g,"[").replace(/}/g,"]"));
+      gifencoder = new GIFEncoder(width + (padding * 2), height + (padding * 2));
+      gifencoder.createReadStream().pipe(writeStream);
+      gifencoder.start();
+      gifencoder.setRepeat(0);
+      gifencoder.setDelay(1000 / 16);
+      gifencoder.setQuality(1);
+      // gifencoder.setTransparent(0xff00ff)
 
-		const width = frameSize[0];
-		const height = frameSize[1];
+      const saved = false;
 
-		gifencoder = new GIFEncoder(width + (padding*2), height + (padding*2));
-		gifencoder.createReadStream().pipe(writeStream);
-		gifencoder.start();
-		gifencoder.setRepeat(0);
-		gifencoder.setDelay(1000/16);
-		gifencoder.setQuality(1);
-		// gifencoder.setTransparent(0xff00ff)
+      return Promise.each(allFrameKeys, (idleFrameKey) => {
+        // console.log "drawing frame for #{filePath}"
 
-		const saved = false;
+        // generate canvas based on bg size
+        const canvas = new Canvas(width + (padding * 2), height + (padding * 2));
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
 
-		return Promise.each(allFrameKeys, function(idleFrameKey){
+        const idleFrame = JSON.parse(animationData.frames[idleFrameKey].frame.replace(/{/g, '[').replace(/}/g, ']'));
 
-			// console.log "drawing frame for #{filePath}"
+        // clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#043247'; // 'rgba(4,50,71,255)'
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-			// generate canvas based on bg size
-			const canvas = new Canvas(width + (padding*2), height + (padding*2));
-			const ctx = canvas.getContext('2d');
-			ctx.imageSmoothingEnabled = false;
-
-			const idleFrame = JSON.parse(animationData["frames"][idleFrameKey]["frame"].replace(/{/g,"[").replace(/}/g,"]"));
-
-			// clear canvas
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			ctx.fillStyle = '#043247'; //'rgba(4,50,71,255)'
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-			// draw card img
-			ctx.drawImage(
-				cardImg,
-				idleFrame[0][0], // sX
-				idleFrame[0][1], // sY
-				idleFrame[1][0], // sWidth
-				idleFrame[1][1], // sHeight
-				(canvas.width/2) - ((scaleFactor*idleFrame[1][0])/2), // dx
-				canvas.height - (scaleFactor*idleFrame[1][1]), // dy
-				scaleFactor*idleFrame[1][0], // dw
-				scaleFactor*idleFrame[1][1] // dh
-			);
-			// add frame to animated gif
-			gifencoder.addFrame(ctx);
-			return Promise.resolve();
-		});}).then(() => new Promise(function(resolve,reject){
-        writeStream.on('close',() => // console.log "closed #{filePath}"
+        // draw card img
+        ctx.drawImage(
+          cardImg,
+          idleFrame[0][0], // sX
+          idleFrame[0][1], // sY
+          idleFrame[1][0], // sWidth
+          idleFrame[1][1], // sHeight
+          (canvas.width / 2) - ((scaleFactor * idleFrame[1][0]) / 2), // dx
+          canvas.height - (scaleFactor * idleFrame[1][1]), // dy
+          scaleFactor * idleFrame[1][0], // dw
+          scaleFactor * idleFrame[1][1], // dh
+        );
+        // add frame to animated gif
+        gifencoder.addFrame(ctx);
+        return Promise.resolve();
+      });
+    }).then(() => new Promise((resolve, reject) => {
+      writeStream.on('close', () => // console.log "closed #{filePath}"
         resolve());
-        return (gifencoder != null ? gifencoder.finish() : undefined);
-    })).then(() => // console.log "renaming #{filePath}"
-    fs.renameAsync(tmpFilePath, filePath)).then(function(){
-		console.log(`done: ${filePath}`);
-		return filePath;}).catch(function(e){
-		console.error(`error exporting animation ${animationRsxKey}`, e);
-		throw e;
-	});
+      return (gifencoder != null ? gifencoder.finish() : undefined);
+    }))
+    .then(() => // console.log "renaming #{filePath}"
+      fs.renameAsync(tmpFilePath, filePath))
+    .then(() => {
+      console.log(`done: ${filePath}`);
+      return filePath;
+    })
+    .catch((e) => {
+      console.error(`error exporting animation ${animationRsxKey}`, e);
+      throw e;
+    });
 };
 
-const group = "units";
+const group = 'units';
 
 let animationKeys = _.keys(RSX);
-animationKeys = _.filter(animationKeys,k => (RSX[k].framePrefix != null) && ((RSX[k].img != null ? RSX[k].img.indexOf('.png') : undefined) > 0));
-animationKeys = _.filter(animationKeys,k => RSX[k].img.indexOf(`/${group}`) > 0);
-animationKeys = _.sortBy(animationKeys,k => RSX[k].plist);
+animationKeys = _.filter(animationKeys, (k) => (RSX[k].framePrefix != null) && ((RSX[k].img != null ? RSX[k].img.indexOf('.png') : undefined) > 0));
+animationKeys = _.filter(animationKeys, (k) => RSX[k].img.indexOf(`/${group}`) > 0);
+animationKeys = _.sortBy(animationKeys, (k) => RSX[k].plist);
 
-const groupedKeys = _.groupBy(animationKeys,k => path.basename(RSX[k].plist,'.plist'));
+const groupedKeys = _.groupBy(animationKeys, (k) => path.basename(RSX[k].plist, '.plist'));
 
 // console.log(groupedKeys)
-console.log('Starting directory: ' + process.cwd());
+console.log(`Starting directory: ${process.cwd()}`);
 process.chdir('./images/parts');
 process.chdir(group);
-console.log('changed to directory: ' + process.cwd());
+console.log(`changed to directory: ${process.cwd()}`);
 
 const bar = new ProgressBar('generating [:bar] :percent :etas', {
-	complete: '=',
-	incomplete: ' ',
-	width: 20,
-	total: _.keys(groupedKeys).length
+  complete: '=',
+  incomplete: ' ',
+  width: 20,
+  total: _.keys(groupedKeys).length,
 });
 
 const borked = [
-	"neutral_shadowranged",
-	"neutral_shadowcaster",
-	"neutral_shadow3",
-	"neutral_shadow2",
-	"neutral_mob_shadow01",
-	"neutral_mercranged1",
-	"neutral_mercmelee4",
-	"neutral_mercmelee3",
-	"neutral_mercmelee2",
-	"neutral_mercmelee1",
-	"neutral_merccaster1",
-	"neutral_golemstone",
-	"neutral_golemsteel",
-	"neutral_golemice",
-	"f3_zodiac02",
-	"f3_zodiac",
-	"f2_hammonbladeseeker",
-	"f1_ranged",
-	"f1_general_skinroguelegacy",
-	"f5_tank",
-	"f5_support",
-	"f5_vindicator"
+  'neutral_shadowranged',
+  'neutral_shadowcaster',
+  'neutral_shadow3',
+  'neutral_shadow2',
+  'neutral_mob_shadow01',
+  'neutral_mercranged1',
+  'neutral_mercmelee4',
+  'neutral_mercmelee3',
+  'neutral_mercmelee2',
+  'neutral_mercmelee1',
+  'neutral_merccaster1',
+  'neutral_golemstone',
+  'neutral_golemsteel',
+  'neutral_golemice',
+  'f3_zodiac02',
+  'f3_zodiac',
+  'f2_hammonbladeseeker',
+  'f1_ranged',
+  'f1_general_skinroguelegacy',
+  'f5_tank',
+  'f5_support',
+  'f5_vindicator',
 ];
 
-Promise.map(_.keys(groupedKeys), function(k){
+Promise.map(
+  _.keys(groupedKeys),
+  (k) => {
+    if (fs.existsSync(`${process.cwd()}/${k}.plist`)) {
+      return bar.tick();
+    } if (!_.include(borked, k)) {
+      return bar.tick();
+    }
+    return Promise.map(groupedKeys[k], (animationKey) => exportAnimatedGIF(animationKey)
+      .then((filePath) => new Promise((resolve, reject) => exec(`mogrify -fuzz 1% -transparent \"#043247\" -set dispose previous ${filePath}`, (error, stdout, stderr) => {
+        if (error) { return reject(error); } return resolve(stdout);
+      }))))
+      // .then ()->
+      // 	return new Promise (resolve,reject)->
+      // 		exec "mogrify -fuzz 1% -transparent \"#043247\" -set dispose previous #{animationKey}.gif", (error, stdout, stderr)->
+      // 			if error then reject(error) else resolve(stdout)
+      .then(() => {
+        const animationFiles = _.map(groupedKeys[k], (r) => `${RSX[r].framePrefix.slice(0, -1)}.gif`);
+        let command = '/Applications/ShoeBox.app/Contents/MacOS/ShoeBox --args "plugin=shoebox.plugin.spriteSheet::PluginCreateSpriteSheet" "files=';
+        for (const animationFileName of Array.from(animationFiles)) {
+          command += `${process.cwd()}/${animationFileName},`;
+        }
+        command = command.slice(0, -1);
+        command += `" "animationMaxFrames=100" "fileFormatOuter=<plist><dict><key>frames</key><dict>@loop</dict><key>metadata</key><dict><key>format</key><integer>2</integer><key>size</key><string>{@W,@H}</string><key>textureFileName</key><string>@TexName</string></dict></dict></plist>" "animationFrameIdStart=0" "scale=1" "useCssOverHack=false" "texCropAlpha=true" "fileFormatLoop=<key>@id</key><dict><key>frame</key><string>{{@x,@y},{@w,@h}}</string><key>offset</key><string>{0,0}</string><key>rotated</key><false/><key>sourceColorRect</key><string>{{@fx,@fy},{@w,@h}}</string><key>sourceSize</key><string>{@fw,@fh}</string></dict>" "texPadding=1" "renderDebugLayer=false" "texPowerOfTwo=true" "texMaxSize=2048" "fileGenerate2xSize=false" "texSquare=false" "fileName=${k}.plist" "texExtrudeSize=0" "animationNameIds=@name_###.png"`;
+        return new Promise((resolve, reject) => exec(command, (error, stdout, stderr) => {
+          if (error) { return reject(error); } return resolve(stdout);
+        }));
+      }).then(() => {
+        console.log(`shoebox done (${k})`);
+        return bar.tick();
+      });
+  },
 
-	if (fs.existsSync(process.cwd() + `/${k}.plist`)) {
-		return bar.tick();
-	} else if (!_.include(borked,k)) {
-		return bar.tick();
-	} else {
-		return Promise.map(groupedKeys[k],animationKey => exportAnimatedGIF(animationKey)
-        .then(filePath => new Promise((resolve, reject) => exec(`mogrify -fuzz 1% -transparent \"#043247\" -set dispose previous ${filePath}`, function(error, stdout, stderr){
-            if (error) { return reject(error); } else { return resolve(stdout); }
-    }))))
-		// .then ()->
-		// 	return new Promise (resolve,reject)->
-		// 		exec "mogrify -fuzz 1% -transparent \"#043247\" -set dispose previous #{animationKey}.gif", (error, stdout, stderr)->
-		// 			if error then reject(error) else resolve(stdout)
-		.then(function(){
-			const animationFiles = _.map(groupedKeys[k], r => `${RSX[r].framePrefix.slice(0,-1)}.gif`);
-			let command = '/Applications/ShoeBox.app/Contents/MacOS/ShoeBox --args "plugin=shoebox.plugin.spriteSheet::PluginCreateSpriteSheet" "files=';
-			for (let animationFileName of Array.from(animationFiles)) {
-				command += process.cwd() + "/" + animationFileName + ",";
-			}
-			command = command.slice(0,-1);
-			command += '" "animationMaxFrames=100" "fileFormatOuter=<plist><dict><key>frames</key><dict>@loop</dict><key>metadata</key><dict><key>format</key><integer>2</integer><key>size</key><string>{@W,@H}</string><key>textureFileName</key><string>@TexName</string></dict></dict></plist>" "animationFrameIdStart=0" "scale=1" "useCssOverHack=false" "texCropAlpha=true" "fileFormatLoop=<key>@id</key><dict><key>frame</key><string>{{@x,@y},{@w,@h}}</string><key>offset</key><string>{0,0}</string><key>rotated</key><false/><key>sourceColorRect</key><string>{{@fx,@fy},{@w,@h}}</string><key>sourceSize</key><string>{@fw,@fh}</string></dict>" "texPadding=1" "renderDebugLayer=false" "texPowerOfTwo=true" "texMaxSize=2048" "fileGenerate2xSize=false" "texSquare=false" "fileName='+k+'.plist" "texExtrudeSize=0" "animationNameIds=@name_###.png"';
-			return new Promise((resolve, reject) => exec(command, function(error, stdout, stderr){
-                if (error) { return reject(error); } else { return resolve(stdout); }
-            }));}).then(function(){
-			console.log(`shoebox done (${k})`);
-			return bar.tick();
-		});
-	}
-}
-
-, {concurrency:1})
+  { concurrency: 1 },
+)
 
 // Promise.map(animationKeys, (k)->
 // 	unless fs.existsSync(process.cwd() + "/#{k}.plist")
@@ -266,6 +288,6 @@ Promise.map(_.keys(groupedKeys), function(k){
 // 			)
 // 		.then ()-> return Promise.delay(2000)
 // 	,{concurrency:1})
-.then(() => // validate
+  .then(() => // validate
 
-console.log("DONE".green));
+    console.log('DONE'.green));

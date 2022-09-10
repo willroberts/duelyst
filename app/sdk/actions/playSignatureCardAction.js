@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    no-tabs,
+    no-this-before-super,
+    no-underscore-dangle,
+    no-use-before-define,
+    prefer-rest-params,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -12,33 +23,32 @@ const Logger = 		require('app/common/logger');
 const PlayCardAction = 		require('./playCardAction');
 
 class PlaySignatureCardAction extends PlayCardAction {
-	static initClass() {
-	
-		this.type ="PlaySignatureCardAction";
-	}
+  static initClass() {
+    this.type = 'PlaySignatureCardAction';
+  }
 
-	constructor() {
-		if (this.type == null) { this.type = PlaySignatureCardAction.type; }
-		super(...arguments);
-	}
+  constructor() {
+    if (this.type == null) { this.type = PlaySignatureCardAction.type; }
+    super(...arguments);
+  }
 
-	getManaCost() {
-		const card = this.getCard();
-		if (card != null) { return card.getManaCost(); } else { return super.getManaCost(); }
-	}
+  getManaCost() {
+    const card = this.getCard();
+    if (card != null) { return card.getManaCost(); } return super.getManaCost();
+  }
 
-	_execute() {
-		super._execute();
+  _execute() {
+    super._execute();
 
-		const owner = __guard__(this.getCard(), x => x.getOwner());
-		if (owner != null) {
-			// set signature card as inactive
-			owner.setIsSignatureCardActive(false);
+    const owner = __guard__(this.getCard(), (x) => x.getOwner());
+    if (owner != null) {
+      // set signature card as inactive
+      owner.setIsSignatureCardActive(false);
 
-			// generate new signature card
-			return this.getGameSession().executeAction(owner.actionGenerateSignatureCard());
-		}
-	}
+      // generate new signature card
+      return this.getGameSession().executeAction(owner.actionGenerateSignatureCard());
+    }
+  }
 }
 PlaySignatureCardAction.initClass();
 

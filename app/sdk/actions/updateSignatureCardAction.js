@@ -1,3 +1,11 @@
+/* eslint-disable
+    class-methods-use-this,
+    max-len,
+    no-this-before-super,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -15,46 +23,44 @@ Generates a new signature card if signature card slot was active when this actio
 */
 
 class UpdateSignatureCardAction extends Action {
-	static initClass() {
-	
-		this.type ="UpdateSignatureCardAction";
-	
-		this.prototype.targetPlayerId = null;
-	}
+  static initClass() {
+    this.type = 'UpdateSignatureCardAction';
 
-	constructor(gameSession, targetPlayerId) {
-		if (this.type == null) { this.type = UpdateSignatureCardAction.type; }
-		super(gameSession);
-		if (targetPlayerId != null) {
-			this.targetPlayerId = targetPlayerId;
-		} else {
-			this.targetPlayerId = this.getOwnerId();
-		}
-	}
+    this.prototype.targetPlayerId = null;
+  }
 
-	isRemovableDuringScrubbing() {
-		return false;
-	}
+  constructor(gameSession, targetPlayerId) {
+    if (this.type == null) { this.type = UpdateSignatureCardAction.type; }
+    super(gameSession);
+    if (targetPlayerId != null) {
+      this.targetPlayerId = targetPlayerId;
+    } else {
+      this.targetPlayerId = this.getOwnerId();
+    }
+  }
 
-	getTargetPlayer() {
-		return this.getGameSession().getPlayerById(this.getTargetPlayerId());
-	}
+  isRemovableDuringScrubbing() {
+    return false;
+  }
 
-	getTargetPlayerId() {
-		return this.targetPlayerId;
-	}
+  getTargetPlayer() {
+    return this.getGameSession().getPlayerById(this.getTargetPlayerId());
+  }
 
-	_execute() {
-		super._execute();
+  getTargetPlayerId() {
+    return this.targetPlayerId;
+  }
 
-		const activeSignatureCard = this.getTargetPlayer().getCurrentSignatureCard();
-		if (activeSignatureCard) {
-			return this.getGameSession().executeAction(this.getTargetPlayer().actionGenerateSignatureCard());
-		} else {
-			this.getTargetPlayer().flushCachedReferenceSignatureCard();
-			return this.getGameSession().getGeneralForPlayerId(this.getTargetPlayerId()).flushCachedReferenceSignatureCard();
-		}
-	}
+  _execute() {
+    super._execute();
+
+    const activeSignatureCard = this.getTargetPlayer().getCurrentSignatureCard();
+    if (activeSignatureCard) {
+      return this.getGameSession().executeAction(this.getTargetPlayer().actionGenerateSignatureCard());
+    }
+    this.getTargetPlayer().flushCachedReferenceSignatureCard();
+    return this.getGameSession().getGeneralForPlayerId(this.getTargetPlayerId()).flushCachedReferenceSignatureCard();
+  }
 }
 UpdateSignatureCardAction.initClass();
 

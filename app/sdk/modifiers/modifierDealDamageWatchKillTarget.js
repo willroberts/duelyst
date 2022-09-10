@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,58 +14,57 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const EVENTS = require('app/common/event_types');
-const Modifier = require('./modifier');
 const AttackAction = require('app/sdk/actions/attackAction');
 const CardType = require('app/sdk/cards/cardType');
-const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
 const KillAction = require('app/sdk/actions/killAction');
+const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
+const Modifier = require('./modifier');
 
 class ModifierDealDamageWatchKillTarget extends ModifierDealDamageWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDealDamageWatchKillTarget";
-		this.type ="ModifierDealDamageWatchKillTarget";
-	
-		this.prototype.maxStacks = 1;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierDealDamageWatch", "FX.Modifiers.ModifierGenericKill"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDealDamageWatchKillTarget';
+    this.type = 'ModifierDealDamageWatchKillTarget';
 
-	onEvent(event) {
-		super.onEvent(event);
+    this.prototype.maxStacks = 1;
 
-		if (this._private.listeningToEvents) {
-			if (event.type === EVENTS.entities_involved_in_attack) {
-				return this.onEntitiesInvolvedInAttack(event);
-			}
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierDealDamageWatch', 'FX.Modifiers.ModifierGenericKill'];
+  }
 
-	getIsActionRelevant(a) {
-		// kill the target as long as it isn't a general
-		return super.getIsActionRelevant(a) && !(__guard__(a.getTarget(), x => x.getIsGeneral()));
-	}
+  onEvent(event) {
+    super.onEvent(event);
 
-	onDealDamage(action) {
-		const target = action.getTarget();
-		const killAction = new KillAction(this.getGameSession());
-		killAction.setOwnerId(this.getCard().getOwnerId());
-		killAction.setSource(this.getCard());
-		killAction.setTarget(target);
-		return this.getGameSession().executeAction(killAction);
-	}
+    if (this._private.listeningToEvents) {
+      if (event.type === EVENTS.entities_involved_in_attack) {
+        return this.onEntitiesInvolvedInAttack(event);
+      }
+    }
+  }
 
-	onEntitiesInvolvedInAttack(actionEvent) {
-		const a = actionEvent.action;
-		if (this.getIsActive() && this.getIsActionRelevant(a)) {
-			const target = a.getTarget();
-			const killAction = new KillAction(this.getGameSession());
-			killAction.setOwnerId(this.getCard().getOwnerId());
-			killAction.setSource(this.getCard());
-			killAction.setTarget(target);
-			return actionEvent.actions.push(killAction);
-		}
-	}
+  getIsActionRelevant(a) {
+    // kill the target as long as it isn't a general
+    return super.getIsActionRelevant(a) && !(__guard__(a.getTarget(), (x) => x.getIsGeneral()));
+  }
+
+  onDealDamage(action) {
+    const target = action.getTarget();
+    const killAction = new KillAction(this.getGameSession());
+    killAction.setOwnerId(this.getCard().getOwnerId());
+    killAction.setSource(this.getCard());
+    killAction.setTarget(target);
+    return this.getGameSession().executeAction(killAction);
+  }
+
+  onEntitiesInvolvedInAttack(actionEvent) {
+    const a = actionEvent.action;
+    if (this.getIsActive() && this.getIsActionRelevant(a)) {
+      const target = a.getTarget();
+      const killAction = new KillAction(this.getGameSession());
+      killAction.setOwnerId(this.getCard().getOwnerId());
+      killAction.setSource(this.getCard());
+      killAction.setTarget(target);
+      return actionEvent.actions.push(killAction);
+    }
+  }
 }
 ModifierDealDamageWatchKillTarget.initClass();
 

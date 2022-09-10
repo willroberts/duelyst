@@ -1,3 +1,10 @@
+/* eslint-disable
+    class-methods-use-this,
+    no-this-before-super,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -13,40 +20,39 @@ Action that activates a player's signature card.
 */
 
 class ActivateSignatureCardAction extends Action {
-	static initClass() {
-	
-		this.type ="ActivateSignatureCardAction";
-	
-		this.prototype.targetPlayerId = null;
-	}
+  static initClass() {
+    this.type = 'ActivateSignatureCardAction';
 
-	constructor(gameSession, targetPlayerId) {
-		if (this.type == null) { this.type = ActivateSignatureCardAction.type; }
-		super(gameSession);
-		if (targetPlayerId != null) {
-			this.targetPlayerId = targetPlayerId;
-		} else {
-			this.targetPlayerId = this.getOwnerId();
-		}
-	}
+    this.prototype.targetPlayerId = null;
+  }
 
-	isRemovableDuringScrubbing() {
-		return false;
-	}
+  constructor(gameSession, targetPlayerId) {
+    if (this.type == null) { this.type = ActivateSignatureCardAction.type; }
+    super(gameSession);
+    if (targetPlayerId != null) {
+      this.targetPlayerId = targetPlayerId;
+    } else {
+      this.targetPlayerId = this.getOwnerId();
+    }
+  }
 
-	getTargetPlayer() {
-		return this.getGameSession().getPlayerById(this.getTargetPlayerId());
-	}
+  isRemovableDuringScrubbing() {
+    return false;
+  }
 
-	getTargetPlayerId() {
-		return this.targetPlayerId;
-	}
+  getTargetPlayer() {
+    return this.getGameSession().getPlayerById(this.getTargetPlayerId());
+  }
 
-	_execute() {
-		super._execute();
+  getTargetPlayerId() {
+    return this.targetPlayerId;
+  }
 
-		return this.getTargetPlayer().setIsSignatureCardActive(true);
-	}
+  _execute() {
+    super._execute();
+
+    return this.getTargetPlayer().setIsSignatureCardActive(true);
+  }
 }
 ActivateSignatureCardAction.initClass();
 

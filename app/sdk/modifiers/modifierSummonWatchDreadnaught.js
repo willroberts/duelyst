@@ -1,3 +1,10 @@
+/* eslint-disable
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
@@ -8,31 +15,29 @@ const Modifier = require('./modifier');
 const ModifierSummonWatchByCardBuffTarget = require('./modifierSummonWatchByCardBuffTarget');
 
 class ModifierSummonWatchDreadnaught extends ModifierSummonWatchByCardBuffTarget {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSummonWatchDreadnaught";
-		this.type ="ModifierSummonWatchDreadnaught";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
-	
-		this.description = "%X you summon %Y";
-		this.prototype.validCardIds = null; // array of card IDs to watch for
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSummonWatchDreadnaught';
+    this.type = 'ModifierSummonWatchDreadnaught';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			const replaceText = this.description.replace(/%X/, modifierContextObject.cardDescription);
-			return replaceText.replace(/%Y/, modifierContextObject.buffDescription);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch', 'FX.Modifiers.ModifierGenericBuff'];
 
-	getIsCardRelevantToWatcher(card) {
-		return (__guard__(card.getAppliedToBoardByAction(), x => x.getSource()) !== this.getCard()) && super.getIsCardRelevantToWatcher(card);
-	}
+    this.description = '%X you summon %Y';
+    this.prototype.validCardIds = null; // array of card IDs to watch for
+
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch', 'FX.Modifiers.ModifierGenericBuff'];
+  }
+
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      const replaceText = this.description.replace(/%X/, modifierContextObject.cardDescription);
+      return replaceText.replace(/%Y/, modifierContextObject.buffDescription);
+    }
+    return this.description;
+  }
+
+  getIsCardRelevantToWatcher(card) {
+    return (__guard__(card.getAppliedToBoardByAction(), (x) => x.getSource()) !== this.getCard()) && super.getIsCardRelevantToWatcher(card);
+  }
 }
 ModifierSummonWatchDreadnaught.initClass();
 

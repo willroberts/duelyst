@@ -1,3 +1,9 @@
+/* eslint-disable
+    no-return-assign,
+    no-this-before-super,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -8,28 +14,26 @@
 const Modifier = require('./modifier');
 
 class ModifierDoubleAttackStat extends Modifier {
-	static initClass() {
-	
-		this.prototype.type = "ModifierDoubleAttackStat";
-		this.type = "ModifierDoubleAttackStat";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericBuff"];
-	
-		this.description = "Doubled Attack";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDoubleAttackStat';
+    this.type = 'ModifierDoubleAttackStat';
 
-	constructor(gameSession) {
-		this.attributeBuffs = {};
-		this.attributeBuffs["atk"] = 0;
-		super(gameSession);
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierGenericBuff'];
 
-	onApplyToCardBeforeSyncState() {
-		super.onApplyToCardBeforeSyncState();
-		return this.attributeBuffs["atk"] = this.getCard().getATK();
-	}
+    this.description = 'Doubled Attack';
+  }
+
+  constructor(gameSession) {
+    this.attributeBuffs = {};
+    this.attributeBuffs.atk = 0;
+    super(gameSession);
+  }
+
+  onApplyToCardBeforeSyncState() {
+    super.onApplyToCardBeforeSyncState();
+    return this.attributeBuffs.atk = this.getCard().getATK();
+  }
 }
 ModifierDoubleAttackStat.initClass();
-
 
 module.exports = ModifierDoubleAttackStat;

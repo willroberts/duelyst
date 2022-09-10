@@ -1,3 +1,13 @@
+/* eslint-disable
+    consistent-return,
+    default-case,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -6,8 +16,6 @@
  */
 
 // lookups
-const NewPlayerProgressionStageEnum = require('./newPlayerProgressionStageEnum');
-const NewPlayerFeatureLookup = require('./newPlayerProgressionFeatureLookup');
 
 // quests
 const QuestBeginnerWinPracticeGames = require('app/sdk/quests/questBeginnerWinPracticeGames');
@@ -20,53 +28,54 @@ const QuestBeginnerWinThreeQuickMatches = require('app/sdk/quests/questBeginnerW
 const QuestBeginnerWinThreeRankedMatches = require('app/sdk/quests/questBeginnerWinThreeRankedMatches');
 const QuestBeginnerWinTwoPracticeGames = require('app/sdk/quests/questBeginnerWinTwoPracticeGames');
 const QuestBeginnerWinOneSeasonGame = require('app/sdk/quests/questBeginnerWinOneSeasonGame');
+const NewPlayerFeatureLookup = require('./newPlayerProgressionFeatureLookup');
+const NewPlayerProgressionStageEnum = require('./newPlayerProgressionStageEnum');
 
 class NewPlayerProgression {
-	static initClass() {
-	
-		this.featureToCoreStageMapping ={};
-	
-		this.FinalStage = NewPlayerProgressionStageEnum.FirstFactionLevelingDone;
-		this.DailyQuestsStartToGenerateStage = NewPlayerProgressionStageEnum.FirstGameDone;
-		this.FirstWinOfTheDayAvailableStage = NewPlayerProgressionStageEnum.FirstGameDone;
-	}
+  static initClass() {
+    this.featureToCoreStageMapping = {};
 
-	/**
+    this.FinalStage = NewPlayerProgressionStageEnum.FirstFactionLevelingDone;
+    this.DailyQuestsStartToGenerateStage = NewPlayerProgressionStageEnum.FirstGameDone;
+    this.FirstWinOfTheDayAvailableStage = NewPlayerProgressionStageEnum.FirstGameDone;
+  }
+
+  /**
 	 * Check if a feature is available at a certain stage in new player guided progression.
 	 * @param	feature		Number(NewPlayerFeatureLookup)			Which feature.
 	 * @param	stage		Enum(NewPlayerProgressionStageEnum)		Which stage.
 	 * @returns 				Boolean		Is it available.
 	 */
-	static isFeatureAvailableAtStage(feature,stage){
-		// make sure to cast any stringts to enum
-		stage = NewPlayerProgressionStageEnum[stage];
-		const stageWhenFeatureIsAvailable = NewPlayerProgression.featureToCoreStageMapping[feature];
+  static isFeatureAvailableAtStage(feature, stage) {
+    // make sure to cast any stringts to enum
+    stage = NewPlayerProgressionStageEnum[stage];
+    const stageWhenFeatureIsAvailable = NewPlayerProgression.featureToCoreStageMapping[feature];
 
-		if ((stageWhenFeatureIsAvailable == null)) {
-			return true;
-		}
+    if ((stageWhenFeatureIsAvailable == null)) {
+      return true;
+    }
 
-		// return if the current stage is greater or equal to the stage when this feature becomes available
-		return stage.value >= stageWhenFeatureIsAvailable.value;
-	}
+    // return if the current stage is greater or equal to the stage when this feature becomes available
+    return stage.value >= stageWhenFeatureIsAvailable.value;
+  }
 
-	/**
+  /**
 	 * Get quests for the current stage in new user guided progression.
 	 * @returns 		Array		array of quest object instances.
 	 */
-	static questsForStage(stage){
-		stage = NewPlayerProgressionStageEnum[stage];
-		switch (stage) {
-			case NewPlayerProgressionStageEnum.TutorialDone:
-				return [ new QuestBeginnerWinPracticeGames() ];
-			case NewPlayerProgressionStageEnum.FirstPracticeDuelDone:
-				return [ new QuestBeginnerWinTwoPracticeGames() ];
-			case NewPlayerProgressionStageEnum.ExtendedPracticeDone:
-				return [ new QuestBeginnerWinOneSeasonGame() ];
-			case NewPlayerProgressionStageEnum.FirstGameDone:
-				return [ new QuestBeginnerCompleteSoloChallenges(), new QuestBeginnerFactionLevel() ];
-		}
-	}
+  static questsForStage(stage) {
+    stage = NewPlayerProgressionStageEnum[stage];
+    switch (stage) {
+      case NewPlayerProgressionStageEnum.TutorialDone:
+        return [new QuestBeginnerWinPracticeGames()];
+      case NewPlayerProgressionStageEnum.FirstPracticeDuelDone:
+        return [new QuestBeginnerWinTwoPracticeGames()];
+      case NewPlayerProgressionStageEnum.ExtendedPracticeDone:
+        return [new QuestBeginnerWinOneSeasonGame()];
+      case NewPlayerProgressionStageEnum.FirstGameDone:
+        return [new QuestBeginnerCompleteSoloChallenges(), new QuestBeginnerFactionLevel()];
+    }
+  }
 }
 NewPlayerProgression.initClass();
 

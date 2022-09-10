@@ -1,3 +1,11 @@
+/* eslint-disable
+    func-names,
+    import/extensions,
+    import/no-unresolved,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -17,30 +25,31 @@ const Logger = require('../../app/common/logger.coffee');
  * @param	{Object} job		Kue job
  * @param	{Function} done 	Callback when job is complete
  */
-module.exports = function(job, done) {
-	const gameId = job.data.gameId || null;
-	const userId = job.data.userId || null;
-	const {
-        isWinner
-    } = job.data;
-	const {
-        isDraw
-    } = job.data;
+module.exports = function (job, done) {
+  const gameId = job.data.gameId || null;
+  const userId = job.data.userId || null;
+  const {
+    isWinner,
+  } = job.data;
+  const {
+    isDraw,
+  } = job.data;
 
-	if (!gameId) {
-		return done(new Error("Game ID is not defined."));
-	}
-	if (!userId) {
-		return done(new Error("User ID is not defined."));
-	}
-	if (isWinner === undefined) {
-		return done(new Error("isWinner is not defined."));
-	}
+  if (!gameId) {
+    return done(new Error('Game ID is not defined.'));
+  }
+  if (!userId) {
+    return done(new Error('User ID is not defined.'));
+  }
+  if (isWinner === undefined) {
+    return done(new Error('isWinner is not defined.'));
+  }
 
-	Logger.module("JOB").debug(`[J:${job.id}] Update User (${userId}) Ranking for game ${gameId} starting`);
+  Logger.module('JOB').debug(`[J:${job.id}] Update User (${userId}) Ranking for game ${gameId} starting`);
 
-	return RankModule.updateUserRankingWithGameOutcome(userId,isWinner,gameId,isDraw)
-	.then(function() {
-		Logger.module("JOB").debug(`[J:${job.id}] Update User (${userId}) Ranking for game ${gameId} done()`);
-		return done();}).catch(error => done(error));
+  return RankModule.updateUserRankingWithGameOutcome(userId, isWinner, gameId, isDraw)
+    .then(() => {
+      Logger.module('JOB').debug(`[J:${job.id}] Update User (${userId}) Ranking for game ${gameId} done()`);
+      return done();
+    }).catch((error) => done(error));
 };

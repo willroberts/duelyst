@@ -1,3 +1,13 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-tabs,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,38 +15,37 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = 	require('./modifier');
 const HealAction = require('app/sdk/actions/healAction');
+const Modifier = 	require('./modifier');
 
 class ModifierEnemyCannotHeal extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierEnemyCannotHeal";
-		this.type ="ModifierEnemyCannotHeal";
-	
-		this.modifierName ="ModifierEnemyCannotHeal";
-		this.description = "Enemy minions and Generals cannot heal";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierEnemyCannotHeal"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierEnemyCannotHeal';
+    this.type = 'ModifierEnemyCannotHeal';
 
-	// watch for enemy heals, and turn them into 0s
-	onModifyActionForExecution(e) {
-		super.onModifyActionForExecution(e);
+    this.modifierName = 'ModifierEnemyCannotHeal';
+    this.description = 'Enemy minions and Generals cannot heal';
 
-		const {
-            action
-        } = e;
-		if (action instanceof HealAction && (__guard__(action.getTarget(), x => x.getOwnerId()) !== this.getCard().getOwnerId())) {
-			action.setChangedByModifier(this);
-			return action.setHealMultiplier(0);
-		}
-	}
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+
+    this.prototype.fxResource = ['FX.Modifiers.ModifierEnemyCannotHeal'];
+  }
+
+  // watch for enemy heals, and turn them into 0s
+  onModifyActionForExecution(e) {
+    super.onModifyActionForExecution(e);
+
+    const {
+      action,
+    } = e;
+    if (action instanceof HealAction && (__guard__(action.getTarget(), (x) => x.getOwnerId()) !== this.getCard().getOwnerId())) {
+      action.setChangedByModifier(this);
+      return action.setHealMultiplier(0);
+    }
+  }
 }
 ModifierEnemyCannotHeal.initClass();
 

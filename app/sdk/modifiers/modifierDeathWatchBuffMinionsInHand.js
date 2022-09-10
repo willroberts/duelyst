@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-loop-func,
+    no-restricted-syntax,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,45 +18,42 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierDeathWatch = require('./modifierDeathWatch');
 const CardType = require('app/sdk/cards/cardType');
+const ModifierDeathWatch = require('./modifierDeathWatch');
 
 class ModifierDeathWatchBuffMinionsInHand extends ModifierDeathWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDeathWatchBuffMinionsInHand";
-		this.type ="ModifierDeathWatchBuffMinionsInHand";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierDeathwatch", "FX.Modifiers.ModifierGenericBuff"];
-	
-		this.prototype.modifiersContextObjects = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDeathWatchBuffMinionsInHand';
+    this.type = 'ModifierDeathWatchBuffMinionsInHand';
 
-	static createContextObject(modifiersContextObjects, description, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		contextObject.description = description;
-		return contextObject;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierDeathwatch', 'FX.Modifiers.ModifierGenericBuff'];
 
-	onDeathWatch(action) {
+    this.prototype.modifiersContextObjects = null;
+  }
 
-		const cardsInHand = this.getCard().getOwner().getDeck().getCardsInHandExcludingMissing();
-		if (cardsInHand != null) {
-			return (() => {
-				const result = [];
-				for (var card of Array.from(cardsInHand)) {
-					if ((card != null ? card.getType() : undefined) === CardType.Unit) {
-						result.push(Array.from(this.modifiersContextObjects).map((modifierContextObject) =>
-							this.getGameSession().applyModifierContextObject(modifierContextObject, card)));
-					} else {
-						result.push(undefined);
-					}
-				}
-				return result;
-			})();
-		}
-	}
+  static createContextObject(modifiersContextObjects, description, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    contextObject.description = description;
+    return contextObject;
+  }
+
+  onDeathWatch(action) {
+    const cardsInHand = this.getCard().getOwner().getDeck().getCardsInHandExcludingMissing();
+    if (cardsInHand != null) {
+      return (() => {
+        const result = [];
+        for (var card of Array.from(cardsInHand)) {
+          if ((card != null ? card.getType() : undefined) === CardType.Unit) {
+            result.push(Array.from(this.modifiersContextObjects).map((modifierContextObject) => this.getGameSession().applyModifierContextObject(modifierContextObject, card)));
+          } else {
+            result.push(undefined);
+          }
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierDeathWatchBuffMinionsInHand.initClass();
 

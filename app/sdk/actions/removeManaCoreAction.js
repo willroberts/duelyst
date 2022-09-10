@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    max-len,
+    no-param-reassign,
+    no-plusplus,
+    no-return-assign,
+    no-this-before-super,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -11,48 +22,47 @@
 const Action = require('./action');
 
 class RemoveManaCoreAction extends Action {
-	static initClass() {
-	
-		// Removes a mana core
-	
-		this.type ="RemoveManaCoreAction";
-	
-		this.prototype.manaAmount = 0;
-	}
+  static initClass() {
+    // Removes a mana core
 
-	constructor(gameSession, manaAmount) {
-		if (manaAmount == null) { manaAmount = 0; }
-		if (this.type == null) { this.type = RemoveManaCoreAction.type; }
-		this.manaAmount = manaAmount;
-		super(gameSession);
-	}
+    this.type = 'RemoveManaCoreAction';
 
-	_execute() {
-		super._execute();
+    this.prototype.manaAmount = 0;
+  }
 
-		const owner = this.getOwner();
-		if (owner != null) {
-			return (() => {
-				const result = [];
-				for (let i = 0, end = this.manaAmount, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-					if (owner.getMaximumMana() > 0) {
-						result.push(owner.maximumMana--);
-					} else {
-						result.push(undefined);
-					}
-				}
-				return result;
-			})();
-		}
-	}
-	
-	getManaAmount() {
-		return this.manaAmount;
-	}
+  constructor(gameSession, manaAmount) {
+    if (manaAmount == null) { manaAmount = 0; }
+    if (this.type == null) { this.type = RemoveManaCoreAction.type; }
+    this.manaAmount = manaAmount;
+    super(gameSession);
+  }
 
-	setManaAmount(manaAmount) {
-		return this.manaAmount = Math.max(manaAmount, 0);
-	}
+  _execute() {
+    super._execute();
+
+    const owner = this.getOwner();
+    if (owner != null) {
+      return (() => {
+        const result = [];
+        for (let i = 0, end = this.manaAmount, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+          if (owner.getMaximumMana() > 0) {
+            result.push(owner.maximumMana--);
+          } else {
+            result.push(undefined);
+          }
+        }
+        return result;
+      })();
+    }
+  }
+
+  getManaAmount() {
+    return this.manaAmount;
+  }
+
+  setManaAmount(manaAmount) {
+    return this.manaAmount = Math.max(manaAmount, 0);
+  }
 }
 RemoveManaCoreAction.initClass();
 

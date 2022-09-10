@@ -1,3 +1,14 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-mixed-spaces-and-tabs,
+    no-restricted-syntax,
+    no-tabs,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -5,28 +16,27 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const SpellKillTargetSpawnEntity = require('./spellKillTargetSpawnEntity');
 const CardType = require('app/sdk/cards/cardType');
+const SpellKillTargetSpawnEntity = require('./spellKillTargetSpawnEntity');
 
 class SpellWraithstorm extends SpellKillTargetSpawnEntity {
-	static initClass() {
-	
-		this.prototype.radius = 1;
+  static initClass() {
+    this.prototype.radius = 1;
 		 // default radius around general
-	}
+  }
 
-	_postFilterApplyPositions() {
-		const board = this.getGameSession().getBoard();
-		const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
-		const filteredPositions = [];
-		for (let unit of Array.from(board.getEntitiesAroundEntity(myGeneral, CardType.Unit, this.radius))) {
-			if (!(__guard__(board.getUnitAtPosition(unit.getPosition()), x => x.getIsGeneral()))) { // don't transform generals
-				filteredPositions.push(unit.getPosition());
-			}
-		}
+  _postFilterApplyPositions() {
+    const board = this.getGameSession().getBoard();
+    const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+    const filteredPositions = [];
+    for (const unit of Array.from(board.getEntitiesAroundEntity(myGeneral, CardType.Unit, this.radius))) {
+      if (!(__guard__(board.getUnitAtPosition(unit.getPosition()), (x) => x.getIsGeneral()))) { // don't transform generals
+        filteredPositions.push(unit.getPosition());
+      }
+    }
 
-		return filteredPositions;
-	}
+    return filteredPositions;
+  }
 }
 SpellWraithstorm.initClass();
 

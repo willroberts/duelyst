@@ -1,3 +1,5 @@
+// TODO: This file was created by bulk-decaffeinate.
+// Sanity-check the conversion and remove this comment.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -6,21 +8,20 @@
 const Modifier = require('./modifier');
 
 class ModifierTamedBattlePet extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierTamedBattlePet";
-		this.type ="ModifierTamedBattlePet";
-	
-		this.modifierName = "Tamed Battle Pet";
-		this.description = "Listens to owner's commands";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierTamedBattlePet"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierTamedBattlePet';
+    this.type = 'ModifierTamedBattlePet';
+
+    this.modifierName = 'Tamed Battle Pet';
+    this.description = 'Listens to owner\'s commands';
+
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+
+    this.prototype.fxResource = ['FX.Modifiers.ModifierTamedBattlePet'];
+  }
 }
 ModifierTamedBattlePet.initClass();
 

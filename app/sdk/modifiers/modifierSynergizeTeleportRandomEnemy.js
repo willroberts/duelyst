@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -6,45 +14,44 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('app/common/config');
-const ModifierSynergize = require('./modifierSynergize');
 const TeleportBehindUnitAction = require('app/sdk/actions/teleportBehindUnitAction');
 const CardType = require('app/sdk/cards/cardType');
+const ModifierSynergize = require('./modifierSynergize');
 
 class ModifierSynergizeTeleportRandomEnemy extends ModifierSynergize {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSynergizeTeleportRandomEnemy";
-		this.type ="ModifierSynergizeTeleportRandomEnemy";
-	
-		this.description ="Teleport a random enemy to the space behind your General";
-	
-		this.prototype.canTargetGenerals = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSynergizeTeleportRandomEnemy';
+    this.type = 'ModifierSynergizeTeleportRandomEnemy';
 
-	onSynergize(action) {
-		super.onSynergize(action);
+    this.description = 'Teleport a random enemy to the space behind your General';
 
-		// find target to teleport
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, CONFIG.WHOLE_BOARD_RADIUS);
-			const validEntities = [];
-			for (let entity of Array.from(entities)) {
-				if (!entity.getIsGeneral() || this.canTargetGenerals) {
-					validEntities.push(entity);
-				}
-			}
+    this.prototype.canTargetGenerals = true;
 
-			// pick a random enemy from all enemies found on the board
-			if (validEntities.length > 0) {
-				const unitToTeleport = validEntities[this.getGameSession().getRandomIntegerForExecution(validEntities.length)];
-				const teleportBehindUnitAction = new TeleportBehindUnitAction(this.getGameSession(), this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId()), unitToTeleport);
-				// and teleport it
-				return this.getGameSession().executeAction(teleportBehindUnitAction);
-			}
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSpellWatch'];
+  }
+
+  onSynergize(action) {
+    super.onSynergize(action);
+
+    // find target to teleport
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, CONFIG.WHOLE_BOARD_RADIUS);
+      const validEntities = [];
+      for (const entity of Array.from(entities)) {
+        if (!entity.getIsGeneral() || this.canTargetGenerals) {
+          validEntities.push(entity);
+        }
+      }
+
+      // pick a random enemy from all enemies found on the board
+      if (validEntities.length > 0) {
+        const unitToTeleport = validEntities[this.getGameSession().getRandomIntegerForExecution(validEntities.length)];
+        const teleportBehindUnitAction = new TeleportBehindUnitAction(this.getGameSession(), this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId()), unitToTeleport);
+        // and teleport it
+        return this.getGameSession().executeAction(teleportBehindUnitAction);
+      }
+    }
+  }
 }
 ModifierSynergizeTeleportRandomEnemy.initClass();
 

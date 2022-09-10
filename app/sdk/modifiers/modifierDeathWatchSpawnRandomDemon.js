@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,80 +20,79 @@
  */
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
-const ModifierDeathWatch = require('./modifierDeathWatch');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const PlayCardAction = require('app/sdk/actions/playCardAction');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
 const GameFormat = require('app/sdk/gameFormat');
+const ModifierDeathWatch = require('./modifierDeathWatch');
 
 class ModifierDeathWatchSpawnRandomDemon extends ModifierDeathWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDeathWatchSpawnRandomDemon";
-		this.type ="ModifierDeathWatchSpawnRandomDemon";
-	
-		this.prototype.possibleCardsToSpawn = null;
-		this.prototype.spawnCount = 1;
-		this.prototype.spawnSilently = true; // most reactive spawns should be silent, i.e. no followups and no opening gambits
-		this.prototype.spawnPattern = CONFIG.PATTERN_3x3;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierDeathWatch", "FX.Modifiers.ModifierGenericSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDeathWatchSpawnRandomDemon';
+    this.type = 'ModifierDeathWatchSpawnRandomDemon';
 
-	static createContextObject(possibleCardsToSpawn, spawnCount, spawnPattern, spawnSilently,options) {
-		if (spawnCount == null) { spawnCount = 1; }
-		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
-		if (spawnSilently == null) { spawnSilently = true; }
-		const contextObject = super.createContextObject(options);
-		contextObject.possibleCardsToSpawn = possibleCardsToSpawn;
-		contextObject.spawnCount = spawnCount;
-		contextObject.spawnPattern = spawnPattern;
-		contextObject.spawnSilently = spawnSilently;
-		return contextObject;
-	}
+    this.prototype.possibleCardsToSpawn = null;
+    this.prototype.spawnCount = 1;
+    this.prototype.spawnSilently = true; // most reactive spawns should be silent, i.e. no followups and no opening gambits
+    this.prototype.spawnPattern = CONFIG.PATTERN_3x3;
 
-	onDeathWatch(action) {
-		super.onDeathWatch(action);
+    this.prototype.fxResource = ['FX.Modifiers.ModifierDeathWatch', 'FX.Modifiers.ModifierGenericSpawn'];
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const ownerId = this.getSpawnOwnerId(action);
-			const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierDeathWatchSpawnRandomDemon);
-			return (() => {
-				const result = [];
-				for (let spawnPosition of Array.from(spawnPositions)) {
-					var spawnAction;
-					const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
-					if (this.spawnSilently) {
-						spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
-					} else {
-						spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
-					}
-					spawnAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(spawnAction));
-				}
-				return result;
-			})();
-		}
-	}
+  static createContextObject(possibleCardsToSpawn, spawnCount, spawnPattern, spawnSilently, options) {
+    if (spawnCount == null) { spawnCount = 1; }
+    if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
+    if (spawnSilently == null) { spawnSilently = true; }
+    const contextObject = super.createContextObject(options);
+    contextObject.possibleCardsToSpawn = possibleCardsToSpawn;
+    contextObject.spawnCount = spawnCount;
+    contextObject.spawnPattern = spawnPattern;
+    contextObject.spawnSilently = spawnSilently;
+    return contextObject;
+  }
 
-	getCardDataOrIndexToSpawn() {
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const possibleCardsToSpawn = [
-				{id: Cards.Faction4.VorpalReaver},
-				{id: Cards.Faction4.Moonrider},
-				{id: Cards.Faction4.CreepDemon}
-			];
-			if (this.getGameSession().getGameFormat() !== GameFormat.Standard) {
-				possibleCardsToSpawn.push({id: Cards.Faction4.Klaxon});
-			}
-			return possibleCardsToSpawn[this.getGameSession().getRandomIntegerForExecution(possibleCardsToSpawn.length)];
-		}
-		return null;
-	}
+  onDeathWatch(action) {
+    super.onDeathWatch(action);
 
-	getSpawnOwnerId(action) {
-		return this.getCard().getOwnerId();
-	}
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const ownerId = this.getSpawnOwnerId(action);
+      const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierDeathWatchSpawnRandomDemon);
+      return (() => {
+        const result = [];
+        for (const spawnPosition of Array.from(spawnPositions)) {
+          var spawnAction;
+          const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
+          if (this.spawnSilently) {
+            spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+          } else {
+            spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+          }
+          spawnAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(spawnAction));
+        }
+        return result;
+      })();
+    }
+  }
+
+  getCardDataOrIndexToSpawn() {
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const possibleCardsToSpawn = [
+        { id: Cards.Faction4.VorpalReaver },
+        { id: Cards.Faction4.Moonrider },
+        { id: Cards.Faction4.CreepDemon },
+      ];
+      if (this.getGameSession().getGameFormat() !== GameFormat.Standard) {
+        possibleCardsToSpawn.push({ id: Cards.Faction4.Klaxon });
+      }
+      return possibleCardsToSpawn[this.getGameSession().getRandomIntegerForExecution(possibleCardsToSpawn.length)];
+    }
+    return null;
+  }
+
+  getSpawnOwnerId(action) {
+    return this.getCard().getOwnerId();
+  }
 }
 ModifierDeathWatchSpawnRandomDemon.initClass();
 

@@ -1,3 +1,9 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,29 +13,28 @@
 const Modifier = require('./modifier');
 
 class ModifierStartOpponentsTurnWatch extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierStartOpponentsTurnWatch";
-		this.type ="ModifierStartOpponentsTurnWatch";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierStartOpponentsTurnWatch';
+    this.type = 'ModifierStartOpponentsTurnWatch';
 
-	onStartTurn(e) {
-		super.onStartTurn(e);
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+  }
 
-		if (!this.getCard().isOwnersTurn()) {
-			const action = this.getGameSession().getExecutingAction();
-			return this.onTurnWatch(action);
-		}
-	}
+  onStartTurn(e) {
+    super.onStartTurn(e);
 
-	onTurnWatch(action) {}
+    if (!this.getCard().isOwnersTurn()) {
+      const action = this.getGameSession().getExecutingAction();
+      return this.onTurnWatch(action);
+    }
+  }
+
+  onTurnWatch(action) {}
 }
 ModifierStartOpponentsTurnWatch.initClass();
-		// override me in sub classes to implement special behavior
+// override me in sub classes to implement special behavior
 
 module.exports = ModifierStartOpponentsTurnWatch;

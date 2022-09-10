@@ -1,3 +1,11 @@
+/* eslint-disable
+    class-methods-use-this,
+    import/no-unresolved,
+    no-return-assign,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -15,22 +23,21 @@ BaseAgent - Base acting agent for taking actions in sdk game
 - Abstract class
 */
 
-
 class BaseAgent {
-	static initClass() {
-		this.prototype.name = "BaseAgent";
-		this.prototype.unitIndicesByTag = null;
-		this.prototype.playerId = null;
-	}
+  static initClass() {
+    this.prototype.name = 'BaseAgent';
+    this.prototype.unitIndicesByTag = null;
+    this.prototype.playerId = null;
+  }
 
-	/**
+  /**
 	 * BaseAgent constructor.
 	 * @public
 	 */
-	constructor(playerId) {
-		this.playerId = playerId;
+  constructor(playerId) {
+    this.playerId = playerId;
 
-		this.unitIndicesByTag = {};
+    this.unitIndicesByTag = {};
 
   /**
    * Stores the passed in unit with the given tag
@@ -39,33 +46,30 @@ class BaseAgent {
    * @param {string} tag - a string reference for later accessing this unit
    *
    */
-	}
-	addUnitWithTag(unit, tag) {
-		return this.unitIndicesByTag[tag] = unit.index;
-	}
+  }
 
+  addUnitWithTag(unit, tag) {
+    return this.unitIndicesByTag[tag] = unit.index;
+  }
 
-	/**
+  /**
   * Returns the unit corresponding to the passed in tag
   *
   * @param {string} tag - a string reference to the unit
   *
   */
-	getUnitForTag(gameSession, tag) {
-		return gameSession.getCardByIndex(this.unitIndicesByTag[tag]);
-	}
+  getUnitForTag(gameSession, tag) {
+    return gameSession.getCardByIndex(this.unitIndicesByTag[tag]);
+  }
 
-
-	/**
+  /**
   * _reactToGameStep
   * Override in subclasses to react to game steps
   * @param	{Object} lastStep - Last step shown by GameLayer
 	*/
-	gatherAgentActionSequenceAfterStep(lastStep) {}
+  gatherAgentActionSequenceAfterStep(lastStep) {}
 }
 BaseAgent.initClass();
-		// Does nothing - Override in subclass
-
-
+// Does nothing - Override in subclass
 
 module.exports = BaseAgent;

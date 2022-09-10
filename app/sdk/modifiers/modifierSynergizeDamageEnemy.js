@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,44 +11,42 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierSynergize = require('./modifierSynergize');
 const RandomDamageAction = require('app/sdk/actions/randomDamageAction');
 const CardType = require('app/sdk/cards/cardType');
+const ModifierSynergize = require('./modifierSynergize');
 
 class ModifierSynergizeDamageEnemy extends ModifierSynergize {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSynergizeDamageEnemy";
-		this.type ="ModifierSynergizeDamageEnemy";
-	
-		this.description = "Deal %X damage to a random enemy";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSynergize", "FX.Modifiers.ModifierGenericDamage"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSynergizeDamageEnemy';
+    this.type = 'ModifierSynergizeDamageEnemy';
 
-	static createContextObject(damageAmount, options) {
-		if (options == null) { options = undefined; }
-		const contextObject = super.createContextObject(options);
-		contextObject.damageAmount = damageAmount;
-		return contextObject;
-	}
+    this.description = 'Deal %X damage to a random enemy';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			return this.description.replace(/%X/, modifierContextObject.damageAmount);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSynergize', 'FX.Modifiers.ModifierGenericDamage'];
+  }
 
-	onSynergize(action) {
-		const randomDamageAction = new RandomDamageAction(this.getGameSession());
-		randomDamageAction.setOwnerId(this.getCard().getOwnerId());
-		randomDamageAction.setSource(this.getCard());
-		randomDamageAction.setDamageAmount(this.damageAmount);
-		randomDamageAction.canTargetGenerals = true;
-		return this.getGameSession().executeAction(randomDamageAction);
-	}
+  static createContextObject(damageAmount, options) {
+    if (options == null) { options = undefined; }
+    const contextObject = super.createContextObject(options);
+    contextObject.damageAmount = damageAmount;
+    return contextObject;
+  }
+
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      return this.description.replace(/%X/, modifierContextObject.damageAmount);
+    }
+    return this.description;
+  }
+
+  onSynergize(action) {
+    const randomDamageAction = new RandomDamageAction(this.getGameSession());
+    randomDamageAction.setOwnerId(this.getCard().getOwnerId());
+    randomDamageAction.setSource(this.getCard());
+    randomDamageAction.setDamageAmount(this.damageAmount);
+    randomDamageAction.canTargetGenerals = true;
+    return this.getGameSession().executeAction(randomDamageAction);
+  }
 }
 ModifierSynergizeDamageEnemy.initClass();
 

@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -14,26 +20,22 @@ const i18next = require('i18next');
 const _ = require('underscore');
 
 class FirstCosmeticChestAchievement extends Achievement {
-	static initClass() {
-		this.id = "firstCosmeticChestAchievement";
-		this.title = i18next.t("achievements.key_mythron_title");
-		this.description = i18next.t("achievements.key_mythron_desc");
-		this.progressRequired = 1;
-		this.rewards =
-			{bronzeCrateKey: 1};
-	}
+  static initClass() {
+    this.id = 'firstCosmeticChestAchievement';
+    this.title = i18next.t('achievements.key_mythron_title');
+    this.description = i18next.t('achievements.key_mythron_desc');
+    this.progressRequired = 1;
+    this.rewards =			{ bronzeCrateKey: 1 };
+  }
 
-
-	// returns progress made by receiving a loot crate
-	static progressForReceivingCosmeticChest(cosmeticChestType) {
-		if (cosmeticChestType === CosmeticsChestTypeLookup.Common) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
+  // returns progress made by receiving a loot crate
+  static progressForReceivingCosmeticChest(cosmeticChestType) {
+    if (cosmeticChestType === CosmeticsChestTypeLookup.Common) {
+      return 1;
+    }
+    return 0;
+  }
 }
 FirstCosmeticChestAchievement.initClass();
-
 
 module.exports = FirstCosmeticChestAchievement;

@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,28 +14,27 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierCannot = require('./modifierCannot');
 const RemoveCardFromHandAction = require('app/sdk/actions/removeCardFromHandAction');
 const i18next = require('i18next');
+const ModifierCannot = require('./modifierCannot');
 
 class ModifierCannotBeRemovedFromHand extends ModifierCannot {
-	static initClass() {
-	
-		this.prototype.type = "ModifierCannotBeRemovedFromHand";
-		this.type = "ModifierCannotBeRemovedFromHand";
-	
-		this.prototype.activeInHand = true;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierCannotBeRemovedFromHand';
+    this.type = 'ModifierCannotBeRemovedFromHand';
 
-	onValidateAction(actionEvent) {
-		const a = actionEvent.action;
+    this.prototype.activeInHand = true;
+  }
 
-		if (a instanceof RemoveCardFromHandAction && a.getIsValid() && this.getCard().getIsLocatedInHand()) {
-			if (__guard__(this.getCard().getOwner().getDeck().getCardInHandAtIndex(a.indexOfCardInHand), x => x.getIndex()) === this.getCard().getIndex()) {
-				return this.invalidateAction(a, this.getCard().getPosition());
-			}
-		}
-	}
+  onValidateAction(actionEvent) {
+    const a = actionEvent.action;
+
+    if (a instanceof RemoveCardFromHandAction && a.getIsValid() && this.getCard().getIsLocatedInHand()) {
+      if (__guard__(this.getCard().getOwner().getDeck().getCardInHandAtIndex(a.indexOfCardInHand), (x) => x.getIndex()) === this.getCard().getIndex()) {
+        return this.invalidateAction(a, this.getCard().getPosition());
+      }
+    }
+  }
 }
 ModifierCannotBeRemovedFromHand.initClass();
 

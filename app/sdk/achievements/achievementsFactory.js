@@ -1,3 +1,12 @@
+/* eslint-disable
+    guard-for-in,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -12,6 +21,7 @@ const Logger = require('app/common/logger');
 // subs: @_achievementsCache[$1.id] = new $1()\n
 
 // Armory
+const _ = require('underscore');
 const NamasteAchievement = require('./armoryBasedAchievements/namasteAchievement');
 const BronzeStarterBundleAchievement = require('./armoryBasedAchievements/bronzeStarterBundleAchievement');
 const SilverStarterBundleAchievement = require('./armoryBasedAchievements/silverStarterBundleAchievement');
@@ -88,126 +98,119 @@ const MythronOrb5Achievement = require('./orbOpeningAchievements/mythronOrb5Achi
 const MythronOrb6Achievement = require('./orbOpeningAchievements/mythronOrb6Achievement');
 const MythronOrb7Achievement = require('./orbOpeningAchievements/mythronOrb7Achievement');
 
-const _ = require('underscore');
-
 class AchievementsFactory {
-	static initClass() {
-	
-		// global cache for quick access
-		this._achievementsCache =null;
-		this._enabledAchievementsCache =null;
-	}
+  static initClass() {
+    // global cache for quick access
+    this._achievementsCache = null;
+    this._enabledAchievementsCache = null;
+  }
 
-	// TODO: Could be more performant by separating achievements by what they respond to in bucketed caches
+  // TODO: Could be more performant by separating achievements by what they respond to in bucketed caches
 
-	static _generateCache(){
-		Logger.module("SDK").debug("AchievementsFactory::_generateCache - starting");
+  static _generateCache() {
+    Logger.module('SDK').debug('AchievementsFactory::_generateCache - starting');
 
-		this._achievementsCache = {};
+    this._achievementsCache = {};
 
-		// armory based
-		this._achievementsCache[NamasteAchievement.id] = NamasteAchievement;
-		this._achievementsCache[BronzeStarterBundleAchievement.id] = BronzeStarterBundleAchievement;
-		this._achievementsCache[SilverStarterBundleAchievement.id] = SilverStarterBundleAchievement;
-		this._achievementsCache[GoldStarterBundleAchievement.id] = GoldStarterBundleAchievement;
-		// Referral based
-		this._achievementsCache[FirstReferralPurchase.id] = FirstReferralPurchase;
-		// Crafting
-		this._achievementsCache[WelcomeToCraftingAchievement.id] = WelcomeToCraftingAchievement;
-		// Game based
-		this._achievementsCache[BestOfFriendsAchievement.id] = BestOfFriendsAchievement;
-		this._achievementsCache[EnteringGauntletAchievement.id] = EnteringGauntletAchievement;
-		this._achievementsCache[HelpingHandAchievement.id] = HelpingHandAchievement;
-		this._achievementsCache[TheArtOfWarAchievement.id] = TheArtOfWarAchievement;
-		this._achievementsCache[HomeTurfAchievement.id] = HomeTurfAchievement;
-		// faction progress based
-		this._achievementsCache[BloodbornAchievement.id] = BloodbornAchievement;
-		this._achievementsCache[WorldExplorerAchievement.id] = WorldExplorerAchievement;
-		// inventory based
-		this._achievementsCache[CollectorSupremeAchievement.id] = CollectorSupremeAchievement;
-		this._achievementsCache[SwornSisterAchievement.id] = SwornSisterAchievement;
-		this._achievementsCache[SunSisterAchievement.id] = SunSisterAchievement;
-		this._achievementsCache[LightningSisterAchievement.id] = LightningSisterAchievement;
-		this._achievementsCache[SandSisterAchievement.id] = SandSisterAchievement;
-		this._achievementsCache[ShadowSisterAchievement.id] = ShadowSisterAchievement;
-		this._achievementsCache[EarthSisterAchievement.id] = EarthSisterAchievement;
-		this._achievementsCache[WindSisterAchievement.id] = WindSisterAchievement;
-		//@_achievementsCache[FirstLootCrateAchievement.id] = FirstLootCrateAchievement
-		// quest based
-		this._achievementsCache[EpicQuestorAchievement.id] = EpicQuestorAchievement;
-		this._achievementsCache[IndomitableSpiritAchievement.id] = IndomitableSpiritAchievement;
-		this._achievementsCache[LegendaryQuestorAchievement.id] = LegendaryQuestorAchievement;
-		this._achievementsCache[JourneymanQuestorAchievement.id] = JourneymanQuestorAchievement;
-		// rank based
-		this._achievementsCache[SilverDivisionAchievement.id] = SilverDivisionAchievement;
-		// login based
-		this._achievementsCache[BNPromoAchievement.id] = BNPromoAchievement;
-		this._achievementsCache[MidAugLoginAchievement.id] = MidAugLoginAchievement;
-		this._achievementsCache[MidNov2017LoginAchievement.id] = MidNov2017LoginAchievement;
-		this._achievementsCache[EarlyFeb2018LoginAchievement.id] = EarlyFeb2018LoginAchievement;
-		this._achievementsCache[FrostfirePurchasable2017.id] = FrostfirePurchasable2017;
-		this._achievementsCache[FrostfireBonus2017.id] = FrostfireBonus2017;
-		this._achievementsCache[CoreshatterLoginAchievement.id] = CoreshatterLoginAchievement;
-		this._achievementsCache[MemorialDayLoginAchievement.id] = MemorialDayLoginAchievement;
-		this._achievementsCache[FathersDayLoginAchievement.id] = FathersDayLoginAchievement;
-		this._achievementsCache[FourthOfJulyLoginAchievement.id] = FourthOfJulyLoginAchievement;
-		this._achievementsCache[SummerLoginAchievement.id] = SummerLoginAchievement;
-		this._achievementsCache[LaborDayLoginAchievement.id] = LaborDayLoginAchievement;
-		this._achievementsCache[HalloweenLoginAchievement.id] = HalloweenLoginAchievement;
-		this._achievementsCache[ThanksgivingLoginAchievement.id] = ThanksgivingLoginAchievement;
-		this._achievementsCache[ChristmasLoginAchievement.id] = ChristmasLoginAchievement;
-		// wartech
-		this._achievementsCache[WartechGeneralFaction1Achievement.id] = WartechGeneralFaction1Achievement;
-		this._achievementsCache[WartechGeneralFaction2Achievement.id] = WartechGeneralFaction2Achievement;
-		this._achievementsCache[WartechGeneralFaction3Achievement.id] = WartechGeneralFaction3Achievement;
-		this._achievementsCache[WartechGeneralFaction4Achievement.id] = WartechGeneralFaction4Achievement;
-		this._achievementsCache[WartechGeneralFaction5Achievement.id] = WartechGeneralFaction5Achievement;
-		this._achievementsCache[WartechGeneralFaction6Achievement.id] = WartechGeneralFaction6Achievement;
-		// orb opening
-		this._achievementsCache[MythronOrb1Achievement.id] = MythronOrb1Achievement;
-		this._achievementsCache[MythronOrb2Achievement.id] = MythronOrb2Achievement;
-		this._achievementsCache[MythronOrb3Achievement.id] = MythronOrb3Achievement;
-		this._achievementsCache[MythronOrb4Achievement.id] = MythronOrb4Achievement;
-		this._achievementsCache[MythronOrb5Achievement.id] = MythronOrb5Achievement;
-		this._achievementsCache[MythronOrb6Achievement.id] = MythronOrb6Achievement;
-		this._achievementsCache[MythronOrb7Achievement.id] = MythronOrb7Achievement;
+    // armory based
+    this._achievementsCache[NamasteAchievement.id] = NamasteAchievement;
+    this._achievementsCache[BronzeStarterBundleAchievement.id] = BronzeStarterBundleAchievement;
+    this._achievementsCache[SilverStarterBundleAchievement.id] = SilverStarterBundleAchievement;
+    this._achievementsCache[GoldStarterBundleAchievement.id] = GoldStarterBundleAchievement;
+    // Referral based
+    this._achievementsCache[FirstReferralPurchase.id] = FirstReferralPurchase;
+    // Crafting
+    this._achievementsCache[WelcomeToCraftingAchievement.id] = WelcomeToCraftingAchievement;
+    // Game based
+    this._achievementsCache[BestOfFriendsAchievement.id] = BestOfFriendsAchievement;
+    this._achievementsCache[EnteringGauntletAchievement.id] = EnteringGauntletAchievement;
+    this._achievementsCache[HelpingHandAchievement.id] = HelpingHandAchievement;
+    this._achievementsCache[TheArtOfWarAchievement.id] = TheArtOfWarAchievement;
+    this._achievementsCache[HomeTurfAchievement.id] = HomeTurfAchievement;
+    // faction progress based
+    this._achievementsCache[BloodbornAchievement.id] = BloodbornAchievement;
+    this._achievementsCache[WorldExplorerAchievement.id] = WorldExplorerAchievement;
+    // inventory based
+    this._achievementsCache[CollectorSupremeAchievement.id] = CollectorSupremeAchievement;
+    this._achievementsCache[SwornSisterAchievement.id] = SwornSisterAchievement;
+    this._achievementsCache[SunSisterAchievement.id] = SunSisterAchievement;
+    this._achievementsCache[LightningSisterAchievement.id] = LightningSisterAchievement;
+    this._achievementsCache[SandSisterAchievement.id] = SandSisterAchievement;
+    this._achievementsCache[ShadowSisterAchievement.id] = ShadowSisterAchievement;
+    this._achievementsCache[EarthSisterAchievement.id] = EarthSisterAchievement;
+    this._achievementsCache[WindSisterAchievement.id] = WindSisterAchievement;
+    // @_achievementsCache[FirstLootCrateAchievement.id] = FirstLootCrateAchievement
+    // quest based
+    this._achievementsCache[EpicQuestorAchievement.id] = EpicQuestorAchievement;
+    this._achievementsCache[IndomitableSpiritAchievement.id] = IndomitableSpiritAchievement;
+    this._achievementsCache[LegendaryQuestorAchievement.id] = LegendaryQuestorAchievement;
+    this._achievementsCache[JourneymanQuestorAchievement.id] = JourneymanQuestorAchievement;
+    // rank based
+    this._achievementsCache[SilverDivisionAchievement.id] = SilverDivisionAchievement;
+    // login based
+    this._achievementsCache[BNPromoAchievement.id] = BNPromoAchievement;
+    this._achievementsCache[MidAugLoginAchievement.id] = MidAugLoginAchievement;
+    this._achievementsCache[MidNov2017LoginAchievement.id] = MidNov2017LoginAchievement;
+    this._achievementsCache[EarlyFeb2018LoginAchievement.id] = EarlyFeb2018LoginAchievement;
+    this._achievementsCache[FrostfirePurchasable2017.id] = FrostfirePurchasable2017;
+    this._achievementsCache[FrostfireBonus2017.id] = FrostfireBonus2017;
+    this._achievementsCache[CoreshatterLoginAchievement.id] = CoreshatterLoginAchievement;
+    this._achievementsCache[MemorialDayLoginAchievement.id] = MemorialDayLoginAchievement;
+    this._achievementsCache[FathersDayLoginAchievement.id] = FathersDayLoginAchievement;
+    this._achievementsCache[FourthOfJulyLoginAchievement.id] = FourthOfJulyLoginAchievement;
+    this._achievementsCache[SummerLoginAchievement.id] = SummerLoginAchievement;
+    this._achievementsCache[LaborDayLoginAchievement.id] = LaborDayLoginAchievement;
+    this._achievementsCache[HalloweenLoginAchievement.id] = HalloweenLoginAchievement;
+    this._achievementsCache[ThanksgivingLoginAchievement.id] = ThanksgivingLoginAchievement;
+    this._achievementsCache[ChristmasLoginAchievement.id] = ChristmasLoginAchievement;
+    // wartech
+    this._achievementsCache[WartechGeneralFaction1Achievement.id] = WartechGeneralFaction1Achievement;
+    this._achievementsCache[WartechGeneralFaction2Achievement.id] = WartechGeneralFaction2Achievement;
+    this._achievementsCache[WartechGeneralFaction3Achievement.id] = WartechGeneralFaction3Achievement;
+    this._achievementsCache[WartechGeneralFaction4Achievement.id] = WartechGeneralFaction4Achievement;
+    this._achievementsCache[WartechGeneralFaction5Achievement.id] = WartechGeneralFaction5Achievement;
+    this._achievementsCache[WartechGeneralFaction6Achievement.id] = WartechGeneralFaction6Achievement;
+    // orb opening
+    this._achievementsCache[MythronOrb1Achievement.id] = MythronOrb1Achievement;
+    this._achievementsCache[MythronOrb2Achievement.id] = MythronOrb2Achievement;
+    this._achievementsCache[MythronOrb3Achievement.id] = MythronOrb3Achievement;
+    this._achievementsCache[MythronOrb4Achievement.id] = MythronOrb4Achievement;
+    this._achievementsCache[MythronOrb5Achievement.id] = MythronOrb5Achievement;
+    this._achievementsCache[MythronOrb6Achievement.id] = MythronOrb6Achievement;
+    this._achievementsCache[MythronOrb7Achievement.id] = MythronOrb7Achievement;
 
+    // store the enabled achievements
+    this._enabledAchievementsCache = {};
+    return (() => {
+      const result = [];
+      for (const k in this._achievementsCache) {
+        const v = this._achievementsCache[k];
+        if (v.enabled) {
+          result.push(this._enabledAchievementsCache[k] = v);
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 
+  static achievementForIdentifier(identifier) {
+    if (!this._achievementsCache) {
+      this._generateCache();
+    }
 
-		// store the enabled achievements
-		this._enabledAchievementsCache = {};
-		return (() => {
-			const result = [];
-			for (let k in this._achievementsCache) {
-				const v = this._achievementsCache[k];
-				if (v.enabled) {
-					result.push(this._enabledAchievementsCache[k] = v);
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    return this._achievementsCache[identifier];
+  }
 
+  static getEnabledAchievementsMap() {
+    if (!this._enabledAchievementsCache) {
+      this._generateCache();
+    }
 
-	static achievementForIdentifier(identifier) {
-		if (!this._achievementsCache) {
-			this._generateCache();
-		}
-
-		return this._achievementsCache[identifier];
-	}
-
-	static getEnabledAchievementsMap() {
-		if (!this._enabledAchievementsCache) {
-			this._generateCache();
-		}
-
-		return this._enabledAchievementsCache;
-	}
+    return this._enabledAchievementsCache;
+  }
 }
 AchievementsFactory.initClass();
-
 
 module.exports = AchievementsFactory;

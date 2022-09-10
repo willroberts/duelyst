@@ -1,3 +1,12 @@
+/* eslint-disable
+    class-methods-use-this,
+    import/no-unresolved,
+    max-len,
+    no-tabs,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -5,7 +14,7 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Challenge = require("app/sdk/challenges/challenge");
+const Challenge = require('app/sdk/challenges/challenge');
 const Instruction 	= require('app/sdk/challenges/instruction');
 const MoveAction 		= require('app/sdk/actions/moveAction');
 const AttackAction 	= require('app/sdk/actions/attackAction');
@@ -25,95 +34,90 @@ const i18next = require('i18next');
 // http://forums.duelyst.com/t/desperation-otk-1/11400
 
 class AdvancedLyonarChallenge1 extends Challenge {
-	static initClass() {
-	
-		this.type = "AdvancedLyonarChallenge1";
-		this.prototype.type = "AdvancedLyonarChallenge1";
-		this.prototype.categoryType = ChallengeCategory.contest1.type;
-	
-		this.prototype.name = i18next.t("challenges.advanced_lyonar_1_title");
-		this.prototype.description =i18next.t("challenges.advanced_lyonar_1_description");
-		this.prototype.iconUrl = RSX.speech_portrait_lyonar_side.img;
-	
-		this.prototype._musicOverride = RSX.music_battlemap_songhai.audio;
-	
-		this.prototype.otkChallengeStartMessage = i18next.t("challenges.advanced_lyonar_1_start");
-		this.prototype.otkChallengeFailureMessages = [
-			i18next.t("challenges.advanced_lyonar_1_fail")
-		];
-	
-		this.prototype.battleMapTemplateIndex = 1;
-		this.prototype.snapShotOnPlayerTurn = 0;
-		this.prototype.startingManaPlayer = CONFIG.MAX_MANA;
-		this.prototype.startingHandSizePlayer = 5;
-	}
+  static initClass() {
+    this.type = 'AdvancedLyonarChallenge1';
+    this.prototype.type = 'AdvancedLyonarChallenge1';
+    this.prototype.categoryType = ChallengeCategory.contest1.type;
 
-	getMyPlayerDeckData(gameSession){
-		return [
-			{id: Cards.Faction1.General},
-			{id: Cards.Spell.Magnetize},
-			{id: Cards.Neutral.AlcuinLoremaster},
-			{id: Cards.Spell.DivineBond}
-		];
-	}
+    this.prototype.name = i18next.t('challenges.advanced_lyonar_1_title');
+    this.prototype.description = i18next.t('challenges.advanced_lyonar_1_description');
+    this.prototype.iconUrl = RSX.speech_portrait_lyonar_side.img;
 
-	getOpponentPlayerDeckData(gameSession){
-		return [
-			{id: Cards.Faction1.General},
-			{id: Cards.TutorialSpell.TutorialFireOrb}
-		];
-	}
+    this.prototype._musicOverride = RSX.music_battlemap_songhai.audio;
 
-	setupBoard(gameSession) {
-		super.setupBoard(gameSession);
+    this.prototype.otkChallengeStartMessage = i18next.t('challenges.advanced_lyonar_1_start');
+    this.prototype.otkChallengeFailureMessages = [
+      i18next.t('challenges.advanced_lyonar_1_fail'),
+    ];
 
-		const myPlayerId = gameSession.getMyPlayerId();
-		const opponentPlayerId = gameSession.getOpponentPlayerId();
+    this.prototype.battleMapTemplateIndex = 1;
+    this.prototype.snapShotOnPlayerTurn = 0;
+    this.prototype.startingManaPlayer = CONFIG.MAX_MANA;
+    this.prototype.startingHandSizePlayer = 5;
+  }
 
-		const general1 = gameSession.getGeneralForPlayerId(myPlayerId);
-		general1.setPosition({x: 4, y: 3});
-		general1.maxHP = 25;
-		general1.setDamage(25-5);
-		const general2 = gameSession.getGeneralForPlayerId(opponentPlayerId);
-		general2.setPosition({x: 8, y: 0});
-		general2.maxHP = 25;
-		general2.setDamage(25-10);
+  getMyPlayerDeckData(gameSession) {
+    return [
+      { id: Cards.Faction1.General },
+      { id: Cards.Spell.Magnetize },
+      { id: Cards.Neutral.AlcuinLoremaster },
+      { id: Cards.Spell.DivineBond },
+    ];
+  }
 
-		this.applyCardToBoard({id: Cards.Faction1.SuntideMaiden},6,2,myPlayerId);
-		this.applyCardToBoard({id: Cards.Spell.WarSurge},4,2,myPlayerId);
-		this.applyCardToBoard({id: Cards.Spell.WarSurge},4,2,myPlayerId);
-		this.applyCardToBoard({id: Cards.Neutral.SkyrockGolem},4,1,myPlayerId);
-		this.applyCardToBoard({id: Cards.Faction1.Lightchaser},4,0,myPlayerId);
-		this.applyCardToBoard({id: Cards.Faction1.SunstoneTemplar},5,3,myPlayerId);
+  getOpponentPlayerDeckData(gameSession) {
+    return [
+      { id: Cards.Faction1.General },
+      { id: Cards.TutorialSpell.TutorialFireOrb },
+    ];
+  }
 
-		const ladyLocke = this.applyCardToBoard({id: Cards.Neutral.LadyLocke},7,0,opponentPlayerId);
-		const windbladeAdept = this.applyCardToBoard({id: Cards.Faction1.WindbladeAdept},7,2,opponentPlayerId);
-		this.applyCardToBoard({id: Cards.Spell.WarSurge},4,2,opponentPlayerId);
-		this.applyCardToBoard({id: Cards.Spell.WarSurge},4,2,opponentPlayerId);
-		this.applyCardToBoard({id: Cards.Faction1.IroncliffeGuardian},6,1,opponentPlayerId);
-		// Apply lady lock buff to windblade adept
-		const lockPlayerModifier = ladyLocke.getModifierByType(ModifierOpeningGambitApplyPlayerModifiers.type);
-		return Array.from(lockPlayerModifier.modifiersContextObjects[0].modifiersContextObjects).map((modifierContextObject) =>
-			gameSession.applyModifierContextObject(modifierContextObject, windbladeAdept));
-	}
+  setupBoard(gameSession) {
+    super.setupBoard(gameSession);
 
-	setupOpponentAgent(gameSession) {
-		super.setupOpponentAgent(gameSession);
+    const myPlayerId = gameSession.getMyPlayerId();
+    const opponentPlayerId = gameSession.getOpponentPlayerId();
 
-		this._opponentAgent.addActionForTurn(0,AgentActions.createAgentSoftActionShowInstructionLabels([{
-			label:i18next.t("challenges.advanced_lyonar_1_taunt"),
-			isSpeech:true,
-			yPosition:.7,
-			isPersistent: true,
-			isOpponent: true
-		}
-		]));
-		return this._opponentAgent.addActionForTurn(0,AgentActions.createAgentActionPlayCardFindPosition(0,() => {
-			return [GameSession.getInstance().getGeneralForPlayer1().getPosition()];
-		}));
-	}
+    const general1 = gameSession.getGeneralForPlayerId(myPlayerId);
+    general1.setPosition({ x: 4, y: 3 });
+    general1.maxHP = 25;
+    general1.setDamage(25 - 5);
+    const general2 = gameSession.getGeneralForPlayerId(opponentPlayerId);
+    general2.setPosition({ x: 8, y: 0 });
+    general2.maxHP = 25;
+    general2.setDamage(25 - 10);
+
+    this.applyCardToBoard({ id: Cards.Faction1.SuntideMaiden }, 6, 2, myPlayerId);
+    this.applyCardToBoard({ id: Cards.Spell.WarSurge }, 4, 2, myPlayerId);
+    this.applyCardToBoard({ id: Cards.Spell.WarSurge }, 4, 2, myPlayerId);
+    this.applyCardToBoard({ id: Cards.Neutral.SkyrockGolem }, 4, 1, myPlayerId);
+    this.applyCardToBoard({ id: Cards.Faction1.Lightchaser }, 4, 0, myPlayerId);
+    this.applyCardToBoard({ id: Cards.Faction1.SunstoneTemplar }, 5, 3, myPlayerId);
+
+    const ladyLocke = this.applyCardToBoard({ id: Cards.Neutral.LadyLocke }, 7, 0, opponentPlayerId);
+    const windbladeAdept = this.applyCardToBoard({ id: Cards.Faction1.WindbladeAdept }, 7, 2, opponentPlayerId);
+    this.applyCardToBoard({ id: Cards.Spell.WarSurge }, 4, 2, opponentPlayerId);
+    this.applyCardToBoard({ id: Cards.Spell.WarSurge }, 4, 2, opponentPlayerId);
+    this.applyCardToBoard({ id: Cards.Faction1.IroncliffeGuardian }, 6, 1, opponentPlayerId);
+    // Apply lady lock buff to windblade adept
+    const lockPlayerModifier = ladyLocke.getModifierByType(ModifierOpeningGambitApplyPlayerModifiers.type);
+    return Array.from(lockPlayerModifier.modifiersContextObjects[0].modifiersContextObjects).map((modifierContextObject) => gameSession.applyModifierContextObject(modifierContextObject, windbladeAdept));
+  }
+
+  setupOpponentAgent(gameSession) {
+    super.setupOpponentAgent(gameSession);
+
+    this._opponentAgent.addActionForTurn(0, AgentActions.createAgentSoftActionShowInstructionLabels([{
+      label: i18next.t('challenges.advanced_lyonar_1_taunt'),
+      isSpeech: true,
+      yPosition: 0.7,
+      isPersistent: true,
+      isOpponent: true,
+    },
+    ]));
+    return this._opponentAgent.addActionForTurn(0, AgentActions.createAgentActionPlayCardFindPosition(0, () => [GameSession.getInstance().getGeneralForPlayer1().getPosition()]));
+  }
 }
 AdvancedLyonarChallenge1.initClass();
-
 
 module.exports = AdvancedLyonarChallenge1;

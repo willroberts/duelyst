@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,33 +15,32 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+const CardType = require('app/sdk/cards/cardType');
 const ModifierTakeDamageWatch = require('./modifierTakeDamageWatch');
 const ModifierSilence = require('./modifierSilence');
-const CardType = require('app/sdk/cards/cardType');
 
 class ModifierTakeDamageWatchDispel extends ModifierTakeDamageWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierTakeDamageWatchDispel";
-		this.type ="ModifierTakeDamageWatchDispel";
-	
-		this.modifierName ="Take Damage Watch";
-		this.description ="Dispel any minion that deals damage to this one";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierTakeDamageWatch"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierTakeDamageWatchDispel';
+    this.type = 'ModifierTakeDamageWatchDispel';
 
-	onDamageTaken(action) {
-		super.onDamageTaken(action);
+    this.modifierName = 'Take Damage Watch';
+    this.description = 'Dispel any minion that deals damage to this one';
 
-		// go back to closest source card that is a unit
-		const sourceCard = __guard__(action.getSource(), x => x.getAncestorCardOfType(CardType.Unit));
+    this.prototype.fxResource = ['FX.Modifiers.ModifierTakeDamageWatch'];
+  }
 
-		// dispel any minion that damages this one
-		if ((sourceCard != null) && !sourceCard.getIsGeneral()) {
-			return this.getGameSession().applyModifierContextObject(ModifierSilence.createContextObject(), sourceCard);
-		}
-	}
+  onDamageTaken(action) {
+    super.onDamageTaken(action);
+
+    // go back to closest source card that is a unit
+    const sourceCard = __guard__(action.getSource(), (x) => x.getAncestorCardOfType(CardType.Unit));
+
+    // dispel any minion that damages this one
+    if ((sourceCard != null) && !sourceCard.getIsGeneral()) {
+      return this.getGameSession().applyModifierContextObject(ModifierSilence.createContextObject(), sourceCard);
+    }
+  }
 }
 ModifierTakeDamageWatchDispel.initClass();
 

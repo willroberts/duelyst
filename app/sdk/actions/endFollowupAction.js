@@ -1,3 +1,12 @@
+/* eslint-disable
+    class-methods-use-this,
+    import/no-unresolved,
+    no-tabs,
+    no-this-before-super,
+    prefer-rest-params,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -9,19 +18,18 @@ const Logger = 		require('app/common/logger');
 const StopBufferingEventsAction = 		require('./stopBufferingEventsAction');
 
 class EndFollowupAction extends StopBufferingEventsAction {
-	static initClass() {
-	
-		this.type ="EndFollowupAction";
-	}
+  static initClass() {
+    this.type = 'EndFollowupAction';
+  }
 
-	constructor() {
-		if (this.type == null) { this.type = EndFollowupAction.type; }
-		super(...arguments);
-	}
+  constructor() {
+    if (this.type == null) { this.type = EndFollowupAction.type; }
+    super(...arguments);
+  }
 
-	isRemovableDuringScrubbing() {
-		return false;
-	}
+  isRemovableDuringScrubbing() {
+    return false;
+  }
 }
 EndFollowupAction.initClass();
 

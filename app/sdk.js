@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-tabs,
+    no-use-before-define,
+    no-var,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 // SDK Namespace Wrapper
 const GameSession = require('app/sdk/gameSession');
 

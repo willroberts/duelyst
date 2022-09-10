@@ -1,3 +1,9 @@
+/* eslint-disable
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,20 +13,18 @@
 const SpellApplyModifiers = require('./spellApplyModifiers');
 
 class SpellApplyModifiersToExhaustedMinion extends SpellApplyModifiers {
+  _postFilterPlayPositions(validPositions) {
+    const exhaustedMinionsPositions = [];
 
-	_postFilterPlayPositions(validPositions) {
-		const exhaustedMinionsPositions = [];
+    for (const position of Array.from(validPositions)) {
+      const unit = this.getGameSession().getBoard().getUnitAtPosition(position);
+      if ((unit != null) && (unit.getIsExhausted() === true)) {
+        exhaustedMinionsPositions.push(position);
+      }
+    }
 
-		for (let position of Array.from(validPositions)) {
-			const unit = this.getGameSession().getBoard().getUnitAtPosition(position);
-			if ((unit != null) && (unit.getIsExhausted() === true)) {
-				exhaustedMinionsPositions.push(position);
-			}
-		}
-
-		return exhaustedMinionsPositions;
-	}
+    return exhaustedMinionsPositions;
+  }
 }
-
 
 module.exports = SpellApplyModifiersToExhaustedMinion;

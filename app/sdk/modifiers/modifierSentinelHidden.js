@@ -1,3 +1,5 @@
+// TODO: This file was created by bulk-decaffeinate.
+// Sanity-check the conversion and remove this comment.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -9,17 +11,16 @@ const ModifierOverwatchHidden = require('./modifierOverwatchHidden');
   Generic modifier used to hide the true sentinel modifier from an opponent.
 */
 class ModifierSentinelHidden extends ModifierOverwatchHidden {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSentinelHidden";
-		this.type ="ModifierSentinelHidden";
-	
-		this.isKeyworded = true;
-		this.keywordDefinition ="Hidden condition is one of: the opponent summons a minion, casts a spell, or attacks with General.";
-	
-		this.modifierName ="Sentinel";
-		this.description = "%X";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSentinelHidden';
+    this.type = 'ModifierSentinelHidden';
+
+    this.isKeyworded = true;
+    this.keywordDefinition = 'Hidden condition is one of: the opponent summons a minion, casts a spell, or attacks with General.';
+
+    this.modifierName = 'Sentinel';
+    this.description = '%X';
+  }
 }
 ModifierSentinelHidden.initClass();
 

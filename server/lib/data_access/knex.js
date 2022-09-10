@@ -1,13 +1,19 @@
+/* eslint-disable
+    import/extensions,
+    import/order,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 const config = require('../../../config/config.js');
 
 const knex = require('knex')({
-	client: 'postgres',
-	connection: config.get('postgres_connection_string'),
-	debug: false, //config.isDevelopment()
-	pool: {
-		min: 2,
-		max: 8
-	}
+  client: 'postgres',
+  connection: config.get('postgres_connection_string'),
+  debug: false, // config.isDevelopment()
+  pool: {
+    min: 2,
+    max: 8,
+  },
 });
 
 module.exports = knex;

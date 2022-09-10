@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -6,59 +15,57 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier');
 const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
 const PlaySignatureCardAction = require('app/sdk/actions/playSignatureCardAction');
 const CardType = require('app/sdk/cards/cardType');
+const Modifier = require('./modifier');
 
 class ModifierSpellWatchAnywhereApplyModifiers extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSpellWatchAnywhereApplyModifiers";
-		this.type ="ModifierSpellWatchAnywhereApplyModifiers";
-	
-		this.prototype.activeInHand = true;
-		this.prototype.activeInDeck = true;
-		this.prototype.activeInSignatureCards = true;
-		this.prototype.activeOnBoard = false;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSpellWatch"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSpellWatchAnywhereApplyModifiers';
+    this.type = 'ModifierSpellWatchAnywhereApplyModifiers';
 
-	static createContextObject(modifiers, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiers;
-		return contextObject;
-	}
+    this.prototype.activeInHand = true;
+    this.prototype.activeInDeck = true;
+    this.prototype.activeInSignatureCards = true;
+    this.prototype.activeOnBoard = false;
 
-	onAfterAction(e) {
-		super.onAfterAction(e);
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSpellWatch'];
+  }
 
-		const {
-            action
-        } = e;
+  static createContextObject(modifiers, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiers;
+    return contextObject;
+  }
 
-		// watch for a spell (but not a followup) being cast by player who owns this entity
-		if (this.getIsActionRelevant(action)) {
-			return this.onSpellWatch(action);
-		}
-	}
+  onAfterAction(e) {
+    super.onAfterAction(e);
 
-	getIsActionRelevant(action) {
-		return (action instanceof PlayCardFromHandAction || action instanceof PlaySignatureCardAction) && (action.getOwnerId() === this.getCard().getOwnerId()) && (__guard__(action.getCard(), x => x.type) === CardType.Spell);
-	}
+    const {
+      action,
+    } = e;
 
-	onSpellWatch(action) {
-		return this.applyManagedModifiersFromModifiersContextObjects(this.modifiersContextObjects, this.getCard());
-	}
+    // watch for a spell (but not a followup) being cast by player who owns this entity
+    if (this.getIsActionRelevant(action)) {
+      return this.onSpellWatch(action);
+    }
+  }
 
-	onActivate() {
-		// special check on activation in case this card is created mid-game
-		// need to check all actions that occured this gamesession for triggers
-		const spellActions = this.getGameSession().filterActions(this.getIsActionRelevant.bind(this));
-		return Array.from(spellActions).map((action) =>
-			this.onSpellWatch(action));
-	}
+  getIsActionRelevant(action) {
+    return (action instanceof PlayCardFromHandAction || action instanceof PlaySignatureCardAction) && (action.getOwnerId() === this.getCard().getOwnerId()) && (__guard__(action.getCard(), (x) => x.type) === CardType.Spell);
+  }
+
+  onSpellWatch(action) {
+    return this.applyManagedModifiersFromModifiersContextObjects(this.modifiersContextObjects, this.getCard());
+  }
+
+  onActivate() {
+    // special check on activation in case this card is created mid-game
+    // need to check all actions that occured this gamesession for triggers
+    const spellActions = this.getGameSession().filterActions(this.getIsActionRelevant.bind(this));
+    return Array.from(spellActions).map((action) => this.onSpellWatch(action));
+  }
 }
 ModifierSpellWatchAnywhereApplyModifiers.initClass();
 

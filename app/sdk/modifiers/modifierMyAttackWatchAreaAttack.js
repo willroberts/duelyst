@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,39 +15,37 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 const CardType = require('app/sdk/cards/cardType');
 const DamageAction = require('app/sdk/actions/damageAction');
+const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 
 class ModifierMyAttackWatchAreaAttack extends ModifierMyAttackWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierMyAttackWatchAreaAttack";
-		this.type ="ModifierMyAttackWatchAreaAttack";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierMyAttackWatchAreaAttack';
+    this.type = 'ModifierMyAttackWatchAreaAttack';
+  }
 
-	onMyAttackWatch(action) {
-
-		const entities = this.getGameSession().getBoard().getFriendlyEntitiesAroundEntity(action.getTarget(), CardType.Unit, 1);
-		if (entities != null) {
-			return (() => {
-				const result = [];
-				for (let entity of Array.from(entities)) {
-					if (entity != null) {
-						const damageAction = new DamageAction(this.getGameSession());
-						damageAction.setOwnerId(this.getCard().getOwnerId());
-						damageAction.setSource(this.getCard());
-						damageAction.setTarget(entity);
-						damageAction.setDamageAmount(this.getCard().getATK());
-						result.push(this.getGameSession().executeAction(damageAction));
-					} else {
-						result.push(undefined);
-					}
-				}
-				return result;
-			})();
-		}
-	}
+  onMyAttackWatch(action) {
+    const entities = this.getGameSession().getBoard().getFriendlyEntitiesAroundEntity(action.getTarget(), CardType.Unit, 1);
+    if (entities != null) {
+      return (() => {
+        const result = [];
+        for (const entity of Array.from(entities)) {
+          if (entity != null) {
+            const damageAction = new DamageAction(this.getGameSession());
+            damageAction.setOwnerId(this.getCard().getOwnerId());
+            damageAction.setSource(this.getCard());
+            damageAction.setTarget(entity);
+            damageAction.setDamageAmount(this.getCard().getATK());
+            result.push(this.getGameSession().executeAction(damageAction));
+          } else {
+            result.push(undefined);
+          }
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierMyAttackWatchAreaAttack.initClass();
 

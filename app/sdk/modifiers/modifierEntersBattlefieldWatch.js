@@ -1,3 +1,8 @@
+/* eslint-disable
+    class-methods-use-this,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,25 +12,24 @@
 const Modifier = require('./modifier');
 
 class ModifierEntersBattlefieldWatch extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierEntersBattlefieldWatch";
-		this.type ="ModifierEntersBattlefieldWatch";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierEntersBattlefieldWatch';
+    this.type = 'ModifierEntersBattlefieldWatch';
 
-	onActivate() {
-		super.onActivate();
-		return this.onEntersBattlefield();
-	}
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+  }
 
-	onEntersBattlefield() {}
+  onActivate() {
+    super.onActivate();
+    return this.onEntersBattlefield();
+  }
+
+  onEntersBattlefield() {}
 }
 ModifierEntersBattlefieldWatch.initClass();
-		// override me in sub classes to implement special behavior
+// override me in sub classes to implement special behavior
 
 module.exports = ModifierEntersBattlefieldWatch;

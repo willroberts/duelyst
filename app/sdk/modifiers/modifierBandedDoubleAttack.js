@@ -1,3 +1,9 @@
+/* eslint-disable
+    consistent-return,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,33 +14,31 @@ const ModifierBanded = require('./modifierBanded');
 const Modifier = require('./modifier');
 
 class ModifierBandedDoubleAttack extends ModifierBanded {
-	static initClass() {
-	
-		this.prototype.type = "ModifierBandedDoubleAttack";
-		this.type = "ModifierBandedDoubleAttack";
-	
-		this.modifierName = "Zealed: Lion's Growth";
-		this.description = "Double this minion's Attack at the end of your turn";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierZealed", "FX.Modifiers.ModifierZealedDoubleAttack"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBandedDoubleAttack';
+    this.type = 'ModifierBandedDoubleAttack';
 
-	onEndTurn() {
-		super.onEndTurn();
+    this.modifierName = 'Zealed: Lion\'s Growth';
+    this.description = 'Double this minion\'s Attack at the end of your turn';
 
-		if (this.getGameSession().getCurrentPlayer() === this.getCard().getOwner()) {
-			let modifierContextObject;
-			if ((this.getCard().getATK() * 2) < 999) { // arbitrary limit at the moment, don't want to push crazy huge number to firebase. also messes up the UI if attack gets too big
-				modifierContextObject = Modifier.createContextObjectWithAttributeBuffs(this.getCard().getATK());
-			} else {
-				modifierContextObject = Modifier.createContextObjectWithAttributeBuffs(999 - this.getCard().getATK());
-			}
-			modifierContextObject.appliedName = "Radiance";
-			return this.getCard().getGameSession().applyModifierContextObject(modifierContextObject, this.getCard());
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierZealed', 'FX.Modifiers.ModifierZealedDoubleAttack'];
+  }
+
+  onEndTurn() {
+    super.onEndTurn();
+
+    if (this.getGameSession().getCurrentPlayer() === this.getCard().getOwner()) {
+      let modifierContextObject;
+      if ((this.getCard().getATK() * 2) < 999) { // arbitrary limit at the moment, don't want to push crazy huge number to firebase. also messes up the UI if attack gets too big
+        modifierContextObject = Modifier.createContextObjectWithAttributeBuffs(this.getCard().getATK());
+      } else {
+        modifierContextObject = Modifier.createContextObjectWithAttributeBuffs(999 - this.getCard().getATK());
+      }
+      modifierContextObject.appliedName = 'Radiance';
+      return this.getCard().getGameSession().applyModifierContextObject(modifierContextObject, this.getCard());
+    }
+  }
 }
 ModifierBandedDoubleAttack.initClass();
-
 
 module.exports = ModifierBandedDoubleAttack;

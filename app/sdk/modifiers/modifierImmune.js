@@ -1,3 +1,5 @@
+// TODO: This file was created by bulk-decaffeinate.
+// Sanity-check the conversion and remove this comment.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -10,23 +12,22 @@ const Modifier = require('./modifier');
 */
 
 class ModifierImmune extends Modifier {
-	static initClass() {
-	
-		this.prototype.type = "ModifierImmune";
-		this.type = "ModifierImmune";
-	
-		this.modifierName = "Immune";
-		this.description = "";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.maxStacks = 1;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierImmunity"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierImmune';
+    this.type = 'ModifierImmune';
+
+    this.modifierName = 'Immune';
+    this.description = '';
+
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+
+    this.prototype.maxStacks = 1;
+
+    this.prototype.fxResource = ['FX.Modifiers.ModifierImmunity'];
+  }
 }
 ModifierImmune.initClass();
 

@@ -1,3 +1,13 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-tabs,
+    no-this-before-super,
+    no-underscore-dangle,
+    prefer-rest-params,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -8,53 +18,52 @@
  */
 const CONFIG = 		require('app/common/config');
 const Logger = 		require('app/common/logger');
-const Action = 			require('./action');
 const CardType = 			require('app/sdk/cards/cardType');
+const Action = 			require('./action');
 
 class MoveAction extends Action {
-	static initClass() {
-	
-		this.type ="MoveAction";
-	
-		// target and source should always be the same
-		this.prototype.getTarget = this.prototype.getSource;
-	}
+  static initClass() {
+    this.type = 'MoveAction';
 
-	constructor() {
-		if (this.type == null) { this.type = MoveAction.type; }
-		super(...arguments);
-	}
+    // target and source should always be the same
+    this.prototype.getTarget = this.prototype.getSource;
+  }
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
+  constructor() {
+    if (this.type == null) { this.type = MoveAction.type; }
+    super(...arguments);
+  }
 
-		p.cachedPath = null;
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
 
-		return p;
-	}
+    p.cachedPath = null;
 
-	getPath() {
-		if ((this._private.cachedPath == null)) {
-			const entity = this.getTarget();
-			this._private.cachedPath = entity.getMovementRange().getPathTo(this.getGameSession().getBoard(), entity, this.getTargetPosition());
-		}
-		return this._private.cachedPath;
-	}
+    return p;
+  }
 
-	_execute() {
-		super._execute();
+  getPath() {
+    if ((this._private.cachedPath == null)) {
+      const entity = this.getTarget();
+      this._private.cachedPath = entity.getMovementRange().getPathTo(this.getGameSession().getBoard(), entity, this.getTargetPosition());
+    }
+    return this._private.cachedPath;
+  }
 
-		const entity = this.getTarget();
-		//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "MoveAction::execute - moving entity #{entity?.getLogName()} to (#{@getTargetPosition().x},#{@getTargetPosition().y})"
+  _execute() {
+    super._execute();
 
-		// force path regeneration before moving entity
-		this._private.cachedPath = null;
-		this.getPath();
+    const entity = this.getTarget();
+    // Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "MoveAction::execute - moving entity #{entity?.getLogName()} to (#{@getTargetPosition().x},#{@getTargetPosition().y})"
 
-		// move entity
-		entity.setPosition(this.getTargetPosition());
-		return entity.setMovesMade(entity.getMovesMade() + 1);
-	}
+    // force path regeneration before moving entity
+    this._private.cachedPath = null;
+    this.getPath();
+
+    // move entity
+    entity.setPosition(this.getTargetPosition());
+    return entity.setMovesMade(entity.getMovesMade() + 1);
+  }
 }
 MoveAction.initClass();
 

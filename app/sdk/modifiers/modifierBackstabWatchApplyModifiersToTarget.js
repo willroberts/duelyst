@@ -1,3 +1,9 @@
+/* eslint-disable
+    consistent-return,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,37 +16,35 @@
 const ModifierBackstabWatch = require('./modifierBackstabWatch');
 
 class ModifierBackstabWatchApplyModifiersToTarget extends ModifierBackstabWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBackstabWatchApplyModifiersToTarget";
-		this.type ="ModifierBackstabWatchApplyModifiersToTarget";
-	
-		this.prototype.modifiersContextObjects = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBackstabWatchApplyModifiersToTarget';
+    this.type = 'ModifierBackstabWatchApplyModifiersToTarget';
 
-	static createContextObject(modifiersContextObjects, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		return contextObject;
-	}
+    this.prototype.modifiersContextObjects = null;
+  }
 
-	onBackstabWatch(action) {
+  static createContextObject(modifiersContextObjects, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    return contextObject;
+  }
 
-		const target = action.getTarget();
-		if ((target != null) && (this.modifiersContextObjects != null)) {
-			return (() => {
-				const result = [];
-				for (let modifier of Array.from(this.modifiersContextObjects)) {
-					if (modifier != null) {
-						result.push(this.getGameSession().applyModifierContextObject(modifier, target));
-					} else {
-						result.push(undefined);
-					}
-				}
-				return result;
-			})();
-		}
-	}
+  onBackstabWatch(action) {
+    const target = action.getTarget();
+    if ((target != null) && (this.modifiersContextObjects != null)) {
+      return (() => {
+        const result = [];
+        for (const modifier of Array.from(this.modifiersContextObjects)) {
+          if (modifier != null) {
+            result.push(this.getGameSession().applyModifierContextObject(modifier, target));
+          } else {
+            result.push(undefined);
+          }
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierBackstabWatchApplyModifiersToTarget.initClass();
 

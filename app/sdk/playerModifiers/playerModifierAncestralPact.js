@@ -1,3 +1,13 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -12,32 +22,31 @@ const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction')
 const CardType = require('app/sdk/cards/cardType');
 
 class PlayerModifierAncestralPact extends PlayerModifier {
-	static initClass() {
-	
-		this.prototype.type ="PlayerModifierAncestralPact";
-		this.type ="PlayerModifierAncestralPact";
-	}
+  static initClass() {
+    this.prototype.type = 'PlayerModifierAncestralPact';
+    this.type = 'PlayerModifierAncestralPact';
+  }
 
-	static createContextObject(duration, options) {
+  static createContextObject(duration, options) {
     if (duration == null) { duration = 1; }
     const contextObject = super.createContextObject(options);
     contextObject.durationEndTurn = duration;
     return contextObject;
-   }
+  }
 
-	onAction(e) {
-		super.onAction(e);
+  onAction(e) {
+    super.onAction(e);
 
-		const {
-            action
-        } = e;
-		// watch for this player playing a unit from hand
-		if (action instanceof PlayCardFromHandAction && (action.getOwnerId() === this.getPlayerId()) && (__guard__(action.getCard(), x => x.type) === CardType.Unit)) {
-			// draw a card
-			const deck = this.getGameSession().getPlayerById(this.getPlayerId()).getDeck();
-			return this.getGameSession().executeAction(deck.actionDrawCard());
-		}
-	}
+    const {
+      action,
+    } = e;
+    // watch for this player playing a unit from hand
+    if (action instanceof PlayCardFromHandAction && (action.getOwnerId() === this.getPlayerId()) && (__guard__(action.getCard(), (x) => x.type) === CardType.Unit)) {
+      // draw a card
+      const deck = this.getGameSession().getPlayerById(this.getPlayerId()).getDeck();
+      return this.getGameSession().executeAction(deck.actionDrawCard());
+    }
+  }
 }
 PlayerModifierAncestralPact.initClass();
 

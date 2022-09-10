@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,63 +15,61 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
 const CardType = require('app/sdk/cards/cardType');
 const CONFIG = require('app/common/config');
 const DamageAction = require('app/sdk/actions/damageAction');
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
 
 class ModifierEndTurnWatchDamageAllMinions extends ModifierEndTurnWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierEndTurnWatchDamageAllMinions";
-		this.type ="ModifierEndTurnWatchDamageAllMinions";
-	
-		this.modifierName ="Turn Watch";
-		this.description ="At the end of your turn, deal %X damage to ALL other minions";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierEndTurnWatch", "FX.Modifiers.ModifierGenericChainLightning"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierEndTurnWatchDamageAllMinions';
+    this.type = 'ModifierEndTurnWatchDamageAllMinions';
 
-	static createContextObject(damageAmount, auraRadius, options) {
-		if (damageAmount == null) { damageAmount = 0; }
-		if (auraRadius == null) { auraRadius = CONFIG.WHOLE_BOARD_RADIUS; }
-		const contextObject = super.createContextObject(options);
-		contextObject.damageAmount = damageAmount;
-		contextObject.auraRadius = auraRadius;
-		return contextObject;
-	}
+    this.modifierName = 'Turn Watch';
+    this.description = 'At the end of your turn, deal %X damage to ALL other minions';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			const replaceText = this.description.replace(/%X/, modifierContextObject.damageAmount);
+    this.prototype.fxResource = ['FX.Modifiers.ModifierEndTurnWatch', 'FX.Modifiers.ModifierGenericChainLightning'];
+  }
 
-			return replaceText;
-		} else {
-			return this.description;
-		}
-	}
+  static createContextObject(damageAmount, auraRadius, options) {
+    if (damageAmount == null) { damageAmount = 0; }
+    if (auraRadius == null) { auraRadius = CONFIG.WHOLE_BOARD_RADIUS; }
+    const contextObject = super.createContextObject(options);
+    contextObject.damageAmount = damageAmount;
+    contextObject.auraRadius = auraRadius;
+    return contextObject;
+  }
 
-	onTurnWatch(action) {
-		super.onTurnWatch(action);
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      const replaceText = this.description.replace(/%X/, modifierContextObject.damageAmount);
 
-		const entities = this.getGameSession().getBoard().getEntitiesAroundEntity(this.getCard(), CardType.Unit, this.auraRadius);
-		return (() => {
-			const result = [];
-			for (let entity of Array.from(entities)) {
-				if (!entity.getIsGeneral()) {
-					const damageAction = new DamageAction(this.getGameSession());
-					damageAction.setOwnerId(this.getCard().getOwnerId());
-					damageAction.setSource(this.getCard());
-					damageAction.setTarget(entity);
-					damageAction.setDamageAmount(this.damageAmount);
-					result.push(this.getGameSession().executeAction(damageAction));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+      return replaceText;
+    }
+    return this.description;
+  }
+
+  onTurnWatch(action) {
+    super.onTurnWatch(action);
+
+    const entities = this.getGameSession().getBoard().getEntitiesAroundEntity(this.getCard(), CardType.Unit, this.auraRadius);
+    return (() => {
+      const result = [];
+      for (const entity of Array.from(entities)) {
+        if (!entity.getIsGeneral()) {
+          const damageAction = new DamageAction(this.getGameSession());
+          damageAction.setOwnerId(this.getCard().getOwnerId());
+          damageAction.setSource(this.getCard());
+          damageAction.setTarget(entity);
+          damageAction.setDamageAmount(this.damageAmount);
+          result.push(this.getGameSession().executeAction(damageAction));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 ModifierEndTurnWatchDamageAllMinions.initClass();
 

@@ -1,3 +1,12 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    no-param-reassign,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,72 +17,71 @@
 const EVENTS = require('app/common/event_types');
 
 class Validator {
-	static initClass() {
-	
-		this.prototype.type ="Validator";
-		this.type ="Validator";
-	
-		this.prototype._gameSession = null;
-	}
+  static initClass() {
+    this.prototype.type = 'Validator';
+    this.type = 'Validator';
 
-	// region INITIALIZE
+    this.prototype._gameSession = null;
+  }
 
-	constructor(gameSession) {
-		this._gameSession = gameSession;
-	}
+  // region INITIALIZE
 
-	// endregion INITIALIZE
+  constructor(gameSession) {
+    this._gameSession = gameSession;
+  }
 
-	// region EVENTS
+  // endregion INITIALIZE
 
-	/**
+  // region EVENTS
+
+  /**
    * SDK event handler. Do not call this method manually.
    */
-	onEvent(event) {
-		if (event.type === EVENTS.terminate) {
-			return this._onTerminate(event);
-		} else if (event.type === EVENTS.validate_action) {
-			return this.onValidateAction(event);
-		}
-	}
+  onEvent(event) {
+    if (event.type === EVENTS.terminate) {
+      return this._onTerminate(event);
+    } if (event.type === EVENTS.validate_action) {
+      return this.onValidateAction(event);
+    }
+  }
 
-	// endregion EVENTS
+  // endregion EVENTS
 
-	// region GETTERS / SETTERS
+  // region GETTERS / SETTERS
 
-	getGameSession() {
-		return this._gameSession;
-	}
+  getGameSession() {
+    return this._gameSession;
+  }
 
-	getType() {
-		return this.type;
-	}
+  getType() {
+    return this.type;
+  }
 
-	// endregion GETTERS / SETTERS
+  // endregion GETTERS / SETTERS
 
-	// region VALIDATION
+  // region VALIDATION
 
-	invalidateAction(action, position, message) {
-		// helper method for invalidating an action at a position with a message
-		if (message == null) { message = "Invalid Action!"; }
-		action.setIsValid(false);
-		action.setValidationMessage(message);
-		action.setValidationMessagePosition(position);
-		return action.setValidatorType(this.getType());
-	}
+  invalidateAction(action, position, message) {
+    // helper method for invalidating an action at a position with a message
+    if (message == null) { message = 'Invalid Action!'; }
+    action.setIsValid(false);
+    action.setValidationMessage(message);
+    action.setValidationMessagePosition(position);
+    return action.setValidatorType(this.getType());
+  }
 
-	// endregion VALIDATION
+  // endregion VALIDATION
 
-	// region EVENTS
+  // region EVENTS
 
-	_onTerminate() {}
-		// this method is automatically called when this object will never be used again
+  _onTerminate() {}
+  // this method is automatically called when this object will never be used again
 
-	onValidateAction(event) {}
+  onValidateAction(event) {}
 }
 Validator.initClass();
-		// override in sub-class and set action's isValid state
+// override in sub-class and set action's isValid state
 
-	// endregion EVENTS
+// endregion EVENTS
 
 module.exports = Validator;

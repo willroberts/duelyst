@@ -1,3 +1,12 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,51 +14,50 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = 					require('./modifier');
 const DamageAction = require('app/sdk/actions/damageAction');
 const CardType = require('app/sdk/cards/cardType');
 const Stringifiers = require('app/sdk/helpers/stringifiers');
+const Modifier = 					require('./modifier');
 
 class ModifierMyGeneralDamagedWatch extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierMyGeneralDamagedWatch";
-		this.type ="ModifierMyGeneralDamagedWatch";
-	
-		this.modifierName ="My General Damaged Watch";
-		this.description ="My General Damaged Watch";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierMyGeneralDamagedWatch"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierMyGeneralDamagedWatch';
+    this.type = 'ModifierMyGeneralDamagedWatch';
 
-	onAfterCleanupAction(actionEvent) {
-		super.onAfterCleanupAction(actionEvent);
+    this.modifierName = 'My General Damaged Watch';
+    this.description = 'My General Damaged Watch';
 
-		const {
-            action
-        } = actionEvent;
-		// check if action is a damage action targeting my General
-		if (action instanceof DamageAction) {
-			const target = action.getTarget();
-			if ((target != null) && target.getIsSameTeamAs(this.getCard()) && target.getWasGeneral() && this.willDealDamage(action)) {
-				return this.onDamageDealtToGeneral(action);
-			}
-		}
-	}
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
 
-	willDealDamage(action) {
-		// total damage should be calculated during modify_action_for_execution phase
-		return action.getTotalDamageAmount() > 0;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierMyGeneralDamagedWatch'];
+  }
 
-	onDamageDealtToGeneral(action) {}
+  onAfterCleanupAction(actionEvent) {
+    super.onAfterCleanupAction(actionEvent);
+
+    const {
+      action,
+    } = actionEvent;
+    // check if action is a damage action targeting my General
+    if (action instanceof DamageAction) {
+      const target = action.getTarget();
+      if ((target != null) && target.getIsSameTeamAs(this.getCard()) && target.getWasGeneral() && this.willDealDamage(action)) {
+        return this.onDamageDealtToGeneral(action);
+      }
+    }
+  }
+
+  willDealDamage(action) {
+    // total damage should be calculated during modify_action_for_execution phase
+    return action.getTotalDamageAmount() > 0;
+  }
+
+  onDamageDealtToGeneral(action) {}
 }
 ModifierMyGeneralDamagedWatch.initClass();
-		// override me in sub classes to implement special behavior
+// override me in sub classes to implement special behavior
 
 module.exports = ModifierMyGeneralDamagedWatch;

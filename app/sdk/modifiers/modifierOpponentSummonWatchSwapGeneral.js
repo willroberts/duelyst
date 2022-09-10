@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,43 +13,42 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('app/common/config');
+const SwapGeneralAction = require('app/sdk/actions/swapGeneralAction');
 const ModifierSummonWatch = require('./modifierSummonWatch');
 const ModifierOpponentSummonWatch = require('./modifierOpponentSummonWatch');
-const SwapGeneralAction = require('app/sdk/actions/swapGeneralAction');
 
 class ModifierOpponentSummonWatchSwapGeneral extends ModifierOpponentSummonWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOpponentSummonWatchSwapGeneral";
-		this.type ="ModifierOpponentSummonWatchSwapGeneral";
-	
-		this.modifierName ="Opponent Summon Watch";
-		this.description ="Whenever an enemy summons a minion, it becomes their new General";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpponentSummonWatchSwapGeneral';
+    this.type = 'ModifierOpponentSummonWatchSwapGeneral';
 
-	static createContextObject(options) {
-		const contextObject = super.createContextObject(options);
+    this.modifierName = 'Opponent Summon Watch';
+    this.description = 'Whenever an enemy summons a minion, it becomes their new General';
 
-		return contextObject;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch', 'FX.Modifiers.ModifierGenericSpawn'];
+  }
 
-	onSummonWatch(action) {
-		super.onSummonWatch(action);
+  static createContextObject(options) {
+    const contextObject = super.createContextObject(options);
 
-		const general = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
-		const newMinion = action.getTarget();
+    return contextObject;
+  }
 
-		// turn the new unit into your general
-		if (general != null) {
-			const swapGeneralAction = new SwapGeneralAction(this.getGameSession());
-			swapGeneralAction.setIsDepthFirst(false);
-			swapGeneralAction.setSource(general);
-			swapGeneralAction.setTarget(newMinion);
-			return this.getGameSession().executeAction(swapGeneralAction);
-		}
-	}
+  onSummonWatch(action) {
+    super.onSummonWatch(action);
+
+    const general = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+    const newMinion = action.getTarget();
+
+    // turn the new unit into your general
+    if (general != null) {
+      const swapGeneralAction = new SwapGeneralAction(this.getGameSession());
+      swapGeneralAction.setIsDepthFirst(false);
+      swapGeneralAction.setSource(general);
+      swapGeneralAction.setTarget(newMinion);
+      return this.getGameSession().executeAction(swapGeneralAction);
+    }
+  }
 }
 ModifierOpponentSummonWatchSwapGeneral.initClass();
 

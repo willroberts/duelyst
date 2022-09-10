@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/no-unresolved,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -6,13 +11,12 @@
 const PlayerModifier = require('app/sdk/playerModifiers/playerModifier');
 
 class PlayerModifierSignatureCardAlwaysReady extends PlayerModifier {
-	static initClass() {
-	
-		// essentially just a tag that this player's bloodborn spell should be ready every turn
-	
-		this.prototype.type ="PlayerModifierSignatureCardAlwaysReady";
-		this.type ="PlayerModifierSignatureCardAlwaysReady";
-	}
+  static initClass() {
+    // essentially just a tag that this player's bloodborn spell should be ready every turn
+
+    this.prototype.type = 'PlayerModifierSignatureCardAlwaysReady';
+    this.type = 'PlayerModifierSignatureCardAlwaysReady';
+  }
 }
 PlayerModifierSignatureCardAlwaysReady.initClass();
 

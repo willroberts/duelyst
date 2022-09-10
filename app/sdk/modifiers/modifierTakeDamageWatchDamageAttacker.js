@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,52 +15,50 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierTakeDamageWatch = require('./modifierTakeDamageWatch');
 const DamageAction = require('app/sdk/actions/damageAction');
 const CONFIG = require('app/common/config');
 const CardType = require('app/sdk/cards/cardType');
+const ModifierTakeDamageWatch = require('./modifierTakeDamageWatch');
 
 class ModifierTakeDamageWatchDamageAttacker extends ModifierTakeDamageWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierTakeDamageWatchDamageAttacker";
-		this.type ="ModifierTakeDamageWatchDamageAttacker";
-	
-		this.modifierName ="Take Damage Watch";
-		this.description ="Whenever this takes damage, deal %X damage to the attacker";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierTakeDamageWatch", "FX.Modifiers.ModifierGenericDamage"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierTakeDamageWatchDamageAttacker';
+    this.type = 'ModifierTakeDamageWatchDamageAttacker';
 
-	static createContextObject(damageAmount, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.damageAmount = damageAmount;
-		return contextObject;
-	}
+    this.modifierName = 'Take Damage Watch';
+    this.description = 'Whenever this takes damage, deal %X damage to the attacker';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			return this.description.replace(/%X/, modifierContextObject.damageAmount);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierTakeDamageWatch', 'FX.Modifiers.ModifierGenericDamage'];
+  }
 
-	onDamageTaken(action) {
-		let targetToDamage = __guard__(action.getSource(), x => x.getAncestorCardOfType(CardType.Unit));
-		if (!targetToDamage) { // If we couldn't find a unit that dealt the damage, assume the source of damage was spell, in which case damage the general
-			targetToDamage = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
-		}
+  static createContextObject(damageAmount, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.damageAmount = damageAmount;
+    return contextObject;
+  }
 
-		if (targetToDamage != null) {
-			const damageAction = new DamageAction(this.getGameSession());
-			damageAction.setOwnerId(this.getCard().getOwnerId());
-			damageAction.setSource(this.getCard());
-			damageAction.setTarget(targetToDamage);
-			damageAction.setDamageAmount(this.damageAmount);
-			return this.getGameSession().executeAction(damageAction);
-		}
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      return this.description.replace(/%X/, modifierContextObject.damageAmount);
+    }
+    return this.description;
+  }
+
+  onDamageTaken(action) {
+    let targetToDamage = __guard__(action.getSource(), (x) => x.getAncestorCardOfType(CardType.Unit));
+    if (!targetToDamage) { // If we couldn't find a unit that dealt the damage, assume the source of damage was spell, in which case damage the general
+      targetToDamage = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+    }
+
+    if (targetToDamage != null) {
+      const damageAction = new DamageAction(this.getGameSession());
+      damageAction.setOwnerId(this.getCard().getOwnerId());
+      damageAction.setSource(this.getCard());
+      damageAction.setTarget(targetToDamage);
+      damageAction.setDamageAmount(this.damageAmount);
+      return this.getGameSession().executeAction(damageAction);
+    }
+  }
 }
 ModifierTakeDamageWatchDamageAttacker.initClass();
 

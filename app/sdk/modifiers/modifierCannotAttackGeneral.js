@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,30 +15,29 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('app/common/config');
-const ModifierCannot = require('./modifierCannot');
 const AttackAction = require('app/sdk/actions/attackAction');
 const i18next = require('i18next');
+const ModifierCannot = require('./modifierCannot');
 
 class ModifierCannotAttackGeneral extends ModifierCannot {
-	static initClass() {
-	
-		this.prototype.type = "ModifierCannotAttackGeneral";
-		this.type = "ModifierCannotAttackGeneral";
-	
-		this.modifierName =i18next.t("modifiers.cannot_attack_general_name");
-		this.description =i18next.t("modifiers.cannot_attack_general_def");
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierCannotAttackGeneral"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierCannotAttackGeneral';
+    this.type = 'ModifierCannotAttackGeneral';
 
-	onValidateAction(actionEvent) {
-		const a = actionEvent.action;
+    this.modifierName = i18next.t('modifiers.cannot_attack_general_name');
+    this.description = i18next.t('modifiers.cannot_attack_general_def');
 
-		// minion cannot actively attack General, but it can strike back, frenzy, etc
-		if (a instanceof AttackAction && a.getIsValid() && !a.getIsImplicit() && (this.getCard() === a.getSource()) && __guard__(a.getTarget(), x => x.getIsGeneral())) {
-			return this.invalidateAction(a, this.getCard().getPosition(), i18next.t("modifiers.cannot_attack_general_error"));
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierCannotAttackGeneral'];
+  }
+
+  onValidateAction(actionEvent) {
+    const a = actionEvent.action;
+
+    // minion cannot actively attack General, but it can strike back, frenzy, etc
+    if (a instanceof AttackAction && a.getIsValid() && !a.getIsImplicit() && (this.getCard() === a.getSource()) && __guard__(a.getTarget(), (x) => x.getIsGeneral())) {
+      return this.invalidateAction(a, this.getCard().getPosition(), i18next.t('modifiers.cannot_attack_general_error'));
+    }
+  }
 }
 ModifierCannotAttackGeneral.initClass();
 

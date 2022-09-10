@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,71 +15,67 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
 const CardType = require('app/sdk/cards/cardType');
 const DamageAction = require('app/sdk/actions/damageAction');
+const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
 
 class ModifierDealDamageWatchDamageJoinedEnemies extends ModifierDealDamageWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDealDamageWatchDamageJoinedEnemies";
-		this.type ="ModifierDealDamageWatchDamageJoinedEnemies";
-	
-		this.modifierName ="Deal Damage to an enemy and all joined enemies";
-		this.description ="Whenever this minion deals damage to an enemy, damage all joined enemies";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericChainLightning"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDealDamageWatchDamageJoinedEnemies';
+    this.type = 'ModifierDealDamageWatchDamageJoinedEnemies';
 
-	onDealDamage(action) {
+    this.modifierName = 'Deal Damage to an enemy and all joined enemies';
+    this.description = 'Whenever this minion deals damage to an enemy, damage all joined enemies';
 
-		const unit = action.getTarget();
-		if ((unit != null) && (unit.getOwnerId() !== this.getCard().getOwnerId())) {
+    this.prototype.fxResource = ['FX.Modifiers.ModifierGenericChainLightning'];
+  }
 
-			const damagedPositions = [];
-			const damageAmount = action.getDamageAmount();
-			const position = unit.getPosition();
-			damagedPositions.push(position);
-			
-			return this.damageEnemiesNearby(damageAmount, unit, damagedPositions);
-		}
-	}
+  onDealDamage(action) {
+    const unit = action.getTarget();
+    if ((unit != null) && (unit.getOwnerId() !== this.getCard().getOwnerId())) {
+      const damagedPositions = [];
+      const damageAmount = action.getDamageAmount();
+      const position = unit.getPosition();
+      damagedPositions.push(position);
 
-	damageEnemiesNearby(damageAmount, unit, damagedPositions) {
+      return this.damageEnemiesNearby(damageAmount, unit, damagedPositions);
+    }
+  }
 
-		const enemiesNearby = this.getGameSession().getBoard().getFriendlyEntitiesAroundEntity(unit, CardType.Unit, 1);
-		return (() => {
-			const result = [];
-			for (let enemy of Array.from(enemiesNearby)) {
-				if (enemy != null) {
-					const enemyPosition = enemy.getPosition();
-					let alreadyDamaged = false;
-					for (let position of Array.from(damagedPositions)) {
-						if ((enemyPosition.x === position.x) && (enemyPosition.y === position.y)) {
-							alreadyDamaged = true;
-							break;
-						}
-					}
-					if (!alreadyDamaged) {
-						const damageAction = new DamageAction(this.getGameSession());
-						damageAction.setOwnerId(this.getCard().getOwnerId());
-						damageAction.setSource(this.getCard());
-						damageAction.setTarget(enemy);
-						damageAction.setDamageAmount(damageAmount);
-						this.getGameSession().executeAction(damageAction);
+  damageEnemiesNearby(damageAmount, unit, damagedPositions) {
+    const enemiesNearby = this.getGameSession().getBoard().getFriendlyEntitiesAroundEntity(unit, CardType.Unit, 1);
+    return (() => {
+      const result = [];
+      for (const enemy of Array.from(enemiesNearby)) {
+        if (enemy != null) {
+          const enemyPosition = enemy.getPosition();
+          let alreadyDamaged = false;
+          for (const position of Array.from(damagedPositions)) {
+            if ((enemyPosition.x === position.x) && (enemyPosition.y === position.y)) {
+              alreadyDamaged = true;
+              break;
+            }
+          }
+          if (!alreadyDamaged) {
+            const damageAction = new DamageAction(this.getGameSession());
+            damageAction.setOwnerId(this.getCard().getOwnerId());
+            damageAction.setSource(this.getCard());
+            damageAction.setTarget(enemy);
+            damageAction.setDamageAmount(damageAmount);
+            this.getGameSession().executeAction(damageAction);
 
-						damagedPositions.push(enemyPosition);
-						result.push(this.damageEnemiesNearby(damageAmount, enemy, damagedPositions));
-					} else {
-						result.push(undefined);
-					}
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+            damagedPositions.push(enemyPosition);
+            result.push(this.damageEnemiesNearby(damageAmount, enemy, damagedPositions));
+          } else {
+            result.push(undefined);
+          }
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 ModifierDealDamageWatchDamageJoinedEnemies.initClass();
 

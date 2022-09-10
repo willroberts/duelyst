@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-plusplus,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -13,56 +22,55 @@ const UtilsGameSession = require('app/common/utils/utils_game_session');
 const CardType = require('app/sdk/cards/cardType');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
-const ModifierOpeningGambit = require('./modifierOpeningGambit');
 const Races = require('app/sdk/cards/racesLookup');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
 
 class ModifierOpeningGambitSirocco extends ModifierOpeningGambit {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOpeningGambitSirocco";
-		this.type ="ModifierOpeningGambitSirocco";
-	
-		this.modifierName ="Opening Gambit";
-		this.description = "Summon a 3/2 Skyrock Golem on random spaces for each Golem you've summoned this game";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambitSirocco"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpeningGambitSirocco';
+    this.type = 'ModifierOpeningGambitSirocco';
 
-	getIsActionRelevant(a) {
-		// triggers once for each Golem tribe minion this card's owner summoned previously
-		if (a instanceof PlayCardFromHandAction && (a.getOwnerId() === this.getCard().getOwnerId())) {
-			const card = a.getCard();
-			return (card != null) && (card.type === CardType.Unit) && card.getBelongsToTribe(Races.Golem) && (card !== this.getCard());
-		}
-	}
+    this.modifierName = 'Opening Gambit';
+    this.description = 'Summon a 3/2 Skyrock Golem on random spaces for each Golem you\'ve summoned this game';
 
-	onOpeningGambit() {
-		super.onOpeningGambit();
+    this.prototype.fxResource = ['FX.Modifiers.ModifierOpeningGambitSirocco'];
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const summonActions = this.getGameSession().filterActions(this.getIsActionRelevant.bind(this));
+  getIsActionRelevant(a) {
+    // triggers once for each Golem tribe minion this card's owner summoned previously
+    if (a instanceof PlayCardFromHandAction && (a.getOwnerId() === this.getCard().getOwnerId())) {
+      const card = a.getCard();
+      return (card != null) && (card.type === CardType.Unit) && card.getBelongsToTribe(Races.Golem) && (card !== this.getCard());
+    }
+  }
 
-			const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData({id: Cards.Neutral.SkyrockGolem});
-			const spawnLocations = [];
-			const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, CONFIG.PATTERN_WHOLE_BOARD, card);
-			for (let i = 0, end = summonActions.length, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-				if (validSpawnLocations.length > 0) {
-					spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
-				}
-			}
+  onOpeningGambit() {
+    super.onOpeningGambit();
 
-			return (() => {
-				const result = [];
-				for (let position of Array.from(spawnLocations)) {
-					const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, {id: Cards.Neutral.SkyrockGolem});
-					playCardAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(playCardAction));
-				}
-				return result;
-			})();
-		}
-	}
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const summonActions = this.getGameSession().filterActions(this.getIsActionRelevant.bind(this));
+
+      const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData({ id: Cards.Neutral.SkyrockGolem });
+      const spawnLocations = [];
+      const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), { x: 0, y: 0 }, CONFIG.PATTERN_WHOLE_BOARD, card);
+      for (let i = 0, end = summonActions.length, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+        if (validSpawnLocations.length > 0) {
+          spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+        }
+      }
+
+      return (() => {
+        const result = [];
+        for (const position of Array.from(spawnLocations)) {
+          const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, { id: Cards.Neutral.SkyrockGolem });
+          playCardAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(playCardAction));
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierOpeningGambitSirocco.initClass();
 

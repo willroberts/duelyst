@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,59 +18,58 @@
  */
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
-const ModifierKillWatch = require('./modifierKillWatch');
-const ModifierEgg = require('./modifierEgg');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
+const ModifierKillWatch = require('./modifierKillWatch');
+const ModifierEgg = require('./modifierEgg');
 
 class ModifierKillWatchSpawnEgg extends ModifierKillWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierKillWatchSpawnEgg";
-		this.type ="ModifierKillWatchSpawnEgg";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierKillWatch", "FX.Modifiers.ModifierGenericSpawn"];
-	
-		this.prototype.cardDataOrIndexToSpawn = null;
-		this.prototype.minionName = null;
-		this.prototype.numSpawns = 0;
-		this.prototype.spawnPattern = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierKillWatchSpawnEgg';
+    this.type = 'ModifierKillWatchSpawnEgg';
 
-	static createContextObject(includeAllies, includeGenerals, cardDataOrIndexToSpawn, minionName, numSpawns, spawnPattern, options) {
-		if (includeAllies == null) { includeAllies = true; }
-		if (includeGenerals == null) { includeGenerals = true; }
-		const contextObject = super.createContextObject(includeAllies, includeGenerals, options);
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
-		contextObject.minionName = minionName;
-		contextObject.numSpawns = numSpawns;
-		contextObject.spawnPattern = spawnPattern;
-		return contextObject;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierKillWatch', 'FX.Modifiers.ModifierGenericSpawn'];
 
-	onKillWatch(action) {
-		super.onKillWatch(action);
+    this.prototype.cardDataOrIndexToSpawn = null;
+    this.prototype.minionName = null;
+    this.prototype.numSpawns = 0;
+    this.prototype.spawnPattern = null;
+  }
 
-		const egg = {id: Cards.Faction5.Egg};
-		if (egg.additionalInherentModifiersContextObjects == null) { egg.additionalInherentModifiersContextObjects = []; }
-		egg.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(this.cardDataOrIndexToSpawn, this.minionName));
+  static createContextObject(includeAllies, includeGenerals, cardDataOrIndexToSpawn, minionName, numSpawns, spawnPattern, options) {
+    if (includeAllies == null) { includeAllies = true; }
+    if (includeGenerals == null) { includeGenerals = true; }
+    const contextObject = super.createContextObject(includeAllies, includeGenerals, options);
+    contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+    contextObject.minionName = minionName;
+    contextObject.numSpawns = numSpawns;
+    contextObject.spawnPattern = spawnPattern;
+    return contextObject;
+  }
 
-		const position = action.getTargetPosition();
-		const cardToSpawn = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(egg);
-		const spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), position, this.spawnPattern, cardToSpawn, this.getCard(), this.numSpawns);
+  onKillWatch(action) {
+    super.onKillWatch(action);
 
-		if (spawnPositions != null) {
-			return (() => {
-				const result = [];
-				for (let spawnPosition of Array.from(spawnPositions)) {
-					const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), spawnPosition.x, spawnPosition.y, egg);
-					spawnAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(spawnAction));
-				}
-				return result;
-			})();
-		}
-	}
+    const egg = { id: Cards.Faction5.Egg };
+    if (egg.additionalInherentModifiersContextObjects == null) { egg.additionalInherentModifiersContextObjects = []; }
+    egg.additionalInherentModifiersContextObjects.push(ModifierEgg.createContextObject(this.cardDataOrIndexToSpawn, this.minionName));
+
+    const position = action.getTargetPosition();
+    const cardToSpawn = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(egg);
+    const spawnPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), position, this.spawnPattern, cardToSpawn, this.getCard(), this.numSpawns);
+
+    if (spawnPositions != null) {
+      return (() => {
+        const result = [];
+        for (const spawnPosition of Array.from(spawnPositions)) {
+          const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), spawnPosition.x, spawnPosition.y, egg);
+          spawnAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(spawnAction));
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierKillWatchSpawnEgg.initClass();
 

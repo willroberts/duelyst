@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/no-extraneous-dependencies,
+    import/no-unresolved,
+    max-len,
+    no-console,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -18,22 +26,19 @@ const fs = require('fs');
 const helpers = require('scripts/helpers');
 const UtilsLocalization = require('scripts/localization/utils_localization');
 
-const runCommand = commandStr => new Promise( (resolve, reject) => npmRun(commandStr,{},function(err,stdOut,stdErr){
-    if (err != null) {
-        return reject(err);
-    } else {
-        return resolve(stdOut);
-    }
+const runCommand = (commandStr) => new Promise((resolve, reject) => npmRun(commandStr, {}, (err, stdOut, stdErr) => {
+  if (err != null) {
+    return reject(err);
+  }
+  return resolve(stdOut);
 }));
 
 Promise.resolve()
-.bind({})
-.then(() => Promise.all([
-    UtilsLocalization.readFileToJsonData(UtilsLocalization.PATH_TO_LOCALES + "/en/index.json")
+  .bind({})
+  .then(() => Promise.all([
+    UtilsLocalization.readFileToJsonData(`${UtilsLocalization.PATH_TO_LOCALES}/en/index.json`),
     // UtilsLocalization.readFileToJsonData(UtilsLocalization.PATH_TO_LOCALES + "/de/index.json")
-])).then(function(){
-
-	console.log("Complete.");
-	return process.exit(1);
-});
-
+  ])).then(() => {
+    console.log('Complete.');
+    return process.exit(1);
+  });

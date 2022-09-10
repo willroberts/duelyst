@@ -1,3 +1,12 @@
+/* eslint-disable
+    func-names,
+    import/extensions,
+    import/no-unresolved,
+    import/order,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -10,8 +19,9 @@ Job - Archive Game
 const GamesModule = require('../../server/lib/data_access/games.coffee');
 const uploadGameToS3 = require('../upload_game_to_s3');
 const config = require('../../config/config.js');
+
 const env = config.get('env');
-const {GameManager} = require('../../server/redis/');
+const { GameManager } = require('../../server/redis');
 const Promise = require('bluebird');
 const Logger = require('../../app/common/logger.coffee');
 
@@ -21,33 +31,38 @@ const Logger = require('../../app/common/logger.coffee');
  * @param	{Object} job		Kue job
  * @param	{Function} done 	Callback when job is complete
  */
-module.exports = function(job, done) {
-	const gameId = job.data.gameId || null;
-	if (!gameId) {
-		return done(new Error("Game ID is not defined."));
-	}
+module.exports = function (job, done) {
+  const gameId = job.data.gameId || null;
+  if (!gameId) {
+    return done(new Error('Game ID is not defined.'));
+  }
 
-	Logger.module("JOB").debug(`[J:${job.id}] archive-game -> (${gameId}) starting`);
+  Logger.module('JOB').debug(`[J:${job.id}] archive-game -> (${gameId}) starting`);
 
-	return Promise.all([
-		GameManager.loadGameSession(gameId),
-		GameManager.loadGameMouseUIData(gameId)
-	])
-	.bind({})
-	.spread(function(serializedGameData,serializedMouseAndUIEventData) {
-		this.serializedGameData = serializedGameData;
-		if (!serializedGameData) {
-			throw new Error("Game data is null. Game may have already been archived.");
-		} else {
-			if ((serializedMouseAndUIEventData == null)) {
-				Logger.module("JOB").warn(`[J:${job.id}] archive-game -> WARNING: mouse data not present for game:${gameId}`);
-			}
-			return uploadGameToS3(gameId, serializedGameData, serializedMouseAndUIEventData);
-		}}).then(function(url) {
-		this.url = url;
-		Logger.module("JOB").debug(`[J:${job.id}] archive-game -> (${gameId}) uploaded to ${url}.`);
-		Logger.module("JOB").debug(`[J:${job.id}] archive-game -> (${gameId}) saving game metadata.`);
-		return GamesModule.saveGameMetadata(gameId,JSON.parse(this.serializedGameData),url);}).then(function() {
-		Logger.module("JOB").debug(`[J:${job.id}] archive-game -> (${gameId}) DONE. - ${this.url}`);
-		return done();}).catch(error => done(error));
+  return Promise.all([
+    GameManager.loadGameSession(gameId),
+    GameManager.loadGameMouseUIData(gameId),
+  ])
+    .bind({})
+    .spread(function (serializedGameData, serializedMouseAndUIEventData) {
+      this.serializedGameData = serializedGameData;
+      if (!serializedGameData) {
+        throw new Error('Game data is null. Game may have already been archived.');
+      } else {
+        if ((serializedMouseAndUIEventData == null)) {
+          Logger.module('JOB').warn(`[J:${job.id}] archive-game -> WARNING: mouse data not present for game:${gameId}`);
+        }
+        return uploadGameToS3(gameId, serializedGameData, serializedMouseAndUIEventData);
+      }
+    }).then(function (url) {
+      this.url = url;
+      Logger.module('JOB').debug(`[J:${job.id}] archive-game -> (${gameId}) uploaded to ${url}.`);
+      Logger.module('JOB').debug(`[J:${job.id}] archive-game -> (${gameId}) saving game metadata.`);
+      return GamesModule.saveGameMetadata(gameId, JSON.parse(this.serializedGameData), url);
+    })
+    .then(function () {
+      Logger.module('JOB').debug(`[J:${job.id}] archive-game -> (${gameId}) DONE. - ${this.url}`);
+      return done();
+    })
+    .catch((error) => done(error));
 };

@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,86 +20,84 @@
  */
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
-const ModifierOnOpponentDeathWatch = require('./modifierOnOpponentDeathWatch');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const PlayCardAction = require('app/sdk/actions/playCardAction');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
+const ModifierOnOpponentDeathWatch = require('./modifierOnOpponentDeathWatch');
 
 class ModifierOnOpponentDeathWatchSpawnEntityOnSpace extends ModifierOnOpponentDeathWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOnOpponentDeathWatchSpawnEntityOnSpace";
-		this.type ="ModifierOnOpponentDeathWatchSpawnEntityOnSpace";
-	
-		this.modifierName ="Deathwatch";
-		this.description ="Whenever an enemy minion dies, summon a %X";
-	
-		this.prototype.cardDataOrIndexToSpawn = null;
-		this.prototype.spawnCount = 1;
-		this.prototype.spawnSilently = true; // most reactive spawns should be silent, i.e. no followups and no opening gambits
-		this.prototype.spawnPattern = CONFIG.PATTERN_1x1;
-		this.prototype.prisonerList = [{id: Cards.Neutral.Prisoner1}, {id: Cards.Neutral.Prisoner2}, {id: Cards.Neutral.Prisoner3}, {id: Cards.Neutral.Prisoner4}, {id: Cards.Neutral.Prisoner5}, {id: Cards.Neutral.Prisoner6}];
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierDeathWatch", "FX.Modifiers.ModifierGenericSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOnOpponentDeathWatchSpawnEntityOnSpace';
+    this.type = 'ModifierOnOpponentDeathWatchSpawnEntityOnSpace';
 
-	static createContextObject(cardDataOrIndexToSpawn, spawnDescription,spawnCount, spawnPattern, spawnSilently,options) {
-		if (spawnDescription == null) { spawnDescription = "prisoner"; }
-		if (spawnCount == null) { spawnCount = 1; }
-		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_1x1; }
-		if (spawnSilently == null) { spawnSilently = true; }
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
-		contextObject.spawnDescription = spawnDescription;
-		contextObject.spawnCount = spawnCount;
-		contextObject.spawnPattern = spawnPattern;
-		contextObject.spawnSilently = spawnSilently;
-		return contextObject;
-	}
+    this.modifierName = 'Deathwatch';
+    this.description = 'Whenever an enemy minion dies, summon a %X';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			return this.description.replace(/%X/, modifierContextObject.spawnDescription);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.cardDataOrIndexToSpawn = null;
+    this.prototype.spawnCount = 1;
+    this.prototype.spawnSilently = true; // most reactive spawns should be silent, i.e. no followups and no opening gambits
+    this.prototype.spawnPattern = CONFIG.PATTERN_1x1;
+    this.prototype.prisonerList = [{ id: Cards.Neutral.Prisoner1 }, { id: Cards.Neutral.Prisoner2 }, { id: Cards.Neutral.Prisoner3 }, { id: Cards.Neutral.Prisoner4 }, { id: Cards.Neutral.Prisoner5 }, { id: Cards.Neutral.Prisoner6 }];
 
-	onDeathWatch(action) {
-		super.onDeathWatch(action);
+    this.prototype.fxResource = ['FX.Modifiers.ModifierDeathWatch', 'FX.Modifiers.ModifierGenericSpawn'];
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			//if there's no defined card to summon, instead spawn a random prisoner
-			if ((this.cardDataOrIndexToSpawn == null) || Array.from(this.prisonerList).includes(this.cardDataOrIndexToSpawn)) {
-				this.cardDataOrIndexToSpawn = this.prisonerList[this.getGameSession().getRandomIntegerForExecution(this.prisonerList.length)];
-			}
+  static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently, options) {
+    if (spawnDescription == null) { spawnDescription = 'prisoner'; }
+    if (spawnCount == null) { spawnCount = 1; }
+    if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_1x1; }
+    if (spawnSilently == null) { spawnSilently = true; }
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+    contextObject.spawnDescription = spawnDescription;
+    contextObject.spawnCount = spawnCount;
+    contextObject.spawnPattern = spawnPattern;
+    contextObject.spawnSilently = spawnSilently;
+    return contextObject;
+  }
 
-			const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
-			const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), action.getTargetPosition(), this.spawnPattern, card, this.getCard(), 1);
-			return (() => {
-				const result = [];
-				for (let position of Array.from(spawnLocations)) {
-					var playCardAction;
-					if (!this.spawnSilently) {
-						playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
-					} else {
-						playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
-					}
-					playCardAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(playCardAction));
-				}
-				return result;
-			})();
-		}
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      return this.description.replace(/%X/, modifierContextObject.spawnDescription);
+    }
+    return this.description;
+  }
 
-	getCardDataOrIndexToSpawn() {
-		return this.cardDataOrIndexToSpawn;
-	}
+  onDeathWatch(action) {
+    super.onDeathWatch(action);
 
-	getSpawnOwnerId(action) {
-		return this.getCard().getOwnerId();
-	}
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      // if there's no defined card to summon, instead spawn a random prisoner
+      if ((this.cardDataOrIndexToSpawn == null) || Array.from(this.prisonerList).includes(this.cardDataOrIndexToSpawn)) {
+        this.cardDataOrIndexToSpawn = this.prisonerList[this.getGameSession().getRandomIntegerForExecution(this.prisonerList.length)];
+      }
+
+      const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+      const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), action.getTargetPosition(), this.spawnPattern, card, this.getCard(), 1);
+      return (() => {
+        const result = [];
+        for (const position of Array.from(spawnLocations)) {
+          var playCardAction;
+          if (!this.spawnSilently) {
+            playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+          } else {
+            playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+          }
+          playCardAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(playCardAction));
+        }
+        return result;
+      })();
+    }
+  }
+
+  getCardDataOrIndexToSpawn() {
+    return this.cardDataOrIndexToSpawn;
+  }
+
+  getSpawnOwnerId(action) {
+    return this.getCard().getOwnerId();
+  }
 }
 ModifierOnOpponentDeathWatchSpawnEntityOnSpace.initClass();
 

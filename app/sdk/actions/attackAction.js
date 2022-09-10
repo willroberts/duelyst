@@ -1,3 +1,15 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-return-assign,
+    no-tabs,
+    no-this-before-super,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -7,57 +19,55 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = 		require('app/common/config');
-const DamageAction = 	require('./damageAction');
 const CardType = 			require('app/sdk/cards/cardType');
 const _ = require('underscore');
+const DamageAction = 	require('./damageAction');
 
 class AttackAction extends DamageAction {
-	static initClass() {
-	
-		this.type ="AttackAction";
-	}
+  static initClass() {
+    this.type = 'AttackAction';
+  }
 
-	constructor(gameSession) {
-		if (this.type == null) { this.type = AttackAction.type; }
-		super(gameSession);
-	}
+  constructor(gameSession) {
+    if (this.type == null) { this.type = AttackAction.type; }
+    super(gameSession);
+  }
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
 
-		// cache
-		p.isStrikebackAllowed = true; // normally target of attack actions will strike back, but in some cases strike back should be supressed
+    // cache
+    p.isStrikebackAllowed = true; // normally target of attack actions will strike back, but in some cases strike back should be supressed
 
-		return p;
-	}
+    return p;
+  }
 
-	getDamageAmount() {
-		// attack damage amount is always source's atk value
-		const source = this.getSource();
-		if (source != null) { return source.getATK(); } else { return 0; }
-	}
+  getDamageAmount() {
+    // attack damage amount is always source's atk value
+    const source = this.getSource();
+    if (source != null) { return source.getATK(); } return 0;
+  }
 
-	setDamageAmount() {}
-		// does nothing for attacks
+  setDamageAmount() {}
+  // does nothing for attacks
 
-	setIsStrikebackAllowed(isStrikebackAllowed) {
-		return this._private.isStrikebackAllowed = isStrikebackAllowed;
-	}
+  setIsStrikebackAllowed(isStrikebackAllowed) {
+    return this._private.isStrikebackAllowed = isStrikebackAllowed;
+  }
 
-	getIsStrikebackAllowed() {
-		return this._private.isStrikebackAllowed;
-	}
+  getIsStrikebackAllowed() {
+    return this._private.isStrikebackAllowed;
+  }
 
-	_execute() {
+  _execute() {
+    super._execute();
 
-		super._execute();
+    const attacker = this.getSource();
 
-		const attacker = this.getSource();
-
-		if (attacker != null) {
-			if (!this.getIsImplicit()) { return attacker.setAttacksMade(attacker.getAttacksMade() + 1); }
-		}
-	}
+    if (attacker != null) {
+      if (!this.getIsImplicit()) { return attacker.setAttacksMade(attacker.getAttacksMade() + 1); }
+    }
+  }
 }
 AttackAction.initClass();
 

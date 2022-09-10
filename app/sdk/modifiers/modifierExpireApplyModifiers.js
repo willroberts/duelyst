@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,55 +17,52 @@
 const Modifier = require('./modifier');
 
 class ModifierExpireApplyModifiers extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierExpireApplyModifiers";
-		this.type ="ModifierExpireApplyModifiers";
-	
-		this.modifierName = "";
-		this.description = "";
-	
-		this.prototype.modifiersContextObjects = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierExpireApplyModifiers';
+    this.type = 'ModifierExpireApplyModifiers';
 
-	static createContextObject(modifiersContextObjects, durationEndTurn, durationStartTurn, auraIncludeSelf, auraIncludeAlly, auraIncludeEnemy, auraRadius, canTargetGeneral, description, options) {
-		if (durationEndTurn == null) { durationEndTurn = 1; }
-		if (durationStartTurn == null) { durationStartTurn = 0; }
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		contextObject.durationEndTurn = durationEndTurn;
-		contextObject.durationStartTurn = durationStartTurn;
-		contextObject.auraIncludeAlly = auraIncludeAlly;
-		contextObject.auraIncludeEnemy = auraIncludeEnemy;
-		contextObject.auraIncludeSelf = auraIncludeSelf;
-		contextObject.auraRadius = auraRadius;
-		contextObject.canTargetGeneral = canTargetGeneral;
-		contextObject.description = description;
-		return contextObject;
-	}
+    this.modifierName = '';
+    this.description = '';
 
-	onExpire() {
-		super.onExpire();
+    this.prototype.modifiersContextObjects = null;
+  }
 
-		if (this.modifiersContextObjects != null) {
-			return Array.from(this.getAffectedEntities()).map((entity) =>
-				Array.from(this.modifiersContextObjects).map((modifierContextObject) =>
-					this.getGameSession().applyModifierContextObject(modifierContextObject, entity)));
-		}
-	}
+  static createContextObject(modifiersContextObjects, durationEndTurn, durationStartTurn, auraIncludeSelf, auraIncludeAlly, auraIncludeEnemy, auraRadius, canTargetGeneral, description, options) {
+    if (durationEndTurn == null) { durationEndTurn = 1; }
+    if (durationStartTurn == null) { durationStartTurn = 0; }
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    contextObject.durationEndTurn = durationEndTurn;
+    contextObject.durationStartTurn = durationStartTurn;
+    contextObject.auraIncludeAlly = auraIncludeAlly;
+    contextObject.auraIncludeEnemy = auraIncludeEnemy;
+    contextObject.auraIncludeSelf = auraIncludeSelf;
+    contextObject.auraRadius = auraRadius;
+    contextObject.canTargetGeneral = canTargetGeneral;
+    contextObject.description = description;
+    return contextObject;
+  }
 
-	getAffectedEntities() {
-		const entityList = this.getGameSession().getBoard().getCardsWithinRadiusOfPosition(this.getCard().getPosition(), this.auraFilterByCardType, this.auraRadius, this.auraIncludeSelf);
-		const affectedEntities = [];
-		for (let entity of Array.from(entityList)) {
-			if ((this.auraIncludeAlly && entity.getIsSameTeamAs(this.getCard())) || (this.auraIncludeEnemy && !entity.getIsSameTeamAs(this.getCard()))) {
-				if (this.canTargetGeneral || !entity.getIsGeneral()) {
-					affectedEntities.push(entity);
-				}
-			}
-		}
-		return affectedEntities;
-	}
+  onExpire() {
+    super.onExpire();
+
+    if (this.modifiersContextObjects != null) {
+      return Array.from(this.getAffectedEntities()).map((entity) => Array.from(this.modifiersContextObjects).map((modifierContextObject) => this.getGameSession().applyModifierContextObject(modifierContextObject, entity)));
+    }
+  }
+
+  getAffectedEntities() {
+    const entityList = this.getGameSession().getBoard().getCardsWithinRadiusOfPosition(this.getCard().getPosition(), this.auraFilterByCardType, this.auraRadius, this.auraIncludeSelf);
+    const affectedEntities = [];
+    for (const entity of Array.from(entityList)) {
+      if ((this.auraIncludeAlly && entity.getIsSameTeamAs(this.getCard())) || (this.auraIncludeEnemy && !entity.getIsSameTeamAs(this.getCard()))) {
+        if (this.canTargetGeneral || !entity.getIsGeneral()) {
+          affectedEntities.push(entity);
+        }
+      }
+    }
+    return affectedEntities;
+  }
 }
 ModifierExpireApplyModifiers.initClass();
 

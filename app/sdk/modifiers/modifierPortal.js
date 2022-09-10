@@ -1,3 +1,9 @@
+/* eslint-disable
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -6,87 +12,85 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+const i18next = require('i18next');
 const Modifier = require('./modifier');
 
-const i18next = require('i18next');
-
 class ModifierPortal extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierPortal";
-		this.type ="ModifierPortal";
-	
-		this.isKeyworded = true;
-		this.keywordDefinition = i18next.t("modifiers.structure_def");
-		this.isHiddenToUI = true;
-	
-		this.modifierName =i18next.t("modifiers.structure_name");
-		this.description =null;
-	
-		this.prototype.maxStacks = 1;
-		this.prototype.isRemovable = false;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierPortal"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierPortal';
+    this.type = 'ModifierPortal';
 
-	onActivate() {
-		super.onActivate();
-		this.stopMove();
-		return this.stopAttack();
-	}
+    this.isKeyworded = true;
+    this.keywordDefinition = i18next.t('modifiers.structure_def');
+    this.isHiddenToUI = true;
 
-	// apply "cannot move" and "cannot attack" modifiers as submodifier of this
-	// applying as a submodifier so these modifier can be removed seperately from the "structure" modifier itself
-	// (ex spell - your Obelysks can now move and attack)
-	stopMove() {
-		const speedBuffContextObject = Modifier.createContextObjectOnBoard();
-		speedBuffContextObject.attributeBuffs = {"speed": 0};
-		speedBuffContextObject.attributeBuffsAbsolute = ["speed"];
-		speedBuffContextObject.attributeBuffsFixed = ["speed"];
-		speedBuffContextObject.isHiddenToUI = true;
-		speedBuffContextObject.isCloneable = false;
-		return this.getGameSession().applyModifierContextObject(speedBuffContextObject, this.getCard(), this);
-	}
+    this.modifierName = i18next.t('modifiers.structure_name');
+    this.description = null;
 
-	stopAttack() {
-		const attackBuffContextObject = Modifier.createContextObjectOnBoard();
-		attackBuffContextObject.attributeBuffs = {"atk": 0};
-		attackBuffContextObject.attributeBuffsAbsolute = ["atk"];
-		attackBuffContextObject.attributeBuffsFixed = ["atk"];
-		attackBuffContextObject.isHiddenToUI = true;
-		attackBuffContextObject.isCloneable = false;
-		return this.getGameSession().applyModifierContextObject(attackBuffContextObject, this.getCard(), this);
-	}
+    this.prototype.maxStacks = 1;
+    this.prototype.isRemovable = false;
 
-	// if we ever want to allow this Structure to move, remove the cannot move hidden submodifier
-	allowMove() {
-		return (() => {
-			const result = [];
-			for (let subMod of Array.from(this.getSubModifiers())) {
-				if (subMod.getBuffsAttribute("speed")) {
-					result.push(this.getGameSession().removeModifier(subMod));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierPortal'];
+  }
 
-	// if we ever want to allow this Structure to attack, remove the cannot attack hidden submodifier
-	allowAttack() {
-		return (() => {
-			const result = [];
-			for (let subMod of Array.from(this.getSubModifiers())) {
-				if (subMod.getBuffsAttribute("atk")) {
-					result.push(this.getGameSession().removeModifier(subMod));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+  onActivate() {
+    super.onActivate();
+    this.stopMove();
+    return this.stopAttack();
+  }
+
+  // apply "cannot move" and "cannot attack" modifiers as submodifier of this
+  // applying as a submodifier so these modifier can be removed seperately from the "structure" modifier itself
+  // (ex spell - your Obelysks can now move and attack)
+  stopMove() {
+    const speedBuffContextObject = Modifier.createContextObjectOnBoard();
+    speedBuffContextObject.attributeBuffs = { speed: 0 };
+    speedBuffContextObject.attributeBuffsAbsolute = ['speed'];
+    speedBuffContextObject.attributeBuffsFixed = ['speed'];
+    speedBuffContextObject.isHiddenToUI = true;
+    speedBuffContextObject.isCloneable = false;
+    return this.getGameSession().applyModifierContextObject(speedBuffContextObject, this.getCard(), this);
+  }
+
+  stopAttack() {
+    const attackBuffContextObject = Modifier.createContextObjectOnBoard();
+    attackBuffContextObject.attributeBuffs = { atk: 0 };
+    attackBuffContextObject.attributeBuffsAbsolute = ['atk'];
+    attackBuffContextObject.attributeBuffsFixed = ['atk'];
+    attackBuffContextObject.isHiddenToUI = true;
+    attackBuffContextObject.isCloneable = false;
+    return this.getGameSession().applyModifierContextObject(attackBuffContextObject, this.getCard(), this);
+  }
+
+  // if we ever want to allow this Structure to move, remove the cannot move hidden submodifier
+  allowMove() {
+    return (() => {
+      const result = [];
+      for (const subMod of Array.from(this.getSubModifiers())) {
+        if (subMod.getBuffsAttribute('speed')) {
+          result.push(this.getGameSession().removeModifier(subMod));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
+
+  // if we ever want to allow this Structure to attack, remove the cannot attack hidden submodifier
+  allowAttack() {
+    return (() => {
+      const result = [];
+      for (const subMod of Array.from(this.getSubModifiers())) {
+        if (subMod.getBuffsAttribute('atk')) {
+          result.push(this.getGameSession().removeModifier(subMod));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 ModifierPortal.initClass();
 

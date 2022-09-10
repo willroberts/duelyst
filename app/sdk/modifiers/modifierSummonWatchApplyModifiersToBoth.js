@@ -1,3 +1,13 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    max-len,
+    no-restricted-syntax,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -11,50 +21,47 @@
 const ModifierSummonWatch = require('./modifierSummonWatch');
 
 class ModifierSummonWatchApplyModifiersToBoth extends ModifierSummonWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSummonWatchApplyModifiersToBoth";
-		this.type ="ModifierSummonWatchApplyModifiersToBoth";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSummonWatch", "FX.Modifiers.ModifierGenericBuff"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSummonWatchApplyModifiersToBoth';
+    this.type = 'ModifierSummonWatchApplyModifiersToBoth';
 
-	static createContextObject(modifiersContextObjects, buffDescription, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		contextObject.buffDescription = buffDescription;
-		return contextObject;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSummonWatch', 'FX.Modifiers.ModifierGenericBuff'];
+  }
 
-	onSummonWatch(action) {
+  static createContextObject(modifiersContextObjects, buffDescription, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    contextObject.buffDescription = buffDescription;
+    return contextObject;
+  }
 
-		if (this.modifiersContextObjects != null) {
-			const summonedUnitPosition = __guard__(action.getTarget(), x => x.getPosition());
-			if (this.getIsValidBuffPosition(summonedUnitPosition)) {
+  onSummonWatch(action) {
+    if (this.modifiersContextObjects != null) {
+      const summonedUnitPosition = __guard__(action.getTarget(), (x) => x.getPosition());
+      if (this.getIsValidBuffPosition(summonedUnitPosition)) {
+        let modifierContextObject;
+        for (modifierContextObject of Array.from(this.modifiersContextObjects)) {
+          this.getGameSession().applyModifierContextObject(modifierContextObject, this.getCard());
+        }
 
-				let modifierContextObject;
-				for (modifierContextObject of Array.from(this.modifiersContextObjects)) {
-					this.getGameSession().applyModifierContextObject(modifierContextObject, this.getCard());
-				}
-					
-				const entity = action.getTarget();
-				if (entity != null) {
-					return (() => {
-						const result = [];
-						for (modifierContextObject of Array.from(this.modifiersContextObjects)) {
-							result.push(this.getGameSession().applyModifierContextObject(modifierContextObject, entity));
-						}
-						return result;
-					})();
-				}
-			}
-		}
-	}
+        const entity = action.getTarget();
+        if (entity != null) {
+          return (() => {
+            const result = [];
+            for (modifierContextObject of Array.from(this.modifiersContextObjects)) {
+              result.push(this.getGameSession().applyModifierContextObject(modifierContextObject, entity));
+            }
+            return result;
+          })();
+        }
+      }
+    }
+  }
 
-	getIsValidBuffPosition(summonedUnitPosition) {
-		// override this in subclass to filter by position
-		return true;
-	}
+  getIsValidBuffPosition(summonedUnitPosition) {
+    // override this in subclass to filter by position
+    return true;
+  }
 }
 ModifierSummonWatchApplyModifiersToBoth.initClass();
 

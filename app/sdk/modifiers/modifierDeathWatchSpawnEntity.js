@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,79 +20,77 @@
  */
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
-const ModifierDeathWatch = require('./modifierDeathWatch');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const PlayCardAction = require('app/sdk/actions/playCardAction');
+const ModifierDeathWatch = require('./modifierDeathWatch');
 
 class ModifierDeathWatchSpawnEntity extends ModifierDeathWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDeathWatchSpawnEntity";
-		this.type ="ModifierDeathWatchSpawnEntity";
-	
-		this.modifierName ="Deathwatch";
-		this.description ="Summon a %X on a random nearby space";
-	
-		this.prototype.cardDataOrIndexToSpawn = null;
-		this.prototype.spawnCount = 1;
-		this.prototype.spawnSilently = true; // most reactive spawns should be silent, i.e. no followups and no opening gambits
-		this.prototype.spawnPattern = CONFIG.PATTERN_3x3;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierDeathWatch", "FX.Modifiers.ModifierGenericSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDeathWatchSpawnEntity';
+    this.type = 'ModifierDeathWatchSpawnEntity';
 
-	static createContextObject(cardDataOrIndexToSpawn, spawnDescription,spawnCount, spawnPattern, spawnSilently,options) {
-		if (spawnCount == null) { spawnCount = 1; }
-		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
-		if (spawnSilently == null) { spawnSilently = true; }
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
-		contextObject.spawnDescription = spawnDescription;
-		contextObject.spawnCount = spawnCount;
-		contextObject.spawnPattern = spawnPattern;
-		contextObject.spawnSilently = spawnSilently;
-		return contextObject;
-	}
+    this.modifierName = 'Deathwatch';
+    this.description = 'Summon a %X on a random nearby space';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			return this.description.replace(/%X/, modifierContextObject.spawnDescription);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.cardDataOrIndexToSpawn = null;
+    this.prototype.spawnCount = 1;
+    this.prototype.spawnSilently = true; // most reactive spawns should be silent, i.e. no followups and no opening gambits
+    this.prototype.spawnPattern = CONFIG.PATTERN_3x3;
 
-	onDeathWatch(action) {
-		super.onDeathWatch(action);
+    this.prototype.fxResource = ['FX.Modifiers.ModifierDeathWatch', 'FX.Modifiers.ModifierGenericSpawn'];
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const ownerId = this.getSpawnOwnerId(action);
-			const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierDeathWatchSpawnEntity);
-			return (() => {
-				const result = [];
-				for (let spawnPosition of Array.from(spawnPositions)) {
-					var spawnAction;
-					const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
-					if (this.spawnSilently) {
-						spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
-					} else {
-						spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
-					}
-					spawnAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(spawnAction));
-				}
-				return result;
-			})();
-		}
-	}
+  static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently, options) {
+    if (spawnCount == null) { spawnCount = 1; }
+    if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
+    if (spawnSilently == null) { spawnSilently = true; }
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+    contextObject.spawnDescription = spawnDescription;
+    contextObject.spawnCount = spawnCount;
+    contextObject.spawnPattern = spawnPattern;
+    contextObject.spawnSilently = spawnSilently;
+    return contextObject;
+  }
 
-	getCardDataOrIndexToSpawn() {
-		return this.cardDataOrIndexToSpawn;
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      return this.description.replace(/%X/, modifierContextObject.spawnDescription);
+    }
+    return this.description;
+  }
 
-	getSpawnOwnerId(action) {
-		return this.getCard().getOwnerId();
-	}
+  onDeathWatch(action) {
+    super.onDeathWatch(action);
+
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const ownerId = this.getSpawnOwnerId(action);
+      const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierDeathWatchSpawnEntity);
+      return (() => {
+        const result = [];
+        for (const spawnPosition of Array.from(spawnPositions)) {
+          var spawnAction;
+          const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
+          if (this.spawnSilently) {
+            spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+          } else {
+            spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+          }
+          spawnAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(spawnAction));
+        }
+        return result;
+      })();
+    }
+  }
+
+  getCardDataOrIndexToSpawn() {
+    return this.cardDataOrIndexToSpawn;
+  }
+
+  getSpawnOwnerId(action) {
+    return this.getCard().getOwnerId();
+  }
 }
 ModifierDeathWatchSpawnEntity.initClass();
 

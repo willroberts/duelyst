@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    no-return-assign,
+    no-this-before-super,
+    no-underscore-dangle,
+    prefer-rest-params,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -9,54 +18,53 @@
 const Action = require('./action');
 
 class SetExhaustionAction extends Action {
-	static initClass() {
-	
-		this.type ="SetExhaustionAction";
-	
-		this.prototype.exhausted = null;
-		this.prototype.movesMade = null;
-		this.prototype.attacksMade = null;
-	}
+  static initClass() {
+    this.type = 'SetExhaustionAction';
 
-	constructor() {
-		if (this.type == null) { this.type = SetExhaustionAction.type; }
-		super(...arguments);
-	}
+    this.prototype.exhausted = null;
+    this.prototype.movesMade = null;
+    this.prototype.attacksMade = null;
+  }
 
-	setExhausted(val) {
-		return this.exhausted = val;
-	}
+  constructor() {
+    if (this.type == null) { this.type = SetExhaustionAction.type; }
+    super(...arguments);
+  }
 
-	getExhausted() {
-		return this.exhausted;
-	}
+  setExhausted(val) {
+    return this.exhausted = val;
+  }
 
-	setMovesMade(val) {
-		return this.movesMade = val;
-	}
+  getExhausted() {
+    return this.exhausted;
+  }
 
-	getMovesMade() {
-		return this.movesMade;
-	}
+  setMovesMade(val) {
+    return this.movesMade = val;
+  }
 
-	setAttacksMade(val) {
-		return this.attacksMade = val;
-	}
+  getMovesMade() {
+    return this.movesMade;
+  }
 
-	getAttacksMade() {
-		return this.attacksMade;
-	}
+  setAttacksMade(val) {
+    return this.attacksMade = val;
+  }
 
-	_execute() {
-		super._execute();
-		const target = this.getTarget();
-		if (target != null) {
-			// match new target's readiness state to that of original unit
-			if (this.exhausted != null) { target.setExhausted(this.exhausted); }
-			if (this.movesMade != null) { target.setMovesMade(this.movesMade); }
-			if (this.attacksMade != null) { return target.setAttacksMade(this.attacksMade); }
-		}
-	}
+  getAttacksMade() {
+    return this.attacksMade;
+  }
+
+  _execute() {
+    super._execute();
+    const target = this.getTarget();
+    if (target != null) {
+      // match new target's readiness state to that of original unit
+      if (this.exhausted != null) { target.setExhausted(this.exhausted); }
+      if (this.movesMade != null) { target.setMovesMade(this.movesMade); }
+      if (this.attacksMade != null) { return target.setAttacksMade(this.attacksMade); }
+    }
+  }
 }
 SetExhaustionAction.initClass();
 

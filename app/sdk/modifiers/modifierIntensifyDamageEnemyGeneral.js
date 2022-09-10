@@ -1,40 +1,44 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierIntensify = require('./modifierIntensify');
 const DamageAction = require('app/sdk/actions/damageAction');
+const ModifierIntensify = require('./modifierIntensify');
 
 class ModifierIntensifyDamageEnemyGeneral extends ModifierIntensify {
-	static initClass() {
-	
-		this.prototype.type ="ModifierIntensifyDamageEnemyGeneral";
-		this.type ="ModifierIntensifyDamageEnemyGeneral";
-	
-		this.prototype.damageAmount = 0;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierIntensifyDamageEnemyGeneral';
+    this.type = 'ModifierIntensifyDamageEnemyGeneral';
 
-	static createContextObject(damageAmount, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.damageAmount = damageAmount;
-		return contextObject;
-	}
+    this.prototype.damageAmount = 0;
+  }
 
-	onIntensify() {
+  static createContextObject(damageAmount, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.damageAmount = damageAmount;
+    return contextObject;
+  }
 
-		const totalDamageAmount = this.getIntensifyAmount() * this.damageAmount;
+  onIntensify() {
+    const totalDamageAmount = this.getIntensifyAmount() * this.damageAmount;
 
-		const enemyGeneral = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+    const enemyGeneral = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
 
-		const enemyDamageAction = new DamageAction(this.getGameSession());
-		enemyDamageAction.setOwnerId(this.getCard().getOwnerId());
-		enemyDamageAction.setSource(this.getCard());
-		enemyDamageAction.setTarget(enemyGeneral);
-		enemyDamageAction.setDamageAmount(totalDamageAmount);
-		return this.getGameSession().executeAction(enemyDamageAction);
-	}
+    const enemyDamageAction = new DamageAction(this.getGameSession());
+    enemyDamageAction.setOwnerId(this.getCard().getOwnerId());
+    enemyDamageAction.setSource(this.getCard());
+    enemyDamageAction.setTarget(enemyGeneral);
+    enemyDamageAction.setDamageAmount(totalDamageAmount);
+    return this.getGameSession().executeAction(enemyDamageAction);
+  }
 }
 ModifierIntensifyDamageEnemyGeneral.initClass();
 

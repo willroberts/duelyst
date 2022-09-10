@@ -1,3 +1,16 @@
+/* eslint-disable
+    consistent-return,
+    func-names,
+    implicit-arrow-linebreak,
+    import/extensions,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-plusplus,
+    prefer-promise-reject-errors,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -12,182 +25,187 @@ const express = require('express');
 const helmet = require('helmet');
 const moment = require('moment');
 const _ = require('underscore');
+const Promise = require('bluebird');
 const Logger = require('../../app/common/logger.coffee');
 const Errors = require('../lib/custom_errors');
 const knex = require('../lib/data_access/knex');
-const Promise = require('bluebird');
-const {Redis,SRankManager,RiftManager} = require('../redis');
+const { Redis, SRankManager, RiftManager } = require('../redis');
 const mail = require('../mailer.coffee');
+
 Promise.promisifyAll(mail);
 const config = require('../../config/config.js');
+
 const env = config.get('env');
-const {version} = require('../../version');
+const { version } = require('../../version');
 
 const router = express.Router();
 
-const poolStats = function(pool) {
-	const stats = {
-		size: pool.getPoolSize(),
-		min: pool.getMinPoolSize(),
-		max: pool.getMaxPoolSize(),
-		available: pool.availableObjectsCount(),
-		queued: pool.waitingClientsCount()
-	};
-	return stats;
+const poolStats = function (pool) {
+  const stats = {
+    size: pool.getPoolSize(),
+    min: pool.getMinPoolSize(),
+    max: pool.getMaxPoolSize(),
+    available: pool.availableObjectsCount(),
+    queued: pool.waitingClientsCount(),
+  };
+  return stats;
 };
 
-const serveIndex = function(req, res) {
-	// set no cache header
-	res.setHeader('Cache-Control', 'no-cache');
-	// serve index.html file
-	if (config.isDevelopment()) {
-		return res.sendFile(path.resolve(__dirname + "/../../dist/src/index.html"));
-	} else if (config.isProduction()) {
-		return res.sendFile(path.resolve(__dirname + "/../../public/" + config.get('env') + "/index.html"));
-	}
+const serveIndex = function (req, res) {
+  // set no cache header
+  res.setHeader('Cache-Control', 'no-cache');
+  // serve index.html file
+  if (config.isDevelopment()) {
+    return res.sendFile(path.resolve(`${__dirname}/../../dist/src/index.html`));
+  } if (config.isProduction()) {
+    return res.sendFile(path.resolve(`${__dirname}/../../public/${config.get('env')}/index.html`));
+  }
 };
 
-const serveRegister = function(req, res) {
-	// set no cache header
-	res.setHeader('Cache-Control', 'no-cache');
-	// serve index.html file
-	if (config.isDevelopment()) {
-		return res.sendFile(path.resolve(__dirname + "/../../dist/src/register.html"));
-	} else if (config.isProduction()) {
-		return res.sendFile(path.resolve(__dirname + "/../../public/" + config.get('env') + "/register.html"));
-	}
+const serveRegister = function (req, res) {
+  // set no cache header
+  res.setHeader('Cache-Control', 'no-cache');
+  // serve index.html file
+  if (config.isDevelopment()) {
+    return res.sendFile(path.resolve(`${__dirname}/../../dist/src/register.html`));
+  } if (config.isProduction()) {
+    return res.sendFile(path.resolve(`${__dirname}/../../public/${config.get('env')}/register.html`));
+  }
 };
 
 // Setup routes for production / development mode
 // Development mode uses index.html from /dist folder
 if (config.isDevelopment()) {
-	Logger.module("EXPRESS").log(`Configuring for DEVELOPMENT environment ${env}`.yellow);
+  Logger.module('EXPRESS').log(`Configuring for DEVELOPMENT environment ${env}`.yellow);
 
-	// Serve enter /dist/src folder
-	router.use(express.static(__dirname + "/../../dist/src", {etag: false, lastModified: false, maxAge: 0}));
+  // Serve enter /dist/src folder
+  router.use(express.static(`${__dirname}/../../dist/src`, { etag: false, lastModified: false, maxAge: 0 }));
 
-	// Serve main index page /dist/src/index.html
-	router.get("/", serveIndex);
-	router.get("/game", serveIndex);
-	router.get("/register", serveRegister);
-	router.get("/login", serveRegister);
-	router.post("/", serveIndex);
+  // Serve main index page /dist/src/index.html
+  router.get('/', serveIndex);
+  router.get('/game', serveIndex);
+  router.get('/register', serveRegister);
+  router.get('/login', serveRegister);
+  router.post('/', serveIndex);
 }
 
 // Production mode uses index.html from S3
 if (config.isProduction()) {
-	Logger.module("EXPRESS").log(`Configuring for PRODUCTION environment ${env}`.cyan);
+  Logger.module('EXPRESS').log(`Configuring for PRODUCTION environment ${env}`.cyan);
 
-	// temporarily disabled to allow iframing
-	// router.get "/", helmet.frameguard('deny'), serveIndex
-	router.get("/", serveIndex);
-	router.get("/game", serveIndex);
-	router.get("/register", serveRegister);
-	router.get("/login", serveRegister);
-	router.post("/", serveIndex);
+  // temporarily disabled to allow iframing
+  // router.get "/", helmet.frameguard('deny'), serveIndex
+  router.get('/', serveIndex);
+  router.get('/game', serveIndex);
+  router.get('/register', serveRegister);
+  router.get('/login', serveRegister);
+  router.post('/', serveIndex);
 }
 
 // /version
-router.get("/version", (req, res) => res.json({ version }));
+router.get('/version', (req, res) => res.json({ version }));
 
 // /srank
-router.get("/srank_ladder", function(req, res) {
-	const startOfSeasonMonth = moment.utc().startOf('month');
-	return SRankManager.getTopLadderUserIds(startOfSeasonMonth,50)
-	.then(topPlayerIds => // TODO: Needs validation that this maintains order
-    Promise.map(
+router.get('/srank_ladder', (req, res) => {
+  const startOfSeasonMonth = moment.utc().startOf('month');
+  return SRankManager.getTopLadderUserIds(startOfSeasonMonth, 50)
+    .then((topPlayerIds) => // TODO: Needs validation that this maintains order
+      Promise.map(
         topPlayerIds,
-        playerId => knex.first('username').from('users').where('id',playerId)
-    )).then(function(topPlayerRows) {
-		const topPlayerNames = _.map(topPlayerRows,row => row.username);
-		return res.json(topPlayerNames);
-	});
+        (playerId) => knex.first('username').from('users').where('id', playerId),
+      )).then((topPlayerRows) => {
+      const topPlayerNames = _.map(topPlayerRows, (row) => row.username);
+      return res.json(topPlayerNames);
+    });
 });
 
 // /rift_ladder
-router.get("/rift_ladder", (req, res) => RiftManager.getTopLadderUserIdAndRunIds(50)
-.then(topUserAndRunIds => Promise.map(topUserAndRunIds,function(userAndRunId) {
+router.get('/rift_ladder', (req, res) => RiftManager.getTopLadderUserIdAndRunIds(50)
+  .then((topUserAndRunIds) => Promise.map(topUserAndRunIds, (userAndRunId) => {
     if ((userAndRunId == null)) {
-        return Promise.reject(`Top Rift Ladder: Invalid user:run id: ${userAndRunId}`);
+      return Promise.reject(`Top Rift Ladder: Invalid user:run id: ${userAndRunId}`);
     }
-    const userRunIdTuple = userAndRunId.split(":");
+    const userRunIdTuple = userAndRunId.split(':');
     if ((userRunIdTuple === null) || (userRunIdTuple.length !== 2)) {
-        return Promise.reject(`Top Rift Ladder: Error parsing user:run id: ${userAndRunId}`);
+      return Promise.reject(`Top Rift Ladder: Error parsing user:run id: ${userAndRunId}`);
     }
     const userId = userRunIdTuple[0];
     const ticketId = userRunIdTuple[1];
     return Promise.all([
-        knex.first('username').from('users').where('id',userId),
-        knex.first().from("user_rift_runs").where("user_id",userId).andWhere("ticket_id",ticketId)
-    ]).spread(function(userNameRow,userRiftRun) {
-        if ((userNameRow != null) && (userRiftRun != null)) { // Only needed in case a user's data is wiped, but good safety check to have
-            return Promise.resolve({
-                username: userNameRow.username,
-                faction_id: userRiftRun.faction_id,
-                general_id: userRiftRun.general_id
-            });
-        } else {
-            return Promise.resolve(null);
-        }});
-})).then(function(topPlayerDataRows) {
-    topPlayerDataRows = _.filter(topPlayerDataRows, row => row !== null);
-    for (let i = 0, end = topPlayerDataRows.length, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-        topPlayerDataRows[i].rank = i+1;
+      knex.first('username').from('users').where('id', userId),
+      knex.first().from('user_rift_runs').where('user_id', userId).andWhere('ticket_id', ticketId),
+    ]).spread((userNameRow, userRiftRun) => {
+      if ((userNameRow != null) && (userRiftRun != null)) { // Only needed in case a user's data is wiped, but good safety check to have
+        return Promise.resolve({
+          username: userNameRow.username,
+          faction_id: userRiftRun.faction_id,
+          general_id: userRiftRun.general_id,
+        });
+      }
+      return Promise.resolve(null);
+    });
+  })).then((topPlayerDataRows) => {
+    topPlayerDataRows = _.filter(topPlayerDataRows, (row) => row !== null);
+    for (let i = 0, end = topPlayerDataRows.length, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+      topPlayerDataRows[i].rank = i + 1;
     }
     return res.json(topPlayerDataRows);
-}));
+  }));
 
 // /health
-router.get("/health", function(req, res) {
-	const MAX_QUEUED_ALLOWED = 25;
-	const pool = poolStats(knex.client.pool);
-	return Promise.all([
-		knex("knex_migrations").select("migration_time").orderBy("id","desc").limit(1)
-	])
-	.timeout(5000)
-	.spread(function(row){
-		if (pool.queued >= MAX_QUEUED_ALLOWED) {
-			const serverInfo = {
-				hostname: os.hostname(),
-				environment: config.get('env'),
-				pool
-			};
-			mail.sendErrorAlertAsync(serverInfo, {message: `Database operations queue above maximum limit (${MAX_QUEUED_ALLOWED})`});
-			res.status(500);
-		} else {
-			res.status(200);
-		}
-		return res.json({pool});}).catch(Promise.TimeoutError, e => res.status(500).json({ message: "db timeout" })).catch(e => res.status(500).json({ message: "db error" }));
+router.get('/health', (req, res) => {
+  const MAX_QUEUED_ALLOWED = 25;
+  const pool = poolStats(knex.client.pool);
+  return Promise.all([
+    knex('knex_migrations').select('migration_time').orderBy('id', 'desc').limit(1),
+  ])
+    .timeout(5000)
+    .spread((row) => {
+      if (pool.queued >= MAX_QUEUED_ALLOWED) {
+        const serverInfo = {
+          hostname: os.hostname(),
+          environment: config.get('env'),
+          pool,
+        };
+        mail.sendErrorAlertAsync(serverInfo, { message: `Database operations queue above maximum limit (${MAX_QUEUED_ALLOWED})` });
+        res.status(500);
+      } else {
+        res.status(200);
+      }
+      return res.json({ pool });
+    }).catch(Promise.TimeoutError, (e) => res.status(500).json({ message: 'db timeout' }))
+    .catch((e) => res.status(500).json({ message: 'db error' }));
 });
 
 // /stats
-router.get("/stats", function(req, res) {
-	const serverId = os.hostname();
-	const getPlayers = Redis.hgetAsync(`servers:${serverId}`, "players");
-	const getGames = Redis.hgetAsync(`servers:${serverId}`, "games");
+router.get('/stats', (req, res) => {
+  const serverId = os.hostname();
+  const getPlayers = Redis.hgetAsync(`servers:${serverId}`, 'players');
+  const getGames = Redis.hgetAsync(`servers:${serverId}`, 'games');
 
-	return Promise.join(getPlayers, getGames, (players, games) => res.json({ players, games, pool: poolStats(knex.client.pool) }));
+  return Promise.join(getPlayers, getGames, (players, games) => res.json({ players, games, pool: poolStats(knex.client.pool) }));
 });
 
-router.get("/replay", function(req, res, next) {
-	// replay id from query string params
-	const replayId = req.query["replayId"] || null;
-	// where to grab the javascript version
-	// use staging CDN in development / testing
-	let cdnUrl = "https://830f78e090fe8aec00891405dfc14duelyst.freetls.fastly.net/development";
-	if (config.get('cdn') && (config.get('cdn') !== "")) {
-		cdnUrl = config.get('cdn');
-	}
+router.get('/replay', (req, res, next) => {
+  // replay id from query string params
+  const replayId = req.query.replayId || null;
+  // where to grab the javascript version
+  // use staging CDN in development / testing
+  let cdnUrl = 'https://830f78e090fe8aec00891405dfc14duelyst.freetls.fastly.net/development';
+  if (config.get('cdn') && (config.get('cdn') !== '')) {
+    cdnUrl = config.get('cdn');
+  }
 
-	return knex("user_replays").where('replay_id',replayId).first()
-	.then(function(replay){
-		if (replay != null) {
-			return res.render(__dirname + "/../templates/replay.hbs",{
-				gameVersionAssetBucket: `${cdnUrl}/v${replay.version}`
-			});
-		} else {
-			throw new Errors.NotFoundError(`Replay ${replayId} not found`);
-		}}).catch(e => next(e));
+  return knex('user_replays').where('replay_id', replayId).first()
+    .then((replay) => {
+      if (replay != null) {
+        return res.render(`${__dirname}/../templates/replay.hbs`, {
+          gameVersionAssetBucket: `${cdnUrl}/v${replay.version}`,
+        });
+      }
+      throw new Errors.NotFoundError(`Replay ${replayId} not found`);
+    })
+    .catch((e) => next(e));
 });
 
 module.exports = router;

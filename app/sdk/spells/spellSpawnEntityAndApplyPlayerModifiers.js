@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,40 +17,39 @@
 const SpellSpawnEntity = require('./spellSpawnEntity');
 
 class SpellSpawnEntityAndApplyPlayerModifiers extends SpellSpawnEntity {
-	static initClass() {
-	
-		this.prototype.applyToOwnGeneral = false;
-		this.prototype.applyToOpponentGeneral = false;
-	}
+  static initClass() {
+    this.prototype.applyToOwnGeneral = false;
+    this.prototype.applyToOpponentGeneral = false;
+  }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
 
-		if (this.targetModifiersContextObjects != null) {
-			let modifierContextObject;
-			const ownerId = this.getOwnerId();
+    if (this.targetModifiersContextObjects != null) {
+      let modifierContextObject;
+      const ownerId = this.getOwnerId();
 
-			if (this.applyToOwnGeneral) {
-				// cast on own General
-				const ownGeneral = this.getGameSession().getGeneralForPlayerId(ownerId);
-				for (modifierContextObject of Array.from(this.targetModifiersContextObjects)) {
-					this.getGameSession().applyModifierContextObject(modifierContextObject, ownGeneral);
-				}
-			}
+      if (this.applyToOwnGeneral) {
+        // cast on own General
+        const ownGeneral = this.getGameSession().getGeneralForPlayerId(ownerId);
+        for (modifierContextObject of Array.from(this.targetModifiersContextObjects)) {
+          this.getGameSession().applyModifierContextObject(modifierContextObject, ownGeneral);
+        }
+      }
 
-			if (this.applyToOpponentGeneral) {
-				// cast on opponent's General
-				const opponentGeneral = this.getGameSession().getGeneralForOpponentOfPlayerId(ownerId);
-				return (() => {
-					const result = [];
-					for (modifierContextObject of Array.from(this.targetModifiersContextObjects)) {
-						result.push(this.getGameSession().applyModifierContextObject(modifierContextObject, opponentGeneral));
-					}
-					return result;
-				})();
-			}
-		}
-	}
+      if (this.applyToOpponentGeneral) {
+        // cast on opponent's General
+        const opponentGeneral = this.getGameSession().getGeneralForOpponentOfPlayerId(ownerId);
+        return (() => {
+          const result = [];
+          for (modifierContextObject of Array.from(this.targetModifiersContextObjects)) {
+            result.push(this.getGameSession().applyModifierContextObject(modifierContextObject, opponentGeneral));
+          }
+          return result;
+        })();
+      }
+    }
+  }
 }
 SpellSpawnEntityAndApplyPlayerModifiers.initClass();
 

@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-plusplus,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,40 +14,38 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('app/common/config');
-const Modifier = require('./modifier');
-const ModifierBond = require('./modifierBond');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const CardType = require('app/sdk/cards/cardType');
 const _ = require('underscore');
+const ModifierBond = require('./modifierBond');
+const Modifier = require('./modifier');
 
 class ModifierBondDrawCards extends ModifierBond {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBondDrawCards";
-		this.type ="ModifierBondDrawCards";
-	
-		this.description = "Draw some cards from the deck";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierBond"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBondDrawCards';
+    this.type = 'ModifierBondDrawCards';
 
-	static createContextObject(numCards) {
-		const contextObject = super.createContextObject();
-		contextObject.numCards = numCards;
-		return contextObject;
-	}
+    this.description = 'Draw some cards from the deck';
 
-	onBond() {
+    this.prototype.fxResource = ['FX.Modifiers.ModifierBond'];
+  }
 
-		return (() => {
-			const result = [];
-			for (let i = 0, end = this.numCards, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-				const deck = this.getGameSession().getPlayerById(this.getCard().getOwnerId()).getDeck();
-				result.push(this.getCard().getGameSession().executeAction(deck.actionDrawCard()));
-			}
-			return result;
-		})();
-	}
+  static createContextObject(numCards) {
+    const contextObject = super.createContextObject();
+    contextObject.numCards = numCards;
+    return contextObject;
+  }
+
+  onBond() {
+    return (() => {
+      const result = [];
+      for (let i = 0, end = this.numCards, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+        const deck = this.getGameSession().getPlayerById(this.getCard().getOwnerId()).getDeck();
+        result.push(this.getCard().getGameSession().executeAction(deck.actionDrawCard()));
+      }
+      return result;
+    })();
+  }
 }
 ModifierBondDrawCards.initClass();
 

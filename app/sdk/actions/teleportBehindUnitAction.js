@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-this-before-super,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -10,41 +19,40 @@ const Logger = require('app/common/logger');
 const TeleportAction = require('./teleportAction');
 
 class TeleportBehindUnitAction extends TeleportAction {
-	static initClass() {
-	
-		this.type = "TeleportBehindUnitAction";
-	}
+  static initClass() {
+    this.type = 'TeleportBehindUnitAction';
+  }
 
-	constructor(gameSession, behindUnit, targetUnit) {
-		if (this.type == null) { this.type = TeleportBehindUnitAction.type; }
-		super(gameSession);
-		this._private.behindUnit = behindUnit;
-		this.setSource(targetUnit);
-	}
+  constructor(gameSession, behindUnit, targetUnit) {
+    if (this.type == null) { this.type = TeleportBehindUnitAction.type; }
+    super(gameSession);
+    this._private.behindUnit = behindUnit;
+    this.setSource(targetUnit);
+  }
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
 
-		p.behindUnit = null; // used by the authoritative source action to know where to teleport
+    p.behindUnit = null; // used by the authoritative source action to know where to teleport
 
-		return p;
-	}
+    return p;
+  }
 
-	_execute() {
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			// only do calculations server-side
-			if ((this._private.behindUnit != null) && this.getSource()) {
-				// calculate "in front of me"
-				const position = this._private.behindUnit.getPosition();
-				position.x += this._private.behindUnit.isOwnedByPlayer1() ? -1 : 1;
-				// now set the target position (this is what TeleportAction expects)
-				this.setTargetPosition(position);
-				return super._execute(); // and execute the teleport
-			}
-		} else {
-			return super._execute();
-		}
-	}
+  _execute() {
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      // only do calculations server-side
+      if ((this._private.behindUnit != null) && this.getSource()) {
+        // calculate "in front of me"
+        const position = this._private.behindUnit.getPosition();
+        position.x += this._private.behindUnit.isOwnedByPlayer1() ? -1 : 1;
+        // now set the target position (this is what TeleportAction expects)
+        this.setTargetPosition(position);
+        return super._execute(); // and execute the teleport
+      }
+    } else {
+      return super._execute();
+    }
+  }
 }
 TeleportBehindUnitAction.initClass(); // when not running as authoritative, use authoritative source action's data
 

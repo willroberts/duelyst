@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    max-len,
+    no-this-before-super,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -9,38 +17,37 @@
 const Action = require('./action');
 
 class RemoveCardFromDeckAction extends Action {
-	static initClass() {
-	
-		this.type ="RemoveCardFromDeckAction";
-	
-		this.prototype.targetPlayerId = null;
-		this.prototype.cardIndex = null;
-	}
+  static initClass() {
+    this.type = 'RemoveCardFromDeckAction';
 
-	constructor(gameSession, cardIndex, targetPlayerId) {
-		if (this.type == null) { this.type = RemoveCardFromDeckAction.type; }
-		super(gameSession);
+    this.prototype.targetPlayerId = null;
+    this.prototype.cardIndex = null;
+  }
 
-		this.cardIndex = cardIndex;
-		this.targetPlayerId = targetPlayerId;
-	}
+  constructor(gameSession, cardIndex, targetPlayerId) {
+    if (this.type == null) { this.type = RemoveCardFromDeckAction.type; }
+    super(gameSession);
 
-	_execute() {
-		super._execute();
+    this.cardIndex = cardIndex;
+    this.targetPlayerId = targetPlayerId;
+  }
 
-		if (this.cardIndex != null) {
-			const deck = this.getGameSession().getPlayerById(this.targetPlayerId).getDeck();
-			return this.getGameSession().removeCardByIndexFromDeck(deck, this.cardIndex, this.getGameSession().getCardByIndex(this.cardIndex), this);
-		}
-	}
+  _execute() {
+    super._execute();
 
-	getCardIndex() {
-		return this.cardIndex;
-	}
+    if (this.cardIndex != null) {
+      const deck = this.getGameSession().getPlayerById(this.targetPlayerId).getDeck();
+      return this.getGameSession().removeCardByIndexFromDeck(deck, this.cardIndex, this.getGameSession().getCardByIndex(this.cardIndex), this);
+    }
+  }
 
-	getTargetPlayerId() {
-		return this.targetPlayerId;
-	}
+  getCardIndex() {
+    return this.cardIndex;
+  }
+
+  getTargetPlayerId() {
+    return this.targetPlayerId;
+  }
 }
 RemoveCardFromDeckAction.initClass();
 

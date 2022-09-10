@@ -1,3 +1,14 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-tabs,
+    no-undef,
+    no-underscore-dangle,
+    no-use-before-define,
+    prefer-destructuring,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,7 +17,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Challenge 		= require("app/sdk/challenges/challenge");
+const Challenge 		= require('app/sdk/challenges/challenge');
 const GameSession 	= require('app/sdk/gameSession');
 const FactionFactory 	= require('app/sdk/cards/factionFactory');
 const AgentActions 	= require('app/sdk/agents/agentActions');
@@ -17,163 +28,155 @@ const Promise = require('bluebird');
 const i18next = require('i18next');
 
 class ChallengeRemote extends Challenge {
-	static initClass() {
-	
-		this.type = "rando-1";
-		this.prototype.type = "rando-1";
-		this.prototype.categoryType = null;
-		this.prototype.isDaily = true;
-	
-		this.prototype.name ="<name>";
-		this.prototype.description ="<description>";
-		this.prototype.iconUrl = RSX.speech_portrait_vanar.img;
-		this.prototype._musicOverride = RSX.music_battlemap_vanar.audio;
-	
-		this.prototype.otkChallengeStartMessage = "<instructions>";
-		this.prototype.otkChallengeFailureMessages = [
-			"Hint:..."
-		];
-	
-		this.prototype.snapShotOnPlayerTurn = 0;
-		this.prototype._gameSessionData = null;
-	}
+  static initClass() {
+    this.type = 'rando-1';
+    this.prototype.type = 'rando-1';
+    this.prototype.categoryType = null;
+    this.prototype.isDaily = true;
 
-	static loadAndCreateFromModelData(modelAttributes){
-		return Promise.resolve(fetch(modelAttributes.url))
-		.bind(this)
-		.timeout(10000)
-		.catch(this._networkError)
-		.then(function(res){
-			if (res.ok) {
-				return res.json();
-			} else {
-				const err = new Error(res.statusText);
-				err.status = res.status;
-				throw err;
-			}}).then(data => {
-			return this.createFromGameSessionData(modelAttributes,data);
-		});
-	}
+    this.prototype.name = '<name>';
+    this.prototype.description = '<description>';
+    this.prototype.iconUrl = RSX.speech_portrait_vanar.img;
+    this.prototype._musicOverride = RSX.music_battlemap_vanar.audio;
 
-	static createFromGameSessionData(modelAttributes,data){
-		const challenge = new ChallengeRemote(data);
-		challenge.type = modelAttributes.challenge_id;
-//		challenge.name = modelAttributes.title
-//		challenge.description = modelAttributes.description
-		challenge.name = i18next.t("challenges.daily_challenge_label");
-		let opponentFactionName = "enemy";
-		if (__guard__(__guard__(__guard__(data != null ? data.gameSetupData : undefined, x2 => x2.players), x1 => x1[1]), x => x.factionId) != null) {
-			const opponentFullFactionName = FactionFactory.factionForIdentifier(data.gameSetupData.players[1].factionId).name;
-			opponentFactionName = opponentFullFactionName.split(" ")[0];
-		}
-		challenge.goldReward = modelAttributes.gold;
-		//challenge.description = "Defeat the #{opponentFactionName} General in ONE turn."
-		challenge.description = i18next.t("challenges.daily_challenge_desc",{faction:this.opponentFactionName});
-		challenge.otkChallengeStartMessage = modelAttributes.instructions;
-//		challenge.otkChallengeFailureMessages = [modelAttributes.hint]
-		challenge.otkChallengeFailureMessages = [];
+    this.prototype.otkChallengeStartMessage = '<instructions>';
+    this.prototype.otkChallengeFailureMessages = [
+      'Hint:...',
+    ];
 
-		// This is only present when a challenge is loaded from QA tool by date, NOT INTENDED FOR OTHER USE
-		challenge.dateKey = modelAttributes.dateKey;
+    this.prototype.snapShotOnPlayerTurn = 0;
+    this.prototype._gameSessionData = null;
+  }
 
-		// Set up iconUrl
-		if (__guard__(__guard__(__guard__(data != null ? data.gameSetupData : undefined, x5 => x5.players), x4 => x4[0]), x3 => x3.generalId) != null) {
-			const {
-                generalId
-            } = data.gameSetupData.players[0];
-			const generalSdkCard = GameSession.getCardCaches().getCardById(generalId);
-			const generalSpeechResource = generalSdkCard.getSpeechResource();
-			if (generalSpeechResource != null) {
-				challenge.iconUrl = generalSpeechResource.img;
-			}
-		}
+  static loadAndCreateFromModelData(modelAttributes) {
+    return Promise.resolve(fetch(modelAttributes.url))
+      .bind(this)
+      .timeout(10000)
+      .catch(this._networkError)
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+        const err = new Error(res.statusText);
+        err.status = res.status;
+        throw err;
+      })
+      .then((data) => this.createFromGameSessionData(modelAttributes, data));
+  }
 
-		return Promise.resolve(challenge);
-	}
+  static createFromGameSessionData(modelAttributes, data) {
+    const challenge = new ChallengeRemote(data);
+    challenge.type = modelAttributes.challenge_id;
+    //		challenge.name = modelAttributes.title
+    //		challenge.description = modelAttributes.description
+    challenge.name = i18next.t('challenges.daily_challenge_label');
+    let opponentFactionName = 'enemy';
+    if (__guard__(__guard__(__guard__(data != null ? data.gameSetupData : undefined, (x2) => x2.players), (x1) => x1[1]), (x) => x.factionId) != null) {
+      const opponentFullFactionName = FactionFactory.factionForIdentifier(data.gameSetupData.players[1].factionId).name;
+      opponentFactionName = opponentFullFactionName.split(' ')[0];
+    }
+    challenge.goldReward = modelAttributes.gold;
+    // challenge.description = "Defeat the #{opponentFactionName} General in ONE turn."
+    challenge.description = i18next.t('challenges.daily_challenge_desc', { faction: this.opponentFactionName });
+    challenge.otkChallengeStartMessage = modelAttributes.instructions;
+    //		challenge.otkChallengeFailureMessages = [modelAttributes.hint]
+    challenge.otkChallengeFailureMessages = [];
 
-	constructor(data){
-		super();
+    // This is only present when a challenge is loaded from QA tool by date, NOT INTENDED FOR OTHER USE
+    challenge.dateKey = modelAttributes.dateKey;
 
-		this.hiddenUIElements = _.without(this.hiddenUIElements, "SignatureCard");
+    // Set up iconUrl
+    if (__guard__(__guard__(__guard__(data != null ? data.gameSetupData : undefined, (x5) => x5.players), (x4) => x4[0]), (x3) => x3.generalId) != null) {
+      const {
+        generalId,
+      } = data.gameSetupData.players[0];
+      const generalSdkCard = GameSession.getCardCaches().getCardById(generalId);
+      const generalSpeechResource = generalSdkCard.getSpeechResource();
+      if (generalSpeechResource != null) {
+        challenge.iconUrl = generalSpeechResource.img;
+      }
+    }
 
-		this._gameSessionData = data;
-	}
+    return Promise.resolve(challenge);
+  }
 
-	/**
+  constructor(data) {
+    super();
+
+    this.hiddenUIElements = _.without(this.hiddenUIElements, 'SignatureCard');
+
+    this._gameSessionData = data;
+  }
+
+  /**
 	 * Set up the GameSession for this challenge.
 	 * @public
 	 */
-	setupSession(gameSession, player1Data, player2Data){
+  setupSession(gameSession, player1Data, player2Data) {
+    // overwrite players names
+    this._gameSessionData.players[0].username = i18next.t('challenges.challenge_p1_label');
+    this._gameSessionData.players[1].username = i18next.t('challenges.challenge_p2_label');
 
-		// overwrite players names
-		this._gameSessionData.players[0].username = i18next.t("challenges.challenge_p1_label");
-		this._gameSessionData.players[1].username = i18next.t("challenges.challenge_p2_label");
+    gameSession.deserializeSessionFromFirebase(this._gameSessionData);
 
+    gameSession.setUserId(gameSession.getPlayer1Id());
 
-		gameSession.deserializeSessionFromFirebase(this._gameSessionData);
+    // set game session challenge
+    gameSession.setChallenge(this);
 
-		gameSession.setUserId(gameSession.getPlayer1Id());
+    // set modes
+    this.setupSessionModes(gameSession);
 
-		// set game session challenge
-		gameSession.setChallenge(this);
+    // Disable ability to replace
+    const player1 = gameSession != null ? gameSession.getPlayer1() : undefined;
+    const deck = player1 != null ? player1.getDeck() : undefined;
+    if (deck != null) {
+      deck.setNumCardsReplacedThisTurn(1);
+    }
 
-		// set modes
-		this.setupSessionModes(gameSession);
+    // set battlemap template
+    if (this.battleMapTemplateIndex != null) {
+      gameSession.setBattleMapTemplate(new BattleMapTemplate(gameSession, this.battleMapTemplateIndex));
+    }
 
-		// Disable ability to replace
-		const player1 = gameSession != null ? gameSession.getPlayer1() : undefined;
-		const deck = player1 != null ? player1.getDeck() : undefined;
-		if (deck != null) {
-			deck.setNumCardsReplacedThisTurn(1);
-		}
+    // setup agent
+    this.setupOpponentAgent(gameSession);
 
-		// set battlemap template
-		if (this.battleMapTemplateIndex != null) {
-			gameSession.setBattleMapTemplate(new BattleMapTemplate(gameSession, this.battleMapTemplateIndex));
-		}
+    // force game session to sync state
+    // in case any challenges set custom board state or stats
+    gameSession.syncState();
 
-		// setup agent
-		this.setupOpponentAgent(gameSession);
+    const currentTurnIndex = GameSession.current().getNumberOfTurns(); // current turn count calculation is ugly
+    const playersTurnIndex = Math.floor(currentTurnIndex / 2); // represents the index of turn for this player
 
-		// force game session to sync state
-		// in case any challenges set custom board state or stats
-		gameSession.syncState();
+    this.snapShotOnPlayerTurn = playersTurnIndex;
 
-		const currentTurnIndex = GameSession.current().getNumberOfTurns(); // current turn count calculation is ugly
-		const playersTurnIndex = Math.floor(currentTurnIndex / 2); // represents the index of turn for this player
+    // snapshot complete session
+    this._snapShotChallengeIfNeeded();
 
-		this.snapShotOnPlayerTurn = playersTurnIndex;
+    return gameSession;
+  }
 
-		// snapshot complete session
-		this._snapShotChallengeIfNeeded();
-
-		return gameSession;
-	}
-
-	/**
+  /**
 	 * Set up the Oppponent Agent action for this challenge.
 	 * @public
 	 */
-	setupOpponentAgent(gameSession) {
+  setupOpponentAgent(gameSession) {
+    super.setupOpponentAgent(gameSession);
 
-		super.setupOpponentAgent(gameSession);
+    this._opponentAgent.addActionForTurn(0, AgentActions.createAgentSoftActionShowInstructionLabels([{
+      label: 'Say your prayers.',
+      isSpeech: true,
+      yPosition: 0.7,
+      isPersistent: true,
+      isOpponent: true,
+    },
+    ]));
 
-		this._opponentAgent.addActionForTurn(0,AgentActions.createAgentSoftActionShowInstructionLabels([{
-			label:"Say your prayers.",
-			isSpeech:true,
-			yPosition:.7,
-			isPersistent: true,
-			isOpponent: true
-		}
-		]));
-
-		return this._opponentAgent.addActionForTurn(0,AgentActions.createAgentActionPlayCardFindPosition(0,() => {
-			return [gameSession.getGeneralForPlayer1().getPosition()];
-		}));
-	}
+    return this._opponentAgent.addActionForTurn(0, AgentActions.createAgentActionPlayCardFindPosition(0, () => [gameSession.getGeneralForPlayer1().getPosition()]));
+  }
 }
 ChallengeRemote.initClass();
-
 
 module.exports = ChallengeRemote;
 

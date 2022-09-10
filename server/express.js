@@ -1,3 +1,5 @@
+// TODO: This file was created by bulk-decaffeinate.
+// Sanity-check the conversion and remove this comment.
 const express = require('express');
 const hbs = require('hbs');
 const helmet = require('helmet');
@@ -7,12 +9,12 @@ const config = require('../config/config');
 
 const app = express();
 // enable trust proxy for production so that client IP is correctly set for requests
-app.set('trust proxy',config.isProduction());
+app.set('trust proxy', config.isProduction());
 // disable x-powered-by header
 app.disable('x-powered-by');
 // Use Handlebars view engine for static pages and disable view caching
 app.set('view engine', 'hbs');
-hbs.registerPartials(__dirname + '/templates/partials');
+hbs.registerPartials(`${__dirname}/templates/partials`);
 app.disable('view cache');
 
 /*
@@ -43,11 +45,11 @@ app.use(middleware.not_found);
 app.use(middleware.errors.logError);
 
 if (config.isDevelopment()) {
-	app.use(middleware.errors.development);
+  app.use(middleware.errors.development);
 }
 
 if (config.isProduction()) {
-	app.use(middleware.errors.production);
+  app.use(middleware.errors.production);
 }
 
 module.exports = app;

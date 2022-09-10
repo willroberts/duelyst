@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,35 +14,34 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
 const ModifierEgg = require('app/sdk/modifiers/modifierEgg');
+const ModifierDealDamageWatch = require('./modifierDealDamageWatch');
 
 class ModifierDealDamageWatchHatchEggs extends ModifierDealDamageWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDealDamageWatchHatchEggs";
-		this.type ="ModifierDealDamageWatchHatchEggs";
-	
-		this.modifierName ="Deal Damage and hatch eggs";
-		this.description ="Whenever this deals damage, hatch all friendly eggs";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDealDamageWatchHatchEggs';
+    this.type = 'ModifierDealDamageWatchHatchEggs';
 
-	onDealDamage(action) {
-		return (() => {
-			const result = [];
-			for (let entity of Array.from(this.getCard().getGameSession().getBoard().getUnits())) {
-				if (((entity != null ? entity.getOwnerId() : undefined) === this.getCard().getOwnerId()) && entity.hasModifierClass(ModifierEgg)) {
-					const eggModifier = entity.getModifierByType(ModifierEgg.type);
-					this.getGameSession().pushTriggeringModifierOntoStack(eggModifier);
-					eggModifier.removeAndReplace();
-					result.push(this.getGameSession().popTriggeringModifierFromStack());
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    this.modifierName = 'Deal Damage and hatch eggs';
+    this.description = 'Whenever this deals damage, hatch all friendly eggs';
+  }
+
+  onDealDamage(action) {
+    return (() => {
+      const result = [];
+      for (const entity of Array.from(this.getCard().getGameSession().getBoard().getUnits())) {
+        if (((entity != null ? entity.getOwnerId() : undefined) === this.getCard().getOwnerId()) && entity.hasModifierClass(ModifierEgg)) {
+          const eggModifier = entity.getModifierByType(ModifierEgg.type);
+          this.getGameSession().pushTriggeringModifierOntoStack(eggModifier);
+          eggModifier.removeAndReplace();
+          result.push(this.getGameSession().popTriggeringModifierFromStack());
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 ModifierDealDamageWatchHatchEggs.initClass();
 

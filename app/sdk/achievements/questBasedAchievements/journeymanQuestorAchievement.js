@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -9,23 +15,21 @@ const QuestFactory = require('app/sdk/quests/questFactory');
 const i18next = require('i18next');
 
 class JourneymanQuestorAchievement extends Achievement {
-	static initClass() {
-		this.id = "journeymanQuestor";
-		this.title = i18next.t("achievements.journeyman_questor_title");
-		this.description = i18next.t("achievements.journeyman_questor_desc");
-		this.progressRequired = 1;
-		this.rewards =
-			{neutralEpicCard: 1};
-	}
+  static initClass() {
+    this.id = 'journeymanQuestor';
+    this.title = i18next.t('achievements.journeyman_questor_title');
+    this.description = i18next.t('achievements.journeyman_questor_desc');
+    this.progressRequired = 1;
+    this.rewards =			{ neutralEpicCard: 1 };
+  }
 
-	static progressForCompletingQuestId(questId) {
-		const sdkQuest = QuestFactory.questForIdentifier(questId);
-		if ((sdkQuest != null) && !sdkQuest.isBeginner) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
+  static progressForCompletingQuestId(questId) {
+    const sdkQuest = QuestFactory.questForIdentifier(questId);
+    if ((sdkQuest != null) && !sdkQuest.isBeginner) {
+      return 1;
+    }
+    return 0;
+  }
 }
 JourneymanQuestorAchievement.initClass();
 

@@ -1,3 +1,13 @@
+/* eslint-disable
+    consistent-return,
+    default-param-last,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -6,88 +16,83 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier');
-const ModifierOpeningGambit = require('./modifierOpeningGambit');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const CardType = require('app/sdk/cards/cardType');
 const _ = require('underscore');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
+const Modifier = require('./modifier');
 
 /*
  Modifier is used to apply modifiers to cards in deck and hand when a card is played to the board.
 */
 class ModifierOpeningGambitApplyModifiersToDeckAndHand extends ModifierOpeningGambit {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOpeningGambitApplyModifiersToDeckAndHand";
-		this.type ="ModifierOpeningGambitApplyModifiersToDeckAndHand";
-	
-	
-		this.prototype.modifiersContextObjects = null; // modifier context objects for modifiers to apply
-		this.prototype.managedByCard = false; // whether card with opening gambit should manage the modifiers applied, i.e. when the card is silenced/killed these modifiers are removed
-		this.prototype.applyToOwnPlayer = false;
-		this.prototype.applyToEnemyPlayer = false;
-		this.prototype.cardType = null; // type of card to target
-		this.prototype.raceId = null; // race of cards to target
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericBuff"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpeningGambitApplyModifiersToDeckAndHand';
+    this.type = 'ModifierOpeningGambitApplyModifiersToDeckAndHand';
 
-	static createContextObject(modifiersContextObjects, managedByCard, applyToOwnPlayer, applyToEnemyPlayer, cardType=null, raceId=null, description, options) {
-		if (managedByCard == null) { managedByCard = false; }
-		if (applyToOwnPlayer == null) { applyToOwnPlayer = false; }
-		if (applyToEnemyPlayer == null) { applyToEnemyPlayer = false; }
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		contextObject.managedByCard = managedByCard;
-		contextObject.applyToOwnPlayer = applyToOwnPlayer;
-		contextObject.applyToEnemyPlayer = applyToEnemyPlayer;
-		contextObject.cardType = cardType;
-		contextObject.raceId = raceId;
-		contextObject.description = description;
-		return contextObject;
-	}
+    this.prototype.modifiersContextObjects = null; // modifier context objects for modifiers to apply
+    this.prototype.managedByCard = false; // whether card with opening gambit should manage the modifiers applied, i.e. when the card is silenced/killed these modifiers are removed
+    this.prototype.applyToOwnPlayer = false;
+    this.prototype.applyToEnemyPlayer = false;
+    this.prototype.cardType = null; // type of card to target
+    this.prototype.raceId = null; // race of cards to target
 
-	static createContextObjectToTargetOwnPlayer(modifiersContextObjects, managedByCard, cardType, raceId, description, options) {
-		return this.createContextObject(modifiersContextObjects, managedByCard, true, false, cardType, raceId, description, options);
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierOpeningGambit', 'FX.Modifiers.ModifierGenericBuff'];
+  }
 
-	static createContextObjectToTargetEnemyPlayer(modifiersContextObjects, managedByCard, cardType, raceId, description, options) {
-		return this.createContextObject(modifiersContextObjects, managedByCard, false, true, cardType, raceId, description, options);
-	}
+  static createContextObject(modifiersContextObjects, managedByCard, applyToOwnPlayer, applyToEnemyPlayer, cardType = null, raceId = null, description, options) {
+    if (managedByCard == null) { managedByCard = false; }
+    if (applyToOwnPlayer == null) { applyToOwnPlayer = false; }
+    if (applyToEnemyPlayer == null) { applyToEnemyPlayer = false; }
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    contextObject.managedByCard = managedByCard;
+    contextObject.applyToOwnPlayer = applyToOwnPlayer;
+    contextObject.applyToEnemyPlayer = applyToEnemyPlayer;
+    contextObject.cardType = cardType;
+    contextObject.raceId = raceId;
+    contextObject.description = description;
+    return contextObject;
+  }
 
-	onOpeningGambit() {
-		if (this.modifiersContextObjects != null) {
-			return Array.from(this.getCardsAffected()).map((card) =>
-				Array.from(this.modifiersContextObjects).map((modifierContextObject) =>
-					this.managedByCard ?
-						this.getGameSession().applyModifierContextObject(modifierContextObject, card, this)
-					:
-						this.getGameSession().applyModifierContextObject(modifierContextObject, card)));
-		}
-	}
+  static createContextObjectToTargetOwnPlayer(modifiersContextObjects, managedByCard, cardType, raceId, description, options) {
+    return this.createContextObject(modifiersContextObjects, managedByCard, true, false, cardType, raceId, description, options);
+  }
 
-	getCardsAffected() {
-		let deck;
-		const {
-            cardType
-        } = this;
-		const {
-            raceId
-        } = this;
-		let cards = [];
+  static createContextObjectToTargetEnemyPlayer(modifiersContextObjects, managedByCard, cardType, raceId, description, options) {
+    return this.createContextObject(modifiersContextObjects, managedByCard, false, true, cardType, raceId, description, options);
+  }
 
-		if (this.applyToOwnPlayer) {
-			deck = this.getCard().getOwner().getDeck();
-			cards = cards.concat(deck.getCardsInHand(), deck.getCardsInDrawPile());
-		}
+  onOpeningGambit() {
+    if (this.modifiersContextObjects != null) {
+      return Array.from(this.getCardsAffected()).map((card) => Array.from(this.modifiersContextObjects).map((modifierContextObject) => (this.managedByCard
+        ? this.getGameSession().applyModifierContextObject(modifierContextObject, card, this)
+        :						this.getGameSession().applyModifierContextObject(modifierContextObject, card))));
+    }
+  }
 
-		if (this.applyToEnemyPlayer) {
-			deck = this.getGameSession().getOpponentPlayerOfPlayerId(this.getCard().getOwnerId()).getDeck();
-			cards = cards.concat(deck.getCardsInHand(), deck.getCardsInDrawPile());
-		}
+  getCardsAffected() {
+    let deck;
+    const {
+      cardType,
+    } = this;
+    const {
+      raceId,
+    } = this;
+    let cards = [];
 
-		return _.filter(cards, card => (card != null) && (!cardType || (card.getType() === cardType)) && (!raceId || card.getBelongsToTribe(raceId)));
-	}
+    if (this.applyToOwnPlayer) {
+      deck = this.getCard().getOwner().getDeck();
+      cards = cards.concat(deck.getCardsInHand(), deck.getCardsInDrawPile());
+    }
+
+    if (this.applyToEnemyPlayer) {
+      deck = this.getGameSession().getOpponentPlayerOfPlayerId(this.getCard().getOwnerId()).getDeck();
+      cards = cards.concat(deck.getCardsInHand(), deck.getCardsInDrawPile());
+    }
+
+    return _.filter(cards, (card) => (card != null) && (!cardType || (card.getType() === cardType)) && (!raceId || card.getBelongsToTribe(raceId)));
+  }
 }
 ModifierOpeningGambitApplyModifiersToDeckAndHand.initClass();
 

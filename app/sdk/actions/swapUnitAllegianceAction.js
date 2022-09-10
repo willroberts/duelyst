@@ -1,3 +1,15 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-tabs,
+    no-this-before-super,
+    no-underscore-dangle,
+    prefer-rest-params,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -8,82 +20,81 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const Logger = require('app/common/logger');
-const Action = require('./action');
 const ModifierFirstBlood = require('app/sdk/modifiers/modifierFirstBlood');
 const ModifierCardControlledPlayerModifiers = require('app/sdk/modifiers/modifierCardControlledPlayerModifiers');
+const Action = require('./action');
 const RefreshExhaustionAction =	require('./refreshExhaustionAction');
 
 class SwapUnitAllegianceAction extends Action {
-	static initClass() {
-	
-		this.type = "SwapUnitAllegianceAction";
-	}
+  static initClass() {
+    this.type = 'SwapUnitAllegianceAction';
+  }
 
-	constructor() {
-		if (this.type == null) { this.type = SwapUnitAllegianceAction.type; }
-		super(...arguments);
-	}
+  constructor() {
+    if (this.type == null) { this.type = SwapUnitAllegianceAction.type; }
+    super(...arguments);
+  }
 
-	_execute() {
+  _execute() {
+    super._execute();
 
-		super._execute();
+    // Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "SwapUnitAllegianceAction::execute"
+    const unit = this.getTarget();
 
-		//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "SwapUnitAllegianceAction::execute"
-		const unit = this.getTarget();
+    if (unit != null) {
+      // determine owners
+      let newOwner; let
+        originalOwner;
+      if (unit.isOwnedByPlayer1()) {
+        originalOwner = this.getGameSession().getPlayer1();
+        newOwner = this.getGameSession().getPlayer2();
+      } else if (unit.isOwnedByPlayer2()) {
+        originalOwner = this.getGameSession().getPlayer2();
+        newOwner = this.getGameSession().getPlayer1();
+      }
 
-		if (unit != null) {
-			// determine owners
-			let newOwner, originalOwner;
-			if (unit.isOwnedByPlayer1()) {
-				originalOwner = this.getGameSession().getPlayer1();
-				newOwner = this.getGameSession().getPlayer2();
-			} else if (unit.isOwnedByPlayer2()) {
-				originalOwner = this.getGameSession().getPlayer2();
-				newOwner = this.getGameSession().getPlayer1();
-			}
+      const wasGeneral = unit.getIsGeneral();
+      if (wasGeneral) {
+        // set unit as no longer being a general
+        this.getGameSession().setEntityAsNotGeneral(unit);
+      }
 
-			const wasGeneral = unit.getIsGeneral();
-			if (wasGeneral) {
-				// set unit as no longer being a general
-				this.getGameSession().setEntityAsNotGeneral(unit);
-			}
+      // set new owner
+      unit.setOwner(newOwner);
 
-			// set new owner
-			unit.setOwner(newOwner);
+      // exhaust the unit (summoning sickness)
+      unit.applyExhaustion();
 
-			// exhaust the unit (summoning sickness)
-			unit.applyExhaustion();
+      // if unit was a rush minion, undo exhaustion
+      if (unit.hasActiveModifierClass(ModifierFirstBlood)) {
+        const refreshExhaustionAction = this.getGameSession().createActionForType(RefreshExhaustionAction.type);
+        refreshExhaustionAction.setSource(unit);
+        refreshExhaustionAction.setTarget(unit);
+        this.getGameSession().executeAction(refreshExhaustionAction);
+      }
 
-			// if unit was a rush minion, undo exhaustion
-			if (unit.hasActiveModifierClass(ModifierFirstBlood)) {
-				const refreshExhaustionAction = this.getGameSession().createActionForType(RefreshExhaustionAction.type);
-				refreshExhaustionAction.setSource(unit);
-				refreshExhaustionAction.setTarget(unit);
-				this.getGameSession().executeAction(refreshExhaustionAction);
-			}
+      for (const modifier of Array.from(unit.getModifiers())) {
+        if (modifier != null) {
+          // notify modifier that its card has changed owners
+          modifier.onChangeOwner(originalOwner.getPlayerId(), newOwner.getPlayerId());
 
-			for (let modifier of Array.from(unit.getModifiers())) {
-				if (modifier != null) {
-					// notify modifier that its card has changed owners
-					modifier.onChangeOwner(originalOwner.getPlayerId(), newOwner.getPlayerId());
+          // if modifier is transforms during scrubbing
+          // move modifier to the card it is already on
+          // this will create an exact copy of the existing modifier
+          // and the scrubbing systems will correctly transform the modifier based on the new owner
+          if (modifier.getTransformModifierTypeForScrubbing() != null) {
+            this.getGameSession().moveModifierToCard(modifier, modifier.getCard());
+          }
+        }
+      }
 
-					// if modifier is transforms during scrubbing
-					// move modifier to the card it is already on
-					// this will create an exact copy of the existing modifier
-					// and the scrubbing systems will correctly transform the modifier based on the new owner
-					if (modifier.getTransformModifierTypeForScrubbing() != null) {
-						this.getGameSession().moveModifierToCard(modifier, modifier.getCard());
-					}
-				}
-			}
-
-			if (wasGeneral && (this.getGameSession().getGeneralForPlayer(originalOwner) == null)) {
-				// notify the game session this entity was a general and has changed allegiance
-				// so the original owner no longer has a general and the game is over
-				return this.getGameSession().p_requestGameOver();
-			}
-		}
-	}
+      if (wasGeneral && (this.getGameSession().getGeneralForPlayer(originalOwner) == null)) {
+        // notify the game session this entity was a general and has changed allegiance
+        // so the original owner no longer has a general and the game is over
+        return this.getGameSession().p_requestGameOver();
+      }
+    }
+  }
 }
 SwapUnitAllegianceAction.initClass();
 

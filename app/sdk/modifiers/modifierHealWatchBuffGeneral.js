@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -5,42 +11,39 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
+const CardType = require('app/sdk/cards/cardType');
 const Modifier = require('./modifier');
 const ModifierHealWatch = require('./modifierHealWatch');
-const CardType = require('app/sdk/cards/cardType');
 
 class ModifierHealWatchBuffGeneral extends ModifierHealWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierHealWatchBuffGeneral";
-		this.type ="ModifierHealWatchBuffGeneral";
-	
-		this.modifierName ="Heal Watch";
-		this.description = "Whenever anything is healed, give your General %X";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierHealWatch", "FX.Modifiers.ModifierGenericBuff"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierHealWatchBuffGeneral';
+    this.type = 'ModifierHealWatchBuffGeneral';
 
-	static createContextObject(modifiersContextObjects, description, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		contextObject.description = description;
-		return contextObject;
-	}
+    this.modifierName = 'Heal Watch';
+    this.description = 'Whenever anything is healed, give your General %X';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			return this.description.replace(/%X/, modifierContextObject.description);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierHealWatch', 'FX.Modifiers.ModifierGenericBuff'];
+  }
 
-	onHealWatch(action) {
-		const general = this.getGameSession().getGeneralForPlayer(this.getCard().getOwner());
-		return Array.from(this.modifiersContextObjects).map((modifierContextObject) =>
-			this.getGameSession().applyModifierContextObject(modifierContextObject, general));
-	}
+  static createContextObject(modifiersContextObjects, description, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    contextObject.description = description;
+    return contextObject;
+  }
+
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      return this.description.replace(/%X/, modifierContextObject.description);
+    }
+    return this.description;
+  }
+
+  onHealWatch(action) {
+    const general = this.getGameSession().getGeneralForPlayer(this.getCard().getOwner());
+    return Array.from(this.modifiersContextObjects).map((modifierContextObject) => this.getGameSession().applyModifierContextObject(modifierContextObject, general));
+  }
 }
 ModifierHealWatchBuffGeneral.initClass();
 

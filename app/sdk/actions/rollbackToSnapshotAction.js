@@ -1,3 +1,12 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-tabs,
+    no-this-before-super,
+    no-underscore-dangle,
+    prefer-rest-params,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -7,27 +16,26 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = 		require('app/common/config');
-const Action = 		require('./action');
 const GameStatus = 	require('app/sdk/gameStatus');
 const Logger = 		require('app/common/logger');
+const Action = 		require('./action');
 
 class RollbackToSnapshotAction extends Action {
-	static initClass() {
-	
-		this.type ="RollbackToSnapshotAction";
-	
-		this.prototype.delay = CONFIG.TURN_DELAY;
-	}
+  static initClass() {
+    this.type = 'RollbackToSnapshotAction';
 
-	constructor() {
-		if (this.type == null) { this.type = RollbackToSnapshotAction.type; }
-		super(...arguments);
-	}
+    this.prototype.delay = CONFIG.TURN_DELAY;
+  }
 
-	_execute() {
-		//Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "#{this.type}::execute"
-		return this.getGameSession().p_requestRollbackToSnapshot();
-	}
+  constructor() {
+    if (this.type == null) { this.type = RollbackToSnapshotAction.type; }
+    super(...arguments);
+  }
+
+  _execute() {
+    // Logger.module("SDK").debug "[G:#{@.getGameSession().gameId}]", "#{this.type}::execute"
+    return this.getGameSession().p_requestRollbackToSnapshot();
+  }
 }
 RollbackToSnapshotAction.initClass();
 

@@ -1,3 +1,8 @@
+/* eslint-disable
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -9,52 +14,51 @@ const Modifier = require('./modifier');
 const ModifierStackingShadows = require('./modifierStackingShadows');
 
 class ModifierStackingShadowsBonusDamage extends Modifier {
-	static initClass() {
-	
-		this.prototype.type = "ModifierStackingShadowsBonusDamage";
-		this.type = "ModifierStackingShadowsBonusDamage";
-	
-		this.modifierName = "Shadow Creep Bonus Damage";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-		this.isHiddenToUI = true;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierShadowCreep"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierStackingShadowsBonusDamage';
+    this.type = 'ModifierStackingShadowsBonusDamage';
 
-	static createContextObject(flatBonus, multiplierBonus) {
-		if (flatBonus == null) { flatBonus = 0; }
-		if (multiplierBonus == null) { multiplierBonus = 1; }
-		const contextObject = super.createContextObject();
-		contextObject.bonusDamageAmount = flatBonus;
-		contextObject.multiplierBonusDamage = multiplierBonus;
-		return contextObject;
-	}
+    this.modifierName = 'Shadow Creep Bonus Damage';
 
-	getFlatBonusDamage() {
-		return this.bonusDamageAmount;
-	}
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+    this.isHiddenToUI = true;
 
-	getMultiplierBonusDamage() {
-		return this.multiplierBonusDamage;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierShadowCreep'];
+  }
 
-	onActivate() {
-		super.onActivate();
+  static createContextObject(flatBonus, multiplierBonus) {
+    if (flatBonus == null) { flatBonus = 0; }
+    if (multiplierBonus == null) { multiplierBonus = 1; }
+    const contextObject = super.createContextObject();
+    contextObject.bonusDamageAmount = flatBonus;
+    contextObject.multiplierBonusDamage = multiplierBonus;
+    return contextObject;
+  }
 
-		// flush cached atk attribute for this card
-		return this.getCard().flushCachedAttribute("atk");
-	}
+  getFlatBonusDamage() {
+    return this.bonusDamageAmount;
+  }
 
-	onDeactivate() {
-		super.onDeactivate();
+  getMultiplierBonusDamage() {
+    return this.multiplierBonusDamage;
+  }
 
-		// flush cached atk attribute for this card
-		return this.getCard().flushCachedAttribute("atk");
-	}
+  onActivate() {
+    super.onActivate();
+
+    // flush cached atk attribute for this card
+    return this.getCard().flushCachedAttribute('atk');
+  }
+
+  onDeactivate() {
+    super.onDeactivate();
+
+    // flush cached atk attribute for this card
+    return this.getCard().flushCachedAttribute('atk');
+  }
 }
 ModifierStackingShadowsBonusDamage.initClass();
 

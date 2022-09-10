@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -8,27 +14,25 @@ const PlayerModifier = require('app/sdk/playerModifiers/playerModifier');
 const CardType = require('app/sdk/cards/cardType');
 
 class PlayerModifierCardDrawModifier extends PlayerModifier {
-	static initClass() {
-	
-		this.prototype.type ="PlayerModifierCardDrawModifier";
-		this.type ="PlayerModifierCardDrawModifier";
-	}
+  static initClass() {
+    this.prototype.type = 'PlayerModifierCardDrawModifier';
+    this.type = 'PlayerModifierCardDrawModifier';
+  }
 
-	static createContextObject(cardDrawChange, duration, options) {
-		if (duration == null) { duration = 0; }
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDrawChange = cardDrawChange;
-		contextObject.durationStartTurn = duration;
-		return contextObject;
-	}
+  static createContextObject(cardDrawChange, duration, options) {
+    if (duration == null) { duration = 0; }
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDrawChange = cardDrawChange;
+    contextObject.durationStartTurn = duration;
+    return contextObject;
+  }
 
-	getCardDrawChange() {
-		if (this.getIsActive()) {
-			return this.cardDrawChange;
-		} else {
-			return 0;
-		}
-	}
+  getCardDrawChange() {
+    if (this.getIsActive()) {
+      return this.cardDrawChange;
+    }
+    return 0;
+  }
 }
 PlayerModifierCardDrawModifier.initClass();
 

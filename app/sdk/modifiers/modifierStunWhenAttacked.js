@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-cond-assign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,41 +15,40 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Modifier = require('./modifier');
 const AttackAction = require('app/sdk/actions/attackAction');
 const CardType = require('app/sdk/cards/cardType');
+const Modifier = require('./modifier');
 const ModifierStunnedVanar = require('./modifierStunnedVanar');
 
 class ModifierStunWhenAttacked extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierStunWhenAttacked";
-		this.type ="ModifierStunWhenAttacked";
-	
-		this.modifierName ="Stunner";
-		this.description ="Minions next to this minion that attack it are Stunned";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	
-		this.prototype.maxStacks = 1;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierStunWhenAttacked';
+    this.type = 'ModifierStunWhenAttacked';
 
-	onAction(actionEvent) {
-		super.onAction(actionEvent);
-		const a = actionEvent.action;
-		// when this wall is directly attacked
-		if (a instanceof AttackAction && (a.getTarget() === this.getCard()) && !a.getIsImplicit()) {
-			// by a nearby minion
-			let needle;
-			if (!a.getSource().getIsGeneral() && (needle = a.getSource(), Array.from(this.getCard().getGameSession().getBoard().getEntitiesAroundEntity(this.getCard(), CardType.Unit, 1)).includes(needle))) {
-				// stun the attacker
-				return this.getGameSession().applyModifierContextObject(ModifierStunnedVanar.createContextObject(), a.getSource());
-			}
-		}
-	}
+    this.modifierName = 'Stunner';
+    this.description = 'Minions next to this minion that attack it are Stunned';
+
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+
+    this.prototype.maxStacks = 1;
+  }
+
+  onAction(actionEvent) {
+    super.onAction(actionEvent);
+    const a = actionEvent.action;
+    // when this wall is directly attacked
+    if (a instanceof AttackAction && (a.getTarget() === this.getCard()) && !a.getIsImplicit()) {
+      // by a nearby minion
+      let needle;
+      if (!a.getSource().getIsGeneral() && (needle = a.getSource(), Array.from(this.getCard().getGameSession().getBoard().getEntitiesAroundEntity(this.getCard(), CardType.Unit, 1)).includes(needle))) {
+        // stun the attacker
+        return this.getGameSession().applyModifierContextObject(ModifierStunnedVanar.createContextObject(), a.getSource());
+      }
+    }
+  }
 }
 ModifierStunWhenAttacked.initClass();
 

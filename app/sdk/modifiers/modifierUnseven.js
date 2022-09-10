@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,44 +19,43 @@ const ModifierDyingWish = require('app/sdk/modifiers/modifierDyingWish');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
 class ModifierUnseven	 extends ModifierDyingWish {
-	static initClass() {
-	
-		this.prototype.type ="ModifierUnseven";
-		this.type ="ModifierUnseven";
-	
-		this.description = "Summon a minion with Dying Wish from your action bar";
-	
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInHand = false;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierUnseven';
+    this.type = 'ModifierUnseven';
 
-	onDyingWish(action) {
-		super.onDyingWish(action);
+    this.description = 'Summon a minion with Dying Wish from your action bar';
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const cardsInHand = this.getCard().getOwner().getDeck().getCardsInHandExcludingMissing();
-			const possibleCardsToSummon = [];
-			for (let card of Array.from(cardsInHand)) {
-				// search for keyword class Dying Wish AND Dying Wish modifier
-				// searching by keyword class because some units have "dying wishes" that are not specified as Dying Wish keyword
-				// (ex - Snow Chaser 'replicate')
-				// but don't want to catch minions that grant others Dying Wish (ex - Ancient Grove)
-				for (let kwClass of Array.from(card.getKeywordClasses())) {
-					if ((kwClass.belongsToKeywordClass(ModifierDyingWish)) && (card.hasModifierClass(ModifierDyingWish))) {
-						// if we find an "Dying Wish"
-						possibleCardsToSummon.push(card);
-					}
-				}
-			}
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInHand = false;
+  }
 
-			if (possibleCardsToSummon.length > 0) {
-				const cardToSummon = possibleCardsToSummon.splice(this.getGameSession().getRandomIntegerForExecution(possibleCardsToSummon.length), 1)[0];
-				const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPositionX(), this.getCard().getPositionY(), cardToSummon.getIndex());
-				playCardAction.setSource(this.getCard());
-				return this.getGameSession().executeAction(playCardAction);
-			}
-		}
-	}
+  onDyingWish(action) {
+    super.onDyingWish(action);
+
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const cardsInHand = this.getCard().getOwner().getDeck().getCardsInHandExcludingMissing();
+      const possibleCardsToSummon = [];
+      for (const card of Array.from(cardsInHand)) {
+        // search for keyword class Dying Wish AND Dying Wish modifier
+        // searching by keyword class because some units have "dying wishes" that are not specified as Dying Wish keyword
+        // (ex - Snow Chaser 'replicate')
+        // but don't want to catch minions that grant others Dying Wish (ex - Ancient Grove)
+        for (const kwClass of Array.from(card.getKeywordClasses())) {
+          if ((kwClass.belongsToKeywordClass(ModifierDyingWish)) && (card.hasModifierClass(ModifierDyingWish))) {
+            // if we find an "Dying Wish"
+            possibleCardsToSummon.push(card);
+          }
+        }
+      }
+
+      if (possibleCardsToSummon.length > 0) {
+        const cardToSummon = possibleCardsToSummon.splice(this.getGameSession().getRandomIntegerForExecution(possibleCardsToSummon.length), 1)[0];
+        const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPositionX(), this.getCard().getPositionY(), cardToSummon.getIndex());
+        playCardAction.setSource(this.getCard());
+        return this.getGameSession().executeAction(playCardAction);
+      }
+    }
+  }
 }
 ModifierUnseven.initClass();
 

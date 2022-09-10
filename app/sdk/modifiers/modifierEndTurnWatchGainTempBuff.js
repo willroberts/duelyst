@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    max-len,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -9,51 +16,50 @@ const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
 const Modifier = require('./modifier');
 
 class ModifierEndTurnWatchGainTempBuff extends ModifierEndTurnWatch {
-	static initClass() {
-	
-		this.prototype.type = "ModifierEndTurnWatchGainTempBuff";
-		this.type = "ModifierEndTurnWatchGainTempBuff";
-	
-		this.modifierName = "End Turn Watch Temp Buff";
-		this.description = "Gain a buff on your opponent's turn";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierEndTurnWatch"];
-	
-		this.prototype.attackBuff = 0;
-		this.prototype.healthBuff = 0;
-		this.prototype.modifierName = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierEndTurnWatchGainTempBuff';
+    this.type = 'ModifierEndTurnWatchGainTempBuff';
 
-	onActivate() {
-		super.onActivate();
+    this.modifierName = 'End Turn Watch Temp Buff';
+    this.description = 'Gain a buff on your opponent\'s turn';
 
-		// when activated on opponent's turn, immediately activate buff for this turn
-		if (!this.getCard().isOwnersTurn()) {
-			const statContextObject = Modifier.createContextObjectWithAttributeBuffs(this.attackBuff, this.healthBuff);
-			statContextObject.appliedName = this.modifierName;
-			statContextObject.durationEndTurn = 1;
-			return this.getGameSession().applyModifierContextObject(statContextObject, this.getCard());
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierEndTurnWatch'];
 
-	static createContextObject(attackBuff, healthBuff, modifierName, options) {
-		if (attackBuff == null) { attackBuff = 0; }
-		if (healthBuff == null) { healthBuff = 0; }
-		const contextObject = super.createContextObject(options);
-		contextObject.attackBuff = attackBuff;
-		contextObject.healthBuff = healthBuff;
-		contextObject.modifierName = modifierName;
-		return contextObject;
-	}
+    this.prototype.attackBuff = 0;
+    this.prototype.healthBuff = 0;
+    this.prototype.modifierName = null;
+  }
 
-	onTurnWatch() {
-		super.onTurnWatch();
-		// at end of my turn, activate buff (so it will be active on opponent's turn)
-		const statContextObject = Modifier.createContextObjectWithAttributeBuffs(this.attackBuff, this.healthBuff);
-		statContextObject.appliedName = this.modifierName;
-		statContextObject.durationEndTurn = 2;
-		return this.getGameSession().applyModifierContextObject(statContextObject, this.getCard());
-	}
+  onActivate() {
+    super.onActivate();
+
+    // when activated on opponent's turn, immediately activate buff for this turn
+    if (!this.getCard().isOwnersTurn()) {
+      const statContextObject = Modifier.createContextObjectWithAttributeBuffs(this.attackBuff, this.healthBuff);
+      statContextObject.appliedName = this.modifierName;
+      statContextObject.durationEndTurn = 1;
+      return this.getGameSession().applyModifierContextObject(statContextObject, this.getCard());
+    }
+  }
+
+  static createContextObject(attackBuff, healthBuff, modifierName, options) {
+    if (attackBuff == null) { attackBuff = 0; }
+    if (healthBuff == null) { healthBuff = 0; }
+    const contextObject = super.createContextObject(options);
+    contextObject.attackBuff = attackBuff;
+    contextObject.healthBuff = healthBuff;
+    contextObject.modifierName = modifierName;
+    return contextObject;
+  }
+
+  onTurnWatch() {
+    super.onTurnWatch();
+    // at end of my turn, activate buff (so it will be active on opponent's turn)
+    const statContextObject = Modifier.createContextObjectWithAttributeBuffs(this.attackBuff, this.healthBuff);
+    statContextObject.appliedName = this.modifierName;
+    statContextObject.durationEndTurn = 2;
+    return this.getGameSession().applyModifierContextObject(statContextObject, this.getCard());
+  }
 }
 ModifierEndTurnWatchGainTempBuff.initClass();
 

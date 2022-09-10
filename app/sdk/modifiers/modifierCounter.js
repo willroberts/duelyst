@@ -1,3 +1,14 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    max-len,
+    no-multi-assign,
+    no-plusplus,
+    no-tabs,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -13,89 +24,88 @@ const Modifier = require('./modifier');
 	    mechaz0r progress is (20%,40%,100%)
 */
 class ModifierCounter extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierCounter";
-		this.type ="ModifierCounter";
-	
-		this.prototype.isHiddenToUI = true;
-		this.prototype.isRemovable = false;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierCounter';
+    this.type = 'ModifierCounter';
 
-	static getDescription() {
-		return this.description;
-	}
+    this.prototype.isHiddenToUI = true;
+    this.prototype.isRemovable = false;
+  }
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
+  static getDescription() {
+    return this.description;
+  }
 
-		p.currentCount = 0;
-		p.previousCount = 0;
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
 
-		return p;
-	}
+    p.currentCount = 0;
+    p.previousCount = 0;
 
-	onDeactivate() {
-		// reset to default states when deactivated
-		this._private.currentCount = (this._private.previousCount = 0);
-		return this.removeManagedModifiersFromCard(this.getCard());
-	}
+    return p;
+  }
 
-	updateCachedStateAfterActive() {
-		if (this._private.cachedIsActive) {
-			this.updateCountIfNeeded();
-		}
-		return super.updateCachedStateAfterActive();
-	}
+  onDeactivate() {
+    // reset to default states when deactivated
+    this._private.currentCount = (this._private.previousCount = 0);
+    return this.removeManagedModifiersFromCard(this.getCard());
+  }
 
-	updateCountIfNeeded() {
-		this._private.previousCount = this._private.currentCount;
-		this._private.currentCount = this.getCurrentCount();
-		if (this._private.currentCount !== this._private.previousCount) {
-			this.removeSubModifiers();
-			return this.getGameSession().applyModifierContextObject(this.getModifierContextObjectToApply(), this.getCard(), this);
-		}
-	}
+  updateCachedStateAfterActive() {
+    if (this._private.cachedIsActive) {
+      this.updateCountIfNeeded();
+    }
+    return super.updateCachedStateAfterActive();
+  }
 
-	// operates during aura phase, but is not an aura itself
+  updateCountIfNeeded() {
+    this._private.previousCount = this._private.currentCount;
+    this._private.currentCount = this.getCurrentCount();
+    if (this._private.currentCount !== this._private.previousCount) {
+      this.removeSubModifiers();
+      return this.getGameSession().applyModifierContextObject(this.getModifierContextObjectToApply(), this.getCard(), this);
+    }
+  }
 
-	// remove modifiers during remove aura phase
-	_onRemoveAura(event) {
-		super._onRemoveAura(event);
-		if (this._private.cachedIsActive) {
-			return this.updateCountIfNeeded();
-		}
-	}
+  // operates during aura phase, but is not an aura itself
 
-	removeSubModifiers() {
-		return (() => {
-			const result = [];
-			const iterable = this.getSubModifiers();
-			for (let i = iterable.length - 1; i >= 0; i--) {
-				const subMod = iterable[i];
-				result.push(this.getGameSession().removeModifier(subMod));
-			}
-			return result;
-		})();
-	}
+  // remove modifiers during remove aura phase
+  _onRemoveAura(event) {
+    super._onRemoveAura(event);
+    if (this._private.cachedIsActive) {
+      return this.updateCountIfNeeded();
+    }
+  }
 
-	// update count during add aura phase
-	_onAddAura(event) {
-		super._onAddAura(event);
-		if (this._private.cachedIsActive) {
-			return this.updateCountIfNeeded();
-		}
-	}
+  removeSubModifiers() {
+    return (() => {
+      const result = [];
+      const iterable = this.getSubModifiers();
+      for (let i = iterable.length - 1; i >= 0; i--) {
+        const subMod = iterable[i];
+        result.push(this.getGameSession().removeModifier(subMod));
+      }
+      return result;
+    })();
+  }
 
-	getModifierContextObjectToApply() {
-		// override this method to return correct context object for sub modifier to be displayed in-game
-		return {};
-	}
+  // update count during add aura phase
+  _onAddAura(event) {
+    super._onAddAura(event);
+    if (this._private.cachedIsActive) {
+      return this.updateCountIfNeeded();
+    }
+  }
 
-	getCurrentCount() {
-		// override this method to calculate change in board state
-		return 0;
-	}
+  getModifierContextObjectToApply() {
+    // override this method to return correct context object for sub modifier to be displayed in-game
+    return {};
+  }
+
+  getCurrentCount() {
+    // override this method to calculate change in board state
+    return 0;
+  }
 }
 ModifierCounter.initClass();
 

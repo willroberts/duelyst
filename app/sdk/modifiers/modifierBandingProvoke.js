@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -9,22 +15,21 @@ const ModifierBanding = require('./modifierBanding');
 const ModifierBandedProvoke = require('./modifierBandedProvoke');
 
 class ModifierBandingProvoke extends ModifierBanding {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBandingProvoke";
-		this.type ="ModifierBandingProvoke";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBandingProvoke';
+    this.type = 'ModifierBandingProvoke';
+  }
 
-	static createContextObject(options) {
-		if (options == null) { options = undefined; }
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = [ModifierBandedProvoke.createContextObject()];
-		return contextObject;
-	}
+  static createContextObject(options) {
+    if (options == null) { options = undefined; }
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = [ModifierBandedProvoke.createContextObject()];
+    return contextObject;
+  }
 
-	static getDescription(modifierContextObject) {
-		return this.description;
-	}
+  static getDescription(modifierContextObject) {
+    return this.description;
+  }
 }
 ModifierBandingProvoke.initClass();
 

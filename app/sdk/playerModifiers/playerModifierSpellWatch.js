@@ -1,3 +1,13 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,36 +15,35 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const PlayerModifier = require('./playerModifier');
 const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
 const PlaySignatureCardAction = require('app/sdk/actions/playSignatureCardAction');
 const CardType = require('app/sdk/cards/cardType');
 const Stringifiers = require('app/sdk/helpers/stringifiers');
+const PlayerModifier = require('./playerModifier');
 
 class PlayerModifierSpellWatch extends PlayerModifier {
-	static initClass() {
-	
-		this.prototype.type ="PlayerModifierSpellWatch";
-		this.type ="PlayerModifierSpellWatch";
-	}
+  static initClass() {
+    this.prototype.type = 'PlayerModifierSpellWatch';
+    this.type = 'PlayerModifierSpellWatch';
+  }
 
-	onBeforeAction(e) {
-		super.onBeforeAction(e);
+  onBeforeAction(e) {
+    super.onBeforeAction(e);
 
-		const {
-            action
-        } = e;
+    const {
+      action,
+    } = e;
 
-		// watch for a spell (but not a followup) being cast by player who owns this entity
-		if ((action instanceof PlayCardFromHandAction || action instanceof PlaySignatureCardAction) && (action.getOwnerId() === this.getCard().getOwnerId()) && (__guard__(action.getCard(), x => x.type) === CardType.Spell)) {
-			return this.onSpellWatch(action);
-		}
-	}
+    // watch for a spell (but not a followup) being cast by player who owns this entity
+    if ((action instanceof PlayCardFromHandAction || action instanceof PlaySignatureCardAction) && (action.getOwnerId() === this.getCard().getOwnerId()) && (__guard__(action.getCard(), (x) => x.type) === CardType.Spell)) {
+      return this.onSpellWatch(action);
+    }
+  }
 
-	onSpellWatch(action) {}
+  onSpellWatch(action) {}
 }
 PlayerModifierSpellWatch.initClass();
-		// override me in sub classes to implement special behavior
+// override me in sub classes to implement special behavior
 
 module.exports = PlayerModifierSpellWatch;
 

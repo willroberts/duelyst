@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,34 +16,33 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const Logger = require('app/common/logger');
-const ModifierImmune = require('./modifierImmune');
 const ApplyCardToBoardAction = require('app/sdk/actions/applyCardToBoardAction');
 const UtilsPosition = require('app/common/utils/utils_position');
 const CardType = require('app/sdk/cards/cardType');
 const i18next = require('i18next');
+const ModifierImmune = require('./modifierImmune');
 
 class ModifierImmuneToSpells extends ModifierImmune {
-	static initClass() {
-	
-		this.prototype.type ="ModifierImmuneToSpells";
-		this.type ="ModifierImmuneToSpells";
-	
-		this.modifierName =i18next.t("modifiers.immune_to_spells_name");
-		this.description =i18next.t("modifiers.immune_to_spells_def");
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierImmunity", "FX.Modifiers.ModifierImmunitySpell"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierImmuneToSpells';
+    this.type = 'ModifierImmuneToSpells';
 
-	onValidateAction(event) {
-		const a = event.action;
+    this.modifierName = i18next.t('modifiers.immune_to_spells_name');
+    this.description = i18next.t('modifiers.immune_to_spells_def');
 
-		if ((this.getCard() != null) && a instanceof ApplyCardToBoardAction && a.getIsValid() && UtilsPosition.getPositionsAreEqual(this.getCard().getPosition(), a.getTargetPosition())) {
-			const card = a.getCard();
-			if ((card != null) && (__guard__(card.getRootCard(), x => x.type) === CardType.Spell) && !card.getTargetsSpace() && !card.getAppliesSameEffectToMultipleTargets()) {
-				return this.invalidateAction(a, this.getCard().getPosition(), "[Not] a valid target.");
-			}
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierImmunity', 'FX.Modifiers.ModifierImmunitySpell'];
+  }
+
+  onValidateAction(event) {
+    const a = event.action;
+
+    if ((this.getCard() != null) && a instanceof ApplyCardToBoardAction && a.getIsValid() && UtilsPosition.getPositionsAreEqual(this.getCard().getPosition(), a.getTargetPosition())) {
+      const card = a.getCard();
+      if ((card != null) && (__guard__(card.getRootCard(), (x) => x.type) === CardType.Spell) && !card.getTargetsSpace() && !card.getAppliesSameEffectToMultipleTargets()) {
+        return this.invalidateAction(a, this.getCard().getPosition(), '[Not] a valid target.');
+      }
+    }
+  }
 }
 ModifierImmuneToSpells.initClass();
 

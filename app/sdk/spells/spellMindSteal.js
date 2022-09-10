@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-plusplus,
+    no-tabs,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,44 +17,43 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('app/common/config');
-const SpellSpawnEntity = 	require('./spellSpawnEntity');
 const CardType = require('app/sdk/cards/cardType');
+const SpellSpawnEntity = 	require('./spellSpawnEntity');
 const SpellFilterType = require('./spellFilterType');
 
 class SpellMindSteal extends SpellSpawnEntity {
-	static initClass() {
-	
-		this.prototype.spellFilterType = SpellFilterType.SpawnSource;
-		this.prototype.spawnSilently = true;
-	}
+  static initClass() {
+    this.prototype.spellFilterType = SpellFilterType.SpawnSource;
+    this.prototype.spawnSilently = true;
+  }
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
 
-		p.canConvertCardToPrismatic = false; // stealing an actual card, so don't convert to prismatic based on this card
+    p.canConvertCardToPrismatic = false; // stealing an actual card, so don't convert to prismatic based on this card
 
-		return p;
-	}
+    return p;
+  }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		const opponentsDeck = this.getGameSession().getOpponentPlayerOfPlayerId(this.getOwnerId()).getDeck();
-		const drawPile = opponentsDeck.getDrawPile();
-		const indexesOfMinions = [];
-		const gameSession = this.getGameSession();
-		for (let i = 0; i < drawPile.length; i++) {
-			const cardIndex = drawPile[i];
-			if (__guard__(gameSession.getCardByIndex(cardIndex), x1 => x1.getType()) === CardType.Unit) {
-				indexesOfMinions.push(i);
-			}
-		}
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    const opponentsDeck = this.getGameSession().getOpponentPlayerOfPlayerId(this.getOwnerId()).getDeck();
+    const drawPile = opponentsDeck.getDrawPile();
+    const indexesOfMinions = [];
+    const gameSession = this.getGameSession();
+    for (let i = 0; i < drawPile.length; i++) {
+      const cardIndex = drawPile[i];
+      if (__guard__(gameSession.getCardByIndex(cardIndex), (x1) => x1.getType()) === CardType.Unit) {
+        indexesOfMinions.push(i);
+      }
+    }
 
-		if (indexesOfMinions.length > 0) {
-			const indexOfCardInDeck = indexesOfMinions[this.getGameSession().getRandomIntegerForExecution(indexesOfMinions.length)];
-			this.cardDataOrIndexToSpawn = drawPile[indexOfCardInDeck];
+    if (indexesOfMinions.length > 0) {
+      const indexOfCardInDeck = indexesOfMinions[this.getGameSession().getRandomIntegerForExecution(indexesOfMinions.length)];
+      this.cardDataOrIndexToSpawn = drawPile[indexOfCardInDeck];
 
-			return super.onApplyEffectToBoardTile(board,x,y,sourceAction);
-		}
-	}
+      return super.onApplyEffectToBoardTile(board, x, y, sourceAction);
+    }
+  }
 }
 SpellMindSteal.initClass();
 

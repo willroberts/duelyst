@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-param-reassign,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,48 +14,47 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierOpeningGambit = require('./modifierOpeningGambit');
 const DamageAction = require('app/sdk/actions/damageAction');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
 
 class ModifierOpeningGambitDamageEverything extends ModifierOpeningGambit {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOpeningGambitDamageEverything";
-		this.type ="ModifierOpeningGambitDamageEverything";
-	
-		this.prototype.damageAmount = 1;
-		this.prototype.includeSelf = false;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambit", "FX.Modifiers.ModifierGenericDamage"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpeningGambitDamageEverything';
+    this.type = 'ModifierOpeningGambitDamageEverything';
 
-	static createContextObject(damageAmount, includeSelf, options) {
-		if (damageAmount == null) { damageAmount = 1; }
-		if (includeSelf == null) { includeSelf = false; }
-		const contextObject = super.createContextObject(options);
-		contextObject.damageAmount = damageAmount;
-		contextObject.includeSelf = includeSelf;
-		return contextObject;
-	}
+    this.prototype.damageAmount = 1;
+    this.prototype.includeSelf = false;
 
-	onOpeningGambit(action) {
-		return (() => {
-			const result = [];
-			for (let unit of Array.from(this.getGameSession().getBoard().getUnits())) {
-				if (this.includeSelf || (unit !== this.getCard())) {
-					const damageAction = new DamageAction(this.getGameSession());
-					damageAction.setOwnerId(this.getCard().getOwnerId());
-					damageAction.setSource(this.getCard());
-					damageAction.setTarget(unit);
-					damageAction.setDamageAmount(this.damageAmount);
-					result.push(this.getGameSession().executeAction(damageAction));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierOpeningGambit', 'FX.Modifiers.ModifierGenericDamage'];
+  }
+
+  static createContextObject(damageAmount, includeSelf, options) {
+    if (damageAmount == null) { damageAmount = 1; }
+    if (includeSelf == null) { includeSelf = false; }
+    const contextObject = super.createContextObject(options);
+    contextObject.damageAmount = damageAmount;
+    contextObject.includeSelf = includeSelf;
+    return contextObject;
+  }
+
+  onOpeningGambit(action) {
+    return (() => {
+      const result = [];
+      for (const unit of Array.from(this.getGameSession().getBoard().getUnits())) {
+        if (this.includeSelf || (unit !== this.getCard())) {
+          const damageAction = new DamageAction(this.getGameSession());
+          damageAction.setOwnerId(this.getCard().getOwnerId());
+          damageAction.setSource(this.getCard());
+          damageAction.setTarget(unit);
+          damageAction.setDamageAmount(this.damageAmount);
+          result.push(this.getGameSession().executeAction(damageAction));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 ModifierOpeningGambitDamageEverything.initClass();
 

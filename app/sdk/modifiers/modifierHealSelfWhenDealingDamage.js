@@ -1,3 +1,9 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -10,37 +16,36 @@ const DamageAction = require('app/sdk/actions/damageAction');
 const Modifier = require('./modifier');
 
 class ModifierHealSelfWhenDealingDamage extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierHealSelfWhenDealingDamage";
-		this.type ="ModifierHealSelfWhenDealingDamage";
-	
-		this.description ="Whenever this deals damage, restore that much Health to it";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = false;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = true;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierHealSelfWhenDealingDamage';
+    this.type = 'ModifierHealSelfWhenDealingDamage';
 
-	onBeforeAction(event) {
-		super.onBeforeAction(event);
-		const {
-            action
-        } = event;
-		if (action instanceof DamageAction && (action.getSource() === this.getCard())) {
-			if (this.getCard().getHP() < this.getCard().getMaxHP()) {
-				const healAction = this.getCard().getGameSession().createActionForType(HealAction.type);
-				healAction.setTarget(this.getCard());
-				let damageToHeal = action.getTotalDamageAmount();
-				if (damageToHeal > this.getCard().getDamage()) {
-					damageToHeal = this.getCard().getDamage();
-				}
-				healAction.setHealAmount(damageToHeal);
-				return this.getCard().getGameSession().executeAction(healAction);
-			}
-		}
-	}
+    this.description = 'Whenever this deals damage, restore that much Health to it';
+
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = false;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = true;
+  }
+
+  onBeforeAction(event) {
+    super.onBeforeAction(event);
+    const {
+      action,
+    } = event;
+    if (action instanceof DamageAction && (action.getSource() === this.getCard())) {
+      if (this.getCard().getHP() < this.getCard().getMaxHP()) {
+        const healAction = this.getCard().getGameSession().createActionForType(HealAction.type);
+        healAction.setTarget(this.getCard());
+        let damageToHeal = action.getTotalDamageAmount();
+        if (damageToHeal > this.getCard().getDamage()) {
+          damageToHeal = this.getCard().getDamage();
+        }
+        healAction.setHealAmount(damageToHeal);
+        return this.getCard().getGameSession().executeAction(healAction);
+      }
+    }
+  }
 }
 ModifierHealSelfWhenDealingDamage.initClass();
 

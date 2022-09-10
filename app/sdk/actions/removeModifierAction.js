@@ -1,3 +1,16 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-mixed-spaces-and-tabs,
+    no-return-assign,
+    no-tabs,
+    no-this-before-super,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -11,78 +24,77 @@ const Logger = require('app/common/logger');
 const Action = require('./action');
 
 class RemoveModifierAction extends Action {
-	static initClass() {
-	
-		this.type ="RemoveModifierAction";
-	
-		this.prototype.isDepthFirst = true; // modifier actions should execute immediately
-		this.prototype.modifierIndex = null;
-	
-		this.prototype.getCard = this.prototype.getTarget;
+  static initClass() {
+    this.type = 'RemoveModifierAction';
+
+    this.prototype.isDepthFirst = true; // modifier actions should execute immediately
+    this.prototype.modifierIndex = null;
+
+    this.prototype.getCard = this.prototype.getTarget;
 		 // index of modifier to remove
-	}
+  }
 
-	constructor(gameSession, modifier) {
-		if (this.type == null) { this.type = RemoveModifierAction.type; }
-		super(gameSession);
-		this.setModifier(modifier);
-	}
+  constructor(gameSession, modifier) {
+    if (this.type == null) { this.type = RemoveModifierAction.type; }
+    super(gameSession);
+    this.setModifier(modifier);
+  }
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
 
-		p.cachedModifier = null;
+    p.cachedModifier = null;
 
-		return p;
-	}
+    return p;
+  }
 
-	getLogName() {
-		return super.getLogName() + "_" + __guard__(this.getModifier(), x => x.getLogName());
-	}
+  getLogName() {
+    return `${super.getLogName()}_${__guard__(this.getModifier(), (x) => x.getLogName())}`;
+  }
 
-	setModifierIndex(val) {
-		return this.modifierIndex = val;
-	}
+  setModifierIndex(val) {
+    return this.modifierIndex = val;
+  }
 
-	getModifierIndex() {
-		return this.modifierIndex;
-	}
+  getModifierIndex() {
+    return this.modifierIndex;
+  }
 
-	setModifier(modifier) {
-		return this.setModifierIndex(modifier != null ? modifier.getIndex() : undefined);
-	}
+  setModifier(modifier) {
+    return this.setModifierIndex(modifier != null ? modifier.getIndex() : undefined);
+  }
 
-	getModifier() {
-		if (this.modifierIndex != null) {
-			if (this._private.cachedModifier == null) { this._private.cachedModifier = this.getGameSession().getModifierByIndex(this.modifierIndex); }
-			return this._private.cachedModifier;
-		}
-	}
+  getModifier() {
+    if (this.modifierIndex != null) {
+      if (this._private.cachedModifier == null) { this._private.cachedModifier = this.getGameSession().getModifierByIndex(this.modifierIndex); }
+      return this._private.cachedModifier;
+    }
+  }
 
-	getTargetIndex() {
-		return __guard__(this.getModifier(), x => x.getCardAffectedIndex());
-	}
+  getTargetIndex() {
+    return __guard__(this.getModifier(), (x) => x.getCardAffectedIndex());
+  }
 
-	getTarget() {
-		if ((this._private.target == null) && (this.modifierIndex != null)) {
-			this._private.target = __guard__(this.getModifier(), x => x.getCardAffected());
-		}
-		return this._private.target;
-	}
+  getTarget() {
+    if ((this._private.target == null) && (this.modifierIndex != null)) {
+      this._private.target = __guard__(this.getModifier(), (x) => x.getCardAffected());
+    }
+    return this._private.target;
+  }
 
-	_execute() {
-		super._execute();
+  _execute() {
+    super._execute();
 
-		const modifier = this.getModifier();
-		if (modifier != null) {
-			//Logger.module("SDK").debug("#{@getGameSession().gameId} RemoveModifierAction._execute -> modifier #{modifier?.getLogName()}")
-			// set modifier as removed by this action
-			modifier.setRemovedByAction(this);
+    const modifier = this.getModifier();
+    if (modifier != null) {
+      // Logger.module("SDK").debug("#{@getGameSession().gameId} RemoveModifierAction._execute -> modifier #{modifier?.getLogName()}")
+      // set modifier as removed by this action
+      modifier.setRemovedByAction(this);
 
-			// remove modifier
-			return this.getGameSession().p_removeModifier(modifier);
-		}
-	}
+      // remove modifier
+      return this.getGameSession().p_removeModifier(modifier);
+    }
+  }
 }
 RemoveModifierAction.initClass();
 

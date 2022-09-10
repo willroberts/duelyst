@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    max-len,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,38 +14,37 @@
 const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
 
 class ModifierStartTurnWatchApplyTempArtifactModifier extends ModifierStartTurnWatch {
-	static initClass() {
-	
-		this.prototype.type = "ModifierStartTurnWatchApplyTempArtifactModifier";
-		this.type = "ModifierStartTurnWatchApplyTempArtifactModifier";
-	
-		this.prototype.modifierContextObject = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierStartTurnWatchApplyTempArtifactModifier';
+    this.type = 'ModifierStartTurnWatchApplyTempArtifactModifier';
 
-	onActivate() {
-		super.onActivate();
+    this.prototype.modifierContextObject = null;
+  }
 
-		// when activated on owner's turn, immediately apply modifier for this turn
-		if (this.getCard().isOwnersTurn()) {
-			const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
-			return this.getGameSession().applyModifierContextObject(this.modifierContextObject, general, this);
-		}
-	}
+  onActivate() {
+    super.onActivate();
 
-	static createContextObject(modifierContextObject, options) {
-		const contextObject = super.createContextObject(options);
-		modifierContextObject.durationEndTurn = 1;
-		modifierContextObject.isRemovable = false;
-		contextObject.modifierContextObject = modifierContextObject;
-		return contextObject;
-	}
+    // when activated on owner's turn, immediately apply modifier for this turn
+    if (this.getCard().isOwnersTurn()) {
+      const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+      return this.getGameSession().applyModifierContextObject(this.modifierContextObject, general, this);
+    }
+  }
 
-	onTurnWatch() {
-		super.onTurnWatch();
+  static createContextObject(modifierContextObject, options) {
+    const contextObject = super.createContextObject(options);
+    modifierContextObject.durationEndTurn = 1;
+    modifierContextObject.isRemovable = false;
+    contextObject.modifierContextObject = modifierContextObject;
+    return contextObject;
+  }
 
-		const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
-		return this.getGameSession().applyModifierContextObject(this.modifierContextObject, general, this);
-	}
+  onTurnWatch() {
+    super.onTurnWatch();
+
+    const general = this.getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+    return this.getGameSession().applyModifierContextObject(this.modifierContextObject, general, this);
+  }
 }
 ModifierStartTurnWatchApplyTempArtifactModifier.initClass();
 

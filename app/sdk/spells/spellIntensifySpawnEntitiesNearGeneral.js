@@ -1,3 +1,11 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,39 +15,37 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const SpellIntensify = require('./spellIntensify');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const CONFIG = require('app/common/config');
+const SpellIntensify = require('./spellIntensify');
 
 class SpellIntensifySpawnEntitiesNearGeneral extends SpellIntensify {
-	static initClass() {
-	
-		this.prototype.cardDataOrIndexToSpawn = null;
-		this.prototype.numberToSummon = 1;
-	}
+  static initClass() {
+    this.prototype.cardDataOrIndexToSpawn = null;
+    this.prototype.numberToSummon = 1;
+  }
 
-	onApplyOneEffectToBoard(board,x,y,sourceAction) {
-		super.onApplyOneEffectToBoard(board,x,y,sourceAction);
+  onApplyOneEffectToBoard(board, x, y, sourceAction) {
+    super.onApplyOneEffectToBoard(board, x, y, sourceAction);
 
-		if (this.getGameSession().getIsRunningAsAuthoritative() && (this.cardDataOrIndexToSpawn != null)) {
+    if (this.getGameSession().getIsRunningAsAuthoritative() && (this.cardDataOrIndexToSpawn != null)) {
+      const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
+      const totalNumberToSpawn = this.numberToSummon * this.getIntensifyAmount();
+      const card = this.getGameSession().getExistingCardFromIndexOrCreateCardFromData(this.cardDataOrIndexToSpawn);
+      const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), myGeneral.getPosition(), CONFIG.PATTERN_3x3, card, this, totalNumberToSpawn);
 
-			const myGeneral = this.getGameSession().getGeneralForPlayerId(this.getOwnerId());
-			const totalNumberToSpawn = this.numberToSummon * this.getIntensifyAmount();
-			const card = this.getGameSession().getExistingCardFromIndexOrCreateCardFromData(this.cardDataOrIndexToSpawn);
-			const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), myGeneral.getPosition(), CONFIG.PATTERN_3x3, card, this, totalNumberToSpawn);
-
-			return (() => {
-				const result = [];
-				for (let location of Array.from(spawnLocations)) {
-					const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), this.getOwnerId(), location.x, location.y, this.cardDataOrIndexToSpawn);
-					spawnAction.setSource(this);
-					result.push(this.getGameSession().executeAction(spawnAction));
-				}
-				return result;
-			})();
-		}
-	}
+      return (() => {
+        const result = [];
+        for (const location of Array.from(spawnLocations)) {
+          const spawnAction = new PlayCardSilentlyAction(this.getGameSession(), this.getOwnerId(), location.x, location.y, this.cardDataOrIndexToSpawn);
+          spawnAction.setSource(this);
+          result.push(this.getGameSession().executeAction(spawnAction));
+        }
+        return result;
+      })();
+    }
+  }
 }
 SpellIntensifySpawnEntitiesNearGeneral.initClass();
 

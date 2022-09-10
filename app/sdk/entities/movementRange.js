@@ -1,3 +1,18 @@
+/* eslint-disable
+    class-methods-use-this,
+    func-names,
+    import/no-unresolved,
+    max-classes-per-file,
+    max-len,
+    no-continue,
+    no-multi-assign,
+    no-restricted-syntax,
+    no-return-assign,
+    no-underscore-dangle,
+    no-var,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -8,159 +23,157 @@
  */
 const CONFIG = require('app/common/config');
 const UtilsPosition = require('app/common/utils/utils_position');
-const Range = require('./range');
 const ModifierFlying = require('app/sdk/modifiers/modifierFlying');
+const Range = require('./range');
 
-var MovementRange = (function() {
-	let _MoveNode = undefined;
-	MovementRange = class MovementRange extends Range {
-		static initClass() {
-	
-			// movement has a different pattern step than the default
-			// so movement range needs a separate cache for patterns
-			this.patternsByDistance = {};
-			this.patternMapsByDistance = {};
-	
-			this.prototype._pathsToPositionsByIndex = null;
-	
-			_MoveNode = class _MoveNode {
-				constructor(_position, parent) {
-					this._position = _position;
-					this.pathTo = (parent != null) ? parent.pathTo.slice() : [];
-					this.pathTo.push(this._position);
-				}
-			};
-		}
+var MovementRange = (function () {
+  let _MoveNode;
+  MovementRange = class MovementRange extends Range {
+    static initClass() {
+      // movement has a different pattern step than the default
+      // so movement range needs a separate cache for patterns
+      this.patternsByDistance = {};
+      this.patternMapsByDistance = {};
 
-		flushCachedState() {
-			super.flushCachedState();
-			return this._pathsToPositionsByIndex = null;
-		}
+      this.prototype._pathsToPositionsByIndex = null;
 
-		getValidPositions(board, entity) {
-			if ((this._validPositions == null)) {
-				const entityPosition = entity.getPosition();
-				const entityMovementPatternMap = entity.getMovementPatternMap();
-				const speed = entity.getSpeed();
-				const step = CONFIG.MOVE_PATTERN_STEP;
+      _MoveNode = class _MoveNode {
+        constructor(_position, parent) {
+          this._position = _position;
+          this.pathTo = (parent != null) ? parent.pathTo.slice() : [];
+          this.pathTo.push(this._position);
+        }
+      };
+    }
 
-				const validPositions = (this._validPositions = []);
+    flushCachedState() {
+      super.flushCachedState();
+      return this._pathsToPositionsByIndex = null;
+    }
 
-				const rowCount = board.getRowCount();
-				const columnCount = board.getColumnCount();
-				const bufferSize = rowCount * columnCount * Uint8Array.BYTES_PER_ELEMENT;
-				const buffer = new ArrayBuffer(bufferSize);
-				const bufferInterface = new Uint8Array(buffer);
+    getValidPositions(board, entity) {
+      if ((this._validPositions == null)) {
+        const entityPosition = entity.getPosition();
+        const entityMovementPatternMap = entity.getMovementPatternMap();
+        const speed = entity.getSpeed();
+        const step = CONFIG.MOVE_PATTERN_STEP;
 
-				const originNode = {x: 0, y: 0, speed: 0};
-				const nodesToProcess = [originNode];
+        const validPositions = (this._validPositions = []);
 
-				// breadth first traversal so we always find the shortest path
-				// but never allow paths longer than entity's speed
-				while (nodesToProcess.length > 0) {
-					const node = nodesToProcess.shift();
-					for (let offset of Array.from(step)) {
-						// calculate distance and current speed required to get to this node
-						const distance = Math.sqrt((offset.x * offset.x) + (offset.y * offset.y));
-						const nextSpeed = node.speed + distance;
-						// skip this node if it is too far away
-						if (nextSpeed > speed) {
-							continue;
-						}
+        const rowCount = board.getRowCount();
+        const columnCount = board.getColumnCount();
+        const bufferSize = rowCount * columnCount * Uint8Array.BYTES_PER_ELEMENT;
+        const buffer = new ArrayBuffer(bufferSize);
+        const bufferInterface = new Uint8Array(buffer);
 
-						const nextNode = {x: node.x + offset.x, y: node.y + offset.y, speed: nextSpeed};
-						const movePosition = {x: entityPosition.x + nextNode.x, y: entityPosition.y + nextNode.y};
-						const index = UtilsPosition.getMapIndexFromPosition(columnCount, movePosition.x, movePosition.y);
-						// skip this node if we already have a shorter path to this position
-						// or if the node is off the board or not within pattern
-						if ((bufferInterface[index] === 1) || !board.isOnBoard(movePosition) || !this.getIsPositionInPatternMap(board, entityMovementPatternMap, nextNode)) {
-							continue;
-						}
+        const originNode = { x: 0, y: 0, speed: 0 };
+        const nodesToProcess = [originNode];
 
-						// mark position as tested
-						bufferInterface[index] = 1;
+        // breadth first traversal so we always find the shortest path
+        // but never allow paths longer than entity's speed
+        while (nodesToProcess.length > 0) {
+          const node = nodesToProcess.shift();
+          for (const offset of Array.from(step)) {
+            // calculate distance and current speed required to get to this node
+            const distance = Math.sqrt((offset.x * offset.x) + (offset.y * offset.y));
+            const nextSpeed = node.speed + distance;
+            // skip this node if it is too far away
+            if (nextSpeed > speed) {
+              continue;
+            }
 
-						const obstructionAtPosition = board.getObstructionAtPositionForEntity(movePosition, entity);
+            const nextNode = { x: node.x + offset.x, y: node.y + offset.y, speed: nextSpeed };
+            const movePosition = { x: entityPosition.x + nextNode.x, y: entityPosition.y + nextNode.y };
+            const index = UtilsPosition.getMapIndexFromPosition(columnCount, movePosition.x, movePosition.y);
+            // skip this node if we already have a shorter path to this position
+            // or if the node is off the board or not within pattern
+            if ((bufferInterface[index] === 1) || !board.isOnBoard(movePosition) || !this.getIsPositionInPatternMap(board, entityMovementPatternMap, nextNode)) {
+              continue;
+            }
 
-						// valid node to path through if unoccupied, occupant is same team, or moving entity is flying
-						if (!obstructionAtPosition || entity.getIsSameTeamAs(obstructionAtPosition) || entity.hasActiveModifierClass(ModifierFlying)) {
-							nextNode.parent = node;
-							nodesToProcess.push(nextNode);
-						}
+            // mark position as tested
+            bufferInterface[index] = 1;
 
-						// valid node to move to only if nothing is there
-						if (!obstructionAtPosition) {
-							const path = [movePosition];
-							let {
-                                parent
-                            } = nextNode;
-							while (parent != null) {
-								path.unshift({x: entityPosition.x + parent.x, y: entityPosition.y + parent.y});
-								({
-                                    parent
-                                } = parent);
-							}
-							validPositions.push(path);
-						}
-					}
-				}
-			}
+            const obstructionAtPosition = board.getObstructionAtPositionForEntity(movePosition, entity);
 
-			return this._validPositions;
-		}
+            // valid node to path through if unoccupied, occupant is same team, or moving entity is flying
+            if (!obstructionAtPosition || entity.getIsSameTeamAs(obstructionAtPosition) || entity.hasActiveModifierClass(ModifierFlying)) {
+              nextNode.parent = node;
+              nodesToProcess.push(nextNode);
+            }
 
-		getPathTo(board, entity, position) {
-			if (board.isOnBoard(position)) {
-				// if we've already tested this position, return previous result
-				const index = UtilsPosition.getMapIndexFromPosition(board.getColumnCount(), position.x, position.y);
-				if ((this._pathsToPositionsByIndex == null)) { this._pathsToPositionsByIndex = {}; }
-				let path = this._pathsToPositionsByIndex[index];
-				if (path != null) {
-					return path;
-				} else {
-					const moves = this.getValidPositions(board,entity);
-					for (path of Array.from(moves)) {
-						const realEnd = path[path.length - 1];
-						if ((realEnd.x === position.x) && (realEnd.y === position.y)) {
-							// valid path found
-							return this._pathsToPositionsByIndex[index] = path;
-						}
-					}
+            // valid node to move to only if nothing is there
+            if (!obstructionAtPosition) {
+              const path = [movePosition];
+              let {
+                parent,
+              } = nextNode;
+              while (parent != null) {
+                path.unshift({ x: entityPosition.x + parent.x, y: entityPosition.y + parent.y });
+                ({
+                  parent,
+                } = parent);
+              }
+              validPositions.push(path);
+            }
+          }
+        }
+      }
 
-					// no valid path found
-					this._pathsToPositionsByIndex[index] = [];
-				}
-			}
-			return [];
-		}
+      return this._validPositions;
+    }
 
-		getValidPosition(board, entity, position) {
-			if (this.getPathTo(board, entity, position).length > 0) {
-				return position;
-			}
-			return null;
-		}
+    getPathTo(board, entity, position) {
+      if (board.isOnBoard(position)) {
+        // if we've already tested this position, return previous result
+        const index = UtilsPosition.getMapIndexFromPosition(board.getColumnCount(), position.x, position.y);
+        if ((this._pathsToPositionsByIndex == null)) { this._pathsToPositionsByIndex = {}; }
+        let path = this._pathsToPositionsByIndex[index];
+        if (path != null) {
+          return path;
+        }
+        const moves = this.getValidPositions(board, entity);
+        for (path of Array.from(moves)) {
+          const realEnd = path[path.length - 1];
+          if ((realEnd.x === position.x) && (realEnd.y === position.y)) {
+            // valid path found
+            return this._pathsToPositionsByIndex[index] = path;
+          }
+        }
 
-		getPatternByDistance(board, distance) {
-			let pattern = MovementRange.patternsByDistance[distance];
-			if ((pattern == null)) {
-				Range._generateAndCachePatternAndMap(board, distance, CONFIG.MOVE_PATTERN_STEP, MovementRange.patternsByDistance, MovementRange.patternMapsByDistance);
-				pattern = MovementRange.patternsByDistance[distance];
-			}
-			return pattern;
-		}
+        // no valid path found
+        this._pathsToPositionsByIndex[index] = [];
+      }
+      return [];
+    }
 
-		getPatternMapByDistance(board, distance) {
-			let patternMap = MovementRange.patternMapsByDistance[distance];
-			if ((patternMap == null)) {
-				Range._generateAndCachePatternAndMap(board, distance, CONFIG.MOVE_PATTERN_STEP, MovementRange.patternsByDistance, MovementRange.patternMapsByDistance);
-				patternMap = MovementRange.patternMapsByDistance[distance];
-			}
-			return patternMap;
-		}
-	};
-	MovementRange.initClass();
-	return MovementRange;
-})();
+    getValidPosition(board, entity, position) {
+      if (this.getPathTo(board, entity, position).length > 0) {
+        return position;
+      }
+      return null;
+    }
+
+    getPatternByDistance(board, distance) {
+      let pattern = MovementRange.patternsByDistance[distance];
+      if ((pattern == null)) {
+        Range._generateAndCachePatternAndMap(board, distance, CONFIG.MOVE_PATTERN_STEP, MovementRange.patternsByDistance, MovementRange.patternMapsByDistance);
+        pattern = MovementRange.patternsByDistance[distance];
+      }
+      return pattern;
+    }
+
+    getPatternMapByDistance(board, distance) {
+      let patternMap = MovementRange.patternMapsByDistance[distance];
+      if ((patternMap == null)) {
+        Range._generateAndCachePatternAndMap(board, distance, CONFIG.MOVE_PATTERN_STEP, MovementRange.patternsByDistance, MovementRange.patternMapsByDistance);
+        patternMap = MovementRange.patternMapsByDistance[distance];
+      }
+      return patternMap;
+    }
+  };
+  MovementRange.initClass();
+  return MovementRange;
+}());
 
 module.exports = MovementRange;

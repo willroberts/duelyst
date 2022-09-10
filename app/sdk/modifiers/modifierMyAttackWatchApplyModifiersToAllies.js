@@ -1,3 +1,12 @@
+/* eslint-disable
+    max-len,
+    no-loop-func,
+    no-restricted-syntax,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,40 +18,37 @@
 const ModifierMyAttackWatch = require('./modifierMyAttackWatch');
 
 class ModifierMyAttackWatchApplyModifiersToAllies extends ModifierMyAttackWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierMyAttackWatchApplyModifiersToAllies";
-		this.type ="ModifierMyAttackWatchApplyModifiersToAllies";
-	
-		this.prototype.modifierContextObjects = null;
-		this.prototype.includeGeneral = false;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericBuff"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierMyAttackWatchApplyModifiersToAllies';
+    this.type = 'ModifierMyAttackWatchApplyModifiersToAllies';
 
-	static createContextObject(modifiers, includeGeneral, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifierContextObjects = modifiers;
-		contextObject.includeGeneral = includeGeneral;
-		return contextObject;
-	}
+    this.prototype.modifierContextObjects = null;
+    this.prototype.includeGeneral = false;
 
-	onMyAttackWatch(action) {
+    this.prototype.fxResource = ['FX.Modifiers.ModifierGenericBuff'];
+  }
 
-		const friendlyEntities = this.getGameSession().getBoard().getFriendlyEntitiesForEntity(this.getCard());
-		return (() => {
-			const result = [];
-			for (var entity of Array.from(friendlyEntities)) {
-				if (!entity.getIsGeneral() || this.includeGeneral) {
-					result.push(Array.from(this.modifierContextObjects).map((modifier) =>
-						this.getGameSession().applyModifierContextObject(modifier, entity)));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+  static createContextObject(modifiers, includeGeneral, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifierContextObjects = modifiers;
+    contextObject.includeGeneral = includeGeneral;
+    return contextObject;
+  }
+
+  onMyAttackWatch(action) {
+    const friendlyEntities = this.getGameSession().getBoard().getFriendlyEntitiesForEntity(this.getCard());
+    return (() => {
+      const result = [];
+      for (var entity of Array.from(friendlyEntities)) {
+        if (!entity.getIsGeneral() || this.includeGeneral) {
+          result.push(Array.from(this.modifierContextObjects).map((modifier) => this.getGameSession().applyModifierContextObject(modifier, entity)));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 ModifierMyAttackWatchApplyModifiersToAllies.initClass();
 

@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -5,32 +13,31 @@
  * DS205: Consider reworking code to avoid use of IIFEs
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Spell =	require('./spell');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
+const Spell =	require('./spell');
 
 class SpellEmbryoticInsight extends Spell {
+  onApplyOneEffectToBoard(board, x, y, sourceAction) {
+    super.onApplyOneEffectToBoard(board, x, y, sourceAction);
 
-	onApplyOneEffectToBoard(board,x,y,sourceAction) {
-		super.onApplyOneEffectToBoard(board,x,y,sourceAction);
+    const player = this.getGameSession().getPlayerById(this.getOwnerId());
 
-		const player = this.getGameSession().getPlayerById(this.getOwnerId());
-
-		return (() => {
-			const result = [];
-			for (let unit of Array.from(this.getGameSession().getBoard().getUnits())) {
-				if ((unit.getOwnerId() === this.getOwnerId()) && !unit.getIsGeneral() && (unit.getBaseCardId() === Cards.Faction5.Egg)) {
-					const drawAction1 = player.getDeck().actionDrawCard();
-					this.getGameSession().executeAction(drawAction1);
-					const drawAction2 = player.getDeck().actionDrawCard();
-					this.getGameSession().executeAction(drawAction2);
-					break;
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    return (() => {
+      const result = [];
+      for (const unit of Array.from(this.getGameSession().getBoard().getUnits())) {
+        if ((unit.getOwnerId() === this.getOwnerId()) && !unit.getIsGeneral() && (unit.getBaseCardId() === Cards.Faction5.Egg)) {
+          const drawAction1 = player.getDeck().actionDrawCard();
+          this.getGameSession().executeAction(drawAction1);
+          const drawAction2 = player.getDeck().actionDrawCard();
+          this.getGameSession().executeAction(drawAction2);
+          break;
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 
 module.exports = SpellEmbryoticInsight;

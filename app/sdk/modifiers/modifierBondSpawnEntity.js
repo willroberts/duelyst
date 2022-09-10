@@ -1,3 +1,16 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-plusplus,
+    no-restricted-syntax,
+    no-tabs,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -11,84 +24,81 @@
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const UtilsPosition = require('app/common/utils/utils_position');
-const ModifierBond = 	require('./modifierBond');
 const CardType = require('app/sdk/cards/cardType');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const PlayCardAction = require('app/sdk/actions/playCardAction');
+const ModifierBond = 	require('./modifierBond');
 
 class ModifierBondSpawnEntity extends ModifierBond {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBondSpawnEntity";
-		this.type ="ModifierBondSpawnEntity";
-	
-		this.description = "Summon %X";
-	
-		this.prototype.cardDataOrIndexToSpawn = null;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBondSpawnEntity';
+    this.type = 'ModifierBondSpawnEntity';
 
-	static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently,options) {
-		if (spawnDescription == null) { spawnDescription = ""; }
-		if (spawnCount == null) { spawnCount = 1; }
-		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_1x1; }
-		if (spawnSilently == null) { spawnSilently = true; }
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
-		contextObject.spawnDescription = spawnDescription;
-		contextObject.spawnCount = spawnCount;
-		contextObject.spawnPattern = spawnPattern;
-		contextObject.spawnSilently = spawnSilently;
-		return contextObject;
-	}
+    this.description = 'Summon %X';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			let replaceText = "";
-			if (UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)) {
-				replaceText = "a "+modifierContextObject.spawnDescription+" in its place";
-			} else if (modifierContextObject.spawnCount === 1) {
-				replaceText = "a "+modifierContextObject.spawnDescription+" in a random nearby space";
-			} else if (modifierContextObject.spawnCount === 8) {
-				replaceText = ""+modifierContextObject.spawnDescription+"s in all nearby spaces";
-			} else {
-				replaceText = ""+modifierContextObject.spawnDescription+"s into "+modifierContextObject.spawnCount+" nearby spaces";
-			}
-			return this.description.replace(/%X/, replaceText);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.cardDataOrIndexToSpawn = null;
 
-	onBond() {
+    this.prototype.fxResource = ['FX.Modifiers.ModifierGenericSpawn'];
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
-			const spawnLocations = [];
-			const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), this.spawnPattern, card);
-			for (let i = 0, end = this.spawnCount, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-				if (validSpawnLocations.length > 0) {
-					spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
-				}
-			}
+  static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently, options) {
+    if (spawnDescription == null) { spawnDescription = ''; }
+    if (spawnCount == null) { spawnCount = 1; }
+    if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_1x1; }
+    if (spawnSilently == null) { spawnSilently = true; }
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+    contextObject.spawnDescription = spawnDescription;
+    contextObject.spawnCount = spawnCount;
+    contextObject.spawnPattern = spawnPattern;
+    contextObject.spawnSilently = spawnSilently;
+    return contextObject;
+  }
 
-			return (() => {
-				const result = [];
-				for (let position of Array.from(spawnLocations)) {
-					var playCardAction;
-					if (!this.spawnSilently) {
-						playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
-					} else {
-						playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
-					}
-					playCardAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(playCardAction));
-				}
-				return result;
-			})();
-		}
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      let replaceText = '';
+      if (UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)) {
+        replaceText = `a ${modifierContextObject.spawnDescription} in its place`;
+      } else if (modifierContextObject.spawnCount === 1) {
+        replaceText = `a ${modifierContextObject.spawnDescription} in a random nearby space`;
+      } else if (modifierContextObject.spawnCount === 8) {
+        replaceText = `${modifierContextObject.spawnDescription}s in all nearby spaces`;
+      } else {
+        replaceText = `${modifierContextObject.spawnDescription}s into ${modifierContextObject.spawnCount} nearby spaces`;
+      }
+      return this.description.replace(/%X/, replaceText);
+    }
+    return this.description;
+  }
+
+  onBond() {
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+      const spawnLocations = [];
+      const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), this.spawnPattern, card);
+      for (let i = 0, end = this.spawnCount, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+        if (validSpawnLocations.length > 0) {
+          spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+        }
+      }
+
+      return (() => {
+        const result = [];
+        for (const position of Array.from(spawnLocations)) {
+          var playCardAction;
+          if (!this.spawnSilently) {
+            playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+          } else {
+            playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+          }
+          playCardAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(playCardAction));
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierBondSpawnEntity.initClass();
 

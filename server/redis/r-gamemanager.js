@@ -1,3 +1,15 @@
+/* eslint-disable
+    class-methods-use-this,
+    func-names,
+    import/extensions,
+    import/no-unresolved,
+    no-buffer-constructor,
+    no-multi-assign,
+    no-param-reassign,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,8 +20,9 @@ let exports;
 const Promise = require('bluebird');
 const Logger = require('../../app/common/logger.coffee');
 const config = require('../../config/config.js');
-const env = config.get("env");
-const ttl = config.get("redis.ttl");
+
+const env = config.get('env');
+const ttl = config.get('redis.ttl');
 const generatePushID = require('../../app/common/generate_push_id');
 const zlib = Promise.promisifyAll(require('zlib'));
 
@@ -26,111 +39,111 @@ const keyPrefixForMouseUIData = () => `${env}:games_mouse_ui_data:`;
  * ttl sets the expiration time of keys, defaults to 72 hours
  */
 class RedisGameManager {
-	/**
+  /**
 	 * Constructor
 	 * @param {Object} redis, a promisified redis connection
 	 */
-	constructor(redis, opts) {
-		// TODO: add check to ensure Redis client is already promisified
-		if (opts == null) { opts = {}; }
-		this.redis = redis;
-	}
+  constructor(redis, opts) {
+    // TODO: add check to ensure Redis client is already promisified
+    if (opts == null) { opts = {}; }
+    this.redis = redis;
+  }
 
-	/**
+  /**
 	 * Generate a unique id for the game using atomic increment
 	 * @param {Function|optional} callback
 	 * @return {Promise}
 	 */
-	generateGameId(callback) {
-		const p =  new Promise((resolve, reject) => resolve(generatePushID()));
+  generateGameId(callback) {
+    const p = new Promise((resolve, reject) => resolve(generatePushID()));
 
-		return p.nodeify(callback);
-	}
+    return p.nodeify(callback);
+  }
 
-	/**
+  /**
 	 * Save *serialized* game session data to redis
 	 * @param {String} the game id to be used as the key
 	 * @param {Object} the game data *after* serializing
 	 * @param {Function|optional} callback
 	 * @return {Promise}
 	 */
-	saveGameSession(gameId, serializedGameData, callback) {
-		Logger.module("REDIS").debug(`saveGameSession() -> saving GameSession ${gameId}`);
-		const gameKey = keyPrefix() + gameId;
-		return zlib.gzipAsync(serializedGameData)
-		.then(gzipGameData => {
-			// gzipGameData is a buffer
-			const multi = this.redis.multi(); // start a multi command
-			multi.set(gameKey, gzipGameData);
-			multi.expire(gameKey, ttl); // mark to expire at ttl
-			return multi.execAsync();
-	}).nodeify(callback);
-	}
+  saveGameSession(gameId, serializedGameData, callback) {
+    Logger.module('REDIS').debug(`saveGameSession() -> saving GameSession ${gameId}`);
+    const gameKey = keyPrefix() + gameId;
+    return zlib.gzipAsync(serializedGameData)
+      .then((gzipGameData) => {
+        // gzipGameData is a buffer
+        const multi = this.redis.multi(); // start a multi command
+        multi.set(gameKey, gzipGameData);
+        multi.expire(gameKey, ttl); // mark to expire at ttl
+        return multi.execAsync();
+      }).nodeify(callback);
+  }
 
-	/**
+  /**
 	 * Load *serialized* game session data from redis
 	 * @param {String} the game id to be used as the key
 	 * @param {Function|optional} callback
 	 * @return {Promise}
 	 */
-	loadGameSession(gameId, callback) {
-		Logger.module("REDIS").debug(`loadGameSession() -> loading GameSession ${gameId}`);
-		const gameKey = keyPrefix() + gameId;
-		// Must pass a new Buffer(key) to get back a buffer object
-		return this.redis.getAsync(new Buffer(gameKey))
-		.then(function(buffer) {
-			if (buffer) {
-				return zlib.gunzipAsync(buffer);
-			} else {
-				// just return the empty buffer (null)
-				return buffer;
-			}}).nodeify(callback);
-	}
+  loadGameSession(gameId, callback) {
+    Logger.module('REDIS').debug(`loadGameSession() -> loading GameSession ${gameId}`);
+    const gameKey = keyPrefix() + gameId;
+    // Must pass a new Buffer(key) to get back a buffer object
+    return this.redis.getAsync(new Buffer(gameKey))
+      .then((buffer) => {
+        if (buffer) {
+          return zlib.gunzipAsync(buffer);
+        }
+        // just return the empty buffer (null)
+        return buffer;
+      }).nodeify(callback);
+  }
 
-	/**
+  /**
 	 * Save *serialized* game mouse and ui data to redis
 	 * @param {String} the game id to be used as the key
 	 * @param {Object} the data *after* serializing
 	 * @param {Function|optional} callback
 	 * @return {Promise}
 	 */
-	saveGameMouseUIData(gameId, serializedData, callback) {
-		Logger.module("REDIS").debug(`saveGameMouseUIData() -> saving data for game ${gameId}`);
-		const key = keyPrefixForMouseUIData() + gameId;
-		return zlib.gzipAsync(serializedData)
-		.then(gzipMouseData => {
-			// gzipMouseData is a buffer
-			const multi = this.redis.multi(); // start a multi command
-			multi.set(key, gzipMouseData);
-			multi.expire(key, ttl); // mark to expire at ttl
-			return multi.execAsync();
-	}).nodeify(callback);
-	}
+  saveGameMouseUIData(gameId, serializedData, callback) {
+    Logger.module('REDIS').debug(`saveGameMouseUIData() -> saving data for game ${gameId}`);
+    const key = keyPrefixForMouseUIData() + gameId;
+    return zlib.gzipAsync(serializedData)
+      .then((gzipMouseData) => {
+        // gzipMouseData is a buffer
+        const multi = this.redis.multi(); // start a multi command
+        multi.set(key, gzipMouseData);
+        multi.expire(key, ttl); // mark to expire at ttl
+        return multi.execAsync();
+      }).nodeify(callback);
+  }
 
-	/**
+  /**
 	 * Load *serialized* game mouse and ui data from redis
 	 * @param {String} the game id to be used as the key
 	 * @param {Function|optional} callback
 	 * @return {Promise}
 	 */
-	loadGameMouseUIData(gameId, callback) {
-		Logger.module("REDIS").debug(`loadGameMouseUIData() -> loading data for game ${gameId}`);
-		const key = keyPrefixForMouseUIData() + gameId;
-		return this.redis.getAsync(new Buffer(key))
-		.then(function(buffer) {
-			if (buffer) {
-				return zlib.gunzipAsync(buffer);
-			} else {
-				// just return the empty buffer (null)
-				return buffer;
-			}}).nodeify(callback);
-	}
+  loadGameMouseUIData(gameId, callback) {
+    Logger.module('REDIS').debug(`loadGameMouseUIData() -> loading data for game ${gameId}`);
+    const key = keyPrefixForMouseUIData() + gameId;
+    return this.redis.getAsync(new Buffer(key))
+      .then((buffer) => {
+        if (buffer) {
+          return zlib.gunzipAsync(buffer);
+        }
+        // just return the empty buffer (null)
+        return buffer;
+      }).nodeify(callback);
+  }
 }
 
 /**
  * Export a factory
  */
-module.exports = (exports = function(redis, opts) {
-	const GameManager  = new RedisGameManager(redis, opts);
-	return GameManager;
+module.exports = (exports = function (redis, opts) {
+  const GameManager = new RedisGameManager(redis, opts);
+  return GameManager;
 });

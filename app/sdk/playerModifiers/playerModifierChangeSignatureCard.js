@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/no-unresolved,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,33 +12,32 @@
 const PlayerModifier = require('app/sdk/playerModifiers/playerModifier');
 
 class PlayerModifierChangeSignatureCard extends PlayerModifier {
-	static initClass() {
-	
-		this.prototype.type ="PlayerModifierChangeSignatureCard";
-		this.type ="PlayerModifierChangeSignatureCard";
-	}
+  static initClass() {
+    this.prototype.type = 'PlayerModifierChangeSignatureCard';
+    this.type = 'PlayerModifierChangeSignatureCard';
+  }
 
-	static createContextObject(cardDataOrIndex, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndex = cardDataOrIndex;
-		return contextObject;
-	}
+  static createContextObject(cardDataOrIndex, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndex = cardDataOrIndex;
+    return contextObject;
+  }
 
-	getSignatureCardData() {
-		return this.cardDataOrIndex;
-	}
+  getSignatureCardData() {
+    return this.cardDataOrIndex;
+  }
 
-	onActivate()  {
-		super.onActivate();
+  onActivate() {
+    super.onActivate();
 
-		return this.getGameSession().executeAction(this.getPlayer().actionGenerateSignatureCard());
-	}
+    return this.getGameSession().executeAction(this.getPlayer().actionGenerateSignatureCard());
+  }
 
-	onDeactivate()  {
-		super.onDeactivate();
+  onDeactivate() {
+    super.onDeactivate();
 
-		return this.getGameSession().executeAction(this.getPlayer().actionGenerateSignatureCard());
-	}
+    return this.getGameSession().executeAction(this.getPlayer().actionGenerateSignatureCard());
+  }
 }
 PlayerModifierChangeSignatureCard.initClass();
 

@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,39 +14,38 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierCannot = require('./modifierCannot');
 const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
 const PlaySignatureCardAction = require('app/sdk/actions/playSignatureCardAction');
 const CardType = require('app/sdk/cards/cardType');
+const ModifierCannot = require('./modifierCannot');
 
 class ModifierCannotCastSpellsByCost extends ModifierCannot {
-	static initClass() {
-	
-		this.prototype.type = "ModifierCannotCastSpellsByCost";
-		this.type = "ModifierCannotCastSpellsByCost";
-	
-		this.modifierName = "Cannot Cast Spells";
-		this.description = "Players can't cast spells.";
-	
-		this.prototype.manaCostPrevented = 0;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierCannotCastSpellsByCost"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierCannotCastSpellsByCost';
+    this.type = 'ModifierCannotCastSpellsByCost';
 
-	static createContextObject(manaCostPrevented) {
-		const contextObject = super.createContextObject();
-		contextObject.manaCostPrevented = manaCostPrevented;
-		return contextObject;
-	}
+    this.modifierName = 'Cannot Cast Spells';
+    this.description = 'Players can\'t cast spells.';
 
-	onValidateAction(actionEvent) {
-		const a = actionEvent.action;
+    this.prototype.manaCostPrevented = 0;
 
-		// minion prevents players from casting spells at certain mana costs
-		if (((a instanceof PlayCardFromHandAction) || (a instanceof PlaySignatureCardAction)) && a.getIsValid() && !a.getIsImplicit() && (__guard__(a.getCard(), x => x.getType()) === CardType.Spell) && (a.getManaCost() <= this.manaCostPrevented)) {
-			return this.invalidateAction(a, this.getCard().getPosition(), "You can't cast that!");
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierCannotCastSpellsByCost'];
+  }
+
+  static createContextObject(manaCostPrevented) {
+    const contextObject = super.createContextObject();
+    contextObject.manaCostPrevented = manaCostPrevented;
+    return contextObject;
+  }
+
+  onValidateAction(actionEvent) {
+    const a = actionEvent.action;
+
+    // minion prevents players from casting spells at certain mana costs
+    if (((a instanceof PlayCardFromHandAction) || (a instanceof PlaySignatureCardAction)) && a.getIsValid() && !a.getIsImplicit() && (__guard__(a.getCard(), (x) => x.getType()) === CardType.Spell) && (a.getManaCost() <= this.manaCostPrevented)) {
+      return this.invalidateAction(a, this.getCard().getPosition(), 'You can\'t cast that!');
+    }
+  }
 }
 ModifierCannotCastSpellsByCost.initClass();
 

@@ -1,3 +1,12 @@
+/* eslint-disable
+    class-methods-use-this,
+    consistent-return,
+    import/no-unresolved,
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,48 +19,46 @@ const SpellFollowupTeleport = require('./spellFollowupTeleport');
 const SpellFilterType = require('./spellFilterType');
 
 class SpellFollowupTeleportToMe extends SpellFollowupTeleport {
-	static initClass() {
-	
-		this.prototype._postFilterApplyPositions = this.prototype._postFilterPlayPositions;
-	}
+  static initClass() {
+    this.prototype._postFilterApplyPositions = this.prototype._postFilterPlayPositions;
+  }
 
-	getTeleportSourcePosition(applyEffectPosition) {
-		return applyEffectPosition;
-	}
+  getTeleportSourcePosition(applyEffectPosition) {
+    return applyEffectPosition;
+  }
 
-	getTeleportTargetPosition(applyEffectPosition) {
-		const source = this.getTeleportSource(this.getFollowupSourcePosition());
-		if (source != null) {
-			// set x offset based on which direction the source unit faces
-			let offset;
-			const sourcePosition = source.getPosition();
-			if (source.isOwnedByPlayer1()) { offset = 1; } else { offset = -1; }
-			return {x: sourcePosition.x + offset, y: sourcePosition.y};
-		}
-	}
+  getTeleportTargetPosition(applyEffectPosition) {
+    const source = this.getTeleportSource(this.getFollowupSourcePosition());
+    if (source != null) {
+      // set x offset based on which direction the source unit faces
+      let offset;
+      const sourcePosition = source.getPosition();
+      if (source.isOwnedByPlayer1()) { offset = 1; } else { offset = -1; }
+      return { x: sourcePosition.x + offset, y: sourcePosition.y };
+    }
+  }
 
-	_postFilterPlayPositions(spellPositions) {
-		// make sure that there is nothing at the target position
-		if ((this.getTeleportTarget(this.getApplyEffectPosition()) == null)) {
-			const validPositions = [];
+  _postFilterPlayPositions(spellPositions) {
+    // make sure that there is nothing at the target position
+    if ((this.getTeleportTarget(this.getApplyEffectPosition()) == null)) {
+      const validPositions = [];
 
-			for (let position of Array.from(spellPositions)) {
-				// make sure that there is something to teleport at the source position
-				if (this.getGameSession().getBoard().getCardAtPosition(position, this.targetType) != null) {
-					validPositions.push(position);
-				}
-			}
+      for (const position of Array.from(spellPositions)) {
+        // make sure that there is something to teleport at the source position
+        if (this.getGameSession().getBoard().getCardAtPosition(position, this.targetType) != null) {
+          validPositions.push(position);
+        }
+      }
 
-			return validPositions;
-		} else {
-			return [];
-		}
-	}
+      return validPositions;
+    }
+    return [];
+  }
 
-	static followupConditionCanTeleportToMe(cardWithFollowup, followupCard) {
-		// make sure that there is nothing at in front of the target
-		return !followupCard.getTeleportTarget(followupCard.getApplyEffectPosition());
-	}
+  static followupConditionCanTeleportToMe(cardWithFollowup, followupCard) {
+    // make sure that there is nothing at in front of the target
+    return !followupCard.getTeleportTarget(followupCard.getApplyEffectPosition());
+  }
 }
 SpellFollowupTeleportToMe.initClass();
 

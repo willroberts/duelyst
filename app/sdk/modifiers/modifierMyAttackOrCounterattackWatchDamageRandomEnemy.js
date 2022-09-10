@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,34 +12,32 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierMyAttackOrCounterattackWatch = require('./modifierMyAttackOrCounterattackWatch');
 const RandomDamageAction = require('app/sdk/actions/randomDamageAction');
+const ModifierMyAttackOrCounterattackWatch = require('./modifierMyAttackOrCounterattackWatch');
 
 class ModifierMyAttackOrCounterattackWatchDamageRandomEnemy extends ModifierMyAttackOrCounterattackWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierMyAttackOrCounterattackWatchDamageRandomEnemy";
-		this.type ="ModifierMyAttackOrCounterattackWatchDamageRandomEnemy";
-	
-		this.prototype.damageAmount = 0;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierMyAttackOrCounterattackWatchDamageRandomEnemy';
+    this.type = 'ModifierMyAttackOrCounterattackWatchDamageRandomEnemy';
 
-	static createContextObject(damageAmount, options) {
-		if (options == null) { options = undefined; }
-		const contextObject = super.createContextObject(options);
-		contextObject.damageAmount = damageAmount;
-		return contextObject;
-	}
+    this.prototype.damageAmount = 0;
+  }
 
-	onMyAttackOrCounterattackWatch(action) {
+  static createContextObject(damageAmount, options) {
+    if (options == null) { options = undefined; }
+    const contextObject = super.createContextObject(options);
+    contextObject.damageAmount = damageAmount;
+    return contextObject;
+  }
 
-		const randomDamageAction = new RandomDamageAction(this.getGameSession());
-		randomDamageAction.setOwnerId(this.getCard().getOwnerId());
-		randomDamageAction.setSource(this.getCard());
-		randomDamageAction.setDamageAmount(this.damageAmount);
-		randomDamageAction.canTargetGenerals = true;
-		return this.getGameSession().executeAction(randomDamageAction);
-	}
+  onMyAttackOrCounterattackWatch(action) {
+    const randomDamageAction = new RandomDamageAction(this.getGameSession());
+    randomDamageAction.setOwnerId(this.getCard().getOwnerId());
+    randomDamageAction.setSource(this.getCard());
+    randomDamageAction.setDamageAmount(this.damageAmount);
+    randomDamageAction.canTargetGenerals = true;
+    return this.getGameSession().executeAction(randomDamageAction);
+  }
 }
 ModifierMyAttackOrCounterattackWatchDamageRandomEnemy.initClass();
 

@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-plusplus,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,43 +15,42 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('app/common/config');
-const SpellDamage = 	require('./spellDamage');
 const CardType = require('app/sdk/cards/cardType');
-const SpellFilterType = require('./spellFilterType');
 const Races = require('app/sdk/cards/racesLookup');
+const SpellDamage = 	require('./spellDamage');
+const SpellFilterType = require('./spellFilterType');
 
 class SpellCryogenesis extends SpellDamage {
-	static initClass() {
-	
-		this.prototype.targetType = CardType.Unit;
-		this.prototype.spellFilterType = SpellFilterType.EnemyDirect;
-	}
+  static initClass() {
+    this.prototype.targetType = CardType.Unit;
+    this.prototype.spellFilterType = SpellFilterType.EnemyDirect;
+  }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		let cardIndex;
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    let cardIndex;
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
 
-		// draw a frost minion
-		// calculate card to draw only on the server, since only the server knows contents of both decks
-		const deck = this.getOwner().getDeck();
-		const drawPile = deck.getDrawPile();
-		const indexesOfMinions = [];
-		for (let i = 0; i < drawPile.length; i++) {
-			// find only frost minions
-			cardIndex = drawPile[i];
-			const card = this.getGameSession().getCardByIndex(cardIndex);
-			if ((card != null) && (card.getType() === CardType.Unit) && card.getBelongsToTribe(Races.Vespyr)) {
-				indexesOfMinions.push(i);
-			}
-		}
+    // draw a frost minion
+    // calculate card to draw only on the server, since only the server knows contents of both decks
+    const deck = this.getOwner().getDeck();
+    const drawPile = deck.getDrawPile();
+    const indexesOfMinions = [];
+    for (let i = 0; i < drawPile.length; i++) {
+      // find only frost minions
+      cardIndex = drawPile[i];
+      const card = this.getGameSession().getCardByIndex(cardIndex);
+      if ((card != null) && (card.getType() === CardType.Unit) && card.getBelongsToTribe(Races.Vespyr)) {
+        indexesOfMinions.push(i);
+      }
+    }
 
-		if (indexesOfMinions.length > 0) {
-			const indexOfCardInDeck = indexesOfMinions[this.getGameSession().getRandomIntegerForExecution(indexesOfMinions.length)];
-			cardIndex = drawPile[indexOfCardInDeck];
-			const drawCardAction =  this.getGameSession().getPlayerById(this.getOwner().getPlayerId()).getDeck().actionDrawCard(cardIndex);
-			return this.getGameSession().executeAction(drawCardAction);
-		}
-	}
+    if (indexesOfMinions.length > 0) {
+      const indexOfCardInDeck = indexesOfMinions[this.getGameSession().getRandomIntegerForExecution(indexesOfMinions.length)];
+      cardIndex = drawPile[indexOfCardInDeck];
+      const drawCardAction = this.getGameSession().getPlayerById(this.getOwner().getPlayerId()).getDeck().actionDrawCard(cardIndex);
+      return this.getGameSession().executeAction(drawCardAction);
+    }
+  }
 }
 SpellCryogenesis.initClass();
 

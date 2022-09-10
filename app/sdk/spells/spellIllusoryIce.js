@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -6,49 +13,48 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Spell = require('./spell');
 const CardType = require('app/sdk/cards/cardType');
 const RemoveAction = require('app/sdk/actions/removeAction');
 const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
 const ModifierTransformed = require('app/sdk/modifiers/modifierTransformed');
+const Spell = require('./spell');
 
 class SpellIllusoryIce extends Spell {
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+    const originalEntity = this.getGameSession().getBoard().getEntityAtPosition({ x, y });
+    const entities = this.getGameSession().getBoard().getEntitiesAroundEntity(originalEntity, CardType.Unit, 1);
 
-		const originalEntity = this.getGameSession().getBoard().getEntityAtPosition({x,y});
-		const entities = this.getGameSession().getBoard().getEntitiesAroundEntity(originalEntity, CardType.Unit, 1);
+    return (() => {
+      const result = [];
+      for (const entity of Array.from(entities)) {
+        if ((entity != null) && !entity.getIsGeneral()) {
+          const position = entity.getPosition();
+          const ownerId = entity.getOwnerId();
 
-		return (() => {
-			const result = [];
-			for (let entity of Array.from(entities)) {
-				if ((entity != null) && !entity.getIsGeneral()) {
-					const position = entity.getPosition();
-					const ownerId = entity.getOwnerId();
+          const removeEntityAction = new RemoveAction(this.getGameSession());
+          removeEntityAction.setOwnerId(this.getOwnerId());
+          removeEntityAction.setTarget(entity);
+          this.getGameSession().executeAction(removeEntityAction);
 
-					const removeEntityAction = new RemoveAction(this.getGameSession());
-					removeEntityAction.setOwnerId(this.getOwnerId());
-					removeEntityAction.setTarget(entity);
-					this.getGameSession().executeAction(removeEntityAction);
-
-					const existingEntity = this.getGameSession().getBoard().getCardAtPosition({x, y}, CardType.Unit);
-					if ((existingEntity != null) && !this.getGameSession().getBoard().getObstructionAtPositionForEntity(position, existingEntity)) {
-						const cardDataOrIndexToSpawn = existingEntity.createCloneCardData();
-						if (cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
-						cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(entity.getExhausted(), entity.getMovesMade(), entity.getAttacksMade()));
-						const spawnEntityAction = new PlayCardAsTransformAction(this.getGameSession(), ownerId, position.x, position.y, cardDataOrIndexToSpawn);
-						result.push(this.getGameSession().executeAction(spawnEntityAction));
-					} else {
-						result.push(undefined);
-					}
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+          const existingEntity = this.getGameSession().getBoard().getCardAtPosition({ x, y }, CardType.Unit);
+          if ((existingEntity != null) && !this.getGameSession().getBoard().getObstructionAtPositionForEntity(position, existingEntity)) {
+            const cardDataOrIndexToSpawn = existingEntity.createCloneCardData();
+            if (cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
+            cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierTransformed.createContextObject(entity.getExhausted(), entity.getMovesMade(), entity.getAttacksMade()));
+            const spawnEntityAction = new PlayCardAsTransformAction(this.getGameSession(), ownerId, position.x, position.y, cardDataOrIndexToSpawn);
+            result.push(this.getGameSession().executeAction(spawnEntityAction));
+          } else {
+            result.push(undefined);
+          }
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 
 module.exports = SpellIllusoryIce;

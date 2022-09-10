@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,30 +11,28 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const Logger = require('app/common/logger');
-const SpellDamage = require('./spellDamage');
 const CardType = require('app/sdk/cards/cardType');
+const SpellDamage = require('./spellDamage');
 const SpellFilterType = require('./spellFilterType');
 
 class SpellDarkSeed extends SpellDamage {
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    // deal 1 damage for each card in opponent's hand
+    const opponent = this.getGameSession().getOpponentPlayerOfPlayerId(this.getOwnerId());
+    const cardsInHand = opponent.getDeck().getNumCardsInHand();
+    this.damageAmount = cardsInHand;
+    return super.onApplyEffectToBoardTile(board, x, y, sourceAction);
+  }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		// deal 1 damage for each card in opponent's hand
-		const opponent = this.getGameSession().getOpponentPlayerOfPlayerId(this.getOwnerId());
-		const cardsInHand = opponent.getDeck().getNumCardsInHand();
-		this.damageAmount = cardsInHand;
-		return super.onApplyEffectToBoardTile(board,x,y,sourceAction);
-	}
+  _findApplyEffectPositions(position, sourceAction) {
+    const applyEffectPositions = [];
 
-	_findApplyEffectPositions(position, sourceAction) {
-		const applyEffectPositions = [];
+    // can only target enemy general
+    const general = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId());
+    if (general != null) { applyEffectPositions.push(general.getPosition()); }
 
-		// can only target enemy general
-		const general = this.getGameSession().getGeneralForOpponentOfPlayerId(this.getOwnerId());
-		if (general != null) { applyEffectPositions.push(general.getPosition()); }
-
-		return applyEffectPositions;
-	}
+    return applyEffectPositions;
+  }
 }
-
 
 module.exports = SpellDarkSeed;

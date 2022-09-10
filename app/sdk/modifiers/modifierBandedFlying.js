@@ -1,3 +1,8 @@
+/* eslint-disable
+    import/no-unresolved,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -8,13 +13,12 @@ const ModifierBanded = require('./modifierBanded');
 const ModifierFlying = require('./modifierFlying');
 
 class ModifierBandedFlying extends ModifierFlying {
-	static initClass() {
-	
-		this.prototype.type = "ModifierBandedFlying";
-		this.type = "ModifierBandedFlying";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierZealed"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBandedFlying';
+    this.type = 'ModifierBandedFlying';
+
+    this.prototype.fxResource = ['FX.Modifiers.ModifierZealed'];
+  }
 }
 ModifierBandedFlying.initClass();
 

@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,46 +14,45 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierEnemyStunWatch = require('./modifierEnemyStunWatch');
 const CardType = require('app/sdk/cards/cardType');
 const DamageAction = require('app/sdk/actions/damageAction');
+const ModifierEnemyStunWatch = require('./modifierEnemyStunWatch');
 
 class ModifierEnemyStunWatchDamageNearbyEnemies extends ModifierEnemyStunWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierEnemyStunWatchDamageNearbyEnemies";
-		this.type ="ModifierEnemyStunWatchDamageNearbyEnemies";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierMyMoveWatch"];
-	
-		this.prototype.damageAmount = 0;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierEnemyStunWatchDamageNearbyEnemies';
+    this.type = 'ModifierEnemyStunWatchDamageNearbyEnemies';
 
-	static createContextObject(damageAmount, options) {
-		const contextObject = super.createContextObject();
-		contextObject.damageAmount = damageAmount;
-		return contextObject;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierMyMoveWatch'];
 
-	onEnemyStunWatch(action) {
-		const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
-		return (() => {
-			const result = [];
-			for (let entity of Array.from(entities)) {
-				if (entity != null) {
-					const damageAction = new DamageAction(this.getGameSession());
-					damageAction.setOwnerId(this.getCard().getOwnerId());
-					damageAction.setSource(this.getCard());
-					damageAction.setTarget(entity);
-					damageAction.setDamageAmount(this.damageAmount);
-					result.push(this.getGameSession().executeAction(damageAction));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    this.prototype.damageAmount = 0;
+  }
+
+  static createContextObject(damageAmount, options) {
+    const contextObject = super.createContextObject();
+    contextObject.damageAmount = damageAmount;
+    return contextObject;
+  }
+
+  onEnemyStunWatch(action) {
+    const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
+    return (() => {
+      const result = [];
+      for (const entity of Array.from(entities)) {
+        if (entity != null) {
+          const damageAction = new DamageAction(this.getGameSession());
+          damageAction.setOwnerId(this.getCard().getOwnerId());
+          damageAction.setSource(this.getCard());
+          damageAction.setTarget(entity);
+          damageAction.setDamageAmount(this.damageAmount);
+          result.push(this.getGameSession().executeAction(damageAction));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 ModifierEnemyStunWatchDamageNearbyEnemies.initClass();
 

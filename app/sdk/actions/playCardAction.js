@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-tabs,
+    no-this-before-super,
+    prefer-rest-params,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -7,24 +15,23 @@
  */
 const CONFIG = 		require('app/common/config');
 const Logger = 		require('app/common/logger');
-const ApplyCardToBoardAction = 		require('./applyCardToBoardAction');
 const CardType = require('app/sdk/cards/cardType');
 const _ = require('underscore');
+const ApplyCardToBoardAction = 		require('./applyCardToBoardAction');
 
 /*
 Play a card to board and allow it to enact the full play card flow (followups, spawn effects, etc)
 */
 
 class PlayCardAction extends ApplyCardToBoardAction {
-	static initClass() {
-	
-		this.type ="PlayCardAction";
-	}
+  static initClass() {
+    this.type = 'PlayCardAction';
+  }
 
-	constructor() {
-		if (this.type == null) { this.type = PlayCardAction.type; }
-		super(...arguments);
-	}
+  constructor() {
+    if (this.type == null) { this.type = PlayCardAction.type; }
+    super(...arguments);
+  }
 }
 PlayCardAction.initClass();
 

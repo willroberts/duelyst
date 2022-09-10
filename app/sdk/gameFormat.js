@@ -1,18 +1,19 @@
+// TODO: This file was created by bulk-decaffeinate.
+// Sanity-check the conversion and remove this comment.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 class GameFormat {
-	static initClass() {
-	
-		this.Standard = 0;
-		this.Legacy = 1;
-	}
+  static initClass() {
+    this.Standard = 0;
+    this.Legacy = 1;
+  }
 
-	static isLegacyFormat(type) {
-		return type === GameFormat.Legacy;
-	}
+  static isLegacyFormat(type) {
+    return type === GameFormat.Legacy;
+  }
 }
 GameFormat.initClass();
 

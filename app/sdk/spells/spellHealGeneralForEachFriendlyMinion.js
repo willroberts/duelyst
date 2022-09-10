@@ -1,3 +1,9 @@
+/* eslint-disable
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,22 +15,20 @@
 const SpellHealYourGeneral = require('./spellHealYourGeneral');
 
 class SpellHealGeneralForEachFriendlyMinion extends SpellHealYourGeneral {
-	static initClass() {
-	
-		this.prototype.healModifier = 0;
-		this.prototype.healAmountPerMinion = 0;
-	}
+  static initClass() {
+    this.prototype.healModifier = 0;
+    this.prototype.healAmountPerMinion = 0;
+  }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    for (const unit of Array.from(board.getUnits(true, false))) {
+      if (((unit != null ? unit.getOwnerId() : undefined) === this.getOwnerId()) && !unit.getIsGeneral()) {
+        this.healModifier += this.healAmountPerMinion;
+      }
+    }
 
-		for (let unit of Array.from(board.getUnits(true, false))) {
-			if (((unit != null ? unit.getOwnerId() : undefined) === this.getOwnerId()) && !unit.getIsGeneral()) {
-				this.healModifier += this.healAmountPerMinion;
-			}
-		}
-
-		return super.onApplyEffectToBoardTile(board,x,y,sourceAction);
-	}
+    return super.onApplyEffectToBoardTile(board, x, y, sourceAction);
+  }
 }
 SpellHealGeneralForEachFriendlyMinion.initClass();
 

@@ -1,40 +1,46 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const Modifier = require('app/sdk/modifiers/modifier.coffee');
-const SpellKillTarget = require('./spellKillTarget.coffee');
 const _ = require('underscore');
+const SpellKillTarget = require('./spellKillTarget.coffee');
 
 class SpellSkyBurial extends SpellKillTarget {
+  _postFilterPlayPositions(validPositions) {
+    const filteredPositions = [];
 
-	_postFilterPlayPositions(validPositions) {
-		const filteredPositions = [];
+    if (validPositions.length > 0) {
+      // spell only applies to units not nearby a general
+      const board = this.getGameSession().getBoard();
+      const general1 = this.getGameSession().getGeneralForPlayer1();
+      const general2 = this.getGameSession().getGeneralForPlayer2();
+      const unitsAroundGenerals = _.uniq(_.union(board.getEntitiesAroundEntity(general1, this.targetType, 1), board.getEntitiesAroundEntity(general2, this.targetType, 1)));
 
-		if (validPositions.length > 0) {
-			// spell only applies to units not nearby a general
-			const board = this.getGameSession().getBoard();
-			const general1 = this.getGameSession().getGeneralForPlayer1();
-			const general2 = this.getGameSession().getGeneralForPlayer2();
-			const unitsAroundGenerals = _.uniq(_.union(board.getEntitiesAroundEntity(general1, this.targetType, 1), board.getEntitiesAroundEntity(general2, this.targetType, 1)));
+      for (const position of Array.from(validPositions)) {
+        let validPosition = true;
+        for (const unit of Array.from(unitsAroundGenerals)) {
+          if ((unit.position.x === position.x) && (unit.position.y === position.y)) {
+            validPosition = false;
+            break;
+          }
+        }
 
-			for (let position of Array.from(validPositions)) {
-				let validPosition = true;
-				for (let unit of Array.from(unitsAroundGenerals)) {
-					if ((unit.position.x === position.x) && (unit.position.y === position.y)) {
-						validPosition = false;
-						break;
-					}
-				}
+        if (validPosition) { filteredPositions.push(position); }
+      }
+    }
 
-				if (validPosition) { filteredPositions.push(position); }
-			}
-		}
-
-		return filteredPositions;
-	}
+    return filteredPositions;
+  }
 }
-
 
 module.exports = SpellSkyBurial;

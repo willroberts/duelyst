@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -15,75 +26,73 @@ const ModifierHPChange = require('app/sdk/modifiers/modifierHPChange');
 const _ = require('underscore');
 
 class ModifierHPChangeSummonEntity extends ModifierHPChange {
-	static initClass() {
-	
-		this.prototype.type ="ModifierHPChangeSummonEntity";
-		this.type ="ModifierHPChangeSummonEntity";
-	
-		this.modifierName ="Modifier HP Change Summon Entity";
-		this.description = "When this falls below %X health, summon %Y on a random space";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierBuffSelfOnReplace"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierHPChangeSummonEntity';
+    this.type = 'ModifierHPChangeSummonEntity';
 
-	static createContextObject(cardDataOrIndexToSpawn,healthThreshold,spawnDescription,spawnCount, spawnSilently,options) {
-		if (spawnCount == null) { spawnCount = 1; }
-		if (spawnSilently == null) { spawnSilently = true; }
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
-		contextObject.healthThreshold = healthThreshold;
-		contextObject.spawnDescription = spawnDescription;
-		contextObject.spawnCount = spawnCount;
-		contextObject.spawnSilently = spawnSilently;
-		return contextObject;
-	}
+    this.modifierName = 'Modifier HP Change Summon Entity';
+    this.description = 'When this falls below %X health, summon %Y on a random space';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			const descriptionText = this.description.replace(/%Y/, modifierContextObject.spawnDescription);
-			return descriptionText.replace(/%X/, modifierContextObject.healthThreshold);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierBuffSelfOnReplace'];
+  }
 
-	onHPChange(action) {
-		super.onHPChange(action);
+  static createContextObject(cardDataOrIndexToSpawn, healthThreshold, spawnDescription, spawnCount, spawnSilently, options) {
+    if (spawnCount == null) { spawnCount = 1; }
+    if (spawnSilently == null) { spawnSilently = true; }
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+    contextObject.healthThreshold = healthThreshold;
+    contextObject.spawnDescription = spawnDescription;
+    contextObject.spawnCount = spawnCount;
+    contextObject.spawnSilently = spawnSilently;
+    return contextObject;
+  }
 
-		const hp = this.getCard().getHP();
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      const descriptionText = this.description.replace(/%Y/, modifierContextObject.spawnDescription);
+      return descriptionText.replace(/%X/, modifierContextObject.healthThreshold);
+    }
+    return this.description;
+  }
 
-		if (hp <= this.healthThreshold) {
-			if (this.getGameSession().getIsRunningAsAuthoritative()) {
-				const ownerId = this.getSpawnOwnerId(action);
-				const wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS;
-				const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
-				const thisEntityPosition = this.getCard().getPosition();
-				const validPositions = _.reject(wholeBoardPattern, position => UtilsPosition.getPositionsAreEqual(position, thisEntityPosition));
-				const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), {x:0, y:0}, validPositions, card, this.getCard(), this.spawnCount);
+  onHPChange(action) {
+    super.onHPChange(action);
 
-				for (let position of Array.from(spawnLocations)) {
-					var playCardAction;
-					if (!this.spawnSilently) {
-						playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
-					} else {
-						playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
-					}
-					playCardAction.setSource(this.getCard());
-					this.getGameSession().executeAction(playCardAction);
-				}
-				// remove modifier so it doesn't trigger again
-				return this.getGameSession().removeModifier(this);
-			}
-		}
-	}
+    const hp = this.getCard().getHP();
 
-	getCardDataOrIndexToSpawn() {
-		return this.cardDataOrIndexToSpawn;
-	}
+    if (hp <= this.healthThreshold) {
+      if (this.getGameSession().getIsRunningAsAuthoritative()) {
+        const ownerId = this.getSpawnOwnerId(action);
+        const wholeBoardPattern = CONFIG.ALL_BOARD_POSITIONS;
+        const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData(this.cardDataOrIndexToSpawn);
+        const thisEntityPosition = this.getCard().getPosition();
+        const validPositions = _.reject(wholeBoardPattern, (position) => UtilsPosition.getPositionsAreEqual(position, thisEntityPosition));
+        const spawnLocations = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), { x: 0, y: 0 }, validPositions, card, this.getCard(), this.spawnCount);
 
-	getSpawnOwnerId(action) {
-		return this.getCard().getOwnerId();
-	}
+        for (const position of Array.from(spawnLocations)) {
+          var playCardAction;
+          if (!this.spawnSilently) {
+            playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+          } else {
+            playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, this.cardDataOrIndexToSpawn);
+          }
+          playCardAction.setSource(this.getCard());
+          this.getGameSession().executeAction(playCardAction);
+        }
+        // remove modifier so it doesn't trigger again
+        return this.getGameSession().removeModifier(this);
+      }
+    }
+  }
+
+  getCardDataOrIndexToSpawn() {
+    return this.cardDataOrIndexToSpawn;
+  }
+
+  getSpawnOwnerId(action) {
+    return this.getCard().getOwnerId();
+  }
 }
 ModifierHPChangeSummonEntity.initClass();
 

@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+    no-var,
+    vars-on-top,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,88 +21,86 @@
 const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const UtilsPosition = require('app/common/utils/utils_position');
-const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
 const CardType = require('app/sdk/cards/cardType');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const PlayCardAction = require('app/sdk/actions/playCardAction');
+const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
 
 class ModifierStartTurnWatchSpawnEntity extends ModifierStartTurnWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierStartTurnWatchSpawnEntity";
-		this.type ="ModifierStartTurnWatchSpawnEntity";
-	
-		this.modifierName ="Turn Watch";
-		this.description ="At the start of your turn, summon %X";
-	
-		this.prototype.cardDataOrIndexToSpawn = null;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierStartTurnWatch", "FX.Modifiers.ModifierGenericSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierStartTurnWatchSpawnEntity';
+    this.type = 'ModifierStartTurnWatchSpawnEntity';
 
-	static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently, options) {
-		if (spawnDescription == null) { spawnDescription = ""; }
-		if (spawnCount == null) { spawnCount = 1; }
-		if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
-		if (spawnSilently == null) { spawnSilently = false; }
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
-		contextObject.spawnDescription = spawnDescription;
-		contextObject.spawnCount = spawnCount;
-		contextObject.spawnPattern = spawnPattern;
-		contextObject.spawnSilently = spawnSilently;
-		return contextObject;
-	}
+    this.modifierName = 'Turn Watch';
+    this.description = 'At the start of your turn, summon %X';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			let replaceText = "";
-			if (UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)) {
-				replaceText = "a "+modifierContextObject.spawnDescription+" in the same space";
-			} else if (modifierContextObject.spawnCount === 1) {
-				replaceText = "a "+modifierContextObject.spawnDescription+" into a nearby space";
-			} else if (modifierContextObject.spawnCount === 8) {
-				replaceText = ""+modifierContextObject.spawnDescription+"s in all nearby spaces";
-			} else {
-				replaceText = ""+modifierContextObject.spawnDescription+"s into "+modifierContextObject.spawnCount+" nearby spaces";
-			}
-			return this.description.replace(/%X/, replaceText);
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.cardDataOrIndexToSpawn = null;
 
-	onTurnWatch(action) {
-		super.onTurnWatch(action);
+    this.prototype.fxResource = ['FX.Modifiers.ModifierStartTurnWatch', 'FX.Modifiers.ModifierGenericSpawn'];
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const ownerId = this.getSpawnOwnerId(action);
-			const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierStartTurnWatchSpawnEntity);
-			return (() => {
-				const result = [];
-				for (let spawnPosition of Array.from(spawnPositions)) {
-					var spawnAction;
-					const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
-					if (this.spawnSilently) {
-						spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
-					} else {
-						spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
-					}
-					spawnAction.setSource(this.getCard());
-					result.push(this.getGameSession().executeAction(spawnAction));
-				}
-				return result;
-			})();
-		}
-	}
+  static createContextObject(cardDataOrIndexToSpawn, spawnDescription, spawnCount, spawnPattern, spawnSilently, options) {
+    if (spawnDescription == null) { spawnDescription = ''; }
+    if (spawnCount == null) { spawnCount = 1; }
+    if (spawnPattern == null) { spawnPattern = CONFIG.PATTERN_3x3; }
+    if (spawnSilently == null) { spawnSilently = false; }
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+    contextObject.spawnDescription = spawnDescription;
+    contextObject.spawnCount = spawnCount;
+    contextObject.spawnPattern = spawnPattern;
+    contextObject.spawnSilently = spawnSilently;
+    return contextObject;
+  }
 
-	getCardDataOrIndexToSpawn() {
-		return this.cardDataOrIndexToSpawn;
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      let replaceText = '';
+      if (UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)) {
+        replaceText = `a ${modifierContextObject.spawnDescription} in the same space`;
+      } else if (modifierContextObject.spawnCount === 1) {
+        replaceText = `a ${modifierContextObject.spawnDescription} into a nearby space`;
+      } else if (modifierContextObject.spawnCount === 8) {
+        replaceText = `${modifierContextObject.spawnDescription}s in all nearby spaces`;
+      } else {
+        replaceText = `${modifierContextObject.spawnDescription}s into ${modifierContextObject.spawnCount} nearby spaces`;
+      }
+      return this.description.replace(/%X/, replaceText);
+    }
+    return this.description;
+  }
 
-	getSpawnOwnerId(action) {
-		return this.getCard().getOwnerId();
-	}
+  onTurnWatch(action) {
+    super.onTurnWatch(action);
+
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const ownerId = this.getSpawnOwnerId(action);
+      const spawnPositions = UtilsGameSession.getRandomNonConflictingSmartSpawnPositionsForModifier(this, ModifierStartTurnWatchSpawnEntity);
+      return (() => {
+        const result = [];
+        for (const spawnPosition of Array.from(spawnPositions)) {
+          var spawnAction;
+          const cardDataOrIndexToSpawn = this.getCardDataOrIndexToSpawn();
+          if (this.spawnSilently) {
+            spawnAction = new PlayCardSilentlyAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+          } else {
+            spawnAction = new PlayCardAction(this.getGameSession(), ownerId, spawnPosition.x, spawnPosition.y, cardDataOrIndexToSpawn);
+          }
+          spawnAction.setSource(this.getCard());
+          result.push(this.getGameSession().executeAction(spawnAction));
+        }
+        return result;
+      })();
+    }
+  }
+
+  getCardDataOrIndexToSpawn() {
+    return this.cardDataOrIndexToSpawn;
+  }
+
+  getSpawnOwnerId(action) {
+    return this.getCard().getOwnerId();
+  }
 }
 ModifierStartTurnWatchSpawnEntity.initClass();
 

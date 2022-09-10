@@ -1,3 +1,14 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-console,
+    no-plusplus,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -7,83 +18,81 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const CONFIG = require('app/common/config');
-const Modifier = require('./modifier');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 const CardType = require('app/sdk/cards/cardType');
 const PlaySignatureCardAction = require('app/sdk/actions/playSignatureCardAction');
+const Modifier = require('./modifier');
 
 class ModifierSynergizeSpawnEntityFromDeck extends Modifier {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSynergizeSpawnEntityFromDeck";
-		this.type ="ModifierSynergizeSpawnEntityFromDeck";
-	
-		this.prototype.activeInHand = false;
-		this.prototype.activeInDeck = true;
-		this.prototype.activeInSignatureCards = false;
-		this.prototype.activeOnBoard = false;
-	
-		this.prototype.maxStacks = 1;
-		this.prototype.cardDataOrIndexToSpawn = null;
-		this.prototype.spawnLocation = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSynergizeSpawnEntityFromDeck';
+    this.type = 'ModifierSynergizeSpawnEntityFromDeck';
 
-	static createContextObject(cardDataOrIndexToSpawn, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
-		return contextObject;
-	}
+    this.prototype.activeInHand = false;
+    this.prototype.activeInDeck = true;
+    this.prototype.activeInSignatureCards = false;
+    this.prototype.activeOnBoard = false;
 
-	onAfterCleanupAction(e) {
-		super.onAfterCleanupAction(e);
+    this.prototype.maxStacks = 1;
+    this.prototype.cardDataOrIndexToSpawn = null;
+    this.prototype.spawnLocation = null;
+  }
 
-		const {
-            action
-        } = e;
+  static createContextObject(cardDataOrIndexToSpawn, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndexToSpawn = cardDataOrIndexToSpawn;
+    return contextObject;
+  }
 
-		// watch for a spell being cast from Signature Card slot by player who owns this entity
-		if ((action instanceof PlaySignatureCardAction) && (action.getOwnerId() === this.getCard().getOwnerId()) && (__guard__(action.getCard(), x => x.type) === CardType.Spell)) {
-			return this.onSynergize(action);
-		}
-	}
+  onAfterCleanupAction(e) {
+    super.onAfterCleanupAction(e);
 
-	onSynergize(action) {
+    const {
+      action,
+    } = e;
 
-		let card;
-		console.log("hsdflkjsdflksdjfsdlkfj MAKING IT HERE");
+    // watch for a spell being cast from Signature Card slot by player who owns this entity
+    if ((action instanceof PlaySignatureCardAction) && (action.getOwnerId() === this.getCard().getOwnerId()) && (__guard__(action.getCard(), (x) => x.type) === CardType.Spell)) {
+      return this.onSynergize(action);
+    }
+  }
 
-		const deck = this.getOwner().getDeck();
-		const drawPile = deck.getDrawPile();
-		const indexesOfMinions = [];
-		for (let i = 0; i < drawPile.length; i++) {
-			const cardIndex = drawPile[i];
-			card = this.getGameSession().getCardByIndex(cardIndex);
-			if ((card != null) && (card.getType() === CardType.Unit) && (card.getBaseCardId() === this.cardDataOrIndexToSpawn.id)) {
-				indexesOfMinions.push(i);
-			}
-		}
+  onSynergize(action) {
+    let card;
+    console.log('hsdflkjsdflksdjfsdlkfj MAKING IT HERE');
 
-		console.log("indexesOfMinions = ", indexesOfMinions);
+    const deck = this.getOwner().getDeck();
+    const drawPile = deck.getDrawPile();
+    const indexesOfMinions = [];
+    for (let i = 0; i < drawPile.length; i++) {
+      const cardIndex = drawPile[i];
+      card = this.getGameSession().getCardByIndex(cardIndex);
+      if ((card != null) && (card.getType() === CardType.Unit) && (card.getBaseCardId() === this.cardDataOrIndexToSpawn.id)) {
+        indexesOfMinions.push(i);
+      }
+    }
 
-		if (indexesOfMinions.length > 0) {
-			const indexOfCardInDeck = indexesOfMinions[this.getGameSession().getRandomIntegerForExecution(indexesOfMinions.length)];
-			const cardIndexToDraw = drawPile[indexOfCardInDeck];
-			card = this.getGameSession().getCardByIndex(cardIndexToDraw);
-			const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+    console.log('indexesOfMinions = ', indexesOfMinions);
 
-			const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), general.getPosition(), CONFIG.PATTERN_3x3, card);
-			if ((validSpawnLocations != null ? validSpawnLocations.length : undefined) > 0) {
-				const spawnLocation = validSpawnLocations[this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length)];
+    if (indexesOfMinions.length > 0) {
+      const indexOfCardInDeck = indexesOfMinions[this.getGameSession().getRandomIntegerForExecution(indexesOfMinions.length)];
+      const cardIndexToDraw = drawPile[indexOfCardInDeck];
+      card = this.getGameSession().getCardByIndex(cardIndexToDraw);
+      const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
 
-				if (spawnLocation != null) {
-					const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), spawnLocation.x, spawnLocation.y, card);
-					playCardAction.setSource(this.getCard());
-					return this.getGameSession().executeAction(playCardAction);
-				}
-			}
-		}
-	}
+      const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), general.getPosition(), CONFIG.PATTERN_3x3, card);
+      if ((validSpawnLocations != null ? validSpawnLocations.length : undefined) > 0) {
+        const spawnLocation = validSpawnLocations[this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length)];
+
+        if (spawnLocation != null) {
+          const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), spawnLocation.x, spawnLocation.y, card);
+          playCardAction.setSource(this.getCard());
+          return this.getGameSession().executeAction(playCardAction);
+        }
+      }
+    }
+  }
 }
 ModifierSynergizeSpawnEntityFromDeck.initClass();
 

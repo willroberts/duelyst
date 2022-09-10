@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,25 +15,23 @@ const SpellApplyModifiers = require('app/sdk/spells/spellApplyModifiers');
 const PlayCardAction = require('app/sdk/actions/playCardAction');
 
 class SpellApplyModifiersSummonTile extends SpellApplyModifiers {
-	static initClass() {
-	
-		this.prototype.cardDataOrIndexToSpawn = null;
-	}
+  static initClass() {
+    this.prototype.cardDataOrIndexToSpawn = null;
+  }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
 
-		const applyEffectPosition = {x, y};
+    const applyEffectPosition = { x, y };
 
-		// always spawn a tile at position
-		if (board.isOnBoard(applyEffectPosition)) {
-			const action = new PlayCardAction(this.getGameSession(), this.getOwnerId(), x, y, this.cardDataOrIndexToSpawn);
-			action.setOwnerId(this.getOwnerId());
-			return this.getGameSession().executeAction(action);
-		}
-	}
+    // always spawn a tile at position
+    if (board.isOnBoard(applyEffectPosition)) {
+      const action = new PlayCardAction(this.getGameSession(), this.getOwnerId(), x, y, this.cardDataOrIndexToSpawn);
+      action.setOwnerId(this.getOwnerId());
+      return this.getGameSession().executeAction(action);
+    }
+  }
 }
 SpellApplyModifiersSummonTile.initClass();
-
 
 module.exports = SpellApplyModifiersSummonTile;

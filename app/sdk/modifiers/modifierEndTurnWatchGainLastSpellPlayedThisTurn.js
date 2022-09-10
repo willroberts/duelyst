@@ -1,3 +1,16 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-plusplus,
+    no-restricted-syntax,
+    no-tabs,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,45 +20,43 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
 const CardType = require('app/sdk/cards/cardType');
 const PutCardInHandAction = require('app/sdk/actions/putCardInHandAction');
 const ApplyCardToBoardAction = require('app/sdk/actions/applyCardToBoardAction');
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
 
 class ModifierEndTurnWatchGainLastSpellPlayedThisTurn extends ModifierEndTurnWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierEndTurnWatchGainLastSpellPlayedThisTurn";
-		this.type ="ModifierEndTurnWatchGainLastSpellPlayedThisTurn";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierEndTurnWatch"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierEndTurnWatchGainLastSpellPlayedThisTurn';
+    this.type = 'ModifierEndTurnWatchGainLastSpellPlayedThisTurn';
 
-	onTurnWatch(action) {
+    this.prototype.fxResource = ['FX.Modifiers.ModifierEndTurnWatch'];
+  }
 
-		let actions = [];
-		let lastSpell = null;
-		for (let step of Array.from(this.getGameSession().getCurrentTurn().getSteps())) {
-			actions = actions.concat(step.getAction().getFlattenedActionTree());
-		}
-		for (let i = actions.length - 1; i >= 0; i--) {
-			action = actions[i];
-			if (action instanceof ApplyCardToBoardAction &&
-			(__guard__(__guard__(action.getCard(), x1 => x1.getRootCard()), x => x.getType()) === CardType.Spell) &&
-			(action.getCard().getRootCard() === action.getCard()) &&
-			!action.getIsImplicit() &&
-			(action.getOwnerId() === this.getOwnerId())) {
-				lastSpell = action.getCard();
-				break;
-			}
-		}
+  onTurnWatch(action) {
+    let actions = [];
+    let lastSpell = null;
+    for (const step of Array.from(this.getGameSession().getCurrentTurn().getSteps())) {
+      actions = actions.concat(step.getAction().getFlattenedActionTree());
+    }
+    for (let i = actions.length - 1; i >= 0; i--) {
+      action = actions[i];
+      if (action instanceof ApplyCardToBoardAction
+			&& (__guard__(__guard__(action.getCard(), (x1) => x1.getRootCard()), (x) => x.getType()) === CardType.Spell)
+			&& (action.getCard().getRootCard() === action.getCard())
+			&& !action.getIsImplicit()
+			&& (action.getOwnerId() === this.getOwnerId())) {
+        lastSpell = action.getCard();
+        break;
+      }
+    }
 
-		if (lastSpell != null) {
-			// put fresh copy of spell into hand
-			const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), lastSpell.createNewCardData());
-			return this.getGameSession().executeAction(putCardInHandAction);
-		}
-	}
+    if (lastSpell != null) {
+      // put fresh copy of spell into hand
+      const putCardInHandAction = new PutCardInHandAction(this.getGameSession(), this.getCard().getOwnerId(), lastSpell.createNewCardData());
+      return this.getGameSession().executeAction(putCardInHandAction);
+    }
+  }
 }
 ModifierEndTurnWatchGainLastSpellPlayedThisTurn.initClass();
 

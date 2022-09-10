@@ -1,10 +1,16 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const DamageAction = require('app/sdk/actions/damageAction');
 const Stringifiers = require('app/sdk/helpers/stringifiers');
@@ -15,38 +21,37 @@ const CONFIG = require('app/common/config');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
 const Factions = require('app/sdk/cards/factionsLookup.coffee');
 const _ = require('underscore');
+const ModifierStartTurnWatch = require('./modifierStartTurnWatch');
 
 class ModifierStartTurnWatchPlaySpell extends ModifierStartTurnWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierStartTurnWatchPlaySpell";
-		this.type ="ModifierStartTurnWatchPlaySpell";
-	
-		this.description = "At the start of your turn, cast %X";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierStartTurnWatchPlaySpell';
+    this.type = 'ModifierStartTurnWatchPlaySpell';
 
-	static createContextObject(cardDataOrIndexToCast, cardDescription,options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndexToCast = cardDataOrIndexToCast;
-		contextObject.cardDescription = cardDescription;
-		return contextObject;
-	}
+    this.description = 'At the start of your turn, cast %X';
+  }
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			return this.description.replace(/%X/, modifierContextObject.cardDescription);
-		} else {
-			return this.description;
-		}
-	}
+  static createContextObject(cardDataOrIndexToCast, cardDescription, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndexToCast = cardDataOrIndexToCast;
+    contextObject.cardDescription = cardDescription;
+    return contextObject;
+  }
 
-	onTurnWatch(action) {
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, this.cardDataOrIndexToCast);
-			playCardAction.setSource(this.getCard());
-			return this.getGameSession().executeAction(playCardAction);
-		}
-	}
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      return this.description.replace(/%X/, modifierContextObject.cardDescription);
+    }
+    return this.description;
+  }
+
+  onTurnWatch(action) {
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const playCardAction = new PlayCardAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPosition().x, this.getCard().getPosition().y, this.cardDataOrIndexToCast);
+      playCardAction.setSource(this.getCard());
+      return this.getGameSession().executeAction(playCardAction);
+    }
+  }
 }
 ModifierStartTurnWatchPlaySpell.initClass();
 

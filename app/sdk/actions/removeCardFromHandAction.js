@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-this-before-super,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -7,44 +16,43 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const Logger = require('app/common/logger');
-const Action = require('./action');
 const CardType = require('app/sdk/cards/cardType');
+const Action = require('./action');
 
 class RemoveCardFromHandAction extends Action {
-	static initClass() {
-	
-		this.type ="RemoveCardFromHandAction";
-	
-		this.prototype.targetPlayerId = null;
-		this.prototype.indexOfCardInHand = null;
-	}
+  static initClass() {
+    this.type = 'RemoveCardFromHandAction';
 
-	constructor(gameSession, indexOfCardInHand, targetPlayerId) {
-		if (this.type == null) { this.type = RemoveCardFromHandAction.type; }
-		super(gameSession);
+    this.prototype.targetPlayerId = null;
+    this.prototype.indexOfCardInHand = null;
+  }
 
-		this.indexOfCardInHand = indexOfCardInHand;
-		this.targetPlayerId = targetPlayerId;
-	}
+  constructor(gameSession, indexOfCardInHand, targetPlayerId) {
+    if (this.type == null) { this.type = RemoveCardFromHandAction.type; }
+    super(gameSession);
 
-	_execute() {
-		super._execute();
-		//Logger.module("SDK").debug "RemoveCardFromHandAction::execute"
+    this.indexOfCardInHand = indexOfCardInHand;
+    this.targetPlayerId = targetPlayerId;
+  }
 
-		if (this.indexOfCardInHand != null) {
-			const deck = this.getGameSession().getPlayerById(this.targetPlayerId).getDeck();
-			const cardIndex = deck.getCardIndexInHandAtIndex(this.indexOfCardInHand);
-			return this.getGameSession().removeCardByIndexFromHand(deck, cardIndex, this.getGameSession().getCardByIndex(cardIndex), this);
-		}
-	}
+  _execute() {
+    super._execute();
+    // Logger.module("SDK").debug "RemoveCardFromHandAction::execute"
 
-	getIndexOfCardInHand() {
-		return this.indexOfCardInHand;
-	}
+    if (this.indexOfCardInHand != null) {
+      const deck = this.getGameSession().getPlayerById(this.targetPlayerId).getDeck();
+      const cardIndex = deck.getCardIndexInHandAtIndex(this.indexOfCardInHand);
+      return this.getGameSession().removeCardByIndexFromHand(deck, cardIndex, this.getGameSession().getCardByIndex(cardIndex), this);
+    }
+  }
 
-	getTargetPlayerId() {
-		return this.targetPlayerId;
-	}
+  getIndexOfCardInHand() {
+    return this.indexOfCardInHand;
+  }
+
+  getTargetPlayerId() {
+    return this.targetPlayerId;
+  }
 }
 RemoveCardFromHandAction.initClass();
 

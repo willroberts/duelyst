@@ -1,3 +1,9 @@
+/* eslint-disable
+    no-this-before-super,
+    prefer-rest-params,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -8,17 +14,16 @@
 const DrawCardAction = require('./drawCardAction');
 
 class BurnCardAction extends DrawCardAction {
-	static initClass() {
-	
-		this.type ="BurnCardAction";
-	
-		this.prototype.burnCard = true;
-	}
+  static initClass() {
+    this.type = 'BurnCardAction';
 
-	constructor() {
-		if (this.type == null) { this.type = BurnCardAction.type; }
-		super(...arguments);
-	}
+    this.prototype.burnCard = true;
+  }
+
+  constructor() {
+    if (this.type == null) { this.type = BurnCardAction.type; }
+    super(...arguments);
+  }
 }
 BurnCardAction.initClass();
 

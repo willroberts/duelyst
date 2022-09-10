@@ -1,3 +1,8 @@
+/* eslint-disable
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -8,26 +13,25 @@
 const ModifierSynergize = require('./modifierSynergize');
 
 class ModifierSynergizeBuffSelf extends ModifierSynergize {
-	static initClass() {
-	
-		this.prototype.type ="ModifierSynergizeBuffSelf";
-		this.type ="ModifierSynergizeBuffSelf";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierSynergize"];
-	
-		this.prototype.modifiers = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierSynergizeBuffSelf';
+    this.type = 'ModifierSynergizeBuffSelf';
 
-	static createContextObject(modifiers, options) {
-		if (options == null) { options = undefined; }
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiers = modifiers;
-		return contextObject;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierSynergize'];
 
-	onSynergize(action) {
-		return this.applyManagedModifiersFromModifiersContextObjects(this.modifiers, this.getCard());
-	}
+    this.prototype.modifiers = null;
+  }
+
+  static createContextObject(modifiers, options) {
+    if (options == null) { options = undefined; }
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiers = modifiers;
+    return contextObject;
+  }
+
+  onSynergize(action) {
+    return this.applyManagedModifiersFromModifiersContextObjects(this.modifiers, this.getCard());
+  }
 }
 ModifierSynergizeBuffSelf.initClass();
 

@@ -1,10 +1,16 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierUntargetable = require('./modifierUntargetable');
 const DieAction = require('app/sdk/actions/dieAction');
 const DamageAction = require('app/sdk/actions/damageAction');
 const HealAction = require('app/sdk/actions/healAction');
@@ -14,48 +20,47 @@ const MoveAction = require('app/sdk/actions/moveAction');
 const ResignAction = require('app/sdk/actions/resignAction');
 
 const i18next = require('i18next');
+const ModifierUntargetable = require('./modifierUntargetable');
 
 class ModifierInvulnerable extends ModifierUntargetable {
-	static initClass() {
-	
-		this.prototype.type ="ModifierInvulnerable";
-		this.type ="ModifierInvulnerable";
-	
-		this.isKeyworded = true;
-		this.keywordDefinition = i18next.t("modifiers.invulnerable_def");
-		this.modifierName = i18next.t("modifiers.invulnerable_name");
-		//@keywordDefinition: i18next.t("modifiers.structure_def")
-		//@modifierName:i18next.t("modifiers.structure_name")
-		this.description =null;
-	
-		this.prototype.maxStacks = 1;
-		this.prototype.isRemovable = false;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierInvulnerable"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierInvulnerable';
+    this.type = 'ModifierInvulnerable';
 
+    this.isKeyworded = true;
+    this.keywordDefinition = i18next.t('modifiers.invulnerable_def');
+    this.modifierName = i18next.t('modifiers.invulnerable_name');
+    // @keywordDefinition: i18next.t("modifiers.structure_def")
+    // @modifierName:i18next.t("modifiers.structure_name")
+    this.description = null;
 
-	onValidateAction(event) {
-		super.onValidateAction(event);
+    this.prototype.maxStacks = 1;
+    this.prototype.isRemovable = false;
 
-		const {
-            action
-        } = event;
+    this.prototype.fxResource = ['FX.Modifiers.ModifierInvulnerable'];
+  }
 
-		// when this would die, invalidate the death UNLESS it is a player initiated resign
-		if (action instanceof DieAction && !(action instanceof ResignAction) && (action.getTarget() === this.getCard())) {
-			return this.invalidateAction(action);
-		// invalidate any damage actions against this, EXCEPT from card draw fatigue damage
-		} else if (action instanceof DamageAction && (action.getTarget() === this.getCard()) && !(action instanceof HurtingDamageAction)) {
-			return this.invalidateAction(action);
-		// invalidate any heal actions that target this
-		} else if (action instanceof HealAction && (action.getTarget() === this.getCard())) {
-			return this.invalidateAction(action);
-		// if this somehow tries to attack or move, invalidate that action
-		} else if ((action instanceof MoveAction || action instanceof AttackAction) && (action.getSource() === this.getCard())) {
-			return this.invalidateAction(action);
-		}
-	}
+  onValidateAction(event) {
+    super.onValidateAction(event);
+
+    const {
+      action,
+    } = event;
+
+    // when this would die, invalidate the death UNLESS it is a player initiated resign
+    if (action instanceof DieAction && !(action instanceof ResignAction) && (action.getTarget() === this.getCard())) {
+      return this.invalidateAction(action);
+      // invalidate any damage actions against this, EXCEPT from card draw fatigue damage
+    } if (action instanceof DamageAction && (action.getTarget() === this.getCard()) && !(action instanceof HurtingDamageAction)) {
+      return this.invalidateAction(action);
+      // invalidate any heal actions that target this
+    } if (action instanceof HealAction && (action.getTarget() === this.getCard())) {
+      return this.invalidateAction(action);
+      // if this somehow tries to attack or move, invalidate that action
+    } if ((action instanceof MoveAction || action instanceof AttackAction) && (action.getSource() === this.getCard())) {
+      return this.invalidateAction(action);
+    }
+  }
 }
 ModifierInvulnerable.initClass();
 

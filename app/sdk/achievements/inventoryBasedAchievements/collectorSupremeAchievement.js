@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -14,43 +21,42 @@ const _ = require('underscore');
 const i18next = require('i18next');
 
 class CollectorSupremeAchievement extends Achievement {
-	static initClass() {
-		this.id = "collectorSupreme";
-		this.title = i18next.t("achievements.collector_supreme_title");
-		this.description = i18next.t("achievements.collector_supreme_desc");
-		this.progressRequired = 1;
-		this.rewards = {
-			neutralEpicCard: 1,
-			neutralRareCard: 1
-		};
-	}
+  static initClass() {
+    this.id = 'collectorSupreme';
+    this.title = i18next.t('achievements.collector_supreme_title');
+    this.description = i18next.t('achievements.collector_supreme_desc');
+    this.progressRequired = 1;
+    this.rewards = {
+      neutralEpicCard: 1,
+      neutralRareCard: 1,
+    };
+  }
 
-	static progressForCardCollection(cardCollection, allCards) {
+  static progressForCardCollection(cardCollection, allCards) {
+    if ((cardCollection == null)) {
+      return 0;
+    }
 
-		if ((cardCollection == null)) {
-			return 0;
-		}
+    // check if player owns one of every common card
+    const allCommonCards = _.filter(allCards, (card) => (card.getRarityId() === Rarity.Common)
+            && (card.getCardSetId() === CardSet.Core)
+            && !card.getIsHiddenInCollection()
+            && card.getIsAvailable()
+            && (card.factionId !== Factions.Tutorial)
+            && !Cards.getIsPrismaticCardId(card.getId()));
 
-		// check if player owns one of every common card
-		const allCommonCards = _.filter(allCards,card => (card.getRarityId() === Rarity.Common) &&
-            (card.getCardSetId() === CardSet.Core) &&
-            !card.getIsHiddenInCollection() &&
-            card.getIsAvailable() &&
-            (card.factionId !== Factions.Tutorial) &&
-            !Cards.getIsPrismaticCardId(card.getId()));
+    for (const card of Array.from(allCommonCards)) {
+      const baseCardId = card.getBaseCardId();
+      const prismaticCardId = Cards.getPrismaticCardId(baseCardId);
+      const cardCollectionBase = cardCollection[baseCardId];
+      const cardCollectionPrismatic = cardCollection[prismaticCardId];
+      if ((((cardCollectionBase != null ? cardCollectionBase.count : undefined) || 0) + ((cardCollectionPrismatic != null ? cardCollectionPrismatic.count : undefined) || 0)) === 0) {
+        return 0;
+      }
+    }
 
-		for (let card of Array.from(allCommonCards)) {
-			const baseCardId = card.getBaseCardId();
-			const prismaticCardId = Cards.getPrismaticCardId(baseCardId);
-			const cardCollectionBase = cardCollection[baseCardId];
-			const cardCollectionPrismatic = cardCollection[prismaticCardId];
-			if ((((cardCollectionBase != null ? cardCollectionBase.count : undefined) || 0) + ((cardCollectionPrismatic != null ? cardCollectionPrismatic.count : undefined) || 0)) === 0) {
-				return 0;
-			}
-		}
-
-		return 1;
-	}
+    return 1;
+  }
 }
 CollectorSupremeAchievement.initClass();
 

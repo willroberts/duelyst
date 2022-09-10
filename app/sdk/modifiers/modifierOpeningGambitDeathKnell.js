@@ -1,3 +1,13 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-plusplus,
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -12,75 +22,75 @@ const CONFIG = require('app/common/config');
 const UtilsGameSession = require('app/common/utils/utils_game_session');
 const CardType = require('app/sdk/cards/cardType');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
-const ModifierOpeningGambit = require('./modifierOpeningGambit');
 const Races = require('app/sdk/cards/racesLookup');
 const _ = require('underscore');
+const ModifierOpeningGambit = require('./modifierOpeningGambit');
 
 class ModifierOpeningGambitDeathKnell extends ModifierOpeningGambit {
-	static initClass() {
-	
-		this.prototype.type ="ModifierOpeningGambitDeathKnell";
-		this.type ="ModifierOpeningGambitDeathKnell";
-	
-		this.description = "Resummon all friendly Arcanysts destroyed this game nearby";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierOpeningGambitDeathKnell"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierOpeningGambitDeathKnell';
+    this.type = 'ModifierOpeningGambitDeathKnell';
 
-	getPrivateDefaults(gameSession) {
-		const p = super.getPrivateDefaults(gameSession);
+    this.description = 'Resummon all friendly Arcanysts destroyed this game nearby';
 
-		p.deadUnits = null;
+    this.prototype.fxResource = ['FX.Modifiers.ModifierOpeningGambitDeathKnell'];
+  }
 
-		return p;
-	}
+  getPrivateDefaults(gameSession) {
+    const p = super.getPrivateDefaults(gameSession);
 
-	getDeadUnits() {
-		if ((this._private.deadUnits == null)) {
-			this._private.deadUnits = this.getGameSession().getDeadUnits(this.getOwnerId());
-		}
-		return this._private.deadUnits;
-	}
+    p.deadUnits = null;
 
-	onOpeningGambit() {
-		super.onOpeningGambit();
+    return p;
+  }
 
-		if (this.getGameSession().getIsRunningAsAuthoritative()) {
-			const deadArcanystIds = [];
-			for (let unit of Array.from(this.getDeadUnits())) {
-				if (unit.getBelongsToTribe(Races.Arcanyst)) {
-					deadArcanystIds.push(unit.getId());
-				}
-			}
+  getDeadUnits() {
+    if ((this._private.deadUnits == null)) {
+      this._private.deadUnits = this.getGameSession().getDeadUnits(this.getOwnerId());
+    }
+    return this._private.deadUnits;
+  }
 
-			if (deadArcanystIds.length > 0) {
-				let i;
-				let asc, end;
-				const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData({id: this.getCard().getId()});
-				const spawnLocations = [];
-				_.shuffle(deadArcanystIds);
-				const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), CONFIG.PATTERN_3x3, this.getCard());
-				for (i = 0, end = deadArcanystIds.length, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-					if (validSpawnLocations.length > 0) {
-						spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
-					} else {
-						break;
-					}
-				}
+  onOpeningGambit() {
+    super.onOpeningGambit();
 
-				return (() => {
-					const result = [];
-					for (i = 0; i < spawnLocations.length; i++) {
-						const position = spawnLocations[i];
-						const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, {id: deadArcanystIds[i]});
-						playCardAction.setSource(this.getCard());
-						result.push(this.getGameSession().executeAction(playCardAction));
-					}
-					return result;
-				})();
-			}
-		}
-	}
+    if (this.getGameSession().getIsRunningAsAuthoritative()) {
+      const deadArcanystIds = [];
+      for (const unit of Array.from(this.getDeadUnits())) {
+        if (unit.getBelongsToTribe(Races.Arcanyst)) {
+          deadArcanystIds.push(unit.getId());
+        }
+      }
+
+      if (deadArcanystIds.length > 0) {
+        let i;
+        let asc; let
+          end;
+        const card = this.getGameSession().getExistingCardFromIndexOrCachedCardFromData({ id: this.getCard().getId() });
+        const spawnLocations = [];
+        _.shuffle(deadArcanystIds);
+        const validSpawnLocations = UtilsGameSession.getSmartSpawnPositionsFromPattern(this.getGameSession(), this.getCard().getPosition(), CONFIG.PATTERN_3x3, this.getCard());
+        for (i = 0, end = deadArcanystIds.length, asc = end >= 0; asc ? i < end : i > end; asc ? i++ : i--) {
+          if (validSpawnLocations.length > 0) {
+            spawnLocations.push(validSpawnLocations.splice(this.getGameSession().getRandomIntegerForExecution(validSpawnLocations.length), 1)[0]);
+          } else {
+            break;
+          }
+        }
+
+        return (() => {
+          const result = [];
+          for (i = 0; i < spawnLocations.length; i++) {
+            const position = spawnLocations[i];
+            const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getCard().getOwnerId(), position.x, position.y, { id: deadArcanystIds[i] });
+            playCardAction.setSource(this.getCard());
+            result.push(this.getGameSession().executeAction(playCardAction));
+          }
+          return result;
+        })();
+      }
+    }
+  }
 }
 ModifierOpeningGambitDeathKnell.initClass();
 

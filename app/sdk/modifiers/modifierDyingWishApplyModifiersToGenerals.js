@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    max-len,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -10,52 +17,50 @@
 const ModifierDyingWish = require('./modifierDyingWish');
 
 class ModifierDyingWishApplyModifiersToGenerals extends ModifierDyingWish {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDyingWishApplyModifiersToGenerals";
-		this.type ="ModifierDyingWishApplyModifiersToGenerals";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericBuff"];
-	
-		this.prototype.modifiersContextObjects = null;
-		this.prototype.includeMyGeneral = true;
-		this.prototype.includeOppGeneral = true;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDyingWishApplyModifiersToGenerals';
+    this.type = 'ModifierDyingWishApplyModifiersToGenerals';
 
-	static createContextObject(modifiersContextObjects, includeMyGeneral, includeOppGeneral, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.modifiersContextObjects = modifiersContextObjects;
-		contextObject.includeMyGeneral = includeMyGeneral;
-		contextObject.includeOppGeneral = includeOppGeneral;
-		return contextObject;
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierDyingWish', 'FX.Modifiers.ModifierGenericBuff'];
 
-	onDyingWish() {
+    this.prototype.modifiersContextObjects = null;
+    this.prototype.includeMyGeneral = true;
+    this.prototype.includeOppGeneral = true;
+  }
 
-		const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
-		const enemyGeneral = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+  static createContextObject(modifiersContextObjects, includeMyGeneral, includeOppGeneral, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.modifiersContextObjects = modifiersContextObjects;
+    contextObject.includeMyGeneral = includeMyGeneral;
+    contextObject.includeOppGeneral = includeOppGeneral;
+    return contextObject;
+  }
 
-		if (this.modifiersContextObjects != null) {
-			return (() => {
-				const result = [];
-				for (let modifierContextObject of Array.from(this.modifiersContextObjects)) {
-					if (modifierContextObject != null) {
-						if (this.includeMyGeneral) {
-							this.getGameSession().applyModifierContextObject(modifierContextObject, general);
-						}
-						if (this.includeOppGeneral) {
-							result.push(this.getGameSession().applyModifierContextObject(modifierContextObject, enemyGeneral));
-						} else {
-							result.push(undefined);
-						}
-					} else {
-						result.push(undefined);
-					}
-				}
-				return result;
-			})();
-		}
-	}
+  onDyingWish() {
+    const general = this.getCard().getGameSession().getGeneralForPlayerId(this.getCard().getOwnerId());
+    const enemyGeneral = this.getCard().getGameSession().getGeneralForOpponentOfPlayerId(this.getCard().getOwnerId());
+
+    if (this.modifiersContextObjects != null) {
+      return (() => {
+        const result = [];
+        for (const modifierContextObject of Array.from(this.modifiersContextObjects)) {
+          if (modifierContextObject != null) {
+            if (this.includeMyGeneral) {
+              this.getGameSession().applyModifierContextObject(modifierContextObject, general);
+            }
+            if (this.includeOppGeneral) {
+              result.push(this.getGameSession().applyModifierContextObject(modifierContextObject, enemyGeneral));
+            } else {
+              result.push(undefined);
+            }
+          } else {
+            result.push(undefined);
+          }
+        }
+        return result;
+      })();
+    }
+  }
 }
 ModifierDyingWishApplyModifiersToGenerals.initClass();
 

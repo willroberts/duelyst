@@ -1,3 +1,10 @@
+/* eslint-disable
+    import/no-unresolved,
+    no-restricted-syntax,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -9,39 +16,35 @@ const SpellStunAndDamage = require('./spellStunAndDamage');
 const SpellFilterType = require('./spellFilterType');
 
 class SpellAvalanche extends SpellStunAndDamage {
-	static initClass() {
-	
-		this.prototype.spellFilterType = SpellFilterType.NeutralIndirect;
-	}
+  static initClass() {
+    this.prototype.spellFilterType = SpellFilterType.NeutralIndirect;
+  }
 
-	_postFilterApplyPositions(validPositions) {
-		// spell kills units on 'your side' of the board
-		let filteredPositions;
-		if (validPositions.length > 0) {
+  _postFilterApplyPositions(validPositions) {
+    // spell kills units on 'your side' of the board
+    let filteredPositions;
+    if (validPositions.length > 0) {
+      // begin with "my side" defined as whole board
+      let mySideStartX = 0;
+      let mySideEndX = CONFIG.BOARDCOL;
 
-			// begin with "my side" defined as whole board
-			let mySideStartX = 0;
-			let mySideEndX = CONFIG.BOARDCOL;
+      filteredPositions = [];
 
-			filteredPositions = [];
+      if (this.isOwnedByPlayer1()) {
+        mySideEndX = Math.floor(((mySideEndX - mySideStartX) * 0.5) - 1);
+      } else if (this.isOwnedByPlayer2()) {
+        mySideStartX = Math.floor(((mySideEndX - mySideStartX) * 0.5) + 1);
+      }
 
-			if (this.isOwnedByPlayer1()) {
-				mySideEndX = Math.floor(((mySideEndX - mySideStartX) * 0.5) - 1);
+      for (const position of Array.from(validPositions)) {
+        if ((position.x >= mySideStartX) && (position.x <= mySideEndX)) {
+          filteredPositions.push(position);
+        }
+      }
+    }
 
-			} else if (this.isOwnedByPlayer2()) {
-				mySideStartX = Math.floor(((mySideEndX - mySideStartX) * 0.5) + 1);
-			}
-
-
-			for (let position of Array.from(validPositions)) {
-				if ((position.x >= mySideStartX) && (position.x <= mySideEndX)) {
-					filteredPositions.push(position);
-				}
-			}
-		}
-
-		return filteredPositions;
-	}
+    return filteredPositions;
+  }
 }
 SpellAvalanche.initClass();
 

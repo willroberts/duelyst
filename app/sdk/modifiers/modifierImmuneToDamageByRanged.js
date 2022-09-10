@@ -1,3 +1,12 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-tabs,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
@@ -5,26 +14,25 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierImmuneToDamage = 	require('./modifierImmuneToDamage');
 const AttackAction = 	require('app/sdk/actions/attackAction');
+const ModifierImmuneToDamage = 	require('./modifierImmuneToDamage');
 
 /*
   Modifier that reduces all damage dealt by ranged to this unit to 0.
 */
 
 class ModifierImmuneToDamageByRanged extends ModifierImmuneToDamage {
-	static initClass() {
-		
-			this.prototype.type ="ModifierImmuneToDamageByRanged";
-			this.type ="ModifierImmuneToDamageByRanged";
-		
-			this.modifierName ="Ranged Immunity";
-			this.description = "Takes no damage from Ranged minions and Generals";
-		}
+  static initClass() {
+    this.prototype.type = 'ModifierImmuneToDamageByRanged';
+    this.type = 'ModifierImmuneToDamageByRanged';
 
-	getIsActionRelevant(a) {
-		return (this.getCard() != null) && a instanceof AttackAction && a.getIsValid() && (this.getCard() === a.getTarget()) && __guard__(a.getSource(), x => x.isRanged());
-	}
+    this.modifierName = 'Ranged Immunity';
+    this.description = 'Takes no damage from Ranged minions and Generals';
+  }
+
+  getIsActionRelevant(a) {
+    return (this.getCard() != null) && a instanceof AttackAction && a.getIsValid() && (this.getCard() === a.getTarget()) && __guard__(a.getSource(), (x) => x.isRanged());
+  }
 }
 ModifierImmuneToDamageByRanged.initClass();
 

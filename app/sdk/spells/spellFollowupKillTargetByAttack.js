@@ -1,3 +1,11 @@
+/* eslint-disable
+    no-param-reassign,
+    no-restricted-syntax,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -8,23 +16,22 @@
 const SpellFollowupKillTarget = require('./spellFollowupKillTarget');
 
 class SpellFollowupKillTargetByAttack extends SpellFollowupKillTarget {
-	static initClass() {
-	
-		this.prototype.maxAttack = 0;
-	}
+  static initClass() {
+    this.prototype.maxAttack = 0;
+  }
 
-	_postFilterPlayPositions(validPositions) {
-		validPositions = super._postFilterPlayPositions(validPositions);
-		const finalPositions = [];
-		const board = this.getGameSession().getBoard();
-		for (let position of Array.from(validPositions)) {
-			if (__guard__(board.getUnitAtPosition(position), x => x.getATK()) <= this.maxAttack) {
-				finalPositions.push(position);
-			}
-		}
+  _postFilterPlayPositions(validPositions) {
+    validPositions = super._postFilterPlayPositions(validPositions);
+    const finalPositions = [];
+    const board = this.getGameSession().getBoard();
+    for (const position of Array.from(validPositions)) {
+      if (__guard__(board.getUnitAtPosition(position), (x) => x.getATK()) <= this.maxAttack) {
+        finalPositions.push(position);
+      }
+    }
 
-		return finalPositions;
-	}
+    return finalPositions;
+  }
 }
 SpellFollowupKillTargetByAttack.initClass();
 

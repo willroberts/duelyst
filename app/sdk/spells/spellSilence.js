@@ -1,3 +1,12 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-restricted-syntax,
+    no-tabs,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,55 +16,53 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const Spell = 					require('./spell');
 const IntentType = 				require('app/sdk/intentType');
 const CardType = require('app/sdk/cards/cardType');
-const SpellFilterType = 			require('./spellFilterType');
 const ModifierSilence = 		require('app/sdk/modifiers/modifierSilence');
 const _ = require('underscore');
+const SpellFilterType = 			require('./spellFilterType');
+const Spell = 					require('./spell');
 
 class SpellSilence extends Spell {
-	static initClass() {
-	
-		this.prototype.targetType = CardType.Entity;
-		this.prototype.spellFilterType = SpellFilterType.NeutralDirect;
-	}
+  static initClass() {
+    this.prototype.targetType = CardType.Entity;
+    this.prototype.spellFilterType = SpellFilterType.NeutralDirect;
+  }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
 
-		const applyEffectPosition = {x, y};
-		const entities = board.getEntitiesAtPosition(applyEffectPosition, true);
-		return (() => {
-			const result = [];
-			for (let entity of Array.from(entities)) {
-				if (entity != null) {
-					result.push(this.getGameSession().applyModifierContextObject(ModifierSilence.createContextObject(), entity));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    const applyEffectPosition = { x, y };
+    const entities = board.getEntitiesAtPosition(applyEffectPosition, true);
+    return (() => {
+      const result = [];
+      for (const entity of Array.from(entities)) {
+        if (entity != null) {
+          result.push(this.getGameSession().applyModifierContextObject(ModifierSilence.createContextObject(), entity));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 
-	_getEntitiesForFilter() {
-		const entities = super._getEntitiesForFilter(true); // allow untargetable (tile) entities
-		const silenceableEntities = [];
-		for (let entity of Array.from(entities)) {
-			// both tiles and units can be dispelled
-			if ((entity != null) && ((entity.getType() === CardType.Tile) || (entity.getType() === CardType.Unit))) {
-				// only add the position as valid once, for the first
-				if (!_.contains(silenceableEntities, entity)) {
-					silenceableEntities.push(entity);
-				}
-			}
-		}
+  _getEntitiesForFilter() {
+    const entities = super._getEntitiesForFilter(true); // allow untargetable (tile) entities
+    const silenceableEntities = [];
+    for (const entity of Array.from(entities)) {
+      // both tiles and units can be dispelled
+      if ((entity != null) && ((entity.getType() === CardType.Tile) || (entity.getType() === CardType.Unit))) {
+        // only add the position as valid once, for the first
+        if (!_.contains(silenceableEntities, entity)) {
+          silenceableEntities.push(entity);
+        }
+      }
+    }
 
-		return silenceableEntities;
-	}
+    return silenceableEntities;
+  }
 }
 SpellSilence.initClass();
-
 
 module.exports = SpellSilence;

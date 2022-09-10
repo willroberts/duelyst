@@ -1,3 +1,10 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,51 +12,50 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierBackstabWatch = require('./modifierBackstabWatch');
-const ModifierBuilding = require('./modifierBuilding');
 const PlayCardAsTransformAction = require('app/sdk/actions/playCardAsTransformAction');
 const RemoveAction = require('app/sdk/actions/removeAction');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
 const CardType = require('app/sdk/cards/cardType');
+const ModifierBuilding = require('./modifierBuilding');
+const ModifierBackstabWatch = require('./modifierBackstabWatch');
 
 class ModifierBackstabWatchTransformToBuilding extends ModifierBackstabWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierBackstabWatchTransformToBuilding";
-		this.type ="ModifierBackstabWatchTransformToBuilding";
-	
-		this.prototype.cardDataOrIndexToSpawn = null;
-		this.prototype.buildModifierDescription = null;
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierBackstabWatchTransformToBuilding';
+    this.type = 'ModifierBackstabWatchTransformToBuilding';
 
-	static createContextObject(buildingToSpawn, buildModifierDescription, options) {
-		const contextObject = super.createContextObject(options);
-		contextObject.cardDataOrIndexToSpawn = buildingToSpawn;
-		contextObject.buildModifierDescription = buildModifierDescription;
-		return contextObject;
-	}
+    this.prototype.cardDataOrIndexToSpawn = null;
+    this.prototype.buildModifierDescription = null;
+  }
 
-	onBackstabWatch(action) {
-		// create the action to spawn the new entity before the existing entity is removed
-		// because we may need information about the existing entity being replaced
-		if (this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
-		this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierBuilding.createContextObject(this.buildModifierDescription, {id: Cards.Faction2.Penumbraxx}, 1));
-		const spawnAction = new PlayCardAsTransformAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPositionX(), this.getCard().getPositionY(), this.cardDataOrIndexToSpawn);
+  static createContextObject(buildingToSpawn, buildModifierDescription, options) {
+    const contextObject = super.createContextObject(options);
+    contextObject.cardDataOrIndexToSpawn = buildingToSpawn;
+    contextObject.buildModifierDescription = buildModifierDescription;
+    return contextObject;
+  }
 
-		// remove the existing entity
-		const removingEntity = this.getGameSession().getBoard().getCardAtPosition(this.getCard().getPosition(), CardType.Unit);
-		if (removingEntity != null) {
-			const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
-			removeOriginalEntityAction.setOwnerId(this.getCard().getOwnerId());
-			removeOriginalEntityAction.setTarget(removingEntity);
-			this.getGameSession().executeAction(removeOriginalEntityAction);
-		}
+  onBackstabWatch(action) {
+    // create the action to spawn the new entity before the existing entity is removed
+    // because we may need information about the existing entity being replaced
+    if (this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects == null) { this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = []; }
+    this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects.push(ModifierBuilding.createContextObject(this.buildModifierDescription, { id: Cards.Faction2.Penumbraxx }, 1));
+    const spawnAction = new PlayCardAsTransformAction(this.getGameSession(), this.getCard().getOwnerId(), this.getCard().getPositionX(), this.getCard().getPositionY(), this.cardDataOrIndexToSpawn);
 
-		// spawn the new entity
-		if (spawnAction != null) {
-			return this.getGameSession().executeAction(spawnAction);
-		}
-	}
+    // remove the existing entity
+    const removingEntity = this.getGameSession().getBoard().getCardAtPosition(this.getCard().getPosition(), CardType.Unit);
+    if (removingEntity != null) {
+      const removeOriginalEntityAction = new RemoveAction(this.getGameSession());
+      removeOriginalEntityAction.setOwnerId(this.getCard().getOwnerId());
+      removeOriginalEntityAction.setTarget(removingEntity);
+      this.getGameSession().executeAction(removeOriginalEntityAction);
+    }
+
+    // spawn the new entity
+    if (spawnAction != null) {
+      return this.getGameSession().executeAction(spawnAction);
+    }
+  }
 }
 ModifierBackstabWatchTransformToBuilding.initClass();
 

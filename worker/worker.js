@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/extensions,
+    import/no-unresolved,
+    import/order,
+    no-empty,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,12 +13,12 @@
  */
 const fs = require('fs');
 const os = require('os');
+const Promise = require('bluebird');
 const Logger = require('../app/common/logger.coffee');
 const config = require('../config/config.js');
-const Promise = require('bluebird');
 
 if (config.isDevelopment()) {
-  Logger.module("WORKER").log("DEV MODE: enabling long stack support");
+  Logger.module('WORKER').log('DEV MODE: enabling long stack support');
   process.env.BLUEBIRD_DEBUG = 1;
   Promise.longStackTraces();
 }
@@ -27,10 +35,10 @@ prefix namespaces the queue
 const worker = require('../server/redis/r-jobs');
 
 // job failed
-worker.on("job failed", function(id, errorMessage) {
-  Logger.module("WORKER").error(`[J:${id}] has failed: ${errorMessage}`.red);
-  return kue.Job.get(id, function(err, job) {
-    if (err) { return; }
+worker.on('job failed', (id, errorMessage) => {
+  Logger.module('WORKER').error(`[J:${id}] has failed: ${errorMessage}`.red);
+  return kue.Job.get(id, (err, job) => {
+    if (err) { }
   });
 });
 
@@ -38,19 +46,19 @@ worker.on("job failed", function(id, errorMessage) {
 Kue Shutdown Event
 Finishes current job, 10s timeout before shutting down.
 */
-const cleanShutdown = () => worker.shutdown(10000, function(err) {
+const cleanShutdown = () => worker.shutdown(10000, (err) => {
   if (err) {
-    Logger.module("WORKER").error(`Shutdown error occured: ${err.message}`);
+    Logger.module('WORKER').error(`Shutdown error occured: ${err.message}`);
   }
-  Logger.module("WORKER").log("Shutting down.");
+  Logger.module('WORKER').log('Shutting down.');
   return process.exit(0);
 });
 
-process.on("SIGTERM", cleanShutdown);
-process.on("SIGINT",  cleanShutdown);
-process.on("SIGHUP",  cleanShutdown);
-process.on("SIGQUIT", cleanShutdown);
-process.on("SIGABRT", cleanShutdown);
+process.on('SIGTERM', cleanShutdown);
+process.on('SIGINT', cleanShutdown);
+process.on('SIGHUP', cleanShutdown);
+process.on('SIGQUIT', cleanShutdown);
+process.on('SIGABRT', cleanShutdown);
 
 /*
 Setup Jobs
@@ -82,5 +90,5 @@ worker.process('matchmaking-search-rift', 1, matchmakingSearchRift);
 worker.process('data-sync-user-buddy-list', 1, dataSyncUserBuddyList);
 worker.process('data-sync-steam-friends', 1, dataSyncSteamFriends);
 worker.process('process-user-referral-event', 1, processUserReferralEvent);
-worker.process('update-users-ratings', 1, updateUsersRatings );
-worker.process('update-user-seen-on', 1, updateUserSeenOn );
+worker.process('update-users-ratings', 1, updateUsersRatings);
+worker.process('update-user-seen-on', 1, updateUserSeenOn);

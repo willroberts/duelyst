@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-param-reassign,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -7,67 +15,65 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
 const CardType = require('app/sdk/cards/cardType');
 const DamageAction = require('app/sdk/actions/damageAction');
+const ModifierEndTurnWatch = require('./modifierEndTurnWatch');
 
 class ModifierEndTurnWatchDamageNearbyEnemy extends ModifierEndTurnWatch {
-	static initClass() {
-	
-		this.prototype.type ="ModifierEndTurnWatchDamageNearbyEnemy";
-		this.type ="ModifierEndTurnWatchDamageNearbyEnemy";
-	
-		this.modifierName ="End Watch";
-		this.description ="At the end of your turn, deal %X damage to all %Y";
-	
-		this.prototype.damageAmount = 0;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierEndTurnWatch", "FX.Modifiers.ModifierGenericDamageNearby"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierEndTurnWatchDamageNearbyEnemy';
+    this.type = 'ModifierEndTurnWatchDamageNearbyEnemy';
 
-	static createContextObject(damageAmount, damageGenerals, options) {
-		if (damageAmount == null) { damageAmount = 1; }
-		if (damageGenerals == null) { damageGenerals = false; }
-		const contextObject = super.createContextObject(options);
-		contextObject.damageAmount = damageAmount;
-		contextObject.damageGenerals = damageGenerals;
-		return contextObject;
-	}
+    this.modifierName = 'End Watch';
+    this.description = 'At the end of your turn, deal %X damage to all %Y';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			let replaceText = this.description.replace(/%X/, modifierContextObject.damageAmount);
-			if (modifierContextObject.damageGenerals) {
-				replaceText = replaceText.replace(/%Y/, "nearby enemies");
-			} else {
-				replaceText = replaceText.replace(/%Y/, "nearby enemy minions");
-			}
-			return replaceText;
-		} else {
-			return this.description;
-		}
-	}
+    this.prototype.damageAmount = 0;
 
-	onTurnWatch(action) {
-		const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
-		return (() => {
-			const result = [];
-			for (let entity of Array.from(entities)) {
-			// don't damage enemy General unless specifically allowed, but do damage enemy units
-				if (this.damageGenerals || (!this.damageGenerals && !entity.getIsGeneral())) {
-					const damageAction = new DamageAction(this.getGameSession());
-					damageAction.setOwnerId(this.getCard().getOwnerId());
-					damageAction.setSource(this.getCard());
-					damageAction.setTarget(entity);
-					damageAction.setDamageAmount(this.damageAmount);
-					result.push(this.getGameSession().executeAction(damageAction));
-				} else {
-					result.push(undefined);
-				}
-			}
-			return result;
-		})();
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierEndTurnWatch', 'FX.Modifiers.ModifierGenericDamageNearby'];
+  }
+
+  static createContextObject(damageAmount, damageGenerals, options) {
+    if (damageAmount == null) { damageAmount = 1; }
+    if (damageGenerals == null) { damageGenerals = false; }
+    const contextObject = super.createContextObject(options);
+    contextObject.damageAmount = damageAmount;
+    contextObject.damageGenerals = damageGenerals;
+    return contextObject;
+  }
+
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      let replaceText = this.description.replace(/%X/, modifierContextObject.damageAmount);
+      if (modifierContextObject.damageGenerals) {
+        replaceText = replaceText.replace(/%Y/, 'nearby enemies');
+      } else {
+        replaceText = replaceText.replace(/%Y/, 'nearby enemy minions');
+      }
+      return replaceText;
+    }
+    return this.description;
+  }
+
+  onTurnWatch(action) {
+    const entities = this.getGameSession().getBoard().getEnemyEntitiesAroundEntity(this.getCard(), CardType.Unit, 1);
+    return (() => {
+      const result = [];
+      for (const entity of Array.from(entities)) {
+        // don't damage enemy General unless specifically allowed, but do damage enemy units
+        if (this.damageGenerals || (!this.damageGenerals && !entity.getIsGeneral())) {
+          const damageAction = new DamageAction(this.getGameSession());
+          damageAction.setOwnerId(this.getCard().getOwnerId());
+          damageAction.setSource(this.getCard());
+          damageAction.setTarget(entity);
+          damageAction.setDamageAmount(this.damageAmount);
+          result.push(this.getGameSession().executeAction(damageAction));
+        } else {
+          result.push(undefined);
+        }
+      }
+      return result;
+    })();
+  }
 }
 ModifierEndTurnWatchDamageNearbyEnemy.initClass();
 

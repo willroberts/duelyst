@@ -1,3 +1,9 @@
+/* eslint-disable
+    no-return-assign,
+    no-this-before-super,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS002: Fix invalid constructor
@@ -8,26 +14,25 @@
 const Modifier = require('./modifier');
 
 class ModifierDoubleHealthStat extends Modifier {
-	static initClass() {
-	
-		this.prototype.type = "ModifierDoubleHealthStat";
-		this.type = "ModifierDoubleHealthStat";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierGenericBuff"];
-	
-		this.description = "Doubled Health";
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDoubleHealthStat';
+    this.type = 'ModifierDoubleHealthStat';
 
-	constructor(gameSession) {
-		this.attributeBuffs = {};
-		this.attributeBuffs["maxHP"] = 0;
-		super(gameSession);
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierGenericBuff'];
 
-	onApplyToCardBeforeSyncState() {
-		super.onApplyToCardBeforeSyncState();
-		return this.attributeBuffs["maxHP"] = this.getCard().getHP();
-	}
+    this.description = 'Doubled Health';
+  }
+
+  constructor(gameSession) {
+    this.attributeBuffs = {};
+    this.attributeBuffs.maxHP = 0;
+    super(gameSession);
+  }
+
+  onApplyToCardBeforeSyncState() {
+    super.onApplyToCardBeforeSyncState();
+    return this.attributeBuffs.maxHP = this.getCard().getHP();
+  }
 }
 ModifierDoubleHealthStat.initClass();
 

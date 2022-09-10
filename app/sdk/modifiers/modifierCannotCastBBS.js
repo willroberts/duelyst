@@ -1,3 +1,12 @@
+/* eslint-disable
+    consistent-return,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,38 +14,37 @@
  * DS206: Consider reworking classes to avoid initClass
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
-const ModifierCannot = require('./modifierCannot');
 const PlayCardFromHandAction = require('app/sdk/actions/playCardFromHandAction');
 const PlaySignatureCardAction = require('app/sdk/actions/playSignatureCardAction');
 const CardType = require('app/sdk/cards/cardType');
+const ModifierCannot = require('./modifierCannot');
 
 class ModifierCannotCastBBS extends ModifierCannot {
-	static initClass() {
-	
-		this.prototype.type = "ModifierCannotCastBBS";
-		this.type = "ModifierCannotCastBBS";
-	
-		this.modifierName = "Cannot Cast BBS";
-		this.description = "Player can't cast Bloodbound Spell.";
-	
-		this.prototype.manaCostPrevented = 0;
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierCannotCastSpellsByCost"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierCannotCastBBS';
+    this.type = 'ModifierCannotCastBBS';
 
-	static createContextObject() {
-		const contextObject = super.createContextObject();
-		return contextObject;
-	}
+    this.modifierName = 'Cannot Cast BBS';
+    this.description = 'Player can\'t cast Bloodbound Spell.';
 
-	onValidateAction(actionEvent) {
-		const a = actionEvent.action;
+    this.prototype.manaCostPrevented = 0;
 
-		// prevents owner from casting BBS
-		if ((a instanceof PlaySignatureCardAction && (a.getOwner() === this.getOwner())) && a.getIsValid() && !a.getIsImplicit() && (__guard__(a.getCard(), x => x.getType()) === CardType.Spell)) {
-			return this.invalidateAction(a, this.getCard().getPosition(), "You can't cast that!");
-		}
-	}
+    this.prototype.fxResource = ['FX.Modifiers.ModifierCannotCastSpellsByCost'];
+  }
+
+  static createContextObject() {
+    const contextObject = super.createContextObject();
+    return contextObject;
+  }
+
+  onValidateAction(actionEvent) {
+    const a = actionEvent.action;
+
+    // prevents owner from casting BBS
+    if ((a instanceof PlaySignatureCardAction && (a.getOwner() === this.getOwner())) && a.getIsValid() && !a.getIsImplicit() && (__guard__(a.getCard(), (x) => x.getType()) === CardType.Spell)) {
+      return this.invalidateAction(a, this.getCard().getPosition(), 'You can\'t cast that!');
+    }
+  }
 }
 ModifierCannotCastBBS.initClass();
 

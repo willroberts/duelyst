@@ -1,3 +1,11 @@
+/* eslint-disable
+    class-methods-use-this,
+    import/no-unresolved,
+    max-len,
+    no-underscore-dangle,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,11 +13,8 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
  */
 const Logger = require('app/common/logger');
-const SpellSpawnEntity = require('./spellSpawnEntity.coffee');
 const CardType = require('app/sdk/cards/cardType');
-const SpellFilterType = require('./spellFilterType');
 const Cards = require('app/sdk/cards/cardsLookupComplete');
-const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
 const CONFIG = require('app/common/config');
 const ModifierBackstab = require('app/sdk/modifiers/modifierBackstab');
 const ModifierBlastAttack = require('app/sdk/modifiers/modifierBlastAttack');
@@ -22,52 +27,53 @@ const ModifierProvoke = require('app/sdk/modifiers/modifierProvoke');
 const ModifierRanged = require('app/sdk/modifiers/modifierRanged');
 const ModifierRebirth = require('app/sdk/modifiers/modifierRebirth');
 const ModifierFirstBlood = require('app/sdk/modifiers/modifierFirstBlood');
+const UtilsGameSession = require('../../common/utils/utils_game_session.coffee');
+const SpellFilterType = require('./spellFilterType');
+const SpellSpawnEntity = require('./spellSpawnEntity.coffee');
 
 class SpellMoldingEarth extends SpellSpawnEntity {
-	static initClass() {
-	
-		this.prototype.spawnSilently = true;
-		this.prototype.numUnits = 3;
-	}
+  static initClass() {
+    this.prototype.spawnSilently = true;
+    this.prototype.numUnits = 3;
+  }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    const modifiersToObtain = [
+      ModifierFrenzy.createContextObject(),
+      ModifierFlying.createContextObject(),
+      ModifierTranscendance.createContextObject(),
+      ModifierProvoke.createContextObject(),
+      ModifierRanged.createContextObject(),
+      ModifierFirstBlood.createContextObject(),
+      ModifierRebirth.createContextObject(),
+      ModifierForcefield.createContextObject(),
+    ];
 
-		const modifiersToObtain = [
-			ModifierFrenzy.createContextObject(),
-			ModifierFlying.createContextObject(),
-			ModifierTranscendance.createContextObject(),
-			ModifierProvoke.createContextObject(),
-			ModifierRanged.createContextObject(),
-			ModifierFirstBlood.createContextObject(),
-			ModifierRebirth.createContextObject(),
-			ModifierForcefield.createContextObject()
-		];
+    const modifierContextObject = modifiersToObtain[this.getGameSession().getRandomIntegerForExecution(modifiersToObtain.length)];
 
-		const modifierContextObject = modifiersToObtain[this.getGameSession().getRandomIntegerForExecution(modifiersToObtain.length)];
+    this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = [modifierContextObject];
 
-		this.cardDataOrIndexToSpawn.additionalInherentModifiersContextObjects = [modifierContextObject];
+    return super.onApplyEffectToBoardTile(board, x, y, sourceAction);
+  }
 
-		return super.onApplyEffectToBoardTile(board,x,y,sourceAction);
-	}
+  _findApplyEffectPositions(position, sourceAction) {
+    let applyEffectPositions;
+    const card = this.getEntityToSpawn();
+    const generalPosition = this.getGameSession().getGeneralForPlayerId(this.ownerId).getPosition();
+    const numberOfApplyPositions = this.numUnits;
 
-	_findApplyEffectPositions(position, sourceAction) {
-		let applyEffectPositions;
-		const card = this.getEntityToSpawn();
-		const generalPosition = this.getGameSession().getGeneralForPlayerId(this.ownerId).getPosition();
-		const numberOfApplyPositions = this.numUnits;
+    if (numberOfApplyPositions > 0) {
+      applyEffectPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), generalPosition, CONFIG.PATTERN_3x3, card, this, numberOfApplyPositions);
+    } else {
+      applyEffectPositions = [];
+    }
 
-		if (numberOfApplyPositions > 0) {
-			applyEffectPositions = UtilsGameSession.getRandomSmartSpawnPositionsFromPattern(this.getGameSession(), generalPosition, CONFIG.PATTERN_3x3, card, this, numberOfApplyPositions);
-		} else {
-			applyEffectPositions = [];
-		}
+    return applyEffectPositions;
+  }
 
-		return applyEffectPositions;
-	}
-
-	_postFilterPlayPositions(validPositions) {
-		return validPositions;
-	}
+  _postFilterPlayPositions(validPositions) {
+    return validPositions;
+  }
 }
 SpellMoldingEarth.initClass();
 

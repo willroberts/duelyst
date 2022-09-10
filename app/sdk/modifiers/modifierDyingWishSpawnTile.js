@@ -1,3 +1,9 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS206: Consider reworking classes to avoid initClass
@@ -8,33 +14,31 @@ const UtilsPosition = require('app/common/utils/utils_position');
 const ModifierDyingWishSpawnEntity = require('./modifierDyingWishSpawnEntity');
 
 class ModifierDyingWishSpawnTile extends ModifierDyingWishSpawnEntity {
-	static initClass() {
-	
-		this.prototype.type ="ModifierDyingWishSpawnTile";
-		this.type ="ModifierDyingWishSpawnTile";
-	
-		this.description = "Turn %X";
-	
-		this.prototype.fxResource = ["FX.Modifiers.ModifierDyingWish", "FX.Modifiers.ModifierGenericSpawn"];
-	}
+  static initClass() {
+    this.prototype.type = 'ModifierDyingWishSpawnTile';
+    this.type = 'ModifierDyingWishSpawnTile';
 
-	static getDescription(modifierContextObject) {
-		if (modifierContextObject) {
-			let replaceText = "";
-			if (UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)) {
-				replaceText = "this space into "+modifierContextObject.spawnDescription;
-			} else if (modifierContextObject.spawnCount === 1) {
-				replaceText = "a "+modifierContextObject.spawnDescription+" in a random nearby space";
-			} else if (modifierContextObject.spawnCount === 8) {
-				replaceText = ""+modifierContextObject.spawnDescription+"s in all nearby spaces";
-			} else {
-				replaceText = ""+modifierContextObject.spawnDescription+"s into "+modifierContextObject.spawnCount+" nearby spaces";
-			}
-			return this.description.replace(/%X/, replaceText);
-		} else {
-			return this.description;
-		}
-	}
+    this.description = 'Turn %X';
+
+    this.prototype.fxResource = ['FX.Modifiers.ModifierDyingWish', 'FX.Modifiers.ModifierGenericSpawn'];
+  }
+
+  static getDescription(modifierContextObject) {
+    if (modifierContextObject) {
+      let replaceText = '';
+      if (UtilsPosition.getArraysOfPositionsAreEqual(modifierContextObject.spawnPattern, CONFIG.PATTERN_1x1)) {
+        replaceText = `this space into ${modifierContextObject.spawnDescription}`;
+      } else if (modifierContextObject.spawnCount === 1) {
+        replaceText = `a ${modifierContextObject.spawnDescription} in a random nearby space`;
+      } else if (modifierContextObject.spawnCount === 8) {
+        replaceText = `${modifierContextObject.spawnDescription}s in all nearby spaces`;
+      } else {
+        replaceText = `${modifierContextObject.spawnDescription}s into ${modifierContextObject.spawnCount} nearby spaces`;
+      }
+      return this.description.replace(/%X/, replaceText);
+    }
+    return this.description;
+  }
 }
 ModifierDyingWishSpawnTile.initClass();
 

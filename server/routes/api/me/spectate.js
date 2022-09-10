@@ -1,3 +1,16 @@
+/* eslint-disable
+    camelcase,
+    func-names,
+    import/no-unresolved,
+    max-len,
+    no-mixed-spaces-and-tabs,
+    no-return-assign,
+    no-tabs,
+    no-underscore-dangle,
+    no-use-before-define,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -50,75 +63,85 @@ const router = express.Router();
 //
 // 	.catch (error) -> next(error)
 
-router.get("/:player_id", function(req, res, next) {
-	const result = t.validate(req.params.player_id, types.UserId);
-	if (!result.isValid()) {
-		return next();
-	}
+router.get('/:player_id', (req, res, next) => {
+  const result = t.validate(req.params.player_id, types.UserId);
+  if (!result.isValid()) {
+    return next();
+  }
 
-	const user_id = req.user.d.id;
-	const player_id = result.value;
+  const user_id = req.user.d.id;
+  const player_id = result.value;
 
-	let systemStatusPromise = Promise.resolve({
-		spectate: {
-			enabled: true
-		}
-	});
+  let systemStatusPromise = Promise.resolve({
+    spectate: {
+      enabled: true,
+    },
+  });
 
-	if (config.get('consul.enabled')) {
-		systemStatusPromise =
-			Consul.kv.get(`environments/${process.env.NODE_ENV}/runtime-system-configuration.json`)
-			.then(JSON.parse);
-	}
+  if (config.get('consul.enabled')) {
+    systemStatusPromise =			Consul.kv.get(`environments/${process.env.NODE_ENV}/runtime-system-configuration.json`)
+			  .then(JSON.parse);
+  }
 
-	return systemStatusPromise
-	.bind({})
-	.then(function(consulSystemRuntimeParams){
-		if (!__guard__(consulSystemRuntimeParams != null ? consulSystemRuntimeParams.spectate : undefined, x => x.enabled)) {
-			throw new Errors.SystemDisabledError("The spectate system is temporarily disabled.");
-		}}).then(() => knex("users").first('username').where('id',user_id))
-	.then(function(userRow) { return this.username = userRow.username; })
-	.then(() => knex("users").first('username').where('id',player_id))
-	.then(function(userRow) { return this.buddyName = userRow.buddyName; })
-	.then(() => knex("user_games").where("user_id",player_id).orderBy('created_at','desc').first())
-	.then(function(gameRow){
-		if (gameRow["ended_at"] != null) {
-			throw new Errors.NotFoundError("The player's last game is over.");
-		} else {
-			return this.gameRow = gameRow;
-		}}).then(() => DuelystFirebase.connect().getRootRef()).then(rootRef => Promise.all([
-        FirebasePromises.once(rootRef.child("users").child(user_id).child("buddies"),"value"),
-        FirebasePromises.once(rootRef.child("users").child(player_id).child("blockSpectators"),"value")
-    ])).spread(function(buddiesSnapshot,blockSpectatorsSnapshot) {
-		const buddies = buddiesSnapshot.val();
-		const buddyIds = _.keys(buddies);
+  return systemStatusPromise
+    .bind({})
+    .then((consulSystemRuntimeParams) => {
+      if (!__guard__(consulSystemRuntimeParams != null ? consulSystemRuntimeParams.spectate : undefined, (x) => x.enabled)) {
+        throw new Errors.SystemDisabledError('The spectate system is temporarily disabled.');
+      }
+    }).then(() => knex('users').first('username').where('id', user_id))
+    .then(function (userRow) { return this.username = userRow.username; })
+    .then(() => knex('users').first('username').where('id', player_id))
+    .then(function (userRow) { return this.buddyName = userRow.buddyName; })
+    .then(() => knex('user_games').where('user_id', player_id).orderBy('created_at', 'desc').first())
+    .then(function (gameRow) {
+      if (gameRow.ended_at != null) {
+        throw new Errors.NotFoundError('The player\'s last game is over.');
+      } else {
+        return this.gameRow = gameRow;
+      }
+    })
+    .then(() => DuelystFirebase.connect().getRootRef())
+    .then((rootRef) => Promise.all([
+      FirebasePromises.once(rootRef.child('users').child(user_id).child('buddies'), 'value'),
+      FirebasePromises.once(rootRef.child('users').child(player_id).child('blockSpectators'), 'value'),
+    ]))
+    .spread(function (buddiesSnapshot, blockSpectatorsSnapshot) {
+      const buddies = buddiesSnapshot.val();
+      const buddyIds = _.keys(buddies);
 
-		if (blockSpectatorsSnapshot.val()) {
-			throw new Errors.UnauthorizedError("This user has blocked spectators.");
-		}
+      if (blockSpectatorsSnapshot.val()) {
+        throw new Errors.UnauthorizedError('This user has blocked spectators.');
+      }
 
-		if (!_.contains(buddyIds,player_id)) {
-			throw new Errors.NotFoundError(`You must be buddies with ${this.buddyName} to spectate this game.`);
-		}
+      if (!_.contains(buddyIds, player_id)) {
+        throw new Errors.NotFoundError(`You must be buddies with ${this.buddyName} to spectate this game.`);
+      }
 
-		const payload = {
-			b: buddyIds,
-			u: this.username,
-			iat: Math.floor(new Date().getTime() / 1000)
-		};
+      const payload = {
+        b: buddyIds,
+        u: this.username,
+        iat: Math.floor(new Date().getTime() / 1000),
+      };
 
-		const options = {
-			expiresIn: 30,
-			algorithm: 'HS256'
-		};
+      const options = {
+        expiresIn: 30,
+        algorithm: 'HS256',
+      };
 
-		// We are encoding the payload inside the token
-		return this.token = jwt.sign(payload, config.get('jwt.signingSecret'), options);}).then(function(){
-		const responseData = {
-			gameData: DataAccessHelpers.restifyData(this.gameRow),
-			token: this.token
-		};
-		return res.status(200).json(responseData);}).catch(Errors.UnauthorizedError, error => res.status(500).json({ message: error.message })).catch(Errors.SystemDisabledError, error => res.status(400).json({ message: error.message })).catch(error => next(error));
+      // We are encoding the payload inside the token
+      return this.token = jwt.sign(payload, config.get('jwt.signingSecret'), options);
+    })
+    .then(function () {
+      const responseData = {
+        gameData: DataAccessHelpers.restifyData(this.gameRow),
+        token: this.token,
+      };
+      return res.status(200).json(responseData);
+    })
+    .catch(Errors.UnauthorizedError, (error) => res.status(500).json({ message: error.message }))
+    .catch(Errors.SystemDisabledError, (error) => res.status(400).json({ message: error.message }))
+    .catch((error) => next(error));
 });
 
 module.exports = router;

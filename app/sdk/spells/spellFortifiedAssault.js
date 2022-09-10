@@ -1,3 +1,11 @@
+/* eslint-disable
+    import/no-unresolved,
+    max-len,
+    no-plusplus,
+    no-restricted-syntax,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS101: Remove unnecessary use of Array.from
@@ -11,31 +19,29 @@ const Cards = require('app/sdk/cards/cardsLookupComplete');
 const PlayCardSilentlyAction = require('app/sdk/actions/playCardSilentlyAction');
 
 class SpellFortifiedAssault extends SpellDamage {
+  onApplyEffectToBoardTile(board, x, y, sourceAction) {
+    let numTiles = 1;
+    for (const tile of Array.from(board.getTiles(true, false))) {
+      if (((tile != null ? tile.getOwnerId() : undefined) === this.getOwnerId()) && (tile.getBaseCardId() === Cards.Tile.Hallowed)) {
+        if (!((tile.getPosition().x === x) && (tile.getPosition().y === y))) {
+          numTiles++;
+        }
+      }
+    }
 
-	onApplyEffectToBoardTile(board,x,y,sourceAction) {
+    const statContextObject = Modifier.createContextObjectWithAttributeBuffs(0, numTiles);
+    statContextObject.appliedName = 'Fortification';
+    this.setTargetModifiersContextObjects([
+      statContextObject,
+    ]);
 
-		let numTiles = 1;
-		for (let tile of Array.from(board.getTiles(true, false))) {
-			if (((tile != null ? tile.getOwnerId() : undefined) === this.getOwnerId()) && (tile.getBaseCardId() === Cards.Tile.Hallowed)) {
-				if (!((tile.getPosition().x === x) && (tile.getPosition().y === y))) {
-					numTiles++;
-				}
-			}
-		}
+    this.damageAmount = numTiles;
+    super.onApplyEffectToBoardTile(board, x, y, sourceAction);
 
-		const statContextObject = Modifier.createContextObjectWithAttributeBuffs(0, numTiles);
-		statContextObject.appliedName = "Fortification";
-		this.setTargetModifiersContextObjects([
-				statContextObject
-		]);
-
-		this.damageAmount = numTiles;
-		super.onApplyEffectToBoardTile(board,x,y,sourceAction);
-
-		const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getOwnerId(), x, y, {id: Cards.Tile.Hallowed});
-		playCardAction.setSource(this);
-		return this.getGameSession().executeAction(playCardAction);
-	}
+    const playCardAction = new PlayCardSilentlyAction(this.getGameSession(), this.getOwnerId(), x, y, { id: Cards.Tile.Hallowed });
+    playCardAction.setSource(this);
+    return this.getGameSession().executeAction(playCardAction);
+  }
 }
 
 module.exports = SpellFortifiedAssault;
