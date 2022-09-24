@@ -42,10 +42,10 @@ jobs:
     - name: install node dependencies
       run: yarn install --dev
 
-    - name: print pwd and contents of /home/runner/work/duelyst/duelyst
+    - name: print pwd and contents
       run: |
-        pwd
-        ls /home/runner/work/duelyst/duelyst
+        pwd # /__w/duelyst/duelyst
+        ls /__w/duelyst/duelyst
 
     - name: print node module resolution path
       env:
