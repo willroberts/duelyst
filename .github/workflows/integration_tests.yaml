@@ -42,6 +42,9 @@ jobs:
     - name: install node dependencies
       run: yarn install --dev
 
+    - name: print node module resolution path
+      run: node -e "m = require('node:module'); console.log(m.globalPaths)"
+
     - name: run database migrations
       run: yarn migrate:latest
       env:
