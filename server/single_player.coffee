@@ -72,15 +72,15 @@ server = http.createServer (req, res) ->
 
 # io server setup, binds to http server
 io = require('socket.io')().listen(server, {
-  cors: {
-    origin: "*"
-  }
+	cors: {
+		origin: "*"
+	}
 })
 io.use(
-  ioJwt.authorize(
-    secret: config.get('firebase.legacyToken')
-    timeout: 15000
-  )
+	ioJwt.authorize(
+		secret: config.get('firebase.legacyToken')
+		timeout: 15000
+	)
 )
 module.exports = io
 server.listen config.get('game_port'), () ->
@@ -1113,8 +1113,8 @@ shutdown = () ->
 			process.exit(1)
 
 process.on "SIGTERM", shutdown
-process.on "SIGINT",  shutdown
-process.on "SIGHUP",  shutdown
+process.on "SIGINT",	shutdown
+process.on "SIGHUP",	shutdown
 process.on "SIGQUIT", shutdown
 
 # region AI
@@ -1372,13 +1372,13 @@ ai_stopTimeouts = (gameId) ->
  * @param	{String}		gameId
 ###
 ai_stopTurnTimeouts = (gameId) ->
-		if games[gameId].aiStartTurnTimeoutId?
-			clearTimeout(games[gameId].aiStartTurnTimeoutId)
-			games[gameId].aiStartTurnTimeoutId = null
+	if games[gameId].aiStartTurnTimeoutId?
+		clearTimeout(games[gameId].aiStartTurnTimeoutId)
+		games[gameId].aiStartTurnTimeoutId = null
 
-		if games[gameId].aiExecuteActionTimeoutId?
-			clearTimeout(games[gameId].aiExecuteActionTimeoutId)
-			games[gameId].aiExecuteActionTimeoutId = null
+	if games[gameId].aiExecuteActionTimeoutId?
+		clearTimeout(games[gameId].aiExecuteActionTimeoutId)
+		games[gameId].aiExecuteActionTimeoutId = null
 
 ###*
  * Executes an AI action for a game session.
@@ -1405,7 +1405,7 @@ ai_executeAction = (gameId, action) ->
 * Returns whether an action is valid for showing UI.
 * @param	{String}		gameId
 * @param	{Action}		action
-*  @return {Boolean}
+*	@return {Boolean}
 ###
 ai_isValidActionForUI = (gameId, action) ->
 	return (games[gameId].session.getIsFollowupActive() and !(action instanceof SDK.EndFollowupAction)) or
@@ -1683,8 +1683,8 @@ ai_stopAnimatingPointer = (gameId) ->
 		games[gameId].aiPointerIntervalId = null
 
 ###*
-  * Prompts AI to emote to opponent based on last step.
-  * @param	{String}		gameId
+	* Prompts AI to emote to opponent based on last step.
+	* @param	{String}		gameId
 ###
 ai_emoteForLastStep = (gameId) ->
 	if ai_canEmote(gameId)
