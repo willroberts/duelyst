@@ -1,13 +1,23 @@
+Promise = require 'bluebird'
+_ = require 'underscore'
+io = require 'socket.io'
+jwt = require 'jsonwebtoken'
+moment = require 'moment'
+
+EVENTS = require '../../app/common/event_types'
+Logger = require '../../app/common/logger.coffee'
+SDK = require '../../app/sdk.coffee'
+UtilsGameSession = require '../../app/common/utils/utils_game_session.coffee'
+config = require '../../config/config'
+
 ###
 # Runs actions delayed in the spectator buffer.
 # @public
 # @param	{Object}		gameId			The game for which to iterate the time.
 ###
 flushSpectatorNetworkEventBuffer = (gameId) ->
-
 	# if there is anything in the buffer
 	if games[gameId].spectatorGameEventBuffer.length > 0
-
 		# Logger.module("IO").debug "[G:#{gameId}]", "flushSpectatorNetworkEventBuffer()"
 
 		# remove all the NULLED out actions
@@ -98,7 +108,6 @@ initSpectatorGameSession = (gameId)->
 
 	return Promise.resolve()
 	.then ()->
-
 		# if we're not already running spectate systems
 		if not games[gameId].spectateIsRunning
 			# mark that we are running spectate systems
@@ -122,11 +131,8 @@ initSpectatorGameSession = (gameId)->
 			games[gameId].spectatorDelayedGameSession = delayedGameSession
 			# start timer to execute delayed / buffered spectator game events
 			restartSpectatorDelayedGameInterval(gameId)
-
 			return Promise.resolve(games[gameId].spectatorDelayedGameSession)
-
 		else
-
 			return Promise.resolve(games[gameId].session)
 
 ###
@@ -135,7 +141,6 @@ initSpectatorGameSession = (gameId)->
 # @param	{Object}	requestData	 Plain JS object with socket event data.
 ###
 onGameSpectatorJoin = (requestData) ->
-
 	# request parameters
 	# TODO : Sanitize these parameters to prevent crash if gameId = null
 	gameId = requestData.gameId
@@ -207,7 +212,6 @@ onGameSpectatorJoin = (requestData) ->
 	initSpectatorGameSession(gameId)
 	.bind @
 	.then (spectatorGameSession) ->
-
 		# for spectators, use the delayed in-memory game session
 		gameSession = spectatorGameSession
 
@@ -216,7 +220,6 @@ onGameSpectatorJoin = (requestData) ->
 		opponent = _.find(gameSession.players, (p) -> return p.playerId != playerId)
 
 		if not player
-
 			# let the socket know we had an error
 			@emit "spectate_game_response",
 				error:"could not join game because the player id you requested could not be found"
@@ -227,9 +230,7 @@ onGameSpectatorJoin = (requestData) ->
 
 			# stop any further processing
 			return
-
 		else
-
 			# set some parameters for the socket
 			@gameId = gameId
 			@spectatorId = spectatorId
@@ -319,7 +320,6 @@ restartSpectatorDelayedGameInterval = (gameId) ->
 spectatorLeaveGameIfNeeded = (socket) ->
 	# if a client is already in another game
 	if socket.gameId
-
 		Logger.module("...").debug "[G:#{socket.gameId}]", "spectatorLeaveGameIfNeeded -> #{socket.spectatorId} leaving game #{socket.gameId}."
 
 		# broadcast that you left
@@ -331,13 +331,11 @@ spectatorLeaveGameIfNeeded = (socket) ->
 
 		# leave specator game room
 		socket.leave("spectate-#{socket.gameId}")
-
 		Logger.module("...").debug "[G:#{socket.gameId}]", "spectatorLeaveGameIfNeeded -> #{socket.spectatorId} left room for game #{socket.gameId}."
 
 		# update spectator count for game room
 		if games[socket.gameId]
 			games[socket.gameId].connectedSpectators = _.without(games[socket.gameId].connectedSpectators,socket.spectatorId)
-
 			Logger.module("...").debug "[G:#{socket.gameId}]", "spectatorLeaveGameIfNeeded -> #{socket.spectatorId} removed from list of spectators #{socket.gameId}."
 
 			# if no spectators left, stop the delayed game interval and destroy spectator delayed game session
@@ -378,8 +376,6 @@ tearDownSpectateSystemsIfNoSpectatorsLeft = (gameId)->
 
 module.exports = {
 	flushSpectatorNetworkEventBuffer,
-	getConnectedSpectatorsDataForGamePlayer,
 	onGameSpectatorJoin,
-	spectatorLeaveGameIfNeeded,
-	tearDownSpectateSystemsIfNoSpectatorsLeft
+	spectatorLeaveGameIfNeeded
 }

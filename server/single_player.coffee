@@ -27,18 +27,16 @@ Consul = require './lib/consul'
 Spectate = require './lib/spectate.coffee'
 
 # Configuration object
-config = require '../config/config.js'
+config = require '../config/config'
 env = config.get('env')
 
 # Boots up a basic HTTP server on port 8080
 # Responds to /health endpoint with status 200
 # Otherwise responds with status 404
 
-Logger 		= require '../app/common/logger.coffee'
 CONFIG 		= require '../app/common/config'
 http 		= require 'http'
 url 		= require 'url'
-Promise		= require 'bluebird'
 
 # perform DNS health check
 dnsHealthCheck = () ->
