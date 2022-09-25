@@ -11,92 +11,6 @@ UtilsGameSession = require '../../app/common/utils/utils_game_session.coffee'
 config = require '../../config/config'
 
 ###
-# Runs actions delayed in the spectator buffer.
-# @public
-# @param	{Object}		gameId			The game for which to iterate the time.
-###
-flushSpectatorNetworkEventBuffer = (gameId) ->
-	# if there is anything in the buffer
-	if games[gameId].spectatorGameEventBuffer.length > 0
-		# Logger.module("IO").debug "[G:#{gameId}]", "flushSpectatorNetworkEventBuffer()"
-
-		# remove all the NULLED out actions
-		games[gameId].spectatorGameEventBuffer = _.compact(games[gameId].spectatorGameEventBuffer)
-
-		# loop through the actions in order
-		for eventData,i in games[gameId].spectatorGameEventBuffer
-			timestamp = eventData.timestamp || eventData.step?.timestamp
-			# if we are not delaying events or if the event time exceeds the delay show it to spectators
-			if not games[gameId].spectateIsDelayed || timestamp and moment().utc().valueOf() - timestamp > games[gameId].spectateDelay
-				# null out the event that is about to be broadcast so it can be compacted later
-				games[gameId].spectatorGameEventBuffer[i] = null
-				if (eventData.step)
-					Logger.module("IO").debug "[G:#{gameId}]", "flushSpectatorNetworkEventBuffer() -> broadcasting spectator step #{eventData.type} - #{eventData.step?.action?.type}"
-
-					if games[gameId].spectateIsDelayed
-						step = games[gameId].spectatorDelayedGameSession.deserializeStepFromFirebase(eventData.step)
-						games[gameId].spectatorDelayedGameSession.executeAuthoritativeStep(step)
-						# NOTE: we should be OK to contiue to use the eventData here since indices of all actions are the same becuase the delayed game sessions is running as non-authoriative
-
-					# send events over to spectators of current player
-					io.sockets.adapter.rooms.get("spectate-#{gameId}")?.forEach((socketId) ->
-						Logger.module("IO").debug "[G:#{gameId}]", "flushSpectatorNetworkEventBuffer() -> transmitting step #{eventData.step?.index?.toString().yellow} with action #{eventData.step.action?.name} to player's spectators"
-						socket = io.sockets.sockets.get(socketId)
-						if socket? and socket.playerId == eventData.step.playerId
-							# scrub the action data. this should not be skipped since some actions include entire deck that needs to be scrubbed because we don't want spectators deck sniping
-							eventDataCopy = JSON.parse(JSON.stringify(eventData))
-							# TODO: we use session to scrub here but might need to use the delayed session
-							UtilsGameSession.scrubSensitiveActionData(games[gameId].session, eventDataCopy.step.action, socket.playerId, true)
-							socket.emit EVENTS.network_game_event, eventDataCopy
-					)
-
-					# skip processing anything for the opponent if this is a RollbackToSnapshotAction since only the sender cares about that one
-					if eventData.step.action.type == SDK.RollbackToSnapshotAction.type
-						return
-
-					# start buffering events until a followup is complete for the opponent since players can cancel out of a followup
-					games[gameId].spectatorOpponentEventDataBuffer.push(eventData)
-
-					# if we are delayed then check the delayed game session for if we are buffering, otherwise use the primary
-					isSpectatorGameSessionBufferingFollowups = (games[gameId].spectateIsDelayed and games[gameId].spectatorDelayedGameSession?.getIsBufferingEvents()) || games[gameId].session.getIsBufferingEvents()
-
-					Logger.module("IO").debug "[G:#{gameId}]", "flushSpectatorNetworkEventBuffer() -> opponentEventDataBuffer at #{games[gameId].spectatorOpponentEventDataBuffer.length} ... buffering: #{isSpectatorGameSessionBufferingFollowups}"
-
-					# if we have anything in the buffer and we are currently not buffering, flush the buffer over to your opponent's spectators
-					if games[gameId].spectatorOpponentEventDataBuffer.length > 0 and !isSpectatorGameSessionBufferingFollowups
-						# copy buffer and reset
-						opponentEventDataBuffer = games[gameId].spectatorOpponentEventDataBuffer.slice(0)
-						games[gameId].spectatorOpponentEventDataBuffer.length = 0
-
-						# broadcast whatever's in the buffer to the opponent
-						_.each(opponentEventDataBuffer, (eventData) ->
-							Logger.module("IO").debug "[G:#{gameId}]", "flushSpectatorNetworkEventBuffer() -> transmitting step #{eventData.step?.index?.toString().yellow} with action #{eventData.step.action?.name} to opponent's spectators"
-							io.sockets.adapter.rooms.get("spectate-#{gameId}")?.forEach((socketId) ->
-								socket = io.sockets.sockets.get(socketId)
-								if socket? and socket.playerId != eventData.step.playerId
-									eventDataCopy = JSON.parse(JSON.stringify(eventData))
-									# always scrub steps for sensitive data from opponent's spectator perspective
-									UtilsGameSession.scrubSensitiveActionData(games[gameId].session, eventDataCopy.step.action, socket.playerId, true)
-									socket.emit EVENTS.network_game_event, eventDataCopy
-							)
-						)
-				else
-					io.to("spectate-#{gameId}").emit EVENTS.network_game_event, eventData
-
-getConnectedSpectatorsDataForGamePlayer = (gameId,playerId)->
-	spectators = []
-	io.sockets.adapter.rooms.get("spectate-#{gameId}")?.forEach((socketId) ->
-		socket = io.sockets.sockets.get(socketId)
-		if socket.playerId == playerId
-			spectators.push({
-				id:socket.spectatorId,
-				playerId:socket.playerId,
-				username:socket.spectateToken?.u
-			})
-	)
-	return spectators
-
-###
 # start a spectator game session if one doesn't exist and call a completion handler when done
 # @public
 # @param	{Object}		gameId			The game ID to load.
@@ -375,7 +289,6 @@ tearDownSpectateSystemsIfNoSpectatorsLeft = (gameId)->
 		games[gameId].spectatorGameEventBuffer.length = 0
 
 module.exports = {
-	flushSpectatorNetworkEventBuffer,
 	onGameSpectatorJoin,
 	spectatorLeaveGameIfNeeded
 }
