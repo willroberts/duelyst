@@ -53,12 +53,12 @@ You can automatically format JS code to meet these standards by running `yarn fo
 
 For CoffeeScript code, we use CoffeeLint to enforce code style.
 Its configuration can be found in `coffeelint.json`.
-You can run the linter with `yarn lint:coffee`, `yarn lint:coffee:app`, or `yarn lint:coffee:backend`.
+You can run the linter with `yarn lint:coffee`.
 
 #### Regarding JavaScript, CoffeeScript, and TypeScript
 
 Most of the code is written in CoffeeScript, which compiles into JavaScript.
-We are considering replacing CoffeeScript with JavaScript (see [Issue #4](https://github.com/open-duelyst/duelyst/issues/4)).
+We are slowly replacing CoffeeScript with JavaScript (see [Issue #4](https://github.com/open-duelyst/duelyst/issues/4)).
 
 We should also consider moving to TypeScript where possible.
 There is a fairly strict `tsconfig.json` in the repo which has been preconfigured for new code.
