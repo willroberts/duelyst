@@ -3,12 +3,12 @@ require('coffee-script/register');
 const { expect } = require('chai');
 const supertest = require('supertest');
 const jwt = require('jsonwebtoken');
-const api = require('../../server/express.coffee');
+const api = require('../../server/express');
 const { version } = require('../../version.json');
 
-const UsersModule = require('../../server/lib/data_access/users.coffee');
-const SyncModule = require('../../server/lib/data_access/sync.coffee');
-const Errors = require('../../server/lib/custom_errors.coffee');
+const UsersModule = require('../../server/lib/data_access/users');
+const SyncModule = require('../../server/lib/data_access/sync');
+const Errors = require('../../server/lib/custom_errors');
 const Logger = require('../../app/common/logger.coffee');
 const GameType = require('../../app/sdk/gameType.coffee');
 
