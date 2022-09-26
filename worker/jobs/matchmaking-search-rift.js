@@ -26,28 +26,23 @@ Job - Search for Matches
 const _ = require('underscore');
 const util = require('util');
 const Promise = require('bluebird');
-
-const env = config.get('env');
 const kue = require('kue');
 const moment = require('moment');
-const CONFIG = require('app/common/config');
 
-// SDK
+const CONFIG = require('app/common/config');
 const FactionsLookup = require('app/sdk/cards/factionsLookup');
 const FactionFactory = require('app/sdk/cards/factionFactory');
 const knex = require('server/lib/data_access/knex');
-
 const createSinglePlayerGame = require('server/lib/create_single_player_game');
 const RankFactory = require('../../app/sdk/rank/rankFactory');
 const GameType = require('../../app/sdk/gameType');
 const Consul = require('../../server/lib/consul');
-const config = require('../../config/config.js');
+const config = require('../../config/config');
 const Logger = require('../../app/common/logger');
 const Errors = require('../../server/lib/custom_errors');
-
-// redis
 const Redis = require('../../server/redis');
 
+const env = config.get('env');
 const riftQueue = new Redis.PlayerQueue(Redis.Redis, { name: 'rift' });
 
 /**

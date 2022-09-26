@@ -680,7 +680,7 @@ class UsersModule {
 	 * Associate a Steam ID to a User
 	 * @public
 	 * @param	{String}	userId				User ID
-	 * @param	{String}	steamId				User's Steam ID as returned from steam.coffee authenticateUserTicket
+	 * @param	{String}	steamId				User's Steam ID
 	 * @return	{Promise}						Promise that will return on completion.
 	 */
   static associateSteamId(userId, steamId) {
@@ -770,13 +770,12 @@ class UsersModule {
     }
 
     return startPromise
-
+      .bind(this)
       .then(function (userData) {
-        this.userData = userData;
-
-        if ((this.userData == null)) {
+        if ((userData == null)) {
           throw new Errors.NotFoundError('User not found');
         }
+        this.userData = userData;
 
         // Check if user needs to have emotes migrated to cosmetics inventory
         return MigrationsModule.checkIfUserNeedsMigrateEmotes20160708(this.userData);
@@ -972,9 +971,8 @@ class UsersModule {
 
   /**
 	 * Get the user ID for the specified Steam ID.
-	 * Reference steam.coffee's authenticateUserTicket
 	 * @public
-	 * @param	{String}	steamId	User's Steam ID as returned from steam.coffee authenticateUserTicket
+	 * @param	{String}	steamId	User's Steam ID
 	 * @return	{Promise}				Promise that will return the userId data on completion.
 	 */
   static userIdForSteamId(steamId, callback) {

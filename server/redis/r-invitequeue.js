@@ -6,8 +6,7 @@
 */
 // TODO: This file was created by bulk-decaffeinate.
 // Fix any style issues and re-enable lint.
-let exports; let
-  RedisInviteQueue;
+let RedisInviteQueue;
 const _ = require('underscore');
 const Promise = require('bluebird');
 const crypto = require('crypto');

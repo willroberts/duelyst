@@ -20,8 +20,10 @@ const path = require('path');
 const mkdirp = require('mkdirp');
 const request = require('request');
 const Promise = require('bluebird');
-const server = require('http').createServer(app);
+const http = require('http');
 const PrettyError = require('pretty-error');
+
+const express = require('./express');
 const Logger = require('../app/common/logger');
 const shutdown = require('./shutdown');
 const mail = require('./mailer');
@@ -29,7 +31,7 @@ const mail = require('./mailer');
 Promise.promisifyAll(mail);
 
 // Setup http server and express app
-const app = require('./express');
+const server = http.createServer(express);
 
 // Pretty error printing, helps with stack traces
 
