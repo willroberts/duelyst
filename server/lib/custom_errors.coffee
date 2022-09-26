@@ -5,199 +5,199 @@
 ###
 
 class NotFoundError extends Error
-	constructor: (@message = "Not Found.") ->
+	constructor: (message = "Not Found.") ->
+		super(message)
 		@name = "NotFoundError"
 		@status = 404
 		@description = "The requested resource cannot be found."
 		Error.captureStackTrace(this, NotFoundError)
-		super(@message)
 
 class BadRequestError extends Error
-	constructor: (@message = "Bad Request.") ->
+	constructor: (message = "Bad Request.") ->
+		super(message)
 		@name = "BadRequestError"
 		@status = 400
 		@description = "The request you made is invalid."
 		Error.captureStackTrace(this, BadRequestError)
-		super(@message)
 
 class UnauthorizedError extends Error
-	constructor: (@message = "Not Authorized.") ->
+	constructor: (message = "Not Authorized.") ->
+		super(message)
 		@name = "UnauthorizedError"
 		@status = 401
 		@description = "You are not authorized to access this resource."
 		Error.captureStackTrace(this, UnauthorizedError)
-		super(@message)
 
 class UnverifiedEmailError extends Error
-	constructor: (@message = "Email not verified.") ->
+	constructor: (message = "Email not verified.") ->
+		super(message)
 		@name = "UnverifiedEmailError"
 		@status = 400
 		@description = "Unable to process request without a verified email."
 		Error.captureStackTrace(this, UnverifiedEmailError)
-		super(@message)
 
 class BadPasswordError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "BadPasswordError"
 		Error.captureStackTrace(this, BadPasswordError)
-		super(@message)
 
 class AccountDisabled extends Error
-	constructor: (@message = "Account Is Disabled.") ->
+	constructor: (message = "Account Is Disabled.") ->
+		super(message)
 		@name = "AccountDisabled"
 		@status = 401
 		Error.captureStackTrace(this, AccountDisabled)
-		super(@message)
 
 class AlreadyExistsError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "AlreadyExistsError"
 		@status = 400
 		Error.captureStackTrace(this, AlreadyExistsError)
-		super(@message)
 
 class FirebaseTransactionDidNotCommitError extends Error
 	constructor:(message)->
+		super(message)
 		@name = "FirebaseTransactionDidNotCommitError"
 		Error.captureStackTrace(this, FirebaseTransactionDidNotCommitError)
-		super(@message)
 
 class QuestCantBeMulliganedError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "QuestCantBeMulliganedError"
 		Error.captureStackTrace(this, QuestCantBeMulliganedError)
-		super(@message)
 
 class NoNeedForNewBeginnerQuestsError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "NoNeedForNewBeginnerQuestsError"
 		Error.captureStackTrace(this, NoNeedForNewBeginnerQuestsError)
-		super(@message)
 
 class InsufficientFundsError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "InsufficientFundsError"
 		@status = 400
 		Error.captureStackTrace(this, InsufficientFundsError)
-		super(@message)
 
 class InvalidInviteCodeError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "InvalidInviteCodeError"
 		@status = 400
 		Error.captureStackTrace(this, InvalidInviteCodeError)
-		super(@message)
 
 class MatchmakingOfflineError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "MatchmakingOfflineError"
 		Error.captureStackTrace(this, MatchmakingOfflineError)
-		super(@message)
 
 class InvalidDeckError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "InvalidDeckError"
 		Error.captureStackTrace(this, InvalidDeckError)
-		super(@message)
 
 class NoArenaDeckError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "NoArenaDeckError"
 		Error.captureStackTrace(this, NoArenaDeckError)
-		super(@message)
 
 class ArenaRewardsAlreadyClaimedError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "ArenaRewardsAlreadyClaimedError"
 		Error.captureStackTrace(this, ArenaRewardsAlreadyClaimedError)
-		super(@message)
 
 class InvalidRequestError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "InvalidRequestError"
 		Error.captureStackTrace(this, InvalidRequestError)
-		super(@message)
 
 class UnexpectedBadDataError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "UnexpectedBadDataError"
 		Error.captureStackTrace(this, UnexpectedBadDataError)
-		super(@message)
 
 class InvalidReferralCodeError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "InvalidReferralCodeError"
 		Error.captureStackTrace(this, InvalidReferralCodeError)
-		super(@message)
 
 class MaxFactionXPForSinglePlayerReachedError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "MaxFactionXPForSinglePlayerReachedError"
 		Error.captureStackTrace(this, MaxFactionXPForSinglePlayerReachedError)
-		super(@message)
 
 class SinglePlayerModeDisabledError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "SinglePlayerModeDisabledError"
 		Error.captureStackTrace(this, SinglePlayerModeDisabledError)
-		super(@message)
 
 class UnverifiedCaptchaError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "UnverifiedCaptchaError"
 		Error.captureStackTrace(this, UnverifiedCaptchaError)
-		super(@message)
 
 class DailyChallengeTimeFrameError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "DailyChallengeTimeFrameError"
 		Error.captureStackTrace(this, DailyChallengeTimeFrameError)
-		super(@message)
 
 class ChestAndKeyTypeDoNotMatchError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "ChestAndKeyTypeDoNotMatchError"
 		Error.captureStackTrace(this, ChestAndKeyTypeDoNotMatchError)
-		super(@message)
 
 # TODO: Do we need to do this? Seems odd if we ever want to let users buy multiples, current spec has it maxing out at 5, maybe that should just be for free chest
 class MaxQuantityOfChestTypeError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "MaxQuantityOfChestTypeError"
 		Error.captureStackTrace(this, MaxQuantityOfChestTypeError)
-		super(@message)
 
 class SystemDisabledError extends Error
-	constructor: (@message = "This system is currently disabled.") ->
+	constructor: (message = "This system is currently disabled.") ->
+		super(message)
 		@name = "SystemDisabledError"
 		@status = 400
 		@description = "This system is currently disabled."
 		Error.captureStackTrace(this, SystemDisabledError)
-		super(@message)
 
 class MaxOrbsForSetReachedError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "MaxOrbsForSetReachedError"
 		Error.captureStackTrace(this, MaxOrbsForSetReachedError)
-		super(@message)
 
 class BossEventNotFound extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "BossEventNotFound"
 		Error.captureStackTrace(this, BossEventNotFound)
-		super(@message)
 
 class MaxRiftUpgradesReachedError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "MaxRiftUpgradesReachedError"
 		Error.captureStackTrace(this, MaxRiftUpgradesReachedError)
-		super(@message)
 
 class ShopSaleDoesNotExistError extends Error
-	constructor: (@message) ->
+	constructor: (message) ->
+		super(message)
 		@name = "ShopSaleDoesNotExistError"
 		Error.captureStackTrace(this, ShopSaleDoesNotExistError)
-		super(@message)
 
 module.exports.NotFoundError = NotFoundError
 module.exports.BadRequestError = BadRequestError
