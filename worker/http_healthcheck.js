@@ -1,63 +1,70 @@
-# Boots up a basic HTTP server on port 8080
-# Responds to /health endpoint with status 200
-# Otherwise responds with status 404
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+// Boots up a basic HTTP server on port 8080
+// Responds to /health endpoint with status 200
+// Otherwise responds with status 404
 
-Logger 		= require '../app/common/logger.coffee'
-http 		= require 'http'
-url 		= require 'url'
-os = require 'os'
-Promise		= require 'bluebird'
-config = require '../config/config'
-knex 		= require '../server/lib/data_access/knex'
-# mailer = require '../server/mailer'
-# Promise.promisifyAll(mailer)
+const Logger 		= require('../app/common/logger.coffee');
+const http 		= require('http');
+const url 		= require('url');
+const os = require('os');
+const Promise		= require('bluebird');
+const config = require('../config/config');
+const knex 		= require('../server/lib/data_access/knex');
+// mailer = require '../server/mailer'
+// Promise.promisifyAll(mailer)
 
-MAX_QUEUED_ALLOWED = 25
+const MAX_QUEUED_ALLOWED = 25;
 
-poolStats = (pool) ->
-	stats = {
-		size: pool.getPoolSize()
-		min: pool.getMinPoolSize()
-		max: pool.getMaxPoolSize()
-		available: pool.availableObjectsCount()
+const poolStats = function(pool) {
+	const stats = {
+		size: pool.getPoolSize(),
+		min: pool.getMinPoolSize(),
+		max: pool.getMaxPoolSize(),
+		available: pool.availableObjectsCount(),
 		queued: pool.waitingClientsCount()
-	}
-	return stats
+	};
+	return stats;
+};
 
-healthcheck = () ->
-	server = http.createServer (req, res) ->
-		pathname = url.parse(req.url).pathname
-		if pathname == '/health'
-			Logger.module("MATCHMAKER").debug "HTTP health check : /health requested."
-			pool = poolStats(knex.client.pool)
-			Promise.all([
+const healthcheck = function() {
+	const server = http.createServer(function(req, res) {
+		const {
+            pathname
+        } = url.parse(req.url);
+		if (pathname === '/health') {
+			Logger.module("MATCHMAKER").debug("HTTP health check : /health requested.");
+			const pool = poolStats(knex.client.pool);
+			return Promise.all([
 				knex("knex_migrations").select("migration_time").orderBy("id","desc").limit(1)
 			])
 			.timeout(5000)
-			.spread (row)->
-				if pool.queued >= MAX_QUEUED_ALLOWED
-					# serverInfo = {
-					# 	hostname: os.hostname()
-					# 	environment: config.get('env')
-					# 	pool: pool
-					# }
-					# mailer.sendErrorAlertAsync(serverInfo, {message: "Database operations queue above maximum limit (#{MAX_QUEUED_ALLOWED})"})
-					res.statusCode = 500
-				else
-					res.statusCode = 200
-			.catch Promise.TimeoutError, (e)->
-				res.statusCode = 500
-			.catch (e)->
-				res.statusCode = 500
-			.finally ()->
-				res.write(JSON.stringify({pool: pool}))
-				res.end()
-		else
-			# Logger.module("MATCHMAKER").debug "HTTP health check: 404 bad request received."
-			res.statusCode = 404
-			res.end()
+			.spread(function(row){
+				if (pool.queued >= MAX_QUEUED_ALLOWED) {
+					// serverInfo = {
+					// 	hostname: os.hostname()
+					// 	environment: config.get('env')
+					// 	pool: pool
+					// }
+					// mailer.sendErrorAlertAsync(serverInfo, {message: "Database operations queue above maximum limit (#{MAX_QUEUED_ALLOWED})"})
+					return res.statusCode = 500;
+				} else {
+					return res.statusCode = 200;
+				}}).catch(Promise.TimeoutError, e => res.statusCode = 500).catch(e => res.statusCode = 500).finally(function(){
+				res.write(JSON.stringify({pool}));
+				return res.end();
+			});
+		} else {
+			// Logger.module("MATCHMAKER").debug "HTTP health check: 404 bad request received."
+			res.statusCode = 404;
+			return res.end();
+		}
+	});
 
-	server.listen 8080, () ->
-		Logger.module("MATCHMAKER").debug "HTTP health check : running on port 8080 /health."
+	return server.listen(8080, () => Logger.module("MATCHMAKER").debug("HTTP health check : running on port 8080 /health."));
+};
 
 module.exports = healthcheck;
