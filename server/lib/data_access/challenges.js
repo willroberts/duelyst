@@ -1,446 +1,472 @@
-Promise = require 'bluebird'
-util = require 'util'
-FirebasePromises = require '../firebase_promises'
-DuelystFirebase = require '../duelyst_firebase_module'
-fbUtil = require '../../../app/common/utils/utils_firebase.js'
-Logger = require '../../../app/common/logger.coffee'
-colors = require 'colors'
-validator = require 'validator'
-uuid = require 'node-uuid'
-moment = require 'moment'
-_ = require 'underscore'
-SyncModule = require './sync'
-InventoryModule = require './inventory'
-QuestsModule = require './quests'
-GamesModule = require './games'
-CONFIG = require '../../../app/common/config.js'
-Errors = require '../custom_errors'
-mail = require '../../mailer'
-knex = require("../data_access/knex")
-config = require '../../../config/config.js'
-generatePushId = require '../../../app/common/generate_push_id'
-DataAccessHelpers = require('./helpers')
-hashHelpers = require '../hash_helpers.coffee'
-Promise.promisifyAll(mail)
-AnalyticsUtil = require '../../../app/common/analyticsUtil.coffee'
+/*
+ * decaffeinate suggestions:
+ * DS101: Remove unnecessary use of Array.from
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
+ * DS206: Consider reworking classes to avoid initClass
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
+ */
+const Promise = require('bluebird');
+const util = require('util');
+const FirebasePromises = require('../firebase_promises');
+const DuelystFirebase = require('../duelyst_firebase_module');
+const fbUtil = require('../../../app/common/utils/utils_firebase.js');
+const Logger = require('../../../app/common/logger.coffee');
+const colors = require('colors');
+const validator = require('validator');
+const uuid = require('node-uuid');
+const moment = require('moment');
+const _ = require('underscore');
+const SyncModule = require('./sync');
+const InventoryModule = require('./inventory');
+const QuestsModule = require('./quests');
+const GamesModule = require('./games');
+const CONFIG = require('../../../app/common/config.js');
+const Errors = require('../custom_errors');
+const mail = require('../../mailer');
+const knex = require("../data_access/knex");
+const config = require('../../../config/config.js');
+const generatePushId = require('../../../app/common/generate_push_id');
+const DataAccessHelpers = require('./helpers');
+const hashHelpers = require('../hash_helpers.coffee');
+Promise.promisifyAll(mail);
+const AnalyticsUtil = require('../../../app/common/analyticsUtil.coffee');
 
-# SDK imports
-SDK = require '../../../app/sdk'
-Entity = require '../../../app/sdk/entities/entity'
-QuestFactory = require '../../../app/sdk/quests/questFactory'
-QuestType = require '../../../app/sdk/quests/questTypeLookup'
-GameType = require '../../../app/sdk/gameType'
-UtilsGameSession = require '../../../app/common/utils/utils_game_session.coffee'
-NewPlayerProgressionHelper = require '../../../app/sdk/progression/newPlayerProgressionHelper'
-NewPlayerProgressionStageEnum = require '../../../app/sdk/progression/newPlayerProgressionStageEnum'
-NewPlayerProgressionModuleLookup = require '../../../app/sdk/progression/newPlayerProgressionModuleLookup'
+// SDK imports
+const SDK = require('../../../app/sdk');
+const Entity = require('../../../app/sdk/entities/entity');
+const QuestFactory = require('../../../app/sdk/quests/questFactory');
+const QuestType = require('../../../app/sdk/quests/questTypeLookup');
+const GameType = require('../../../app/sdk/gameType');
+const UtilsGameSession = require('../../../app/common/utils/utils_game_session.coffee');
+const NewPlayerProgressionHelper = require('../../../app/sdk/progression/newPlayerProgressionHelper');
+const NewPlayerProgressionStageEnum = require('../../../app/sdk/progression/newPlayerProgressionStageEnum');
+const NewPlayerProgressionModuleLookup = require('../../../app/sdk/progression/newPlayerProgressionModuleLookup');
 
-class ChallengesModule
+class ChallengesModule {
+	static initClass() {
+	
+		this.DAILY_CHALLENGE_ALLOWABLE_CLOCK_SKEW_IN_DAYS =2;
+	}
 
-	@DAILY_CHALLENGE_ALLOWABLE_CLOCK_SKEW_IN_DAYS:2
+	/**
+	 * Completes a challenge for a user and unlocks any rewards !if! it's not already completed
+	 * @public
+	 * @param	{String}	userId					User ID.
+	 * @param	{String}	challenge_type			type of challenge completed
+	 * @param	{Boolean}	shouldProcessQuests		should we attempt to process quests as a result of this challenge completion (since beginner quests include a challenge quest)
+	 * @return	{Promise}	Promise that will resolve and give rewards if challenge hasn't been completed before, will resolve false and not give rewards if it has
+	 */
+	static completeChallengeWithType(userId,challengeType,shouldProcessQuests) {
+		// TODO: Error check, if the challenge type isn't recognized we shouldn't record it etc
 
-	###*
-	# Completes a challenge for a user and unlocks any rewards !if! it's not already completed
-	# @public
-	# @param	{String}	userId					User ID.
-	# @param	{String}	challenge_type			type of challenge completed
-	# @param	{Boolean}	shouldProcessQuests		should we attempt to process quests as a result of this challenge completion (since beginner quests include a challenge quest)
-	# @return	{Promise}	Promise that will resolve and give rewards if challenge hasn't been completed before, will resolve false and not give rewards if it has
-	###
-	@completeChallengeWithType: (userId,challengeType,shouldProcessQuests) ->
-		# TODO: Error check, if the challenge type isn't recognized we shouldn't record it etc
+		const MOMENT_NOW_UTC = moment().utc();
+		const this_obj = {};
 
-		MOMENT_NOW_UTC = moment().utc()
-		this_obj = {}
+		Logger.module("ChallengesModule").time(`completeChallengeWithType() -> user ${userId.blue} completed challenge type ${challengeType}.`);
 
-		Logger.module("ChallengesModule").time "completeChallengeWithType() -> user #{userId.blue} completed challenge type #{challengeType}."
+		return knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).first()
+		.bind(this_obj)
+		.then(function(challengeRow){
 
-		knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).first()
-		.bind this_obj
-		.then (challengeRow)->
-
-			if challengeRow and challengeRow.completed_at
-				Logger.module("ChallengesModule").debug "completeChallengeWithType() -> user #{userId.blue} has already completed challenge type #{challengeType}."
-				return Promise.resolve(false)
-			else
-				txPromise = knex.transaction (tx)->
-					# lock user record while updating data
+			if (challengeRow && challengeRow.completed_at) {
+				Logger.module("ChallengesModule").debug(`completeChallengeWithType() -> user ${userId.blue} has already completed challenge type ${challengeType}.`);
+				return Promise.resolve(false);
+			} else {
+				var txPromise = knex.transaction(function(tx){
+					// lock user record while updating data
 					knex("users").where({'id':userId}).first('id').forUpdate().transacting(tx)
-					.bind this_obj
-					.then ()->
-						# give the user their rewards
-						goldReward = SDK.ChallengeFactory.getGoldRewardedForChallengeType(challengeType)
-						cardRewards = SDK.ChallengeFactory.getCardIdsRewardedForChallengeType(challengeType)
-						spiritReward = SDK.ChallengeFactory.getSpiritRewardedForChallengeType(challengeType)
-						boosterPackRewards = SDK.ChallengeFactory.getBoosterPacksRewardedForChallengeType(challengeType)
-						factionUnlockedReward = SDK.ChallengeFactory.getFactionUnlockedRewardedForChallengeType(challengeType)
+					.bind(this_obj)
+					.then(function(){
+						// give the user their rewards
+						let rewardData;
+						const goldReward = SDK.ChallengeFactory.getGoldRewardedForChallengeType(challengeType);
+						const cardRewards = SDK.ChallengeFactory.getCardIdsRewardedForChallengeType(challengeType);
+						const spiritReward = SDK.ChallengeFactory.getSpiritRewardedForChallengeType(challengeType);
+						const boosterPackRewards = SDK.ChallengeFactory.getBoosterPacksRewardedForChallengeType(challengeType);
+						const factionUnlockedReward = SDK.ChallengeFactory.getFactionUnlockedRewardedForChallengeType(challengeType);
 
-						@.rewards = []
-						@.challengeRow =
-							user_id:userId
-							challenge_id:challengeType
-							completed_at:MOMENT_NOW_UTC.toDate()
-							last_attempted_at: challengeRow?.last_attempted_at || MOMENT_NOW_UTC.toDate()
-							reward_ids:[]
+						this.rewards = [];
+						this.challengeRow = {
+							user_id:userId,
+							challenge_id:challengeType,
+							completed_at:MOMENT_NOW_UTC.toDate(),
+							last_attempted_at: (challengeRow != null ? challengeRow.last_attempted_at : undefined) || MOMENT_NOW_UTC.toDate(),
+							reward_ids:[],
 							is_unread:true
+						};
 
-						rewardPromises = []
+						const rewardPromises = [];
 
-						if goldReward
+						if (goldReward) {
 
-							# set up reward data
+							// set up reward data
 							rewardData = {
-								id:generatePushId()
-								user_id:userId
-								reward_category:"challenge"
-								reward_type:challengeType
-								gold:goldReward
-								created_at:MOMENT_NOW_UTC.toDate()
+								id:generatePushId(),
+								user_id:userId,
+								reward_category:"challenge",
+								reward_type:challengeType,
+								gold:goldReward,
+								created_at:MOMENT_NOW_UTC.toDate(),
 								is_unread:true
+							};
+
+							// add it to the rewards array
+							this.rewards.push(rewardData);
+
+							// add the promise to our list of reward promises
+							rewardPromises.push(knex("user_rewards").insert(rewardData).transacting(tx));
+							rewardPromises.push(InventoryModule.giveUserGold(txPromise,tx,userId,goldReward,'challenge',challengeType));
+						}
+
+						if (cardRewards) {
+
+							// set up reward data
+							rewardData = {
+								id:generatePushId(),
+								user_id:userId,
+								reward_category:"challenge",
+								reward_type:challengeType,
+								cards:cardRewards,
+								created_at:MOMENT_NOW_UTC.toDate(),
+								is_unread:true
+							};
+
+							// add it to the rewards array
+							this.rewards.push(rewardData);
+
+							// add the promise to our list of reward promises
+							rewardPromises.push(knex("user_rewards").insert(rewardData).transacting(tx));
+							rewardPromises.push(InventoryModule.giveUserCards(txPromise,tx,userId,cardRewards,'challenge'));
+						}
+
+						if (spiritReward) {
+
+							// set up reward data
+							rewardData = {
+								id:generatePushId(),
+								user_id:userId,
+								reward_category:"challenge",
+								reward_type:challengeType,
+								spirit:spiritReward,
+								created_at:MOMENT_NOW_UTC.toDate(),
+								is_unread:true
+							};
+
+							// add it to the rewards array
+							this.rewards.push(rewardData);
+
+							// add the promise to our list of reward promises
+							rewardPromises.push(knex("user_rewards").insert(rewardData).transacting(tx));
+							rewardPromises.push(InventoryModule.giveUserSpirit(txPromise,tx,userId,spiritReward,'challenge'));
+						}
+
+						if (boosterPackRewards) {
+
+							// set up reward data
+							rewardData = {
+								id:generatePushId(),
+								user_id:userId,
+								reward_category:"challenge",
+								reward_type:challengeType,
+								spirit_orbs:boosterPackRewards.length,
+								created_at:MOMENT_NOW_UTC.toDate(),
+								is_unread:true
+							};
+
+							// add it to the rewards array
+							this.rewards.push(rewardData);
+
+							// add the promise to our list of reward promises
+							rewardPromises.push(knex("user_rewards").insert(rewardData).transacting(tx));
+
+							_.each(boosterPackRewards, boosterPackData => // Bound to array of reward promises
+                            rewardPromises.push(
+                                InventoryModule.addBoosterPackToUser(txPromise,tx,userId,1,"soft",boosterPackData)
+                            ));
+						}
+
+						if (factionUnlockedReward) {
+
+							// set up reward data
+							rewardData = {
+								id:generatePushId(),
+								user_id:userId,
+								reward_category:"challenge",
+								reward_type:challengeType,
+								unlocked_faction_id:factionUnlockedReward,
+								created_at:MOMENT_NOW_UTC.toDate(),
+								is_unread:true
+							};
+
+							// add it to the rewards array
+							this.rewards.push(rewardData);
+
+							// add the promise to our list of reward promises
+							rewardPromises.push(knex("user_rewards").insert(rewardData).transacting(tx));
+						}
+
+						this.challengeRow.reward_ids = _.map(this.rewards, r => r.id);
+
+						if (challengeRow) {
+							rewardPromises.push(knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).update(this.challengeRow).transacting(tx));
+						} else {
+							rewardPromises.push(knex("user_challenges").insert(this.challengeRow).transacting(tx));
+						}
+
+						return Promise.all(rewardPromises);}).then(function(){
+						if (this.challengeRow && shouldProcessQuests) {
+							return QuestsModule.updateQuestProgressWithCompletedChallenge(txPromise,tx,userId,challengeType,MOMENT_NOW_UTC);
+						} else {
+							return Promise.resolve();
+						}}).then(function(questProgressResponse){
+
+						if (this.challengeRow && (__guard__(questProgressResponse != null ? questProgressResponse.rewards : undefined, x => x.length) > 0)) {
+
+							Logger.module("ChallengesModule").debug(`completeChallengeWithType() -> user ${userId.blue} completed challenge quest rewards count: ${ (questProgressResponse != null ? questProgressResponse.rewards.length : undefined)}`);
+
+							for (let reward of Array.from(questProgressResponse.rewards)) {
+								this.rewards.push(reward);
+								this.challengeRow.reward_ids.push(reward.id);
 							}
 
-							# add it to the rewards array
-							@.rewards.push(rewardData)
-
-							# add the promise to our list of reward promises
-							rewardPromises.push(knex("user_rewards").insert(rewardData).transacting(tx))
-							rewardPromises.push(InventoryModule.giveUserGold(txPromise,tx,userId,goldReward,'challenge',challengeType))
-
-						if cardRewards
-
-							# set up reward data
-							rewardData = {
-								id:generatePushId()
-								user_id:userId
-								reward_category:"challenge"
-								reward_type:challengeType
-								cards:cardRewards
-								created_at:MOMENT_NOW_UTC.toDate()
-								is_unread:true
-							}
-
-							# add it to the rewards array
-							@.rewards.push(rewardData)
-
-							# add the promise to our list of reward promises
-							rewardPromises.push(knex("user_rewards").insert(rewardData).transacting(tx))
-							rewardPromises.push(InventoryModule.giveUserCards(txPromise,tx,userId,cardRewards,'challenge'))
-
-						if spiritReward
-
-							# set up reward data
-							rewardData = {
-								id:generatePushId()
-								user_id:userId
-								reward_category:"challenge"
-								reward_type:challengeType
-								spirit:spiritReward
-								created_at:MOMENT_NOW_UTC.toDate()
-								is_unread:true
-							}
-
-							# add it to the rewards array
-							@.rewards.push(rewardData)
-
-							# add the promise to our list of reward promises
-							rewardPromises.push(knex("user_rewards").insert(rewardData).transacting(tx))
-							rewardPromises.push(InventoryModule.giveUserSpirit(txPromise,tx,userId,spiritReward,'challenge'))
-
-						if boosterPackRewards
-
-							# set up reward data
-							rewardData = {
-								id:generatePushId()
-								user_id:userId
-								reward_category:"challenge"
-								reward_type:challengeType
-								spirit_orbs:boosterPackRewards.length
-								created_at:MOMENT_NOW_UTC.toDate()
-								is_unread:true
-							}
-
-							# add it to the rewards array
-							@.rewards.push(rewardData)
-
-							# add the promise to our list of reward promises
-							rewardPromises.push(knex("user_rewards").insert(rewardData).transacting(tx))
-
-							_.each boosterPackRewards, (boosterPackData) ->
-								# Bound to array of reward promises
-								rewardPromises.push(InventoryModule.addBoosterPackToUser(txPromise,tx,userId,1,"soft",boosterPackData))
-
-						if factionUnlockedReward
-
-							# set up reward data
-							rewardData = {
-								id:generatePushId()
-								user_id:userId
-								reward_category:"challenge"
-								reward_type:challengeType
-								unlocked_faction_id:factionUnlockedReward
-								created_at:MOMENT_NOW_UTC.toDate()
-								is_unread:true
-							}
-
-							# add it to the rewards array
-							@.rewards.push(rewardData)
-
-							# add the promise to our list of reward promises
-							rewardPromises.push(knex("user_rewards").insert(rewardData).transacting(tx))
-
-						@.challengeRow.reward_ids = _.map(@.rewards, (r)-> return r.id)
-
-						if challengeRow
-							rewardPromises.push knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).update(@.challengeRow).transacting(tx)
-						else
-							rewardPromises.push knex("user_challenges").insert(@.challengeRow).transacting(tx)
-
-						Promise.all(rewardPromises)
-					.then ()->
-						if @.challengeRow and shouldProcessQuests
-							return QuestsModule.updateQuestProgressWithCompletedChallenge(txPromise,tx,userId,challengeType,MOMENT_NOW_UTC)
-						else
-							return Promise.resolve()
-					.then (questProgressResponse)->
-
-						if @.challengeRow and questProgressResponse?.rewards?.length > 0
-
-							Logger.module("ChallengesModule").debug "completeChallengeWithType() -> user #{userId.blue} completed challenge quest rewards count: #{ questProgressResponse?.rewards.length}"
-
-							for reward in questProgressResponse.rewards
-								@.rewards.push(reward)
-								@.challengeRow.reward_ids.push(reward.id)
-
-							return knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).update(
-								reward_ids:@.challengeRow.reward_ids
-							).transacting(tx)
-
-					.then ()->
+							return knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).update({
+								reward_ids:this.challengeRow.reward_ids
+							}).transacting(tx);
+						}}).then(function(){
 
 						return Promise.all([
 							DuelystFirebase.connect().getRootRef(),
-							@.challengeRow,
-							@.rewards
-						])
+							this.challengeRow,
+							this.rewards
+						]);}).spread(function(rootRef,challengeRow,rewards){
 
-					.spread (rootRef,challengeRow,rewards)->
+						const allPromises = [];
 
-						allPromises = []
+						if (challengeRow != null) {
+							delete challengeRow.user_id;
+							// delete challengeRow.challenge_id
 
-						if challengeRow?
-							delete challengeRow.user_id
-							# delete challengeRow.challenge_id
+							if (challengeRow.last_attempted_at) { challengeRow.last_attempted_at = moment.utc(challengeRow.last_attempted_at).valueOf(); }
+							if (challengeRow.completed_at) { challengeRow.completed_at = moment.utc(challengeRow.completed_at).valueOf(); }
 
-							if challengeRow.last_attempted_at then challengeRow.last_attempted_at = moment.utc(challengeRow.last_attempted_at).valueOf()
-							if challengeRow.completed_at then challengeRow.completed_at = moment.utc(challengeRow.completed_at).valueOf()
+							allPromises.push(FirebasePromises.set(rootRef.child("user-challenge-progression").child(userId).child(challengeType),challengeRow));
 
-							allPromises.push FirebasePromises.set(rootRef.child("user-challenge-progression").child(userId).child(challengeType),challengeRow)
+							this.challengeRow = challengeRow;
+						}
 
-							@.challengeRow = challengeRow
+						// if rewards?
+						// 	for reward in rewards
+						// 		reward_id = reward.id
+						// 		delete reward.id
+						// 		delete reward.user_id
+						// 		reward.created_at = moment.utc(reward.created_at).valueOf()
 
-						# if rewards?
-						# 	for reward in rewards
-						# 		reward_id = reward.id
-						# 		delete reward.id
-						# 		delete reward.user_id
-						# 		reward.created_at = moment.utc(reward.created_at).valueOf()
+						// 		allPromises.push FirebasePromises.set(rootRef.child("user-rewards").child(userId).child(reward_id),reward)
 
-						# 		allPromises.push FirebasePromises.set(rootRef.child("user-rewards").child(userId).child(reward_id),reward)
+						return Promise.all(allPromises);}).then(() => SyncModule._bumpUserTransactionCounter(tx,userId))
+					.then(tx.commit)
+					.catch(tx.rollback);
+					}).bind(this_obj);
 
-						return Promise.all(allPromises)
+				return txPromise;
+			}}).then(function(){
 
-					.then ()-> SyncModule._bumpUserTransactionCounter(tx,userId)
-					.then tx.commit
-					.catch tx.rollback
-					return
+			Logger.module("ChallengesModule").timeEnd(`completeChallengeWithType() -> user ${userId.blue} completed challenge type ${challengeType}.`);
 
-				.bind this_obj
+			let responseData = null;
 
-				return txPromise
+			if (this.challengeRow) {
+				responseData = { challenge: this.challengeRow };
+			}
 
-		.then ()->
+			if (this.rewards) {
+				responseData.rewards = this.rewards;
+			}
 
-			Logger.module("ChallengesModule").timeEnd "completeChallengeWithType() -> user #{userId.blue} completed challenge type #{challengeType}."
+			return responseData;
+		});
+	}
 
-			responseData = null
+	/**
+	 * Marks a challenge as attempted.
+	 * @public
+	 * @param	{String}	userId				User ID.
+	 * @param	{String}	challenge_type		type of challenge
+	 * @return	{Promise}						Promise that will resolve on completion
+	 */
+	static markChallengeAsAttempted(userId,challengeType) {
+		// TODO: Error check, if the challenge type isn't recognized we shouldn't record it etc
 
-			if @.challengeRow
-				responseData = { challenge: @.challengeRow }
+		const MOMENT_NOW_UTC = moment().utc();
+		const this_obj = {};
 
-			if @.rewards
-				responseData.rewards = @.rewards
+		Logger.module("ChallengesModule").time(`markChallengeAsAttempted() -> user ${userId.blue} attempted challenge type ${challengeType}.`);
 
-			return responseData
+		const txPromise = knex.transaction(function(tx){
 
-	###*
-	# Marks a challenge as attempted.
-	# @public
-	# @param	{String}	userId				User ID.
-	# @param	{String}	challenge_type		type of challenge
-	# @return	{Promise}						Promise that will resolve on completion
-	###
-	@markChallengeAsAttempted: (userId,challengeType) ->
-		# TODO: Error check, if the challenge type isn't recognized we shouldn't record it etc
-
-		MOMENT_NOW_UTC = moment().utc()
-		this_obj = {}
-
-		Logger.module("ChallengesModule").time "markChallengeAsAttempted() -> user #{userId.blue} attempted challenge type #{challengeType}."
-
-		txPromise = knex.transaction (tx)->
-
-			# lock user and challenge row
+			// lock user and challenge row
 			Promise.all([
-				knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).first().forUpdate().transacting(tx)
+				knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).first().forUpdate().transacting(tx),
 				knex("users").where({'id':userId}).first('id').forUpdate().transacting(tx)
 			])
-			.bind this_obj
-			.spread (challengeRow)->
+			.bind(this_obj)
+			.spread(function(challengeRow){
 
-				@.challengeRow = challengeRow
+				this.challengeRow = challengeRow;
 
-				if @.challengeRow?
-					@.challengeRow.last_attempted_at = MOMENT_NOW_UTC.toDate()
-					return knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).update(@.challengeRow).transacting(tx)
-				else
-					@.challengeRow =
-						user_id:userId
-						challenge_id:challengeType
+				if (this.challengeRow != null) {
+					this.challengeRow.last_attempted_at = MOMENT_NOW_UTC.toDate();
+					return knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).update(this.challengeRow).transacting(tx);
+				} else {
+					this.challengeRow = {
+						user_id:userId,
+						challenge_id:challengeType,
 						last_attempted_at:MOMENT_NOW_UTC.toDate()
-					return knex("user_challenges").insert(@.challengeRow).transacting(tx)
+					};
+					return knex("user_challenges").insert(this.challengeRow).transacting(tx);
+				}}).then(() => DuelystFirebase.connect().getRootRef())
+			.then(function(rootRef){
 
-			.then ()-> DuelystFirebase.connect().getRootRef()
-			.then (rootRef)->
+				const allPromises = [];
 
-				allPromises = []
+				if (this.challengeRow != null) {
 
-				if @.challengeRow?
+					delete this.challengeRow.user_id;
+					// delete @.challengeRow.challenge_id
 
-					delete @.challengeRow.user_id
-					# delete @.challengeRow.challenge_id
+					if (this.challengeRow.last_attempted_at) { this.challengeRow.last_attempted_at = moment.utc(this.challengeRow.last_attempted_at).valueOf(); }
+					if (this.challengeRow.completed_at) { this.challengeRow.completed_at = moment.utc(this.challengeRow.completed_at).valueOf(); }
 
-					if @.challengeRow.last_attempted_at then @.challengeRow.last_attempted_at = moment.utc(@.challengeRow.last_attempted_at).valueOf()
-					if @.challengeRow.completed_at then @.challengeRow.completed_at = moment.utc(@.challengeRow.completed_at).valueOf()
+					allPromises.push(FirebasePromises.set(rootRef.child("user-challenge-progression").child(userId).child(challengeType),this.challengeRow));
+				}
 
-					allPromises.push FirebasePromises.set(rootRef.child("user-challenge-progression").child(userId).child(challengeType),@.challengeRow)
+				return Promise.all(allPromises);}).then(() => SyncModule._bumpUserTransactionCounter(tx,userId))
+			.then(tx.commit)
+			.catch(tx.rollback);
+			}).bind(this_obj)
+		.then(function(){
 
-				return Promise.all(allPromises)
+			const responseData = { challenge: this.challengeRow };
+			return responseData;
+		});
 
-			.then ()-> SyncModule._bumpUserTransactionCounter(tx,userId)
-			.then tx.commit
-			.catch tx.rollback
-			return
+		return txPromise;
+	}
 
-		.bind this_obj
-		.then ()->
+	/**
+	* Marks a DAILY challenge as completed.
+	* @public
+	* @param	{String}	userId				User ID.
+	* @param	{String}	challengeId			type of challenge
+	* @param	{String}	solutionHash		double check against bots # TODO
+  * @param  {Moment} completionTime  	UTC Moment to treat the challenge completion as having occurred, defaults to now
+  * @param  {Moment} systemTime  			Current time of the system, used for debugging
+	* @return	{Promise}						Promise that will resolve on completion
+	*/
+	static markDailyChallengeAsCompleted(userId,challengeId,solutionHash,completionTime,systemTime){
 
-			responseData = { challenge: @.challengeRow }
-			return responseData
+		const MOMENT_NOW_UTC = systemTime || moment().utc();
+		const completionTimeUtc	= completionTime || MOMENT_NOW_UTC;
+		const this_obj = {};
 
-		return txPromise
+		// Verify a challenge in the future nor more than X days old is attempting to be completed
+		if (Math.abs(completionTimeUtc.diff(MOMENT_NOW_UTC,'days',true)) > ChallengesModule.DAILY_CHALLENGE_ALLOWABLE_CLOCK_SKEW_IN_DAYS) {
+			return Promise.reject(new Errors.DailyChallengeTimeFrameError("Attempting to complete a daily challenge outside allowable time frame."));
+		}
 
-	###*
-	# Marks a DAILY challenge as completed.
-	# @public
-	# @param	{String}	userId				User ID.
-	# @param	{String}	challengeId			type of challenge
-	# @param	{String}	solutionHash		double check against bots # TODO
-  # @param  {Moment} completionTime  	UTC Moment to treat the challenge completion as having occurred, defaults to now
-  # @param  {Moment} systemTime  			Current time of the system, used for debugging
-	# @return	{Promise}						Promise that will resolve on completion
-	###
-	@markDailyChallengeAsCompleted: (userId,challengeId,solutionHash,completionTime,systemTime)->
+		return DuelystFirebase.connect().getRootRef().then(fbRootRef => FirebasePromises.once(fbRootRef.child("daily-challenges").child(completionTimeUtc.format("YYYY-MM-DD")),"value")).bind(this_obj)
+		.then(function(snapshot){
 
-		MOMENT_NOW_UTC = systemTime || moment().utc()
-		completionTimeUtc	= completionTime || MOMENT_NOW_UTC
-		this_obj = {}
+			Logger.module("ChallengesModule").debug(`markDailyChallengeAsCompleted() -> ${userId.blue} wants to complete challenge ${challengeId} for day ${completionTimeUtc.format("YYYY-MM-DD")}. Challenge Spec: `, snapshot.val());
 
-		# Verify a challenge in the future nor more than X days old is attempting to be completed
-		if Math.abs(completionTimeUtc.diff(MOMENT_NOW_UTC,'days',true)) > ChallengesModule.DAILY_CHALLENGE_ALLOWABLE_CLOCK_SKEW_IN_DAYS
-			return Promise.reject(new Errors.DailyChallengeTimeFrameError("Attempting to complete a daily challenge outside allowable time frame."))
+			if (!snapshot.val()) {
+				throw new Errors.NotFoundError("Daily Challenge Not Found");
+			}
 
-		DuelystFirebase.connect().getRootRef().then (fbRootRef)->
-			return FirebasePromises.once(fbRootRef.child("daily-challenges").child(completionTimeUtc.format("YYYY-MM-DD")),"value")
-		.bind this_obj
-		.then (snapshot)->
+			if (snapshot.val().challenge_id !== challengeId) {
+				throw new Errors.BadRequestError("Invalid Daily Challenge ID");
+			}
 
-			Logger.module("ChallengesModule").debug "markDailyChallengeAsCompleted() -> #{userId.blue} wants to complete challenge #{challengeId} for day #{completionTimeUtc.format("YYYY-MM-DD")}. Challenge Spec: ", snapshot.val()
+			var txPromise = knex.transaction(function(tx){
 
-			if not snapshot.val()
-				throw new Errors.NotFoundError("Daily Challenge Not Found")
-
-			if snapshot.val().challenge_id != challengeId
-				throw new Errors.BadRequestError("Invalid Daily Challenge ID")
-
-			txPromise = knex.transaction (tx)->
-
-				# lock user and challenge row
+				// lock user and challenge row
 				Promise.all([
-					knex("user_daily_challenges_completed").where({'user_id':userId,'challenge_id':challengeId}).first().forUpdate().transacting(tx)
+					knex("user_daily_challenges_completed").where({'user_id':userId,'challenge_id':challengeId}).first().forUpdate().transacting(tx),
 					knex("users").where({'id':userId}).first('id').forUpdate().transacting(tx)
 				])
-				.bind this_obj
-				.spread (challengeRow)->
+				.bind(this_obj)
+				.spread(function(challengeRow){
 
-					@.challengeRow = challengeRow
+					this.challengeRow = challengeRow;
 
-					if @.challengeRow?
-						throw new Errors.AlreadyExistsError("Challenge already completed")
-					else
-						#
-						allPromises = []
+					if (this.challengeRow != null) {
+						throw new Errors.AlreadyExistsError("Challenge already completed");
+					} else {
+						//
+						let goldAmount;
+						const allPromises = [];
 
-						# ...
-						@.challengeRow =
-							user_id:userId
-							challenge_id:challengeId
-							reward_ids:[]
+						// ...
+						this.challengeRow = {
+							user_id:userId,
+							challenge_id:challengeId,
+							reward_ids:[],
 							completed_at:MOMENT_NOW_UTC.toDate()
+						};
 
-						@.goldAmount = goldAmount = snapshot.val().gold
+						this.goldAmount = (goldAmount = snapshot.val().gold);
 
-						if goldAmount? and goldAmount > 0
-							# set up reward data
-							rewardData = {
-								id:generatePushId()
-								user_id:userId
-								reward_category:"daily challenge"
-								reward_type:challengeId
-								gold:goldAmount
-								created_at:MOMENT_NOW_UTC.toDate()
+						if ((goldAmount != null) && (goldAmount > 0)) {
+							// set up reward data
+							const rewardData = {
+								id:generatePushId(),
+								user_id:userId,
+								reward_category:"daily challenge",
+								reward_type:challengeId,
+								gold:goldAmount,
+								created_at:MOMENT_NOW_UTC.toDate(),
 								is_unread:true
-							}
+							};
 
-							# add it to the reward ids column
-							@.challengeRow.reward_ids.push(rewardData.id)
+							// add it to the reward ids column
+							this.challengeRow.reward_ids.push(rewardData.id);
 
-							# add the promise to our list of reward promises
-							allPromises.push(knex("user_rewards").insert(rewardData).transacting(tx))
+							// add the promise to our list of reward promises
+							allPromises.push(knex("user_rewards").insert(rewardData).transacting(tx));
+						}
 
-						allPromises.push(knex("user_daily_challenges_completed").insert(@.challengeRow).transacting(tx))
+						allPromises.push(knex("user_daily_challenges_completed").insert(this.challengeRow).transacting(tx));
 						allPromises.push(knex("users").where('id',userId).update({
 							daily_challenge_last_completed_at: completionTimeUtc.toDate()
-						}).transacting(tx))
+						}).transacting(tx));
 
-						#
-						return Promise.all(allPromises)
-				.then ()->
-					# if all of the above succeed, update wallet
-					return InventoryModule.giveUserGold(txPromise,tx,userId,@.goldAmount,'daily challenge',challengeId)
-				.then ()-> SyncModule._bumpUserTransactionCounter(tx,userId)
-				.then tx.commit
-				.catch tx.rollback
-				return
+						//
+						return Promise.all(allPromises);
+					}}).then(function(){
+					// if all of the above succeed, update wallet
+					return InventoryModule.giveUserGold(txPromise,tx,userId,this.goldAmount,'daily challenge',challengeId);}).then(() => SyncModule._bumpUserTransactionCounter(tx,userId))
+				.then(tx.commit)
+				.catch(tx.rollback);
+				}).bind(this_obj)
+			.then(function(){
 
-			.bind this_obj
-			.then ()->
+				Logger.module("ChallengesModule").debug(`markDailyChallengeAsCompleted() -> user ${userId.blue} completed challenge ${challengeId} for day ${completionTimeUtc.format("YYYY-MM-DD")}.`);
 
-				Logger.module("ChallengesModule").debug "markDailyChallengeAsCompleted() -> user #{userId.blue} completed challenge #{challengeId} for day #{completionTimeUtc.format("YYYY-MM-DD")}."
+				const responseData = { challenge: this.challengeRow };
+				return responseData;
+			});
 
-				responseData = { challenge: @.challengeRow }
-				return responseData
+			return txPromise;
+		});
+	}
+}
+ChallengesModule.initClass();
 
-			return txPromise
 
+module.exports = ChallengesModule;
 
-module.exports = ChallengesModule
+function __guard__(value, transform) {
+  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+}
