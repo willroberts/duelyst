@@ -1,8 +1,14 @@
-/* 
+/* eslint-disable
+    max-len,
+    no-tabs,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
+/*
  * A small helper module for hash generation and compares
  * Uses Bluebird to promisify the bcrypt modules
  * Methods are both node style callback and promise compatible
- * @module hash_helpers 
+ * @module hash_helpers
  */
 
 const Promise = require('bluebird');
@@ -19,7 +25,7 @@ Promise.promisifyAll(bcrypt);
  * @param	{Function}	[callback]				Optional callback(err,hash)
  * @return	{Promise}							Promise returning hash
  */
-module.exports.generateHash = (password, callback) => bcrypt.genSaltAsync(10).then(salt => bcrypt.hashAsync(password,salt).nodeify(callback));
+module.exports.generateHash = (password, callback) => bcrypt.genSaltAsync(10).then((salt) => bcrypt.hashAsync(password, salt).nodeify(callback));
 
 /**
  * Compare a password against a bcrypt hash
@@ -30,4 +36,4 @@ module.exports.generateHash = (password, callback) => bcrypt.genSaltAsync(10).th
  * @param	{Function}	[callback]				Optional callback(err,match)
  * @return	{Promise}							Promise returning true/false
  */
-module.exports.comparePassword = (password, hash, callback) => bcrypt.compareAsync(password,hash).nodeify(callback);
+module.exports.comparePassword = (password, hash, callback) => bcrypt.compareAsync(password, hash).nodeify(callback);

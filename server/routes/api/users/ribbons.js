@@ -1,3 +1,10 @@
+/* eslint-disable
+    camelcase,
+    import/extensions,
+    no-param-reassign,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -10,16 +17,18 @@ const Logger = require('../../../../app/common/logger');
 
 const router = express.Router();
 
-router.get('/', function(req, res, next) {
-	// user id is set by a middleware
-	const {
-        user_id
-    } = req;
+router.get('/', (req, res, next) => {
+  // user id is set by a middleware
+  const {
+    user_id,
+  } = req;
 
-	return knex("user_ribbons").where('user_id',user_id).select()
-	.then(function(rows) {
-		rows = DataAccessHelpers.restifyData(rows);
-		return res.status(200).json(rows);}).catch(error => next(error));
+  return knex('user_ribbons').where('user_id', user_id).select()
+    .then((rows) => {
+      rows = DataAccessHelpers.restifyData(rows);
+      return res.status(200).json(rows);
+    })
+    .catch((error) => next(error));
 });
 
 module.exports = router;

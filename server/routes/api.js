@@ -1,3 +1,9 @@
+/* eslint-disable
+    camelcase,
+    import/extensions,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -5,9 +11,11 @@
  */
 const express = require('express');
 const Promise = require('bluebird');
-const mail = require('../mailer.coffee');
+const t = require('tcomb-validation');
+const mail = require('../mailer');
+
 Promise.promisifyAll(mail);
-const Logger = require('../../app/common/logger.coffee');
+const Logger = require('../../app/common/logger');
 const Errors = require('../lib/custom_errors');
 const DuelystFirebase = require('../lib/duelyst_firebase_module');
 const FirebasePromises = require('../lib/firebase_promises');
@@ -17,13 +25,12 @@ const meRoutes = require('./api/me');
 const usersRoutes = require('./api/users');
 const replaysRoutes = require('./api/replays/replays');
 const config = require('../../config/config');
-const t = require('tcomb-validation');
 const types = require('../validators/types');
 const validators = require('../validators');
 
 const router = express.Router();
 
-//# Require authetication for all /api routes
+// # Require authetication for all /api routes
 router.use('/api', isSignedIn);
 
 // All users
@@ -67,37 +74,39 @@ router.use('/replays', replaysRoutes);
 
 // QA / Testing
 if (config.isDevelopment() || config.isStaging()) {
-	router.use('/api/me/qa', meRoutes.qa);
+  router.use('/api/me/qa', meRoutes.qa);
 
-	// Just a route for secure testing
-	router.get("/api/me/securetest", function(req, res, next) {
-		Logger.module("API").log(`user calling api/securetest ${req.user}`);
-		return res.status(200).end();
-	});
+  // Just a route for secure testing
+  router.get('/api/me/securetest', (req, res, next) => {
+    Logger.module('API').log(`user calling api/securetest ${req.user}`);
+    return res.status(200).end();
+  });
 }
 
 // REPORTING
-router.post("/api/me/report_player", function(req, res, next) {
-	const result = t.validate(req.body, validators.reportPlayerInput);
-	if (!result.isValid()) {
-		return res.status(400).json(result.errors);
-	}
+router.post('/api/me/report_player', (req, res, next) => {
+  const result = t.validate(req.body, validators.reportPlayerInput);
+  if (!result.isValid()) {
+    return res.status(400).json(result.errors);
+  }
 
-	const user_id = req.user.d.id;
-	const email = req.user.d.email || null;
-	const other_user_id = result.value.user_id;
-	const {
-        message
-    } = result.value;
+  const user_id = req.user.d.id;
+  const email = req.user.d.email || null;
+  const other_user_id = result.value.user_id;
+  const {
+    message,
+  } = result.value;
 
-	// Return immediately so not to wait for email to send
-	res.status(200).json({});
+  // Return immediately so not to wait for email to send
+  res.status(200).json({});
 
-	return DuelystFirebase.connect().getRootRef()
-	.then(rootRef => FirebasePromises.once(rootRef.child('users').child(other_user_id).child('username'),'value')).then(function(snapshot) {
-		const username = snapshot.val();
-		// we may not have the response email but we still send report
-		return mail.sendPlayerReportAsync(username,other_user_id,message,user_id,email);}).catch(error => Logger.module("API").error("Failed to send report player email."));
+  return DuelystFirebase.connect().getRootRef()
+    .then((rootRef) => FirebasePromises.once(rootRef.child('users').child(other_user_id).child('username'), 'value')).then((snapshot) => {
+      const username = snapshot.val();
+      // we may not have the response email but we still send report
+      return mail.sendPlayerReportAsync(username, other_user_id, message, user_id, email);
+    })
+    .catch((error) => Logger.module('API').error('Failed to send report player email.'));
 });
 
 module.exports = router;
