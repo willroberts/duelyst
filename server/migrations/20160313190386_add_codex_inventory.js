@@ -4,25 +4,25 @@
 
 
 exports.up = function(knex) {
-	return Promise.all([
-		knex.schema.createTable('user_codex_inventory', function (table) {
-			table.string('user_id',36).notNullable();
-			table.integer('chapter_id').notNullable();
-			table.dateTime('created_at').defaultTo(knex.fn.now());
-			table.dateTime('updated_at').defaultTo(knex.fn.now());
-			table.primary(['user_id', 'chapter_id'])
-		}),
-		knex.schema.table('user_rewards', function (table) {
-			table.integer('codex_chapter');
-		}),
-	]);
+  return Promise.all([
+    knex.schema.createTable('user_codex_inventory', function (table) {
+      table.string('user_id',36).notNullable();
+      table.integer('chapter_id').notNullable();
+      table.dateTime('created_at').defaultTo(knex.fn.now());
+      table.dateTime('updated_at').defaultTo(knex.fn.now());
+      table.primary(['user_id', 'chapter_id'])
+    }),
+    knex.schema.table('user_rewards', function (table) {
+      table.integer('codex_chapter');
+    }),
+  ]);
 };
 
 exports.down = function(knex) {
-	return Promise.all([
-		knex.schema.dropTableIfExists('user_codex_inventory'),
-		knex.schema.table('user_rewards', function (table) {
-			table.dropColumn('codex_chapter')
-		})
-	]);
+  return Promise.all([
+    knex.schema.dropTableIfExists('user_codex_inventory'),
+    knex.schema.table('user_rewards', function (table) {
+      table.dropColumn('codex_chapter')
+    })
+  ]);
 };
