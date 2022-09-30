@@ -1,5 +1,4 @@
 // Migration date convention: moment().utc().format('YYYYMMDDHHMMSS')
-// const Promise = require('bluebird');
 exports.up = function(knex) {
 	return Promise.all([
 	  	knex.schema.createTable('games', function (table) {
