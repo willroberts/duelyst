@@ -1,5 +1,5 @@
 
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
 	return Promise.all([
 		knex.schema.table('users', function (table) {
 			table.boolean('is_suspended').notNullable().defaultTo(false)
@@ -9,7 +9,7 @@ exports.up = function(knex, Promise) {
 	])
 }
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
   	return Promise.all([
 		knex.schema.table('users', function (table) {
 			table.dropColumn('is_suspended')

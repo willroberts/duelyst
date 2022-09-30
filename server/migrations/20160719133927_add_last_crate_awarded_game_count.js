@@ -1,5 +1,5 @@
 
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
 	return Promise.all([
 		knex.schema.table('user_progression', function (table) {
 			table.integer('last_crate_awarded_game_count')
@@ -8,7 +8,7 @@ exports.up = function(knex, Promise) {
 	])
 }
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
 	return Promise.all([
 		knex.schema.table('user_progression', function (table) {
 			table.dropColumn('last_crate_awarded_game_count')

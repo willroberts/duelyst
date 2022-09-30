@@ -1,5 +1,5 @@
 
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
 	return Promise.all([
 		knex.schema.table('gift_codes', function (table) {
 			table.dateTime('valid_for_users_created_after')
@@ -9,7 +9,7 @@ exports.up = function(knex, Promise) {
 	])
 };
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
 	return Promise.all([
 		knex.schema.table('gift_codes', function (table) {
 			table.dropColumn('valid_for_users_created_after')

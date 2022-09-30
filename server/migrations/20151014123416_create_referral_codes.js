@@ -1,5 +1,5 @@
 
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
 	return Promise.all([
 		knex.schema.table('users', function (table) {
 			table.string('referral_code')
@@ -19,7 +19,7 @@ exports.up = function(knex, Promise) {
 	])
 }
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
 	return Promise.all([
 		knex.schema.table('users', function (table) {
 			table.dropColumn('referral_code');

@@ -1,5 +1,5 @@
 
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
 	return Promise.all([
 		knex.schema.table('user_charges', function (table) {
 			table.dateTime('refunded_at')
@@ -8,7 +8,7 @@ exports.up = function(knex, Promise) {
 	])
 }
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
   	return Promise.all([
 		knex.schema.table('user_charges', function (table) {
 			table.dropColumn('refunded_at')

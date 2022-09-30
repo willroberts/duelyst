@@ -3,7 +3,7 @@ var _ = require('underscore');
 var moment = require('moment');
 var ProgressBar = require('progress');
 
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
 	return Promise.all([
 		knex.schema.createTable('user_cosmetic_chests', function (table) {
 			table.string('user_id',36).notNullable();
@@ -63,7 +63,7 @@ exports.up = function(knex, Promise) {
 	])
 };
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
 	return Promise.all([
 		knex.schema.dropTableIfExists('user_cosmetic_chests'),
 		knex.schema.dropTableIfExists('user_cosmetic_chests_opened'),

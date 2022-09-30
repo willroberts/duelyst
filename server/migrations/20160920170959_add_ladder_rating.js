@@ -1,7 +1,7 @@
 
 //
 
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
 	return Promise.all([
 		knex.schema.table('user_rank_ratings', function (table) {
 			table.integer('ladder_rating').index();
@@ -16,7 +16,7 @@ exports.up = function(knex, Promise) {
 	])
 }
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
 	return Promise.all([
 		knex.schema.table('user_rank_ratings', function (table) {
 			table.dropColumn('ladder_rating');

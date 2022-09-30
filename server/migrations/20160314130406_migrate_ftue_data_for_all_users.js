@@ -3,7 +3,7 @@ Promise = require('bluebird')
 NewPlayerProgressionStageEnum = require('../../app/sdk/progression/newPlayerProgressionStageEnum')
 NewPlayerProgressionHelper = require('../../app/sdk/progression/newPlayerProgressionHelper')
 
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
 	return Promise.all([
 		knex.raw("UPDATE users SET tx_count = 0 WHERE id NOT IN (SELECT user_id FROM user_new_player_progression WHERE module_name='core' AND stage='has_played_a_match')"),
 		knex.raw("DELETE FROM user_quests WHERE user_id NOT IN (SELECT user_id FROM user_new_player_progression WHERE module_name='core' AND stage='has_played_a_match')"),
@@ -23,6 +23,6 @@ exports.up = function(knex, Promise) {
 	})
 }
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
 
 }

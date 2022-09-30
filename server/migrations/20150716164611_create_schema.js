@@ -1,6 +1,6 @@
 // Migration date convention: moment().utc().format('YYYYMMDDHHMMSS')
 // const Promise = require('bluebird');
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
 	return Promise.all([
 	  	knex.schema.createTable('games', function (table) {
 			table.string('id',36).notNullable().primary()
@@ -492,7 +492,7 @@ exports.up = function(knex, Promise) {
 	]);
 };
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
 	return Promise.all([
 	  	knex.schema.dropTableIfExists('games'),
 		knex.schema.dropTableIfExists('password_reset_tokens'),

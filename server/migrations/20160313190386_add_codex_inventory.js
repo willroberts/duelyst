@@ -3,7 +3,7 @@
 //Also adds these codex ids to the post game rewards
 
 
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
 	return Promise.all([
 		knex.schema.createTable('user_codex_inventory', function (table) {
 			table.string('user_id',36).notNullable();
@@ -18,7 +18,7 @@ exports.up = function(knex, Promise) {
 	]);
 };
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
 	return Promise.all([
 		knex.schema.dropTableIfExists('user_codex_inventory'),
 		knex.schema.table('user_rewards', function (table) {

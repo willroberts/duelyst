@@ -1,5 +1,5 @@
 
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
   	return Promise.all([
 		knex.schema.table('games', function (table) {
 			table.integer('duration');
@@ -12,7 +12,7 @@ exports.up = function(knex, Promise) {
 	]);
 };
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
 	return Promise.all([
 		knex.schema.table('games', function (table) {
 			table.dropColumn('duration');
