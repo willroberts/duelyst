@@ -1,4 +1,6 @@
-const config = require('../config/config');
+const path = require('path');
+require('app-module-path').addPath(path.join(__dirname, '..'));
+const config = require('config/config');
 
 const environmentName = process.env.NODE_ENV;
 const knexConfig = {};
