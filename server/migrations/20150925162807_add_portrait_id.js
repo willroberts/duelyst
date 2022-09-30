@@ -1,16 +1,15 @@
-
-exports.up = function(knex) {
+exports.up = function (knex) {
   return Promise.all([
-    knex.schema.table('users', function (table) {
+    knex.schema.table('users', (table) => {
       table.integer('portrait_id');
-    })
+    }),
   ]);
 };
 
-exports.down = function(knex) {
+exports.down = function (knex) {
   return Promise.all([
-    knex.schema.table('users', function (table) {
+    knex.schema.table('users', (table) => {
       table.dropColumn('portrait_id');
-    })
+    }),
   ]);
 };

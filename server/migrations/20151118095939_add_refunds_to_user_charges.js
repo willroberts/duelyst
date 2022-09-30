@@ -1,18 +1,17 @@
-
-exports.up = function(knex) {
+exports.up = function (knex) {
   return Promise.all([
-    knex.schema.table('user_charges', function (table) {
-      table.dateTime('refunded_at')
-      table.string('memo')
-    })
-  ])
-}
+    knex.schema.table('user_charges', (table) => {
+      table.dateTime('refunded_at');
+      table.string('memo');
+    }),
+  ]);
+};
 
-exports.down = function(knex) {
-    return Promise.all([
-    knex.schema.table('user_charges', function (table) {
-      table.dropColumn('refunded_at')
-      table.dropColumn('memo')
-    })
-  ])
-}
+exports.down = function (knex) {
+  return Promise.all([
+    knex.schema.table('user_charges', (table) => {
+      table.dropColumn('refunded_at');
+      table.dropColumn('memo');
+    }),
+  ]);
+};
