@@ -46,5 +46,8 @@ jobs:
     - name: install node dependencies
       run: yarn install --dev
 
+    - name: install typescript dependencies
+      run: yarn tsc:chroma-js
+
     - name: build the app
       run: yarn build
