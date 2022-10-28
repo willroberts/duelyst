@@ -1703,8 +1703,6 @@ class InventoryModule
   # @return  {Promise}        Resulting data object containing spirit and bonuses
   ###
   @disenchantCards: (userId,cardIds,systemTime) ->
-
-
     # userId must be defined
     unless userId
       Logger.module("InventoryModule").debug "disenchantCards() -> invalid user ID - #{userId.blue}.".red
@@ -1725,7 +1723,6 @@ class InventoryModule
     this_obj = {}
 
     txPromise = knex.transaction (tx)->
-
       InventoryModule._disenchantCards(txPromise,tx,userId,cardIds,NOW_UTC_MOMENT)
       .bind this_obj
       .then (data)-> _.extend(@,data)
@@ -1736,7 +1733,6 @@ class InventoryModule
 
     .bind this_obj
     .then ()->
-
       Logger.module("InventoryModule").debug "disenchantCards() -> user #{userId.blue}".green + " disenchanted cards #{util.inspect(cardIds)}".green
 
       Jobs.create("update-user-achievements",
@@ -1766,7 +1762,6 @@ class InventoryModule
   # @return  {Promise}            Resulting data object containing spirit and bonuses
   ###
   @_disenchantCards: (trxPromise,trx,userId,cardIds,systemTime)->
-
     # used to make sure all updates have the same "updated_at" date
     NOW_UTC_MOMENT = systemTime || moment.utc()
 
@@ -1789,7 +1784,6 @@ class InventoryModule
       @.userRow = userRow
       return DuelystFirebase.connect().getRootRef()
     .then (fbRootRef) ->
-
       @.fbRootRef = fbRootRef
 
       # TODO: this should probably be moved to a redis / mem CACHE... it's a frequently read and infrequently updated value
@@ -1798,15 +1792,12 @@ class InventoryModule
 
       return FirebasePromises.once(disenchantPromosRef,'value')
     .then (promosSnapshot)->
-
       @.disenchantPromos = promosSnapshot.val()
       return @.disenchantPromos
 
     .then ()-> return trx.select().from("user_cards").whereIn('card_id',cardIds).andWhere('user_id',userId).forUpdate()
     .then (cardCountRows)->
-
       Logger.module("InventoryModule").debug "_disenchantCards cardRows:",cardCountRows
-
       @.cardCountRows = cardCountRows
 
       for disenchantedCardId,disenchantedCardData of cardDataListReduced
@@ -1820,17 +1811,14 @@ class InventoryModule
     # This next then is arbitrary and can be merge with preceeding one
     # But keeping so concerns are clearly seperated
     .then () ->
-
       @.rewards = []
       @.total_spirit_gained = 0
 
       for cardId in cardIds
-
         # STEP1 ... compute and roll/generate all the dis-enchanting rewards
         spirit_gained = 0
 
         try
-
           cardData = SDK.GameSession.getCardCaches().getIsCollectible(true).getCardById(parseInt(cardId))
 
           if not cardData?
@@ -1890,7 +1878,6 @@ class InventoryModule
       return Promise.resolve(@rewards)
 
     .then (rewards)->
-
       @.final_wallet_spirit = @.userRow.wallet_spirit + @.total_spirit_gained
 
       return InventoryModule.giveUserSpirit(trxPromise,trx,userId,@.total_spirit_gained,"disenchant")
@@ -1912,7 +1899,6 @@ class InventoryModule
       # ])
 
     .then ()->
-
       # queries to promisify
       allQueries = []
 

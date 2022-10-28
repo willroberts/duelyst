@@ -631,34 +631,27 @@ class QuestsModule
     Logger.module("QuestsModule").time "mulliganDailyQuest() -> mulliganed quest slot #{questIndex} by user #{userId.blue}.".green
 
     MOMENT_NOW_UTC = systemTime || moment().utc()
-
-
     this_obj = {}
 
     return knex.transaction (tx)->
-
       knex("user_quests").select().where({'user_id':userId}).transacting(tx).forUpdate()
       .bind this_obj
       .then (questRows)->
-
         @.questRows = questRows
 
         if questRows?.length > 0
-
           quest_ids_generated = []
 
           for quest in questRows
             quest_ids_generated.push(quest.quest_type_id)
 
           questToMulligan = _.find(questRows,(q)-> return q.quest_slot_index == questIndex)
-
           Logger.module("QuestsModule").debug("mulliganDailyQuest() -> About to mulliganing quest type #{questToMulligan.quest_type_id}. user #{userId.blue}.")
 
           if not questToMulligan?.is_replaceable
             throw new Errors.BadRequestError("Can not mulligan this quest type")
 
           if questToMulligan?
-
             if questToMulligan.mulliganed_at
               now_utc_val = MOMENT_NOW_UTC.valueOf()
               mulliganed_at_val = moment.utc(questToMulligan.mulliganed_at).valueOf()
@@ -670,11 +663,8 @@ class QuestsModule
                 return Promise.reject(new Errors.QuestCantBeMulliganedError("This quest has already been mulliganed today"))
 
             questToMulliganArrayIndex = _.indexOf(questRows,questToMulligan)
-
             Logger.module("QuestsModule").debug("mulliganDailyQuest() -> Mulliganing quest #{questIndex}. user #{userId.blue}.")
-
             start_of_today_utc = MOMENT_NOW_UTC.clone().startOf('day').toDate()
-
             quest1 = QuestFactory.randomQuestForSlotExcludingIds(questIndex,quest_ids_generated)
 
             # if we requested a SPECIFIC quest as a replacement, use that quest

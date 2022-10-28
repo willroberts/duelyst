@@ -766,7 +766,6 @@ App._showMainMenu = () ->
     )
 
     endOfSeasonRewardsPromise = App.showEndOfSeasonRewards()
-
     return endOfSeasonRewardsPromise.then( () ->
 
       # show achievement rewards
@@ -2558,10 +2557,10 @@ App._startLoadingGameOverData = ()->
     if gameSession.isSinglePlayer()
       NewPlayerManager.getInstance().setHasPlayedSinglePlayer(userGameModel)
 
+    # Queue up any available rewards.
     if @.userGameModel?.get('rewards')
-      for rewardId,val of @.userGameModel.get('rewards')
+      for rewardId, val of @.userGameModel.get('rewards')
         rewardIds.push rewardId
-
     if @.challengeModel?.get('reward_ids')
       for rewardId in @.challengeModel.get('reward_ids')
         rewardIds.push rewardId
@@ -2690,7 +2689,7 @@ App.addNextScreenCallbackToVictoryFlow = (rewardModels) ->
 
   # if we have any progression rewards, show those next
   if _.find(rewardModels, (rewardModel)-> rewardModel.get('reward_category') == "progression" and rewardModel.get('is_unread'))
-    return App.setCallbackWhenCancel(App.showWinCounterReward.bind(App,rewardModels))
+    return App.setCallbackWhenCancel(App.showProgressionRewards.bind(App,rewardModels))
 
   # ...
   if _.find(rewardModels, (rewardModel)-> rewardModel.get('reward_category') == "challenge" and rewardModel.get('is_unread'))
@@ -3062,20 +3061,19 @@ App.showQuestsCompleted = (rewardModels) ->
     rewardLayer.showRewardKeys(cosmeticKeys, null, "FREE Cosmetic Crate Key for completing the #{questName} quest")
     CrateManager.getInstance().refreshGiftCrates()
 
+App.showProgressionRewards = (rewardModels) ->
+  Logger.module("APPLICATION").log "App:showProgressionRewards"
 
-# Outdated name, really shows all progression rewards
-App.showWinCounterReward = (rewardModels) ->
-
-  Logger.module("APPLICATION").log "App:showWinCounterReward"
-
-  nextReward = _.find(rewardModels, (rewardModel)-> rewardModel.get('reward_category') == "progression" and rewardModel.get('is_unread'))
+  nextReward = _.find(rewardModels, (rewardModel) ->
+    rewardModel.get('reward_category') == "progression" and rewardModel.get('is_unread')
+  )
   nextReward.set("is_unread",false)
 
   App.addNextScreenCallbackToVictoryFlow(rewardModels)
 
   # show reward setup on the engine side
   NavigationManager.getInstance().destroyContentView()
-#    Scene.getInstance().showOverlay(currencyRewardLayer) # TODO: merge How does this even work?
+  # Scene.getInstance().showOverlay(currencyRewardLayer) # TODO: merge How does this even work?
 
   rewardView = null
 

@@ -23,7 +23,6 @@ router.get "/", (req, res, next) ->
   .catch (error) -> next(error)
 
 router.post "/core", (req, res, next) ->
-
   user_id = req.user.d.id
 
   UsersModule.iterateNewPlayerCoreProgression(user_id)

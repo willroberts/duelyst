@@ -237,7 +237,6 @@ class UsersModule
 
       .bind this_obj
       .then ()->
-
         if config.get("inviteCodesActive")
           return knex("invite_codes").where('code',inviteCode).delete()
 
@@ -1483,8 +1482,8 @@ class UsersModule
 
         allPromises = []
 
-        hasReachedDailyPlayRewardMaxium = false
-        hasReachedDailyWinRewardMaxium = false
+        hasReachedDailyPlayRewardMaximum = false
+        hasReachedDailyWinRewardMaximum = false
         @.hasReachedDailyWinCountBonusLimit = false
         canEarnFirstWinOfTheDayReward = true
 
@@ -1495,11 +1494,11 @@ class UsersModule
 
         # controls for daily maximum of play rewards
         if @.progressionDayRow.game_count - @.progressionDayRow.unscored_count > UsersModule.DAILY_REWARD_GAME_CAP
-          hasReachedDailyPlayRewardMaxium = true
+          hasReachedDailyPlayRewardMaximum = true
 
         # # controls for daily maximum of play rewards
         # if counterData.win_count > UsersModule.DAILY_REWARD_WIN_CAP
-        #   hasReachedDailyWinRewardMaxium = true
+        #   hasReachedDailyWinRewardMaximum = true
 
         if isDraw
 
@@ -1533,7 +1532,6 @@ class UsersModule
         else
           allPromises.push knex('user_progression_days').insert(@.progressionDayRow).transacting(tx)
 
-
         #######
         #######
         #######
@@ -1564,7 +1562,6 @@ class UsersModule
         win_count_reward_progress = 0
 
         if isUnscored
-
           @.progressionRow.unscored_count += 1
 
           # mark all rewards as false
@@ -1573,11 +1570,9 @@ class UsersModule
           @.hasEarnedFirstWinOfTheDayReward = false
 
         else
-
           @.progressionRow.game_count += 1
 
-          if not hasReachedDailyPlayRewardMaxium
-
+          if not hasReachedDailyPlayRewardMaximum
             play_count_reward_progress = @.progressionRow.game_count - @.progressionRow.last_awarded_game_count
 
             if @.progressionRow.game_count > 0 and play_count_reward_progress > 0 and play_count_reward_progress % 4 == 0
@@ -1585,19 +1580,17 @@ class UsersModule
               @.hasEarnedPlayReward = true
             else
               @.hasEarnedPlayReward = false
-          else
 
+          else
             @.progressionRow.last_awarded_game_count = @.progressionRow.game_count
             @.progressionRow.play_awards_last_maxed_at = MOMENT_NOW_UTC.toDate()
             @.hasEarnedPlayReward = false
 
           if isDraw
-
             @.progressionRow.draw_count ?= 0
             @.progressionRow.draw_count += 1
 
           else if isWinner
-
             # set loss streak to 0
             @.progressionRow.loss_streak = 0
 
@@ -1619,8 +1612,7 @@ class UsersModule
             # mark last win time
             @.progressionRow.last_win_at = MOMENT_NOW_UTC.toDate()
 
-            if not hasReachedDailyWinRewardMaxium
-
+            if not hasReachedDailyWinRewardMaximum
               win_count_reward_progress = @.progressionRow.win_count - @.progressionRow.last_awarded_win_count
 
               # if we've had 3 wins since last award, the user has earned an award
@@ -1656,18 +1648,17 @@ class UsersModule
         else
           allPromises.push knex('user_progression').insert(@.progressionRow).transacting(tx)
 
-
         @.updateUserGameParams =
           is_daily_win:          @.hasEarnedWinReward
           play_count_reward_progress:    play_count_reward_progress
           win_count_reward_progress:    win_count_reward_progress
-          has_maxed_play_count_rewards:  hasReachedDailyPlayRewardMaxium
-          has_maxed_win_count_rewards:  hasReachedDailyWinRewardMaxium
+          has_maxed_play_count_rewards:  hasReachedDailyPlayRewardMaximum
+          has_maxed_win_count_rewards:  hasReachedDailyWinRewardMaximum
         allPromises.push knex('user_games').where({'user_id':userId,'game_id':gameId}).update(@.updateUserGameParams).transacting(tx)
 
         return Promise.all(allPromises)
-      .then ()->
 
+      .then ()->
         hasEarnedWinReward = @.hasEarnedWinReward
         hasEarnedPlayReward = @.hasEarnedPlayReward
         hasEarnedFirstWinOfTheDayReward = @.hasEarnedFirstWinOfTheDayReward
@@ -1679,9 +1670,7 @@ class UsersModule
         # if the game is "unscored", assume there are NO rewards
         # otherwise, the game counter rewards might fire multiple times since game_count is not updated for unscored games
         if not isUnscored
-
           if hasEarnedFirstWinOfTheDayReward
-
             Logger.module("UsersModule").debug "updateUserProgressionWithGameOutcome() -> user #{userId.blue} HAS earned a FIRST-WIN-OF-THE-DAY reward at #{@.progressionRow["game_count"]} games!"
 
             # set up reward data
@@ -2288,7 +2277,6 @@ class UsersModule
         Logger.module("UsersModule").debug "updateUserStatsWithGame() -> caught ERROR processing stats data for user #{userId}: #{e.message}".red
         throw new Error("ERROR PROCESSING STATS DATA")
 
-
       # Perform firebase transaction to update stats
       return new Promise (resolve, reject) ->
         Logger.module("UsersModule").debug "updateUserStatsWithGame() -> UPDATING stats for user #{userId}"
@@ -2324,16 +2312,13 @@ class UsersModule
   ###
   @completeChallengeWithType: (userId,challengeType,shouldProcessQuests) ->
     # TODO: Error check, if the challenge type isn't recognized we shouldn't record it etc
-
     MOMENT_NOW_UTC = moment().utc()
     this_obj = {}
-
     Logger.module("UsersModule").time "completeChallengeWithType() -> user #{userId.blue} completed challenge type #{challengeType}."
 
     knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).first()
     .bind this_obj
     .then (challengeRow)->
-
       if challengeRow and challengeRow.completed_at
         Logger.module("UsersModule").debug "completeChallengeWithType() -> user #{userId.blue} has already completed challenge type #{challengeType}."
         return Promise.resolve(false)
@@ -2556,14 +2541,11 @@ class UsersModule
   ###
   @markChallengeAsAttempted: (userId,challengeType) ->
     # TODO: Error check, if the challenge type isn't recognized we shouldn't record it etc
-
     MOMENT_NOW_UTC = moment().utc()
     this_obj = {}
-
     Logger.module("UsersModule").time "markChallengeAsAttempted() -> user #{userId.blue} attempted challenge type #{challengeType}."
 
     txPromise = knex.transaction (tx)->
-
       # lock user and challenge row
       Promise.all([
         knex("user_challenges").where({'user_id':userId,'challenge_id':challengeType}).first().forUpdate().transacting(tx)
@@ -2571,7 +2553,6 @@ class UsersModule
       ])
       .bind this_obj
       .spread (challengeRow)->
-
         @.challengeRow = challengeRow
 
         if @.challengeRow?
@@ -2586,11 +2567,9 @@ class UsersModule
 
       .then ()-> DuelystFirebase.connect().getRootRef()
       .then (rootRef)->
-
         allPromises = []
 
         if @.challengeRow?
-
           delete @.challengeRow.user_id
           # delete @.challengeRow.challenge_id
 
@@ -2608,7 +2587,6 @@ class UsersModule
 
     .bind this_obj
     .then ()->
-
       responseData = { challenge: @.challengeRow }
       return responseData
 
@@ -2621,15 +2599,13 @@ class UsersModule
   # @return  {Promise}  Promise that will resolve when complete with the module progression data
   ###
   @iterateNewPlayerCoreProgression: (userId) ->
-
     knex("user_new_player_progression").where('user_id',userId).andWhere('module_name',NewPlayerProgressionModuleLookup.Core).first()
     .bind {}
     .then (moduleProgression)->
-
       stage = NewPlayerProgressionStageEnum[moduleProgression?.stage] || NewPlayerProgressionStageEnum.Tutorial
 
       # if we're at the final stage, just return
-      if stage.value >= NewPlayerProgressionHelper.FinalStage.value
+      if stage.value >= NewPlayerProgressionHelper.FinalStage.value # Includes skipping the Tutorial.
         return Promise.resolve()
 
       Promise.all([
@@ -2638,7 +2614,6 @@ class UsersModule
       ])
       .bind @
       .spread (quests,questsComplete)->
-
         beginnerQuests = NewPlayerProgressionHelper.questsForStage(stage)
         # exclude non-required beginner quests for this tage
         beginnerQuests = _.filter beginnerQuests, (q)-> return q.isRequired
@@ -2708,30 +2683,24 @@ class UsersModule
   # @param  {String}  stage            Arbitrary key for a progression item
   # @return  {Promise}  Promise that will resolve when complete with the module progression data
   ###
-  @setNewPlayerFeatureProgression: (userId,moduleName,stage) ->
+  @setNewPlayerFeatureProgression: (userId, moduleName, stage) ->
     # TODO: Error check, if the challenge type isn't recognized we shouldn't record it etc
-
     MOMENT_NOW_UTC = moment().utc()
     this_obj = {}
-
     Logger.module("UsersModule").time "setNewPlayerFeatureProgression() -> user #{userId.blue} marking module #{moduleName} as #{stage}."
 
     if moduleName == NewPlayerProgressionModuleLookup.Core and not NewPlayerProgressionStageEnum[stage]?
       return Promise.reject(new Errors.BadRequestError("Invalid core new player stage"))
 
     txPromise = knex.transaction (tx)->
-
       tx("user_new_player_progression").where({'user_id':userId,'module_name':moduleName}).first().forUpdate()
       .bind this_obj
       .then (progressionRow)->
-
         # core stage has some special rules
         if moduleName == NewPlayerProgressionModuleLookup.Core
           currentStage = progressionRow?.stage || NewPlayerProgressionStageEnum.Tutorial
           if NewPlayerProgressionStageEnum[stage].value < currentStage.value
             throw new Errors.BadRequestError("Can not roll back to a previous core new player stage")
-
-
 
         @.progressionRow = progressionRow
         queryPromise = null
@@ -2753,7 +2722,6 @@ class UsersModule
             stage:stage
           queryPromise = tx("user_new_player_progression").insert(@.progressionRow)
 
-
         return queryPromise
 
       .then (updateCount)->
@@ -2765,9 +2733,7 @@ class UsersModule
 
     .bind this_obj
     .then ()->
-
       Logger.module("UsersModule").timeEnd "setNewPlayerFeatureProgression() -> user #{userId.blue} marking module #{moduleName} as #{stage}."
-
       return @.progressionRow
 
     return txPromise

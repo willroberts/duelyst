@@ -509,7 +509,7 @@ var NewPlayerManager = Manager.extend({
               if (module && module.get('stage') != progressionData.stage) {
                 module.set('stage', progressionData.stage);
                 // Analytics for core state since we're not going through setCurrentCoreStage
-                var secondsSinceRegistration = Math.floor((new Date().getTime() - ProfileManager.getInstance().profile.getRegistrationDate()) / 1000.0);
+                //var secondsSinceRegistration = Math.floor((new Date().getTime() - ProfileManager.getInstance().profile.getRegistrationDate()) / 1000.0);
                 // TODO: Revalidate these values by stepping through
                 Analytics.track('module stage reached', {
                   category: Analytics.EventCategory.FTUE,

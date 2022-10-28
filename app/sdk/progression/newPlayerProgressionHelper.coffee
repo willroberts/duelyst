@@ -1,4 +1,3 @@
-
 # lookups
 NewPlayerProgressionStageEnum = require './newPlayerProgressionStageEnum'
 NewPlayerFeatureLookup = require './newPlayerProgressionFeatureLookup'
@@ -16,9 +15,7 @@ QuestBeginnerWinTwoPracticeGames = require 'app/sdk/quests/questBeginnerWinTwoPr
 QuestBeginnerWinOneSeasonGame = require 'app/sdk/quests/questBeginnerWinOneSeasonGame'
 
 class NewPlayerProgression
-
-  @featureToCoreStageMapping:{}
-
+  @featureToCoreStageMapping: {}
   @FinalStage: NewPlayerProgressionStageEnum.FirstFactionLevelingDone
   @DailyQuestsStartToGenerateStage: NewPlayerProgressionStageEnum.FirstGameDone
   @FirstWinOfTheDayAvailableStage: NewPlayerProgressionStageEnum.FirstGameDone
