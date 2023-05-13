@@ -80,7 +80,7 @@ staging environment.
 
 Secrets like passwords should not be committed to Git or stored in Terraform,
 since the latter would store your secrets in plaintext in Terraform's state
-bucket. Instead, the following keys need to be created in AWS SSM Parameter
+bucket. Instead, the following secrets need to be created in AWS SSM Parameter
 Store:
 
 ```
@@ -91,9 +91,23 @@ Store:
 /duelyst/staging/postgres/password
 ```
 
-You can use `scripts/create-ssm-secret.sh` for this purpose. For the Firebase
-private key, you may find it easier to put the private key in a file, and
-reference it as `file://myPrivateKey.txt` in the script.
+Parameters can be created with the AWS CLI:
+```bash
+aws ssm put-parameter --type SecureString --key-id <your-kms-key-id> --name <parameter-name> --value <parameter-value>
+```
+
+For the Firebase private key, you will need to put the private key in a file,
+replace the `\n` characters with actual line breaks, and then reference the
+file in order to avoid key format errors:
+```bash
+$ aws ssm put-parameter --type SecureString --key-id <your-kms-key-id> --name <parameter-name> --value file://myfile.txt
+```
+
+Once the secrets have been created, you can double check their contents:
+```bash
+# NOTE: This will require your aws-cli user to have the KMS:Decrypt permission.
+$ aws ssm get-parameter --name /path/to/my/secret --with-decryption
+```
 
 ## Configuring Terraform for your AWS Account
 
