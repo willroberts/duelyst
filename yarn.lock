@@ -2910,7 +2910,9 @@ backbone@1.2.1:
     underscore ">=1.8.3"
 
 backfire@./packages/backfire:
-  version "0.0.0"
+  version "0.4.0"
+  dependencies:
+    firebase "2.0.x"
 
 balanced-match@^1.0.0:
   version "1.0.2"
@@ -6753,6 +6755,13 @@ firebase@2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/firebase/-/firebase-2.0.3.tgz#9049b822b8d4911fdf1ba4afcbf527def7c63f91"
   integrity sha512-X8kiXtv7MJXip6g8nRJ519KJ80UvsscO9U1eplA2Xicjfm+D5xWv4CX5rRf5fpG5p5ROC5v2wm+Y+c0kB6O7tw==
+  dependencies:
+    faye-websocket ">=0.6.0"
+
+firebase@2.0.x:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/firebase/-/firebase-2.0.6.tgz#83b4753e5596995150ae0892d963153fc1490436"
+  integrity sha512-zFB0kCDeF/i4Tasth+D7LsvRV+j7uaIHNucdA9CphIPTmfRVerMEEJ+3PKBJahpmpRz4pRsJXemRQsYxYPt23Q==
   dependencies:
     faye-websocket ">=0.6.0"
 
