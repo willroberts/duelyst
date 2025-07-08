@@ -48,7 +48,7 @@ services:
       POSTGRES_CONNECTION: "pg://duelyst:duelyst@db/duelyst"
       FIREBASE_URL: ${FIREBASE_URL}
       FIREBASE_LEGACY_TOKEN: ${FIREBASE_LEGACY_TOKEN}
-    command: docker/start.sh api
+    command: docker/start-api.sh api
     depends_on: [db, redis]
 
   game:
