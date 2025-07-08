@@ -1,9 +1,9 @@
 # Slim images are based on Debian, but with a smaller size footprint.
 FROM node:24-slim
 
-# Install bcrypt dependencies and git.
+# Install bcrypt dependencies.
 # TODO: Isolate bcrypt dependencies to API images only.
-RUN apt-get update && apt-get -y install python3 make gcc g++ git
+RUN apt-get update && apt-get -y install python3 make gcc g++
 
 # Include Node.js dependencies in the image.
 WORKDIR /duelyst
