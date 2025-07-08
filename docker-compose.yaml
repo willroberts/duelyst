@@ -72,10 +72,12 @@ services:
 
   worker-ui:
     <<: *base
+    environment:
+      REDIS_HOST: redis
     profiles: [donotstart]
     ports: [4000:4000]
     command: docker/start.sh worker-ui
-    depends_on: [worker]
+    depends_on: [redis]
 
   migrate:
     <<: *base
