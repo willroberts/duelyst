@@ -1,5 +1,5 @@
 # Slim images are based on Debian, but with a smaller size footprint.
-FROM node:24-slim
+FROM node:24-bookworm-slim
 
 # Include Node.js dependencies in the image.
 WORKDIR /duelyst

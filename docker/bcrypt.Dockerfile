@@ -1,5 +1,5 @@
 # Slim images are based on Debian, but with a smaller size footprint.
-FROM node:24-slim
+FROM node:24-bookworm-slim
 
 # Install bcrypt dependencies.
 RUN apt update && apt -y install python3 make gcc g++
