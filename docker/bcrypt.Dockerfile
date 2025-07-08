@@ -2,7 +2,7 @@
 FROM node:24-slim
 
 # Install bcrypt dependencies.
-RUN apt-get update && apt-get -y install python3 make gcc g++
+RUN apt update && apt -y install python3 make gcc g++
 
 # Include Node.js dependencies in the image.
 WORKDIR /duelyst

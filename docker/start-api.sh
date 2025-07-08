@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Install bcrypt dependencies.
-apt-get update && apt-get install -y python3 make gcc g++
+apt update && apt install -y python3 make gcc g++
 
 # Install dependencies.
 yarn workspaces focus -A --production && yarn cache clean
