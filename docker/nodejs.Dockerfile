@@ -10,6 +10,8 @@ WORKDIR /duelyst
 COPY package.json /duelyst/
 COPY yarn.lock /duelyst/
 COPY packages /duelyst/packages
+RUN corepack enable
+RUN yarn set version berry
 RUN yarn workspaces focus -A --production && yarn cache clean
 
 # Include the code in the image.
