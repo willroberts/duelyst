@@ -69,8 +69,6 @@ Postgres:
 - Client code can be found in `server/lib/data_access/knex.coffee` and
 	`server/knexfile.js`, and configuration can be found in `config/`
 - Migrations can be run via `docker compose up migrate`
-- An admin UI is available at `http://localhost:8080` via
-	`docker compose up adminer`
 
 Redis:
 

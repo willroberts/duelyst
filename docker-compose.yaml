@@ -29,15 +29,6 @@ services:
     volumes:
       - ./.pgdata:/var/lib/postgresql/data:Z
 
-  adminer:
-    image: adminer
-    profiles: [donotstart]
-    restart: always
-    ports: [8080:8080]
-    environment:
-      POSTGRES_CONNECTION: "pg://duelyst:duelyst@db/duelyst"
-    depends_on: [db]
-
   api:
     <<: *base
     ports: [3000:3000]
