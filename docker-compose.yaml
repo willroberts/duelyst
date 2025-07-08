@@ -1,12 +1,19 @@
-version: "3.9"
+volumes:
+  app:
+    driver: local
+    driver_opts:
+      type: none
+      device: .
+      o: bind
+  node_modules:
 
 x-base-service: &base
   image: node:24-slim
   entrypoint: sh
   working_dir: /app
   volumes:
-    - .:/app
-    - /app/node_modules
+    - app:/app:z
+    - node_modules:/app/node_modules # Keep container packages separate from localdev for Win/Mac support.
 
 services:
   redis:
@@ -24,7 +31,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ./.pgdata:/var/lib/postgresql/data
+      - ./.pgdata:/var/lib/postgresql/data:Z
 
   adminer:
     image: adminer
