@@ -1,6 +1,9 @@
 # Slim images are based on Debian, but with a smaller size footprint.
 FROM node:24-bookworm-slim
 
+# Install bcrypt dependencies.
+RUN apt update && apt -y install python3 make gcc g++
+
 # Include Node.js dependencies in the image.
 WORKDIR /duelyst
 COPY package.json /duelyst/

@@ -33,6 +33,8 @@ For Unix environments:
 curl https://get.volta.sh | bash
 volta install node@24
 volta install yarn@1
+corepack enable
+yarn set version berry
 ```
 
 ### Google Firebase
@@ -86,8 +88,6 @@ will appear in the main menu.
 Now that dependencies are installed, you can build the game code and its
 assets. This step will take a few minutes.
 ```bash
-corepack enable
-yarn set version berry
 yarn workspaces focus
 yarn tsc:chroma-js
 FIREBASE_URL=<your-firebase-url> yarn build
