@@ -18,7 +18,6 @@ x-base-service: &base
 services:
   redis:
     image: redis:6
-    ports: [6379:6379]
 
   db:
     image: postgres:13
@@ -27,7 +26,6 @@ services:
       POSTGRES_USER: duelyst
       POSTGRES_PASSWORD: duelyst
       POSTGRES_DB: duelyst
-    ports: [5432:5432]
     volumes:
       - ./.pgdata:/var/lib/postgresql/data:Z
 
