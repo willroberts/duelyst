@@ -1,5 +1,3 @@
-version: "3.9"
-
 x-base-service: &base
   image: node:24-slim
   entrypoint: sh
