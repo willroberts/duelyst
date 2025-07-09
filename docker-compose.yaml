@@ -18,6 +18,8 @@ services:
       dockerfile: docker/api.Dockerfile
     working_dir: /duelyst
     ports: [3000:3000]
+    volumes:
+      - ./dist/src:/duelyst/dist/src # Serve frontend via API in localdev.
     environment:
       FIREBASE_CLIENT_EMAIL: ${FIREBASE_CLIENT_EMAIL}
       FIREBASE_LEGACY_TOKEN: ${FIREBASE_LEGACY_TOKEN}
