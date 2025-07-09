@@ -1,19 +1,14 @@
-# Slim images are based on Debian, but with a smaller size footprint.
 FROM node:24-bookworm-slim
 
-# Install bcrypt dependencies.
-RUN apt update && apt -y install python3 make gcc g++
-
-# Include Node.js dependencies in the image.
 WORKDIR /duelyst
 COPY package.json /duelyst/
+COPY .yarnrc.yml /duelyst/
 COPY yarn.lock /duelyst/
 COPY packages /duelyst/packages
 RUN corepack enable
 RUN yarn set version berry
-RUN yarn workspaces focus -A --production && yarn cache clean
+RUN yarn install && yarn cache clean
 
-# Include the code in the image.
 COPY version.json /duelyst/
 COPY app/*.coffee /duelyst/app/
 COPY app/common /duelyst/app/common
@@ -24,3 +19,4 @@ COPY bin /duelyst/bin
 COPY config /duelyst/config
 COPY server /duelyst/server
 COPY worker /duelyst/worker
+COPY test /duelyst/test

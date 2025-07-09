@@ -76,6 +76,13 @@ On the Google "Service Accounts" page, clicking "Manage Keys" next to the
 newly-created service account will let you create a new JSON key. Do this, and
 save it as `serviceAccountKey.json` in the repo root.
 
+Copy the following values from `serviceAccountKey.json` to `.env`:
+```
+FIREBASE_PROJECT_ID=xxxxxx
+FIREBASE_CLIENT_EMAIL=xxxxxx@xxxxxx.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----xxxxxx-----END PRIVATE KEY-----"
+```
+
 Note: Both `.env` and `serviceAccountKey.json` are ignored by Git for this repo,
 so these secrets can't be accidentally committed.
 

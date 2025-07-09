@@ -5,8 +5,8 @@ the `docker/` directory.
 
 ## Local Development
 
-Use `docker compose up`, which will use the `docker/start.sh` script to run
-Yarn scripts.
+Use `docker compose up migrate` to run database migrations.
+Then use `docker compose up` to start all services locally.
 
 ## Testing Container Builds
 

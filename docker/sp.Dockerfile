@@ -1,7 +1,24 @@
-# Build on top of the prebuilt Node.js image for OpenDuelyst.
-ARG NODEJS_IMAGE_VERSION
-FROM duelyst-nodejs:${NODEJS_IMAGE_VERSION}
+FROM node:24-bookworm-slim
 
-# Start the service.
+WORKDIR /duelyst
+COPY package.json /duelyst/
+COPY .yarnrc.yml /duelyst/
+COPY yarn.lock /duelyst/
+COPY packages /duelyst/packages
+RUN corepack enable
+RUN yarn set version berry
+RUN yarn install && yarn cache clean
+
+COPY version.json /duelyst/
+COPY app/*.coffee /duelyst/app/
+COPY app/common /duelyst/app/common
+COPY app/data /duelyst/app/data
+COPY app/localization /duelyst/app/localization
+COPY app/sdk /duelyst/app/sdk
+COPY bin /duelyst/bin
+COPY config /duelyst/config
+COPY server /duelyst/server
+COPY worker /duelyst/worker
+
 EXPOSE 8000
 ENTRYPOINT ["yarn", "sp"]
